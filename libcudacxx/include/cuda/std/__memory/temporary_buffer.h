@@ -83,6 +83,15 @@ _LIBCUDACXX_HIDE_FROM_ABI void return_temporary_buffer(_Tp* __p) noexcept
   _CUDA_VSTD::__libcpp_deallocate_unsized((void*) __p, _LIBCUDACXX_ALIGNOF(_Tp));
 }
 
+struct __return_temporary_buffer
+{
+  template <class _Tp>
+  _LIBCUDACXX_HIDE_FROM_ABI void operator()(_Tp* __p) const noexcept
+  {
+    _CUDA_VSTD::return_temporary_buffer(__p);
+  }
+};
+
 _LIBCUDACXX_END_NAMESPACE_STD
 
 #endif // _LIBCUDACXX___MEMORY_TEMPORARY_BUFFER_H
