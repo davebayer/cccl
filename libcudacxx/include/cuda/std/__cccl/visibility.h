@@ -59,11 +59,16 @@
 #  define _CCCL_TYPE_VISIBILITY_DEFAULT _CCCL_VISIBILITY_DEFAULT
 #endif // !_CCCL_COMPILER(NVRTC)
 
-#if _CCCL_COMPILER(MSVC)
+#if defined(_CCCL_CUDA_COMPILER)
+#  define _CCCL_FORCEINLINE __forceinline__
+#elif _CCCL_COMPILER(MSVC) // ^^^ defined(_CCCL_CUDA_COMPILER) ^^^ / vvv _CCCL_COMPILER(MSVC) vvv
 #  define _CCCL_FORCEINLINE __forceinline
-#else // ^^^ _CCCL_COMPILER(MSVC) ^^^ / vvv _CCCL_COMPILER(MSVC) vvv
-#  define _CCCL_FORCEINLINE __inline__ __attribute__((__always_inline__))
-#endif // !_CCCL_COMPILER(MSVC)
+#elif _CCCL_HAS_ATTRIBUTE(__always_inline__) // ^^^ _CCCL_COMPILER(MSVC) ^^^ / vvv
+                                             // _CCCL_HAS_ATTRIBUTE(__always_inline__) vvv
+#  define _CCCL_FORCEINLINE __attribute__((__always_inline__))
+#else // ^^^ _CCCL_HAS_ATTRIBUTE(__always_inline__) ^^^ / vvv !_CCCL_HAS_ATTRIBUTE(__always_inline__) vvv
+#  define _CCCL_FORCEINLINE inline
+#endif // !_CCCL_HAS_ATTRIBUTE(__always_inline__)
 
 #if _CCCL_HAS_ATTRIBUTE(exclude_from_explicit_instantiation)
 #  define _CCCL_EXCLUDE_FROM_EXPLICIT_INSTANTIATION __attribute__((exclude_from_explicit_instantiation))

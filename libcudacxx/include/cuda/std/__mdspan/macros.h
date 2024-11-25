@@ -64,11 +64,7 @@
 #if _CCCL_STD_VER > 2011
 
 #  ifndef __MDSPAN_FORCE_INLINE_FUNCTION
-#    ifdef __MDSPAN_COMPILER_MSVC // Microsoft compilers
-#      define __MDSPAN_FORCE_INLINE_FUNCTION __forceinline _CCCL_HOST_DEVICE
-#    else
-#      define __MDSPAN_FORCE_INLINE_FUNCTION __attribute__((always_inline)) _CCCL_HOST_DEVICE
-#    endif
+#    define __MDSPAN_FORCE_INLINE_FUNCTION _CCCL_FORCEINLINE _CCCL_HOST_DEVICE
 #  endif
 
 //==============================================================================

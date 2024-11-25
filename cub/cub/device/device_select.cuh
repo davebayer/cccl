@@ -1152,7 +1152,7 @@ struct DeviceSelect
             typename NumSelectedIteratorT,
             typename NumItemsT,
             typename EqualityOpT>
-  CUB_RUNTIME_FUNCTION __forceinline__ static //
+  CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static //
     typename ::cuda::std::enable_if< //
       !::cuda::std::is_convertible<EqualityOpT, cudaStream_t>::value, //
       cudaError_t>::type
@@ -1306,7 +1306,7 @@ struct DeviceSelect
             typename ValueOutputIteratorT,
             typename NumSelectedIteratorT,
             typename NumItemsT>
-  CUB_RUNTIME_FUNCTION __forceinline__ static cudaError_t UniqueByKey(
+  CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t UniqueByKey(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
     KeyInputIteratorT d_keys_in,
@@ -1337,7 +1337,7 @@ struct DeviceSelect
             typename ValueOutputIteratorT,
             typename NumSelectedIteratorT,
             typename NumItemsT>
-  CUB_DETAIL_RUNTIME_DEBUG_SYNC_IS_NOT_SUPPORTED CUB_RUNTIME_FUNCTION __forceinline__ static cudaError_t UniqueByKey(
+  CUB_DETAIL_RUNTIME_DEBUG_SYNC_IS_NOT_SUPPORTED CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t UniqueByKey(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
     KeyInputIteratorT d_keys_in,
