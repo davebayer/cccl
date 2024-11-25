@@ -63,8 +63,8 @@
 #  define _CCCL_FORCEINLINE __forceinline__
 #elif _CCCL_COMPILER(MSVC) // ^^^ defined(_CCCL_CUDA_COMPILER) ^^^ / vvv _CCCL_COMPILER(MSVC) vvv
 #  define _CCCL_FORCEINLINE __forceinline
-#elif _CCCL_HAS_ATTRIBUTE(__always_inline__) // ^^^ _CCCL_COMPILER(MSVC) ^^^ / vvv
-                                             // _CCCL_HAS_ATTRIBUTE(__always_inline__) vvv
+#elif _CCCL_HAS_ATTRIBUTE(__always_inline__) // ^^^ _CCCL_COMPILER(MSVC) ^^^
+                                             // vvv _CCCL_HAS_ATTRIBUTE(__always_inline__) vvv
 #  define _CCCL_FORCEINLINE __attribute__((__always_inline__))
 #else // ^^^ _CCCL_HAS_ATTRIBUTE(__always_inline__) ^^^ / vvv !_CCCL_HAS_ATTRIBUTE(__always_inline__) vvv
 #  define _CCCL_FORCEINLINE inline
