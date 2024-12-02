@@ -15,6 +15,8 @@
 #include <cuda/std/__exception/cuda_error.h>
 #include <cuda/stream_ref>
 
+#include <cuda/experimental/__function/function_ref.cuh>
+#include <cuda/experimental/__kernel/kernel_ref.cuh>
 #include <cuda/experimental/__launch/configuration.cuh>
 #include <cuda/experimental/__launch/launch_transform.cuh>
 #include <cuda/experimental/__utility/ensure_current_device.cuh>
@@ -458,6 +460,25 @@ void launch(
   {
     ::cuda::__throw_cuda_error(status, "Failed to launch a kernel");
   }
+}
+
+template <typename... ExpArgs, typename... ActArgs, typename... Levels>
+void launch(::cuda::stream_ref stream,
+            const hierarchy_dimensions<Levels...>& dims,
+            ::cuda::function_ref<void(ExpArgs...)> function,
+            ActArgs&&... args)
+{
+  // Launch function in stream using the provided dimensions and arguments via cuLaunchKernel
+}
+
+template <typename... ExpArgs, typename... ActArgs, typename... Levels>
+void launch(::cuda::stream_ref stream,
+            const hierarchy_dimensions<Levels...>& dims,
+            ::cuda::kernel_ref<void(ExpArgs...)> kernel,
+            ActArgs&&... args)
+{
+  // Obtain the CUfunction for stream's context via cuKernelGetFunction
+  // Launch function in stream using the provided dimensions and arguments via cuLaunchKernel
 }
 
 } // namespace cuda::experimental

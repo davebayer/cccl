@@ -206,6 +206,74 @@ inline cudaError_t eventDestroy(CUevent event)
   return static_cast<cudaError_t>(driver_fn(event));
 }
 
+inline CUfunction kernelGetFunction(CUkernel kernel)
+{
+  static auto driver_fn = CUDAX_GET_DRIVER_FUNCTION(cuKernelGetFunction);
+  CUfunction func;
+  call_driver_fn(driver_fn, "Failed to get function from kernel", &func, kernel);
+  return func;
+}
+
+inline const char* kernelGetName(CUkernel kernel)
+{
+  static auto driver_fn = CUDAX_GET_DRIVER_FUNCTION(cuKernelGetName);
+  const char* name;
+  call_driver_fn(driver_fn, "Failed to get kernel name", &name, kernel);
+  return name;
+}
+
+inline CUlibrary kernelGetLibrary(CUkernel kernel)
+{
+  static auto driver_fn = CUDAX_GET_DRIVER_FUNCTION(cuKernelGetLibrary);
+  CUlibrary library;
+  call_driver_fn(driver_fn, "Failed to get kernel library", &library, kernel);
+  return library;
+}
+
+inline const char* funcGetName(CUfunction func)
+{
+  static auto driver_fn = CUDAX_GET_DRIVER_FUNCTION(cuFuncGetName);
+  const char* name;
+  call_driver_fn(driver_fn, "Failed to get function name", func, &name);
+  return name;
+}
+
+inline CUmodule funcGetModule(CUfunction func)
+{
+  static auto driver_fn = CUDAX_GET_DRIVER_FUNCTION(cuFuncGetModule);
+  CUmodule module;
+  call_driver_fn(driver_fn, "Failed to get function module", &module, func);
+  return module;
+}
+
+inline int funcGetAttribute(CUfunction_attribute attr, CUfunction func)
+{
+  static auto driver_fn = CUDAX_GET_DRIVER_FUNCTION(cuFuncGetAttribute);
+  int value;
+  call_driver_fn(driver_fn, "Failed to get function attribute", &value, attr, func);
+  return value;
+}
+
+inline void funcSetAttribute(CUfunction func, CUfunction_attribute attr, int value)
+{
+  static auto driver_fn = CUDAX_GET_DRIVER_FUNCTION(cuFuncSetAttribute);
+  call_driver_fn(driver_fn, "Failed to set function attribute", func, attr, value);
+}
+
+inline CUfunctionLoadingState funcIsLoaded(CUfunction func)
+{
+  static auto driver_fn = CUDAX_GET_DRIVER_FUNCTION(cuFuncIsLoaded);
+  CUfunctionLoadingState result;
+  call_driver_fn(driver_fn, "Failed to check if function is loaded", func, &result);
+  return result;
+}
+
+inline void funcLoad(CUfunction func)
+{
+  static auto driver_fn = CUDAX_GET_DRIVER_FUNCTION(cuFuncLoad);
+  call_driver_fn(driver_fn, "Failed to load function", func);
+}
+
 #if CUDART_VERSION >= 12050
 // Add actual resource description input once exposure is ready
 inline CUgreenCtx greenCtxCreate(CUdevice dev)
