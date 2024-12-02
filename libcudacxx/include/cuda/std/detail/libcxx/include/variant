@@ -1522,6 +1522,17 @@ struct __variant_constraints
 };
 } // namespace __variant_detail
 
+template <class _Visitor,
+          class... _Vs,
+          typename = void_t<decltype(_CUDA_VSTD::__as_variant(_CUDA_VSTD::declval<_Vs>()))...>>
+_LIBCUDACXX_HIDE_FROM_ABI constexpr decltype(auto) visit(_Visitor&& __visitor, _Vs&&... __vs);
+
+template <class _Rp,
+          class _Visitor,
+          class... _Vs,
+          typename = void_t<decltype(_CUDA_VSTD::__as_variant(_CUDA_VSTD::declval<_Vs>()))...>>
+_LIBCUDACXX_HIDE_FROM_ABI constexpr _Rp visit(_Visitor&& __visitor, _Vs&&... __vs);
+
 template <class... _Types>
 class _CCCL_TYPE_VISIBILITY_DEFAULT variant
     : private __sfinae_base<
@@ -1704,6 +1715,54 @@ public:
   _LIBCUDACXX_HIDE_FROM_ABI static constexpr size_t __size() noexcept
   {
     return sizeof...(_Types);
+  }
+
+  template <int = 0, class _Visitor>
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr decltype(auto) visit(_Visitor&& __visitor) &
+  {
+    return _CUDA_VSTD::visit(_CUDA_VSTD::forward<_Visitor>(__visitor), static_cast<variant&>(*this));
+  }
+
+  template <int = 0, class _Visitor>
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr decltype(auto) visit(_Visitor&& __visitor) const&
+  {
+    return _CUDA_VSTD::visit(_CUDA_VSTD::forward<_Visitor>(__visitor), static_cast<const variant&>(*this));
+  }
+
+  template <int = 0, class _Visitor>
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr decltype(auto) visit(_Visitor&& __visitor) &&
+  {
+    return _CUDA_VSTD::visit(_CUDA_VSTD::forward<_Visitor>(__visitor), static_cast<variant&&>(*this));
+  }
+
+  template <int = 0, class _Visitor>
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr decltype(auto) visit(_Visitor&& __visitor) const&&
+  {
+    return _CUDA_VSTD::visit(_CUDA_VSTD::forward<_Visitor>(__visitor), static_cast<const variant&&>(*this));
+  }
+
+  template <class _Ret, class _Visitor>
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr decltype(auto) visit(_Visitor&& __visitor) &
+  {
+    return _CUDA_VSTD::visit<_Ret>(_CUDA_VSTD::forward<_Visitor>(__visitor), static_cast<variant&>(*this));
+  }
+
+  template <class _Ret, class _Visitor>
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr decltype(auto) visit(_Visitor&& __visitor) const&
+  {
+    return _CUDA_VSTD::visit<_Ret>(_CUDA_VSTD::forward<_Visitor>(__visitor), static_cast<const variant&>(*this));
+  }
+
+  template <class _Ret, class _Visitor>
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr decltype(auto) visit(_Visitor&& __visitor) &&
+  {
+    return _CUDA_VSTD::visit<_Ret>(_CUDA_VSTD::forward<_Visitor>(__visitor), static_cast<variant&&>(*this));
+  }
+
+  template <class _Ret, class _Visitor>
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr decltype(auto) visit(_Visitor&& __visitor) const&&
+  {
+    return _CUDA_VSTD::visit<_Ret>(_CUDA_VSTD::forward<_Visitor>(__visitor), static_cast<const variant&&>(*this));
   }
 
 private:
@@ -2060,9 +2119,7 @@ _LIBCUDACXX_HIDE_FROM_ABI constexpr void __throw_if_valueless(_Vs&&... __vs)
   (void) __unused[0];
 }
 
-template <class _Visitor,
-          class... _Vs,
-          typename = void_t<decltype(_CUDA_VSTD::__as_variant(_CUDA_VSTD::declval<_Vs>()))...>>
+template <class _Visitor, class... _Vs, typename>
 _LIBCUDACXX_HIDE_FROM_ABI constexpr decltype(auto) visit(_Visitor&& __visitor, _Vs&&... __vs)
 {
   using __variant_detail::__visitation::__variant;
@@ -2070,10 +2127,7 @@ _LIBCUDACXX_HIDE_FROM_ABI constexpr decltype(auto) visit(_Visitor&& __visitor, _
   return __variant::__visit_value(_CUDA_VSTD::forward<_Visitor>(__visitor), _CUDA_VSTD::forward<_Vs>(__vs)...);
 }
 
-template <class _Rp,
-          class _Visitor,
-          class... _Vs,
-          typename = void_t<decltype(_CUDA_VSTD::__as_variant(_CUDA_VSTD::declval<_Vs>()))...>>
+template <class _Rp, class _Visitor, class... _Vs, typename>
 _LIBCUDACXX_HIDE_FROM_ABI constexpr _Rp visit(_Visitor&& __visitor, _Vs&&... __vs)
 {
   using __variant_detail::__visitation::__variant;
