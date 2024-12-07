@@ -26,8 +26,12 @@
 
 namespace cuda::experimental
 {
+
+#if CUDA_VERSION >= 12000
 template <class>
 class kernel_ref;
+#endif // CUDA_VERSION >= 12000
+
 template <class>
 class function_ref;
 
@@ -37,6 +41,14 @@ namespace detail
 template <::CUfunction_attribute _Attr, class _Type>
 class __func_attr_impl
 {
+#if CUDA_VERSION >= 12000
+  template <class>
+  friend class kernel_ref;
+#endif // CUDA_VERSION >= 12000
+
+  template <class>
+  friend class function_ref;
+
 public:
   using type = _Type;
 
@@ -45,28 +57,32 @@ public:
     return _Attr;
   }
 
+#if CUDA_VERSION >= 12000
   // Implemented in __kernel/kernel_ref.cuh
   template <class... _Args>
   _CCCL_NODISCARD type operator()(kernel_ref<void(_Args...)> __kernel, device_ref __dev) const;
+#endif // CUDA_VERSION >= 12000
 
   // Implemented in __function/function_ref.cuh
   template <class... _Args>
   _CCCL_NODISCARD type operator()(function_ref<void(_Args...)> __kernel) const;
 
 private:
+#if CUDA_VERSION >= 12000
   _CCCL_NODISCARD type get()(CUkernel __kernel, CUdevice __dev) const
   {
     return static_cast<type>(detail::driver::kernelGetAttribute(_Attr, __dev));
   }
 
-  _CCCL_NODISCARD type get()(CUfunction __func) const
-  {
-    return static_cast<type>(detail::driver::funcGetAttribute(_Attr, __func));
-  }
-
   void set(CUkernel __func, type __value, CUdevice __dev) const
   {
     detail::driver::kernelSetAttribute(__func, _Attr, static_cast<int>(__value), __dev);
+  }
+#endif // CUDA_VERSION >= 12000
+
+  _CCCL_NODISCARD type get()(CUfunction __func) const
+  {
+    return static_cast<type>(detail::driver::funcGetAttribute(_Attr, __func));
   }
 
   void set(CUfunction __func, type __value) const
