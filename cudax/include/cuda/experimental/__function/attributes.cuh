@@ -71,23 +71,23 @@ private:
 #if CUDA_VERSION >= 12000
   _CCCL_NODISCARD type get()(CUkernel __kernel, CUdevice __dev) const
   {
-    return static_cast<type>(detail::driver::kernelGetAttribute(_Attr, __dev));
+    return static_cast<type>(driver::kernelGetAttribute(_Attr, __dev));
   }
 
   void set(CUkernel __func, type __value, CUdevice __dev) const
   {
-    detail::driver::kernelSetAttribute(__func, _Attr, static_cast<int>(__value), __dev);
+    driver::kernelSetAttribute(__func, _Attr, static_cast<int>(__value), __dev);
   }
 #endif // CUDA_VERSION >= 12000
 
   _CCCL_NODISCARD type get()(CUfunction __func) const
   {
-    return static_cast<type>(detail::driver::funcGetAttribute(_Attr, __func));
+    return static_cast<type>(driver::funcGetAttribute(_Attr, __func));
   }
 
   void set(CUfunction __func, type __value) const
   {
-    detail::driver::funcSetAttribute(__func, _Attr, static_cast<int>(__value));
+    driver::funcSetAttribute(__func, _Attr, static_cast<int>(__value));
   }
 };
 
@@ -137,7 +137,8 @@ struct __func_attr<CU_FUNC_ATTRIBUTE_CLUSTER_SCHEDULING_POLICY_PREFERENCE>
 
 } // namespace detail
 
-struct __func_attrs
+//! @brief Function attributes for CUDA functions and kernels
+struct function_attrs
 {
   // Maximum number of threads per block
   using max_threads_per_block_t = detail::__func_attr<CU_FUNC_ATTRIBUTE_MAX_THREADS_PER_BLOCK>;
@@ -204,9 +205,6 @@ struct __func_attrs
     detail::__func_attr<CU_FUNC_ATTRIBUTE_CLUSTER_SCHEDULING_POLICY_PREFERENCE>;
   static constexpr cluster_scheduling_policy_preference_t cluster_scheduling_policy_preference{};
 };
-
-//! @brief Function attributes for CUDA functions and kernels
-using function_attrs = __func_attrs;
 
 //! @brief For a given attribute, returns the type of the attribute value.
 //!
