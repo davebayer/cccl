@@ -21,26 +21,23 @@
 #  pragma system_header
 #endif // no system header
 
+#include <cuda/experimental/__device/device_ref.cuh>
 #include <cuda/experimental/__utility/driver_api.cuh>
 
 namespace cuda::experimental
 {
+template <class>
+class kernel_ref;
+template <class>
+class function_ref;
 
 namespace detail
 {
-_CCCL_NODISCARD inline int __get_attr_impl(::CUfunction_attribute __attr, CUfunction __func)
-{
-  return detail::driver::funcGetAttribute(__attr, __func);
-}
-
-inline void __set_attr_impl(::CUfunction_attribute __attr, CUfunction __func, int __value)
-{
-  detail::driver::funcSetAttribute(__func, __attr, __value);
-}
 
 template <::CUfunction_attribute _Attr, class _Type>
-struct __func_attr_with_type
+class __func_attr_impl
 {
+public:
   using type = _Type;
 
   _CCCL_NODISCARD constexpr operator ::CUfunction_attribute() const noexcept
@@ -48,13 +45,30 @@ struct __func_attr_with_type
     return _Attr;
   }
 
+  // Implemented in __kernel/kernel_ref.cuh
   template <class... _Args>
-  _CCCL_NODISCARD type get()(CUfunction __func) const
+  _CCCL_NODISCARD type operator()(kernel_ref<void(_Args...)> __kernel, device_ref __dev) const;
+
+  // Implemented in __function/function_ref.cuh
+  template <class... _Args>
+  _CCCL_NODISCARD type operator()(function_ref<void(_Args...)> __kernel) const;
+
+private:
+  _CCCL_NODISCARD type get()(CUkernel __kernel, CUdevice __dev) const
   {
-    return static_cast<type>(detail::driver::funcGetAttribute(_Attr, __func););
+    return static_cast<type>(detail::driver::kernelGetAttribute(_Attr, __dev));
   }
 
-  template <class... _Args>
+  _CCCL_NODISCARD type get()(CUfunction __func) const
+  {
+    return static_cast<type>(detail::driver::funcGetAttribute(_Attr, __func));
+  }
+
+  void set(CUkernel __func, type __value, CUdevice __dev) const
+  {
+    detail::driver::kernelSetAttribute(__func, _Attr, static_cast<int>(__value), __dev);
+  }
+
   void set(CUfunction __func, type __value) const
   {
     detail::driver::funcSetAttribute(__func, _Attr, static_cast<int>(__value));
@@ -62,46 +76,43 @@ struct __func_attr_with_type
 };
 
 template <::CUfunction_attribute _Attr>
-struct __func_attr : __func_attr_with_type<_Attr, int>
+struct __func_attr : __func_attr_impl<_Attr, int>
 {};
 
 template <>
-struct __func_attr<CU_FUNC_ATTRIBUTE_SHARED_SIZE_BYTES>
-    : __func_attr_with_type<CU_FUNC_ATTRIBUTE_SHARED_SIZE_BYTES, size_t>
+struct __func_attr<CU_FUNC_ATTRIBUTE_SHARED_SIZE_BYTES> : __func_attr_impl<CU_FUNC_ATTRIBUTE_SHARED_SIZE_BYTES, size_t>
 {};
 
 template <>
-struct __func_attr<CU_FUNC_ATTRIBUTE_CONST_SIZE_BYTES>
-    : __func_attr_with_type<CU_FUNC_ATTRIBUTE_CONST_SIZE_BYTES, size_t>
+struct __func_attr<CU_FUNC_ATTRIBUTE_CONST_SIZE_BYTES> : __func_attr_impl<CU_FUNC_ATTRIBUTE_CONST_SIZE_BYTES, size_t>
 {};
 
 template <>
-struct __func_attr<CU_FUNC_ATTRIBUTE_LOCAL_SIZE_BYTES>
-    : __func_attr_with_type<CU_FUNC_ATTRIBUTE_LOCAL_SIZE_BYTES, size_t>
+struct __func_attr<CU_FUNC_ATTRIBUTE_LOCAL_SIZE_BYTES> : __func_attr_impl<CU_FUNC_ATTRIBUTE_LOCAL_SIZE_BYTES, size_t>
 {};
 
 template <>
-struct __func_attr<CU_FUNC_ATTRIBUTE_CACHE_MODE_CA> : __func_attr_with_type<CU_FUNC_ATTRIBUTE_CACHE_MODE_CA, bool>
+struct __func_attr<CU_FUNC_ATTRIBUTE_CACHE_MODE_CA> : __func_attr_impl<CU_FUNC_ATTRIBUTE_CACHE_MODE_CA, bool>
 {};
 
 template <>
 struct __func_attr<CU_FUNC_ATTRIBUTE_MAX_DYNAMIC_SHARED_SIZE_BYTES>
-    : __func_attr_with_type<CU_FUNC_ATTRIBUTE_MAX_DYNAMIC_SHARED_SIZE_BYTES, size_t>
+    : __func_attr_impl<CU_FUNC_ATTRIBUTE_MAX_DYNAMIC_SHARED_SIZE_BYTES, size_t>
 {};
 
 template <>
 struct __func_attr<CU_FUNC_ATTRIBUTE_CLUSTER_SIZE_MUST_BE_SET>
-    : __func_attr_with_type<CU_FUNC_ATTRIBUTE_CLUSTER_SIZE_MUST_BE_SET, bool>
+    : __func_attr_impl<CU_FUNC_ATTRIBUTE_CLUSTER_SIZE_MUST_BE_SET, bool>
 {};
 
 template <>
 struct __func_attr<CU_FUNC_ATTRIBUTE_NON_PORTABLE_CLUSTER_SIZE_ALLOWED>
-    : __func_attr_with_type<CU_FUNC_ATTRIBUTE_NON_PORTABLE_CLUSTER_SIZE_ALLOWED, bool>
+    : __func_attr_impl<CU_FUNC_ATTRIBUTE_NON_PORTABLE_CLUSTER_SIZE_ALLOWED, bool>
 {};
 
 template <>
 struct __func_attr<CU_FUNC_ATTRIBUTE_CLUSTER_SCHEDULING_POLICY_PREFERENCE>
-    : __func_attr_with_type<CU_FUNC_ATTRIBUTE_CLUSTER_SCHEDULING_POLICY_PREFERENCE, cudaClusterSchedulingPolicy>
+    : __func_attr_impl<CU_FUNC_ATTRIBUTE_CLUSTER_SCHEDULING_POLICY_PREFERENCE, cudaClusterSchedulingPolicy>
 {
   static constexpr type default_value  = cudaClusterSchedulingPolicyDefault;
   static constexpr type spread         = cudaClusterSchedulingPolicySpread;
@@ -177,6 +188,19 @@ struct __func_attrs
     detail::__func_attr<CU_FUNC_ATTRIBUTE_CLUSTER_SCHEDULING_POLICY_PREFERENCE>;
   static constexpr cluster_scheduling_policy_preference_t cluster_scheduling_policy_preference{};
 };
+
+//! @brief Function attributes for CUDA functions and kernels
+using function_attrs = __func_attrs;
+
+//! @brief For a given attribute, returns the type of the attribute value.
+//!
+//! @par Example
+//! @code
+//! using max_threads_per_block_t = function_attr_result_t<function_attr::max_threads_per_block>;
+//! static_assert(std::is_same_v<max_threads_per_block_t, int>);
+//! @endcode
+template <::CUfunction_attribute _Attr>
+using function_attr_result_t = typename detail::__func_attr<_Attr>::type;
 
 } // namespace cuda::experimental
 

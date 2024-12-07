@@ -21,6 +21,7 @@
 #  pragma system_header
 #endif // no system header
 
+#include <cuda/experimental/__function/attributes.cuh>
 #include <cuda/experimental/__kernel/kernel_ref.cuh>
 #include <cuda/experimental/__utility/driver_api.cuh>
 #include <cuda/experimental/__utility/ensure_current_device.cuh>
@@ -29,29 +30,6 @@
 
 namespace cuda::experimental
 {
-
-namespace detail
-{
-
-template <::CUfunction_attribute _Attr>
-struct __func_attr;
-
-struct __func_attrs;
-
-} // namespace detail
-
-//! @brief Function attributes for CUDA functions and kernels
-using function_attrs = detail::__func_attrs;
-
-//! @brief For a given attribute, returns the type of the attribute value.
-//!
-//! @par Example
-//! @code
-//! using max_threads_per_block_t = function_attr_result_t<function_attr::max_threads_per_block>;
-//! static_assert(std::is_same_v<max_threads_per_block_t, int>);
-//! @endcode
-template <::CUfunction_attribute _Attr>
-using function_attr_result_t = typename detail::__func_attr<_Attr>::type;
 
 //! @brief A non-owning representation of a CUDA function
 //!
@@ -244,6 +222,19 @@ public:
 private:
   value_type __function_{};
 };
+
+namespace detail
+{
+
+template <::CUfunction_attribute _Attr, class _Type>
+template <class... _Args>
+_CCCL_NODISCARD auto __func_attr_impl<_Attr, _Type>::operator()(function_ref<void(_Args...)> __function) const -> type
+{
+  return get(__function.get());
+}
+
+} // namespace detail
+
 } // namespace cuda::experimental
 
 #endif // _CUDAX__FUNCTION_FUNCTION_REF

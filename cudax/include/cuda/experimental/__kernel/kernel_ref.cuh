@@ -22,67 +22,134 @@
 #endif // no system header
 
 #include <cuda/experimental/__device/device_ref.cuh>
+#include <cuda/experimental/__function/attributes.cuh>
 #include <cuda/experimental/__utility/driver_api.cuh>
+#include <cuda/experimental/__utility/ensure_current_device.cuh>
 
-#if CUDA_VERSION >= 12010
+#include <string_view>
+
+#if CUDA_VERSION >= 12000
 
 namespace cuda::experimental
 {
-template <class>
+
+//! @brief A non-owning representation of a CUDA kernel
+//!
+//! @tparam _Signature The signature of the kernel
+//!
+//! @note The return type of the kernel must be `void`
+template <class _Signature>
 class kernel_ref;
 
 template <class... _Args>
 class kernel_ref<void(_Args...)>
 {
 public:
-  using value_type = ::cudaKernel_t;
+  using value_type = ::CUkernel;
 
-  kernel_ref(_CUDA_VSTD::nullptr_t) = delete; // Delete construction from nullptr
+  kernel_ref(_CUDA_VSTD::nullptr_t) = delete;
 
+  //! @brief Constructs a `kernel_ref` from a kernel object
+  //!
+  //! @param __kernel The kernel object
   constexpr kernel_ref(value_type __kernel) noexcept
       : __kernel_(__kernel)
   {}
 
+#  if CUDA_VERSION >= 12010
+  //! @brief Constructs a `kernel_ref` from an entry function address
+  //!
+  //! @param __entry_func_address The entry function address
+  //!
+  //! @throws cuda_error if the kernel cannot be obtained from the entry function address
   kernel_ref(void (*__entry_func_address)(_Args...))
   {
     _CCCL_TRY_CUDA_API(
       ::cudaGetKernel, "Failed to get kernel from entry function address", &__kernel_, __entry_func_address);
   }
+#  endif // CUDA_VERSION >= 12010
 
+  //! @brief Get the name of the kernel
+  //!
+  //! @return The name of the kernel
+  //!
+  //! @throws cuda_error if the kernel name cannot be obtained
   _CCCL_NODISCARD ::std::string_view get_name() const
   {
     return detail::driver::kernelGetName(__kernel_);
   }
 
+  //! Retrieve the native kernel handle
+  //!
+  //! @return The native kernel handle
   _CCCL_NODISCARD constexpr value_type get() const noexcept
   {
     return __kernel_;
   }
 
+  //! @brief Get the library that the kernel belongs to
+  //!
+  //! @return The library that the kernel belongs to
+  //!
+  //! @throws cuda_error if the library cannot be obtained
   _CCCL_NODISCARD CUlibrary get_library() const
   {
     return detail::driver::kernelGetLibrary(__kernel_);
   }
 
+  //! @brief Get the attributes of the kernel
+  //!
+  //! @return The attributes of the kernel
+  //!
+  //! @throws cuda_error if the kernel attributes cannot be obtained
   template <class _Attr>
-  _CCCL_NODISCARD auto get_attr(const _Attr& __attr, device_ref __dev) const
+  _CCCL_NODISCARD function_attr_result_t<_Attr> get_attr(const _Attr& __attr, device_ref __dev) const
   {
-    // Get __attr value for __dev via cuKernelGetAttribute
+    return __attr.get(__kernel_, driver::deviceGet(__dev.get()));
   }
 
-  template <class _Attr, class _Value>
-  _CCCL_NODISCARD void set_attr(const _Attr& __attr, _Value&& __value, device_ref __dev) const
+  //! @overload
+  template <cudaFuncAttribute _Attr>
+  _CCCL_NODISCARD function_attr_result_t<_Attr> get_attr(device_ref __dev) const
   {
-    // Check __value type
-    // Set __attr __value for __dev via cuKernelSetAttribute
+    return get_attr(detail::__func_attr<_Attr>{}, __dev);
   }
 
-  template <class _CacheConfig>
-  _CCCL_NODISCARD void set_cache_config(_CacheConfig __cacheConfig, device_ref __dev) const
+  //! @brief Set the attributes of the kernel
+  //!
+  //! @param __attr The attribute to set
+  //! @param __value The value to set the attribute to
+  //!
+  //! @throws cuda_error if the kernel attributes cannot be set
+  template <class _Attr>
+  void set_attr(const _Attr& __attr, function_attr_result_t<_Attr> __value, device_ref __dev) const
   {
-    // Set __cacheConfig for __dev via cuKernelSetCacheConfig
+    __attr.set(__kernel_, __value, driver::deviceGet(__dev.get()));
   }
 
+  //! @overload
+  template <cudaFuncAttribute _Attr>
+  void set_attr(function_attr_result_t<_Attr> __value, device_ref __dev) const
+  {
+    set_attr(detail::__func_attr<_Attr>{}, __value, __dev);
+  }
+
+  //! @brief Set the cache configuration of the kernel
+  //!
+  //! @param __cacheConfig The cache configuration to set
+  //!
+  //! @throws cuda_error if the cache configuration cannot be set
+  _CCCL_NODISCARD void set_cache_config(cudaFuncCache __cache_config, device_ref __dev) const
+  {
+    detail::driver::kernelSetCacheConfig(
+      __kernel_, static_cast<CUfunc_cache>(__cache_config), detail::driver::deviceGet(__dev.get()));
+  }
+
+  //! @brief Compares two `kernel_ref` for equality
+  //!
+  //! @param __lhs The first `kernel_ref` to compare
+  //! @param __rhs The second `kernel_ref` to compare
+  //! @return true if `lhs` and `rhs` refer to the same function
   _CCCL_NODISCARD_FRIEND constexpr bool operator==(kernel_ref __lhs, kernel_ref __rhs) noexcept
   {
     return __lhs.__kernel_ == __rhs.__kernel_;
@@ -91,8 +158,22 @@ public:
 private:
   value_type __kernel_{};
 };
+
+namespace detail
+{
+
+template <::CUfunction_attribute _Attr, class _Type>
+template <class... _Args>
+_CCCL_NODISCARD auto
+__func_attr_impl<_Attr, _Type>::operator()(kernel_ref<void(_Args...)> __kernel, device_ref __dev) const -> type
+{
+  return get(__kernel.get(), driver::deviceGet(__dev.get()));
+}
+
+} // namespace detail
+
 } // namespace cuda::experimental
 
-#endif // CUDA_VERSION >= 12010
+#endif // CUDA_VERSION >= 12000
 
 #endif // _CUDAX__FUNCTION_KERNEL_REF
