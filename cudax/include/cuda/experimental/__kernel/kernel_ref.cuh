@@ -139,7 +139,7 @@ public:
   //! @param __cacheConfig The cache configuration to set
   //!
   //! @throws cuda_error if the cache configuration cannot be set
-  _CCCL_NODISCARD void set_cache_config(cudaFuncCache __cache_config, device_ref __dev) const
+  void set_cache_config(cudaFuncCache __cache_config, device_ref __dev) const
   {
     detail::driver::kernelSetCacheConfig(
       __kernel_, static_cast<CUfunc_cache>(__cache_config), detail::driver::deviceGet(__dev.get()));
