@@ -254,16 +254,6 @@ struct function_attrs
   static constexpr cluster_scheduling_policy_preference_t cluster_scheduling_policy_preference{};
 };
 
-//! @brief For a given attribute, returns the type of the attribute value.
-//!
-//! @par Example
-//! @code
-//! using max_threads_per_block_t = function_attr_result_t<function_attr::max_threads_per_block>;
-//! static_assert(std::is_same_v<max_threads_per_block_t, int>);
-//! @endcode
-template <::CUfunction_attribute _Attr>
-using function_attr_result_t = typename detail::__func_attr<_Attr>::type;
-
 } // namespace cuda::experimental
 
 #endif // _CUDAX__FUNCTION_ATTRIBUTES
