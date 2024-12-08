@@ -222,24 +222,24 @@ inline CUlibrary kernelGetLibrary(CUkernel kernel)
   return library;
 }
 
-inline int kernelGetAttribute(CUfunction_attribute attr, CUkernel kernel)
+inline int kernelGetAttribute(CUfunction_attribute attr, CUkernel kernel, CUdevice dev)
 {
   static auto driver_fn = CUDAX_GET_DRIVER_FUNCTION(cuKernelGetAttribute);
   int value;
-  call_driver_fn(driver_fn, "Failed to get kernel attribute", &value, attr, kernel);
+  call_driver_fn(driver_fn, "Failed to get kernel attribute", &value, attr, kernel, dev);
   return value;
 }
 
-inline void kernelSetAttribute(CUkernel kernel, CUfunction_attribute attr, int value)
+inline void kernelSetAttribute(CUkernel kernel, CUfunction_attribute attr, int value, CUdevice dev)
 {
   static auto driver_fn = CUDAX_GET_DRIVER_FUNCTION(cuKernelSetAttribute);
-  call_driver_fn(driver_fn, "Failed to set kernel attribute", kernel, attr, value);
+  call_driver_fn(driver_fn, "Failed to set kernel attribute", attr, value, kernel, dev);
 }
 
-inline void kernelSetCacheConfig(CUkernel kernel, CUfunc_cache config)
+inline void kernelSetCacheConfig(CUkernel kernel, CUfunc_cache config, CUdevice dev)
 {
   static auto driver_fn = CUDAX_GET_DRIVER_FUNCTION(cuKernelSetCacheConfig);
-  call_driver_fn(driver_fn, "Failed to set kernel cache config", kernel, config);
+  call_driver_fn(driver_fn, "Failed to set kernel cache config", kernel, config, dev);
 }
 
 inline CUfunction kernelGetFunction(CUkernel kernel)
@@ -254,7 +254,7 @@ inline const char* funcGetName(CUfunction func)
 {
   static auto driver_fn = CUDAX_GET_DRIVER_FUNCTION(cuFuncGetName);
   const char* name;
-  call_driver_fn(driver_fn, "Failed to get function name", func, &name);
+  call_driver_fn(driver_fn, "Failed to get function name", &name, func);
   return name;
 }
 
@@ -290,7 +290,7 @@ inline CUfunctionLoadingState funcIsLoaded(CUfunction func)
 {
   static auto driver_fn = CUDAX_GET_DRIVER_FUNCTION(cuFuncIsLoaded);
   CUfunctionLoadingState result;
-  call_driver_fn(driver_fn, "Failed to check if function is loaded", func, &result);
+  call_driver_fn(driver_fn, "Failed to check if function is loaded", &result, func);
   return result;
 }
 
