@@ -21,6 +21,8 @@
 #  pragma system_header
 #endif // no system header
 
+#include <cuda/std/__utility/forward.h>
+
 #include <cuda/experimental/__function/attributes.cuh>
 #include <cuda/experimental/__kernel/kernel_ref.cuh>
 #include <cuda/experimental/__utility/driver_api.cuh>
@@ -150,16 +152,16 @@ public:
   //!
   //! @throws cuda_error if the attribute query fails
   template <class _Attr>
-  _CCCL_NODISCARD function_attr_result_t<_Attr> get_attr(const _Attr& __attr) const
+  _CCCL_NODISCARD typename _Attr::type get_attr(const _Attr& __attr) const
   {
     return __attr.get(__function_);
   }
 
   //! @overload
   template <cudaFuncAttribute _Attr>
-  _CCCL_NODISCARD function_attr_result_t<_Attr> get_attr() const
+  _CCCL_NODISCARD auto get_attr() const
   {
-    return get_attr(detail::__func_attr<_Attr>{});
+    return get_attr(detail::__func_attr<static_cast<CUfunction_attribute>(_Attr)>{});
   }
 
   //! @brief Set an attribute of the function
@@ -169,16 +171,16 @@ public:
   //!
   //! @throws cuda_error if the attribute set fails
   template <class _Attr>
-  void set_attr(const _Attr& __attr, function_attr_result_t<_Attr> __value) const
+  void set_attr(const _Attr& __attr, typename _Attr::type __value) const
   {
     __attr.set(__function_, __value);
   }
 
   //! @overload
-  template <cudaFuncAttribute _Attr>
-  void set_attr(function_attr_result_t<_Attr> __value) const
+  template <cudaFuncAttribute _Attr, class _Value>
+  void set_attr(_Value&& __value) const
   {
-    set_attr(detail::__func_attr<_Attr>{}, __value);
+    set_attr(detail::__func_attr<static_cast<CUfunction_attribute>(_Attr)>{}, _CUDA_VSTD::forward<_Value>(__value));
   }
 
   //! @brief Set the cache configuration of the function
@@ -186,7 +188,7 @@ public:
   //! @param __cache_config The cache configuration to set
   //!
   //! @throws cuda_error if the cache configuration set fails
-  _CCCL_NODISCARD void set_cache_config(cudaFuncCache __cache_config) const
+  void set_cache_config(cudaFuncCache __cache_config) const
   {
     detail::driver::funcSetCacheConfig(__function_, static_cast<CUfunc_cache>(__cache_config));
   }
@@ -226,9 +228,10 @@ private:
 namespace detail
 {
 
-template <::CUfunction_attribute _Attr, class _Type>
+template <::CUfunction_attribute _Attr, class _Type, bool _ReadOnly>
 template <class... _Args>
-_CCCL_NODISCARD auto __func_attr_impl<_Attr, _Type>::operator()(function_ref<void(_Args...)> __function) const -> type
+_CCCL_NODISCARD auto
+__func_attr_impl<_Attr, _Type, _ReadOnly>::operator()(function_ref<void(_Args...)> __function) const -> type
 {
   return get(__function.get());
 }

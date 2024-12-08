@@ -21,6 +21,8 @@
 #  pragma system_header
 #endif // no system header
 
+#include <cuda/std/__utility/forward.h>
+
 #include <cuda/experimental/__device/device_ref.cuh>
 #include <cuda/experimental/__function/attributes.cuh>
 #include <cuda/experimental/__utility/driver_api.cuh>
@@ -103,16 +105,16 @@ public:
   //!
   //! @throws cuda_error if the kernel attributes cannot be obtained
   template <class _Attr>
-  _CCCL_NODISCARD function_attr_result_t<_Attr> get_attr(const _Attr& __attr, device_ref __dev) const
+  _CCCL_NODISCARD typename _Attr::type get_attr(const _Attr& __attr, device_ref __dev) const
   {
-    return __attr.get(__kernel_, driver::deviceGet(__dev.get()));
+    return __attr.get(__kernel_, detail::driver::deviceGet(__dev.get()));
   }
 
   //! @overload
   template <cudaFuncAttribute _Attr>
-  _CCCL_NODISCARD function_attr_result_t<_Attr> get_attr(device_ref __dev) const
+  _CCCL_NODISCARD auto get_attr(device_ref __dev) const
   {
-    return get_attr(detail::__func_attr<_Attr>{}, __dev);
+    return get_attr(detail::__func_attr<static_cast<CUfunction_attribute>(_Attr)>{}, __dev);
   }
 
   //! @brief Set the attributes of the kernel
@@ -122,16 +124,17 @@ public:
   //!
   //! @throws cuda_error if the kernel attributes cannot be set
   template <class _Attr>
-  void set_attr(const _Attr& __attr, function_attr_result_t<_Attr> __value, device_ref __dev) const
+  void set_attr(const _Attr& __attr, typename _Attr::type __value, device_ref __dev) const
   {
-    __attr.set(__kernel_, __value, driver::deviceGet(__dev.get()));
+    __attr.set(__kernel_, __value, detail::driver::deviceGet(__dev.get()));
   }
 
   //! @overload
-  template <cudaFuncAttribute _Attr>
-  void set_attr(function_attr_result_t<_Attr> __value, device_ref __dev) const
+  template <cudaFuncAttribute _Attr, class _Value>
+  void set_attr(_Value&& __value, device_ref __dev) const
   {
-    set_attr(detail::__func_attr<_Attr>{}, __value, __dev);
+    set_attr(
+      detail::__func_attr<static_cast<CUfunction_attribute>(_Attr)>{}, _CUDA_VSTD::forward<_Value>(__value), __dev);
   }
 
   //! @brief Set the cache configuration of the kernel
@@ -162,10 +165,10 @@ private:
 namespace detail
 {
 
-template <::CUfunction_attribute _Attr, class _Type>
+template <::CUfunction_attribute _Attr, class _Type, bool _ReadOnly>
 template <class... _Args>
-_CCCL_NODISCARD auto
-__func_attr_impl<_Attr, _Type>::operator()(kernel_ref<void(_Args...)> __kernel, device_ref __dev) const -> type
+_CCCL_NODISCARD auto __func_attr_impl<_Attr, _Type, _ReadOnly>::operator()(
+  kernel_ref<void(_Args...)> __kernel, device_ref __dev) const -> type
 {
   return get(__kernel.get(), driver::deviceGet(__dev.get()));
 }

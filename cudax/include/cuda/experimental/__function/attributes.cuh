@@ -73,20 +73,20 @@ public:
 
 private:
 #if CUDA_VERSION >= 12000
-  _CCCL_NODISCARD type get()(CUkernel __kernel, CUdevice __dev) const
+  _CCCL_NODISCARD type get(CUkernel __kernel, CUdevice __dev) const
   {
-    return static_cast<type>(driver::kernelGetAttribute(_Attr, __dev));
+    return static_cast<type>(driver::kernelGetAttribute(_Attr, __kernel, __dev));
   }
 
   _CCCL_TEMPLATE(bool _RO = read_only)
   _CCCL_REQUIRES(!_RO)
-  void set(CUkernel __func, type __value, CUdevice __dev) const
+  void set(CUkernel __kernel, type __value, CUdevice __dev) const
   {
-    driver::kernelSetAttribute(__func, _Attr, static_cast<int>(__value), __dev);
+    driver::kernelSetAttribute(__kernel, _Attr, static_cast<int>(__value), __dev);
   }
 #endif // CUDA_VERSION >= 12000
 
-  _CCCL_NODISCARD type get()(CUfunction __func) const
+  _CCCL_NODISCARD type get(CUfunction __func) const
   {
     return static_cast<type>(driver::funcGetAttribute(_Attr, __func));
   }
