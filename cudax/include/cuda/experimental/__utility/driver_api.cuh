@@ -206,14 +206,6 @@ inline cudaError_t eventDestroy(CUevent event)
   return static_cast<cudaError_t>(driver_fn(event));
 }
 
-inline CUfunction kernelGetFunction(CUkernel kernel)
-{
-  static auto driver_fn = CUDAX_GET_DRIVER_FUNCTION(cuKernelGetFunction);
-  CUfunction func;
-  call_driver_fn(driver_fn, "Failed to get function from kernel", &func, kernel);
-  return func;
-}
-
 inline const char* kernelGetName(CUkernel kernel)
 {
   static auto driver_fn = CUDAX_GET_DRIVER_FUNCTION(cuKernelGetName);
@@ -228,6 +220,34 @@ inline CUlibrary kernelGetLibrary(CUkernel kernel)
   CUlibrary library;
   call_driver_fn(driver_fn, "Failed to get kernel library", &library, kernel);
   return library;
+}
+
+inline int kernelGetAttribute(CUfunction_attribute attr, CUkernel kernel)
+{
+  static auto driver_fn = CUDAX_GET_DRIVER_FUNCTION(cuKernelGetAttribute);
+  int value;
+  call_driver_fn(driver_fn, "Failed to get kernel attribute", &value, attr, kernel);
+  return value;
+}
+
+inline void kernelSetAttribute(CUkernel kernel, CUfunction_attribute attr, int value)
+{
+  static auto driver_fn = CUDAX_GET_DRIVER_FUNCTION(cuKernelSetAttribute);
+  call_driver_fn(driver_fn, "Failed to set kernel attribute", kernel, attr, value);
+}
+
+inline void kernelSetCacheConfig(CUkernel kernel, CUfunc_cache config)
+{
+  static auto driver_fn = CUDAX_GET_DRIVER_FUNCTION(cuKernelSetCacheConfig);
+  call_driver_fn(driver_fn, "Failed to set kernel cache config", kernel, config);
+}
+
+inline CUfunction kernelGetFunction(CUkernel kernel)
+{
+  static auto driver_fn = CUDAX_GET_DRIVER_FUNCTION(cuKernelGetFunction);
+  CUfunction func;
+  call_driver_fn(driver_fn, "Failed to get function from kernel", &func, kernel);
+  return func;
 }
 
 inline const char* funcGetName(CUfunction func)
@@ -258,6 +278,12 @@ inline void funcSetAttribute(CUfunction func, CUfunction_attribute attr, int val
 {
   static auto driver_fn = CUDAX_GET_DRIVER_FUNCTION(cuFuncSetAttribute);
   call_driver_fn(driver_fn, "Failed to set function attribute", func, attr, value);
+}
+
+inline void funcSetCacheConfig(CUfunction func, CUfunc_cache config)
+{
+  static auto driver_fn = CUDAX_GET_DRIVER_FUNCTION(cuFuncSetCacheConfig);
+  call_driver_fn(driver_fn, "Failed to set function cache config", func, config);
 }
 
 inline CUfunctionLoadingState funcIsLoaded(CUfunction func)
