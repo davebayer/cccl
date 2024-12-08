@@ -462,25 +462,6 @@ void launch(
   }
 }
 
-template <typename... ExpArgs, typename... ActArgs, typename... Levels>
-void launch(::cuda::stream_ref stream,
-            const hierarchy_dimensions<Levels...>& dims,
-            ::cuda::function_ref<void(ExpArgs...)> function,
-            ActArgs&&... args)
-{
-  // Launch function in stream using the provided dimensions and arguments via cuLaunchKernel
-}
-
-template <typename... ExpArgs, typename... ActArgs, typename... Levels>
-void launch(::cuda::stream_ref stream,
-            const hierarchy_dimensions<Levels...>& dims,
-            ::cuda::kernel_ref<void(ExpArgs...)> kernel,
-            ActArgs&&... args)
-{
-  // Obtain the CUfunction for stream's context via cuKernelGetFunction
-  // Launch function in stream using the provided dimensions and arguments via cuLaunchKernel
-}
-
 } // namespace cuda::experimental
 #endif // _CCCL_STD_VER >= 2017
 #endif // _CUDAX__LAUNCH_LAUNCH
