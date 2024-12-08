@@ -126,10 +126,12 @@ template <>
 struct __func_attr<CU_FUNC_ATTRIBUTE_NUM_REGS> : __func_attr_impl<CU_FUNC_ATTRIBUTE_NUM_REGS, int, true>
 {};
 
+// todo: change value_type to strong type (PTX version)
 template <>
 struct __func_attr<CU_FUNC_ATTRIBUTE_PTX_VERSION> : __func_attr_impl<CU_FUNC_ATTRIBUTE_PTX_VERSION, int, true>
 {};
 
+// todo: change value_type to strong type (arch version)
 template <>
 struct __func_attr<CU_FUNC_ATTRIBUTE_BINARY_VERSION> : __func_attr_impl<CU_FUNC_ATTRIBUTE_BINARY_VERSION, int, true>
 {};
@@ -143,7 +145,7 @@ struct __func_attr<CU_FUNC_ATTRIBUTE_MAX_DYNAMIC_SHARED_SIZE_BYTES>
     : __func_attr_impl<CU_FUNC_ATTRIBUTE_MAX_DYNAMIC_SHARED_SIZE_BYTES, size_t, false>
 {};
 
-// change value_type to strong type (percentage)
+// todo: change value_type to strong type (percentage)
 template <>
 struct __func_attr<CU_FUNC_ATTRIBUTE_PREFERRED_SHARED_MEMORY_CARVEOUT>
     : __func_attr_impl<CU_FUNC_ATTRIBUTE_PREFERRED_SHARED_MEMORY_CARVEOUT, int, false>
