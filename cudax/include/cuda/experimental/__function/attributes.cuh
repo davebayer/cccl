@@ -21,6 +21,8 @@
 #  pragma system_header
 #endif // no system header
 
+#include <cuda/std/__concepts/concept_macros.h>
+
 #include <cuda/experimental/__device/device_ref.cuh>
 #include <cuda/experimental/__utility/driver_api.cuh>
 
@@ -38,7 +40,7 @@ class function_ref;
 namespace detail
 {
 
-template <::CUfunction_attribute _Attr, class _Type>
+template <::CUfunction_attribute _Attr, class _Type, bool _ReadOnly>
 class __func_attr_impl
 {
 #if CUDA_VERSION >= 12000
@@ -51,6 +53,8 @@ class __func_attr_impl
 
 public:
   using type = _Type;
+
+  static constexpr bool read_only = _ReadOnly;
 
   _CCCL_NODISCARD constexpr operator ::CUfunction_attribute() const noexcept
   {
@@ -74,6 +78,8 @@ private:
     return static_cast<type>(driver::kernelGetAttribute(_Attr, __dev));
   }
 
+  _CCCL_TEMPLATE(bool _RO = read_only)
+  _CCCL_REQUIRES(!_RO)
   void set(CUkernel __func, type __value, CUdevice __dev) const
   {
     driver::kernelSetAttribute(__func, _Attr, static_cast<int>(__value), __dev);
@@ -85,6 +91,8 @@ private:
     return static_cast<type>(driver::funcGetAttribute(_Attr, __func));
   }
 
+  _CCCL_TEMPLATE(bool _RO = read_only)
+  _CCCL_REQUIRES(!_RO)
   void set(CUfunction __func, type __value) const
   {
     driver::funcSetAttribute(__func, _Attr, static_cast<int>(__value));
@@ -92,43 +100,83 @@ private:
 };
 
 template <::CUfunction_attribute _Attr>
-struct __func_attr : __func_attr_impl<_Attr, int>
+struct __func_attr;
+
+template <>
+struct __func_attr<CU_FUNC_ATTRIBUTE_MAX_THREADS_PER_BLOCK>
+    : __func_attr_impl<CU_FUNC_ATTRIBUTE_MAX_THREADS_PER_BLOCK, int, true>
 {};
 
 template <>
-struct __func_attr<CU_FUNC_ATTRIBUTE_SHARED_SIZE_BYTES> : __func_attr_impl<CU_FUNC_ATTRIBUTE_SHARED_SIZE_BYTES, size_t>
+struct __func_attr<CU_FUNC_ATTRIBUTE_SHARED_SIZE_BYTES>
+    : __func_attr_impl<CU_FUNC_ATTRIBUTE_SHARED_SIZE_BYTES, size_t, true>
 {};
 
 template <>
-struct __func_attr<CU_FUNC_ATTRIBUTE_CONST_SIZE_BYTES> : __func_attr_impl<CU_FUNC_ATTRIBUTE_CONST_SIZE_BYTES, size_t>
+struct __func_attr<CU_FUNC_ATTRIBUTE_CONST_SIZE_BYTES>
+    : __func_attr_impl<CU_FUNC_ATTRIBUTE_CONST_SIZE_BYTES, size_t, true>
 {};
 
 template <>
-struct __func_attr<CU_FUNC_ATTRIBUTE_LOCAL_SIZE_BYTES> : __func_attr_impl<CU_FUNC_ATTRIBUTE_LOCAL_SIZE_BYTES, size_t>
+struct __func_attr<CU_FUNC_ATTRIBUTE_LOCAL_SIZE_BYTES>
+    : __func_attr_impl<CU_FUNC_ATTRIBUTE_LOCAL_SIZE_BYTES, size_t, true>
 {};
 
 template <>
-struct __func_attr<CU_FUNC_ATTRIBUTE_CACHE_MODE_CA> : __func_attr_impl<CU_FUNC_ATTRIBUTE_CACHE_MODE_CA, bool>
+struct __func_attr<CU_FUNC_ATTRIBUTE_NUM_REGS> : __func_attr_impl<CU_FUNC_ATTRIBUTE_NUM_REGS, int, true>
+{};
+
+template <>
+struct __func_attr<CU_FUNC_ATTRIBUTE_PTX_VERSION> : __func_attr_impl<CU_FUNC_ATTRIBUTE_PTX_VERSION, int, true>
+{};
+
+template <>
+struct __func_attr<CU_FUNC_ATTRIBUTE_BINARY_VERSION> : __func_attr_impl<CU_FUNC_ATTRIBUTE_BINARY_VERSION, int, true>
+{};
+
+template <>
+struct __func_attr<CU_FUNC_ATTRIBUTE_CACHE_MODE_CA> : __func_attr_impl<CU_FUNC_ATTRIBUTE_CACHE_MODE_CA, bool, true>
 {};
 
 template <>
 struct __func_attr<CU_FUNC_ATTRIBUTE_MAX_DYNAMIC_SHARED_SIZE_BYTES>
-    : __func_attr_impl<CU_FUNC_ATTRIBUTE_MAX_DYNAMIC_SHARED_SIZE_BYTES, size_t>
+    : __func_attr_impl<CU_FUNC_ATTRIBUTE_MAX_DYNAMIC_SHARED_SIZE_BYTES, size_t, false>
+{};
+
+// change value_type to strong type (percentage)
+template <>
+struct __func_attr<CU_FUNC_ATTRIBUTE_PREFERRED_SHARED_MEMORY_CARVEOUT>
+    : __func_attr_impl<CU_FUNC_ATTRIBUTE_PREFERRED_SHARED_MEMORY_CARVEOUT, int, false>
 {};
 
 template <>
 struct __func_attr<CU_FUNC_ATTRIBUTE_CLUSTER_SIZE_MUST_BE_SET>
-    : __func_attr_impl<CU_FUNC_ATTRIBUTE_CLUSTER_SIZE_MUST_BE_SET, bool>
+    : __func_attr_impl<CU_FUNC_ATTRIBUTE_CLUSTER_SIZE_MUST_BE_SET, bool, true>
+{};
+
+template <>
+struct __func_attr<CU_FUNC_ATTRIBUTE_REQUIRED_CLUSTER_WIDTH>
+    : __func_attr_impl<CU_FUNC_ATTRIBUTE_REQUIRED_CLUSTER_WIDTH, int, false>
+{};
+
+template <>
+struct __func_attr<CU_FUNC_ATTRIBUTE_REQUIRED_CLUSTER_HEIGHT>
+    : __func_attr_impl<CU_FUNC_ATTRIBUTE_REQUIRED_CLUSTER_HEIGHT, int, false>
+{};
+
+template <>
+struct __func_attr<CU_FUNC_ATTRIBUTE_REQUIRED_CLUSTER_DEPTH>
+    : __func_attr_impl<CU_FUNC_ATTRIBUTE_REQUIRED_CLUSTER_DEPTH, int, false>
 {};
 
 template <>
 struct __func_attr<CU_FUNC_ATTRIBUTE_NON_PORTABLE_CLUSTER_SIZE_ALLOWED>
-    : __func_attr_impl<CU_FUNC_ATTRIBUTE_NON_PORTABLE_CLUSTER_SIZE_ALLOWED, bool>
+    : __func_attr_impl<CU_FUNC_ATTRIBUTE_NON_PORTABLE_CLUSTER_SIZE_ALLOWED, bool, false>
 {};
 
 template <>
 struct __func_attr<CU_FUNC_ATTRIBUTE_CLUSTER_SCHEDULING_POLICY_PREFERENCE>
-    : __func_attr_impl<CU_FUNC_ATTRIBUTE_CLUSTER_SCHEDULING_POLICY_PREFERENCE, cudaClusterSchedulingPolicy>
+    : __func_attr_impl<CU_FUNC_ATTRIBUTE_CLUSTER_SCHEDULING_POLICY_PREFERENCE, cudaClusterSchedulingPolicy, false>
 {
   static constexpr type default_value  = cudaClusterSchedulingPolicyDefault;
   static constexpr type spread         = cudaClusterSchedulingPolicySpread;
