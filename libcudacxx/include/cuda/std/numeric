@@ -31,6 +31,7 @@
 #include <cuda/std/__numeric/midpoint.h>
 #include <cuda/std/__numeric/partial_sum.h>
 #include <cuda/std/__numeric/reduce.h>
+#include <cuda/std/__numeric/saturation_arithmetic.h>
 #include <cuda/std/__numeric/transform_exclusive_scan.h>
 #include <cuda/std/__numeric/transform_inclusive_scan.h>
 #include <cuda/std/__numeric/transform_reduce.h>
