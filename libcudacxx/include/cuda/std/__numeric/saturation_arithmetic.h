@@ -22,6 +22,7 @@
 #  pragma system_header
 #endif // no system header
 
+#include <cuda/std/__algorithm/min.h>
 #include <cuda/std/__concepts/concept_macros.h>
 #include <cuda/std/__type_traits/is_constant_evaluated.h>
 #include <cuda/std/__type_traits/is_integral.h>
@@ -207,7 +208,8 @@ public:
   }
 
 #if _CCCL_HAS_CUDA_COMPILER
-  template <class _Tp>
+  _CCCL_TEMPLATE(class _Tp)
+  _CCCL_REQUIRES(_CCCL_TRAIT(is_signed, _Tp))
   _CCCL_NODISCARD _CCCL_HIDE_FROM_ABI _CCCL_DEVICE static _Tp __impl_device(_Tp __x, _Tp __y) noexcept
   {
     return __impl_generic(__x, __y);
@@ -218,6 +220,14 @@ public:
     int32_t __result{};
     asm("add.sat.s32 %0, %1, %2;" : "=r"(__result) : "r"(__x), "r"(__y));
     return __result;
+  }
+
+  _CCCL_TEMPLATE(class _Tp)
+  _CCCL_REQUIRES(_CCCL_TRAIT(is_unsigned, _Tp))
+  _CCCL_NODISCARD _CCCL_HIDE_FROM_ABI _CCCL_DEVICE static _Tp __impl_device(_Tp __x, _Tp __y) noexcept
+  {
+    const _Tp __bneg_x = ~__x;
+    return __x + _CUDA_VSTD::min<_Tp>(__y, __bneg_x);
   }
 #endif // _CCCL_HAS_CUDA_COMPILER
 
@@ -259,75 +269,6 @@ _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI _CCCL_CONSTEXPR_CXX14 _Tp add_sat(_Tp 
   return __add_sat::__impl_constexpr(__x, __y);
 #endif // !_CCCL_BUILTIN_ADD_OVERFLOW
 }
-
-// _CCCL_TEMPLATE(class _Tp)
-// _CCCL_REQUIRES(_CCCL_TRAIT(is_integral, _Tp))
-// _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI _CCCL_CONSTEXPR_CXX14 _Tp sub_sat(_Tp __x, _Tp __y) noexcept {
-//   _Tp __sub;
-//   if (!__builtin_sub_overflow(__x, __y, &__sub))
-//     return __sub;
-//   // Handle overflow
-//   if constexpr (_CCCL_TRAIT(is_unsigned, _Tp)) {
-//     // Overflows if (x < y)
-//     return _CUDA_VSTD::numeric_limits<_Tp>::min();
-//   } else {
-//     // Signed subtration overflow
-//     if (__x >= 0)
-//       // Overflows if (x >= 0 && y < 0)
-//       return _CUDA_VSTD::numeric_limits<_Tp>::max();
-//     else
-//       // Overflows if (x < 0 && y > 0)
-//       return _CUDA_VSTD::numeric_limits<_Tp>::min();
-//   }
-// }
-
-// _CCCL_TEMPLATE(class _Tp)
-// _CCCL_REQUIRES(_CCCL_TRAIT(is_integral, _Tp))
-// _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI _CCCL_CONSTEXPR_CXX14 _Tp mul_sat(_Tp __x, _Tp __y) noexcept {
-//   _Tp __mul;
-//   if (!__builtin_mul_overflow(__x, __y, &__mul))
-//     return __mul;
-//   // Handle overflow
-//   if constexpr (_CCCL_TRAIT(is_unsigned, _Tp)) {
-//     return _CUDA_VSTD::numeric_limits<_Tp>::max();
-//   } else {
-//     // Signed multiplication overflow
-//     if ((__x > 0 && __y > 0) || (__x < 0 && __y < 0))
-//       return _CUDA_VSTD::numeric_limits<_Tp>::max();
-//     // Overflows if (x < 0 && y > 0) || (x > 0 && y < 0)
-//     return _CUDA_VSTD::numeric_limits<_Tp>::min();
-//   }
-// }
-
-// _CCCL_TEMPLATE(class _Tp)
-// _CCCL_REQUIRES(_CCCL_TRAIT(is_integral, _Tp))
-// _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI _CCCL_CONSTEXPR_CXX14 _Tp div_sat(_Tp __x, _Tp __y) noexcept {
-//   _CCCL_ASSERT(__y != 0, "Division by 0 is undefined");
-//   if constexpr (_CCCL_TRAIT(is_unsigned, _Tp)) {
-//     return __x / __y;
-//   } else {
-//     // Handle signed division overflow
-//     if (__x == _CUDA_VSTD::numeric_limits<_Tp>::min() && __y == _Tp{-1})
-//       return _CUDA_VSTD::numeric_limits<_Tp>::max();
-//     return __x / __y;
-//   }
-// }
-
-// _CCCL_TEMPLATE(class _Rp, class _Tp)
-// _CCCL_REQUIRES(_CCCL_TRAIT(is_integral, _Rp) _CCCL_AND _CCCL_TRAIT(is_integral, _Tp))
-// _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI _CCCL_CONSTEXPR_CXX14 _Rp saturate_cast(_Tp __x) noexcept {
-//   // Saturation is impossible edge case when ((min _Rp) < (min _Tp) && (max _Rp) > (max _Tp)) and it is expected to
-//   be
-//   // optimized out by the compiler.
-
-//   // Handle overflow
-//   if (_CUDA_VSTD::cmp_less(__x, _CUDA_VSTD::numeric_limits<_Rp>::min()))
-//     return _CUDA_VSTD::numeric_limits<_Rp>::min();
-//   if (_CUDA_VSTD::cmp_greater(__x, _CUDA_VSTD::numeric_limits<_Rp>::max()))
-//     return _CUDA_VSTD::numeric_limits<_Rp>::max();
-//   // No overflow
-//   return static_cast<_Rp>(__x);
-// }
 
 _LIBCUDACXX_END_NAMESPACE_STD
 
