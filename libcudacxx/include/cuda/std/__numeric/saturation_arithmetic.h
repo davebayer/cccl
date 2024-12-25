@@ -69,11 +69,7 @@ class __add_sat
 
     _Tp __result = static_cast<_Tp>(static_cast<_Up>(__x) + static_cast<_Up>(__y));
 
-    const bool __sign_x      = __x < 0;
-    const bool __sign_y      = __y < 0;
-    const bool __sign_result = __result < 0;
-
-    return __fix_overflow(__x, __y, __result, (__sign_x == __sign_y && __sign_x != __sign_result));
+    return __fix_overflow(__x, __y, __result, (__result < __x) == !(__y < static_cast<_Tp>(0)));
   }
 
   _CCCL_TEMPLATE(class _Tp)
