@@ -104,7 +104,7 @@ public:
   {
 #if _CCCL_COMPILER(MSVC, >=, 19, 41) && _M_X64
     return _sat_add_i8(__x, __y);
-#elif _CCCL_COMPILER(MSVC, >=, 19, 37) && _M_X64
+#elif _CCCL_COMPILER(MSVC, >=, 19, 37) && (_M_IX86 || _M_X64)
     int8_t __result;
     bool __overflow = _add_overflow_i8(0, __x, __y, &__result);
     return __fix_overflow(__x, __y, __result, __overflow);
@@ -117,7 +117,7 @@ public:
   {
 #if _CCCL_COMPILER(MSVC, >=, 19, 41) && _M_X64
     return _sat_add_i16(__x, __y);
-#elif _CCCL_COMPILER(MSVC, >=, 19, 37) && _M_X64
+#elif _CCCL_COMPILER(MSVC, >=, 19, 37) && (_M_IX86 || _M_X64)
     int16_t __result;
     bool __overflow = _add_overflow_i16(0, __x, __y, &__result);
     return __fix_overflow(__x, __y, __result, __overflow);
@@ -130,7 +130,7 @@ public:
   {
 #if _CCCL_COMPILER(MSVC, >=, 19, 41) && _M_X64
     return _sat_add_i32(__x, __y);
-#elif _CCCL_COMPILER(MSVC, >=, 19, 37) && _M_X64
+#elif _CCCL_COMPILER(MSVC, >=, 19, 37) && (_M_IX86 || _M_X64)
     int32_t __result;
     bool __overflow = _add_overflow_i32(0, __x, __y, &__result);
     return __fix_overflow(__x, __y, __result, __overflow);
@@ -332,7 +332,7 @@ public:
   {
 #if _CCCL_COMPILER(MSVC, >=, 19, 41) && _M_X64
     return _sat_sub_i8(__x, __y);
-#elif _CCCL_COMPILER(MSVC, >=, 19, 37) && _M_X64
+#elif _CCCL_COMPILER(MSVC, >=, 19, 37) && (_M_IX86 || _M_X64)
     int8_t __result;
     bool __overflow = _sub_overflow_i8(0, __x, __y, &__result);
     return __fix_overflow(__x, __y, __result, __overflow);
@@ -345,7 +345,7 @@ public:
   {
 #if _CCCL_COMPILER(MSVC, >=, 19, 41) && _M_X64
     return _sat_sub_i16(__x, __y);
-#elif _CCCL_COMPILER(MSVC, >=, 19, 37) && _M_X64
+#elif _CCCL_COMPILER(MSVC, >=, 19, 37) && (_M_IX86 || _M_X64)
     int16_t __result;
     bool __overflow = _sub_overflow_i16(0, __x, __y, &__result);
     return __fix_overflow(__x, __y, __result, __overflow);
@@ -358,7 +358,7 @@ public:
   {
 #if _CCCL_COMPILER(MSVC, >=, 19, 41) && _M_X64
     return _sat_sub_i32(__x, __y);
-#elif _CCCL_COMPILER(MSVC, >=, 19, 37) && _M_X64
+#elif _CCCL_COMPILER(MSVC, >=, 19, 37) && (_M_IX86 || _M_X64)
     int32_t __result;
     bool __overflow = _sub_overflow_i32(0, __x, __y, &__result);
     return __fix_overflow(__x, __y, __result, __overflow);
