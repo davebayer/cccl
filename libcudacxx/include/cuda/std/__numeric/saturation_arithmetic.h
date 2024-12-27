@@ -22,6 +22,7 @@
 #  pragma system_header
 #endif // no system header
 
+#include <cuda/__ptx/instructions/int_arithmetic.h>
 #include <cuda/std/__algorithm/max.h>
 #include <cuda/std/__algorithm/min.h>
 #include <cuda/std/__concepts/concept_macros.h>
@@ -492,6 +493,220 @@ _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI _CCCL_CONSTEXPR_CXX14 _Tp sub_sat(_Tp 
   }
   return __sub_sat::__impl_constexpr(__x, __y);
 #endif // !_CCCL_BUILTIN_SUB_OVERFLOW
+}
+
+class __mul_sat
+{
+  template <class _Tp>
+  _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI static _CCCL_CONSTEXPR_CXX14 _Tp
+  __fix_overflow(_Tp __x, _Tp __y, _Tp __result, bool __overflow) noexcept
+  {
+    if (__overflow)
+    {
+      _CCCL_IF_CONSTEXPR (_CCCL_TRAIT(is_unsigned, _Tp))
+      {
+        __result = _CUDA_VSTD::numeric_limits<_Tp>::max();
+      }
+      else
+      {
+        __result = (__x > 0 && __y > 0) || (__x < 0 && __y < 0)
+                   ? _CUDA_VSTD::numeric_limits<_Tp>::max()
+                   : _CUDA_VSTD::numeric_limits<_Tp>::min();
+      }
+    }
+
+    return __result;
+  }
+
+  _CCCL_TEMPLATE(class _Tp)
+  _CCCL_REQUIRES(_CCCL_TRAIT(is_signed, _Tp))
+  _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI static _Tp __impl_generic(_Tp __x, _Tp __y) noexcept
+  {
+    // TODO
+  }
+
+  _CCCL_TEMPLATE(class _Tp)
+  _CCCL_REQUIRES(_CCCL_TRAIT(is_unsigned, _Tp))
+  _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI static _Tp __impl_generic(_Tp __x, _Tp __y) noexcept
+  {
+    // TODO
+  }
+
+public:
+#if defined(_CCCL_BUILTIN_MUL_OVERFLOW)
+  template <class _Tp>
+  _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI static _CCCL_CONSTEXPR_CXX14 _Tp __impl_builtin(_Tp __x, _Tp __y) noexcept
+  {
+    _Tp __result{};
+    bool __overflow = _CCCL_BUILTIN_MUL_OVERFLOW(__x, __y, &__result);
+
+    return __fix_overflow(__x, __y, __result, __overflow);
+  }
+#endif // _CCCL_BUILTIN_MUL_OVERFLOW
+
+  template <class _Tp>
+  _CCCL_NODISCARD _CCCL_HIDE_FROM_ABI _CCCL_HOST static _Tp __impl_host(_Tp __x, _Tp __y) noexcept
+  {
+    return __impl_generic(__x, __y);
+  }
+
+  _CCCL_NODISCARD _CCCL_HIDE_FROM_ABI _CCCL_HOST static int8_t __impl_host(int8_t __x, int8_t __y) noexcept
+  {
+#if _CCCL_COMPILER(MSVC, >=, 19, 37) && (_M_IX86 || _M_X64)
+    int16_t __result;
+    bool __overflow = _mul_full_overflow_i8(__x, __y, &__result);
+    return __fix_overflow(__x, __y, static_cast<int8_t>(__result), __overflow);
+#else
+    return __impl_generic(__x, __y);
+#endif
+  }
+
+  _CCCL_NODISCARD _CCCL_HIDE_FROM_ABI _CCCL_HOST static int16_t __impl_host(int16_t __x, int16_t __y) noexcept
+  {
+#if _CCCL_COMPILER(MSVC, >=, 19, 37) && (_M_IX86 || _M_X64)
+    int16_t __result;
+    bool __overflow = _mul_overflow_i16(__x, __y, &__result);
+    return __fix_overflow(__x, __y, __result, __overflow);
+#else
+    return __impl_generic(__x, __y);
+#endif
+  }
+
+  _CCCL_NODISCARD _CCCL_HIDE_FROM_ABI _CCCL_HOST static int32_t __impl_host(int32_t __x, int32_t __y) noexcept
+  {
+#if _CCCL_COMPILER(MSVC, >=, 19, 37) && (_M_IX86 || _M_X64)
+    int32_t __result;
+    bool __overflow = _mul_overflow_i32(__x, __y, &__result);
+    return __fix_overflow(__x, __y, __result, __overflow);
+#elif _CCCL_COMPILER(MSVC) && (_M_IX86 || _M_X64)
+    const int64_t __result = __emul(__x, __y);
+    return __fix_overflow(
+      __x,
+      __y,
+      static_cast<int32_t>(__result),
+      __result > _CUDA_VSTD::numeric_limits<int32_t>::max() || __result < _CUDA_VSTD::numeric_limits<int32_t>::min());
+#else
+    return __impl_generic(__x, __y);
+#endif
+  }
+
+  _CCCL_NODISCARD _CCCL_HIDE_FROM_ABI _CCCL_HOST static int64_t __impl_host(int64_t __x, int64_t __y) noexcept
+  {
+#if _CCCL_COMPILER(MSVC, >=, 19, 37) && _M_X64
+    int64_t __result;
+    bool __overflow = _mul_overflow_i64(__x, __y, &__result);
+    return __fix_overflow(__x, __y, __result, __overflow);
+#elif _CCCL_COMPILER(MSVC) && _M_X64
+    int64_t __hi = __mulh(__x, __y);
+    int64_t __lo = __x * __y;
+    return __fix_overflow(__x, __y, __lo, hi != 0 && hi != -1);
+#else
+    return __impl_generic(__x, __y);
+#endif
+  }
+
+  _CCCL_NODISCARD _CCCL_HIDE_FROM_ABI _CCCL_HOST static uint8_t __impl_host(uint8_t __x, uint8_t __y) noexcept
+  {
+#if _CCCL_COMPILER(MSVC, >=, 19, 37) && (_M_IX86 || _M_X64)
+    uint16_t __result;
+    bool __overflow = _mul_full_overflow_u8(__x, __y, &__result);
+    return __fix_overflow(__x, __y, static_cast<uint8_t>(__result), __overflow);
+#else
+    return __impl_generic(__x, __y);
+#endif
+  }
+
+  _CCCL_NODISCARD _CCCL_HIDE_FROM_ABI _CCCL_HOST static uint16_t __impl_host(uint16_t __x, uint16_t __y) noexcept
+  {
+#if _CCCL_COMPILER(MSVC, >=, 19, 37) && (_M_IX86 || _M_X64)
+    uint16_t __lo, __hi;
+    bool __overflow = _mul_full_overflow_u16(__x, __y, &__lo, &__hi);
+    return __fix_overflow(__x, __y, __lo, __overflow);
+#else
+    return __impl_generic(__x, __y);
+#endif
+  }
+
+  _CCCL_NODISCARD _CCCL_HIDE_FROM_ABI _CCCL_HOST static uint32_t __impl_host(uint32_t __x, uint32_t __y) noexcept
+  {
+#if _CCCL_COMPILER(MSVC, >=, 19, 37) && (_M_IX86 || _M_X64)
+    uint32_t __lo, __hi;
+    bool __overflow = _mul_full_overflow_u32(__x, __y, &__lo, &__hi);
+    return __fix_overflow(__x, __y, __lo, __overflow);
+#elif _CCCL_COMPILER(MSVC) && (_M_IX86 || _M_X64)
+    const uint64_t __result = __emulu(__x, __y);
+    return __fix_overflow(
+      __x, __y, static_cast<uint32_t>(__result), __result > _CUDA_VSTD::numeric_limits<uint32_t>::max());
+#else
+    return __impl_generic(__x, __y);
+#endif
+  }
+
+  _CCCL_NODISCARD _CCCL_HIDE_FROM_ABI _CCCL_HOST static uint64_t __impl_host(uint64_t __x, uint64_t __y) noexcept
+  {
+#if _CCCL_COMPILER(MSVC, >=, 19, 37) && _M_X64
+    uint64_t __lo, __hi;
+    bool __overflow = _mul_full_overflow_u64(__x, __y, &__lo, &__hi);
+    return __fix_overflow(__x, __y, __lo, __overflow);
+#elif _CCCL_COMPILER(MSVC) && _M_X64
+    return __fix_overflow(__x, __y, __x * __y, __umulh(__x, __y) != 0);
+#else
+    return __impl_generic(__x, __y);
+#endif
+  }
+
+#if _CCCL_HAS_CUDA_COMPILER
+  _CCCL_TEMPLATE(class _Tp)
+  _CCCL_REQUIRES(_CCCL_TRAIT(is_signed, _Tp))
+  _CCCL_NODISCARD _CCCL_HIDE_FROM_ABI _CCCL_DEVICE static _Tp __impl_device(_Tp __x, _Tp __y) noexcept
+  {
+    return __impl_generic(__x, __y);
+  }
+
+  _CCCL_TEMPLATE(class _Tp)
+  _CCCL_REQUIRES(_CCCL_TRAIT(is_signed, _Tp) _CCCL_AND(sizeof(_Tp) <= 8))
+  _CCCL_NODISCARD _CCCL_HIDE_FROM_ABI _CCCL_DEVICE static _Tp __impl_device(_Tp __x, _Tp __y) noexcept
+  {
+    // TODO
+  }
+
+  _CCCL_TEMPLATE(class _Tp)
+  _CCCL_REQUIRES(_CCCL_TRAIT(is_unsigned, _Tp))
+  _CCCL_NODISCARD _CCCL_HIDE_FROM_ABI _CCCL_DEVICE static _Tp __impl_device(_Tp __x, _Tp __y) noexcept
+  {
+    // TODO
+  }
+#endif // _CCCL_HAS_CUDA_COMPILER
+
+  _CCCL_TEMPLATE(class _Tp)
+  _CCCL_REQUIRES(_CCCL_TRAIT(is_signed, _Tp))
+  _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI static _CCCL_CONSTEXPR_CXX14 _Tp __impl_constexpr(_Tp __x, _Tp __y) noexcept
+  {
+    // TODO
+  }
+
+  _CCCL_TEMPLATE(class _Tp)
+  _CCCL_REQUIRES(_CCCL_TRAIT(is_unsigned, _Tp))
+  _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI static _CCCL_CONSTEXPR_CXX14 _Tp __impl_constexpr(_Tp __x, _Tp __y) noexcept
+  {
+    // TODO
+  }
+};
+
+_CCCL_TEMPLATE(class _Tp)
+_CCCL_REQUIRES(_CCCL_TRAIT(is_integral, _Tp))
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI _CCCL_CONSTEXPR_CXX14 _Tp mul_sat(_Tp __x, _Tp __y) noexcept
+{
+#if defined(_CCCL_BUILTIN_MUL_OVERFLOW)
+  return __mul_sat::__impl_builtin(__x, __y);
+#else // ^^^ _CCCL_BUILTIN_MUL_OVERFLOW ^^^ / vvv !_CCCL_BUILTIN_MUL_OVERFLOW vvv
+  if (!_CUDA_VSTD::__cccl_default_is_constant_evaluated())
+  {
+    NV_IF_ELSE_TARGET(
+      NV_IS_HOST, (return __mul_sat::__impl_host(__x, __y);), (return __mul_sat::__impl_device(__x, __y);))
+  }
+  return __mul_sat::__impl_constexpr(__x, __y);
+#endif // !_CCCL_BUILTIN_MUL_OVERFLOW
 }
 
 _LIBCUDACXX_END_NAMESPACE_STD
