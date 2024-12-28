@@ -31,6 +31,7 @@
 #include <cuda/std/__type_traits/is_signed.h>
 #include <cuda/std/__type_traits/is_unsigned.h>
 #include <cuda/std/__type_traits/make_unsigned.h>
+#include <cuda/std/__utility/cmp.h>
 #include <cuda/std/climits>
 #include <cuda/std/limits>
 
@@ -707,6 +708,41 @@ _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI _CCCL_CONSTEXPR_CXX14 _Tp mul_sat(_Tp 
   }
   return __mul_sat::__impl_constexpr(__x, __y);
 #endif // !_CCCL_BUILTIN_MUL_OVERFLOW
+}
+
+_CCCL_TEMPLATE(class _Tp)
+_CCCL_REQUIRES(_CCCL_TRAIT(is_integral, _Tp) _CCCL_AND _CCCL_TRAIT(is_signed, _Tp))
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI _CCCL_CONSTEXPR_CXX14 _Tp div_sat(_Tp __x, _Tp __y) noexcept
+{
+  _CCCL_ASSERT(__y != _Tp{}, "division by zero");
+  if (__x == _CUDA_VSTD::numeric_limits<_Tp>::min() && __y == _Tp{-1})
+  {
+    return _CUDA_VSTD::numeric_limits<_Tp>::max();
+  }
+  return __x / __y;
+}
+
+_CCCL_TEMPLATE(class _Tp)
+_CCCL_REQUIRES(_CCCL_TRAIT(is_integral, _Tp) _CCCL_AND _CCCL_TRAIT(is_unsigned, _Tp))
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI _CCCL_CONSTEXPR_CXX14 _Tp div_sat(_Tp __x, _Tp __y) noexcept
+{
+  _CCCL_ASSERT(__y != _Tp{}, "division by zero");
+  return __x / __y;
+}
+
+_CCCL_TEMPLATE(class _Up, class _Tp)
+_CCCL_REQUIRES(_CCCL_TRAIT(is_integral, _Up) _CCCL_AND _CCCL_TRAIT(is_integral, _Tp))
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI _CCCL_CONSTEXPR_CXX14 _Up saturate_cast(_Tp __x) noexcept
+{
+  if (_CUDA_VSTD::cmp_less(__x, _CUDA_VSTD::numeric_limits<_Up>::min()))
+  {
+    return _CUDA_VSTD::numeric_limits<_Rp>::min();
+  }
+  if (_CUDA_VSTD::cmp_greater(__x, _CUDA_VSTD::numeric_limits<_Up>::max()))
+  {
+    return _CUDA_VSTD::numeric_limits<_Up>::max();
+  }
+  return static_cast<_Up>(__x);
 }
 
 _LIBCUDACXX_END_NAMESPACE_STD
