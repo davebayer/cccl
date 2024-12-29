@@ -20,14 +20,14 @@
 #include "test_macros.h"
 
 template <class I>
-__host__ __device__ TEST_CONSTEXPR_CXX14 bool test_div_sat(I x, I y, I res, I zero_value)
+__host__ __device__ TEST_CONSTEXPR_CXX14 bool test_div_sat(I x, I y, I res, int zero_value)
 {
   assert(cuda::std::div_sat(static_cast<I>(zero_value + x), static_cast<I>(zero_value + y)) == res);
   return true;
 }
 
 template <typename I>
-__host__ __device__ TEST_CONSTEXPR_CXX14 bool test_signed(I zero_value)
+__host__ __device__ TEST_CONSTEXPR_CXX14 bool test_signed(int zero_value)
 {
   constexpr auto minVal = cuda::std::numeric_limits<I>::min();
   constexpr auto maxVal = cuda::std::numeric_limits<I>::max();
@@ -125,22 +125,22 @@ __host__ __device__ TEST_CONSTEXPR_CXX14 bool test_unsigned(I zero_value)
 
 __host__ __device__ TEST_CONSTEXPR_CXX14 bool test(int zero_value)
 {
-  test_signed<signed char>(static_cast<signed char>(zero_value));
-  test_signed<short int>(static_cast<short int>(zero_value));
-  test_signed<int>(static_cast<int>(zero_value));
-  test_signed<long int>(static_cast<long int>(zero_value));
-  test_signed<long long int>(static_cast<long long int>(zero_value));
+  test_signed<signed char>(zero_value);
+  test_signed<short int>(zero_value);
+  test_signed<int>(zero_value);
+  test_signed<long int>(zero_value);
+  test_signed<long long int>(zero_value);
 #ifndef TEST_HAS_NO_INT128_T
-  test_signed<__int128_t>(static_cast<__int128_t>(zero_value));
+  test_signed<__int128_t>(zero_value);
 #endif // TEST_HAS_NO_INT128_T
 
-  test_unsigned<unsigned char>(static_cast<unsigned char>(zero_value));
-  test_unsigned<unsigned short int>(static_cast<unsigned short int>(zero_value));
-  test_unsigned<unsigned int>(static_cast<unsigned int>(zero_value));
-  test_unsigned<unsigned long int>(static_cast<unsigned long int>(zero_value));
-  test_unsigned<unsigned long long int>(static_cast<unsigned long long int>(zero_value));
+  test_unsigned<unsigned char>(zero_value);
+  test_unsigned<unsigned short int>(zero_value);
+  test_unsigned<unsigned int>(zero_value);
+  test_unsigned<unsigned long int>(zero_value);
+  test_unsigned<unsigned long long int>(zero_value);
 #ifndef TEST_HAS_NO_INT128_T
-  test_unsigned<__uint128_t>(static_cast<__uint128_t>(zero_value));
+  test_unsigned<__uint128_t>(zero_value);
 #endif // TEST_HAS_NO_INT128_T
 
   return true;
