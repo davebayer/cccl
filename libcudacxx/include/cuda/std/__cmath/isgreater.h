@@ -63,7 +63,7 @@ _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI bool isgreater(_Lhs __lhs, _Rhs __rhs)
   }
   else if constexpr (_CCCL_TRAIT(is_integral, _Rhs))
   {
-    return _CUDA_VSTD::isgreater(__lhs, static_cast<double>(__rhs))
+    return _CUDA_VSTD::isgreater(__lhs, static_cast<double>(__rhs));
   }
   else
   {

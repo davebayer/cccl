@@ -35,7 +35,7 @@ enum class __fp_conv_rank_order
 };
 
 template <class _Lhs, class _Rhs>
-_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr __fp_conv_rank_order __fp_make_conv_rank_order()
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr __fp_conv_rank_order __fp_make_conv_rank_order() noexcept
 {
   if constexpr (numeric_limits<_Lhs>::is_signed == numeric_limits<_Rhs>::is_signed)
   {
@@ -43,8 +43,8 @@ _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr __fp_conv_rank_order __fp_ma
                   && numeric_limits<_Lhs>::max_exponent == numeric_limits<_Rhs>::max_exponent
                   && numeric_limits<_Lhs>::digits == numeric_limits<_Rhs>::digits)
     {
-#if !defined(_LIBCUDACXX_HAS_NO_LONG_DOUBLE)
-      // If fp64 and long double have the same properties, long double has the higher subrank
+#if _CCCL_HAS_LONG_DOUBLE()
+      // If double and long double have the same properties, long double has the higher subrank
       if constexpr (numeric_limits<double>::min_exponent == numeric_limits<long double>::min_exponent
                     && numeric_limits<double>::max_exponent == numeric_limits<long double>::max_exponent
                     && numeric_limits<double>::digits == numeric_limits<long double>::digits)
@@ -58,7 +58,7 @@ _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr __fp_conv_rank_order __fp_ma
           return __fp_conv_rank_order::__less;
         }
       }
-#endif // !_LIBCUDACXX_HAS_NO_LONG_DOUBLE
+#endif // _CCCL_HAS_LONG_DOUBLE()
       return __fp_conv_rank_order::__equal;
     }
     else if constexpr (numeric_limits<_Lhs>::min_exponent <= numeric_limits<_Rhs>::min_exponent
@@ -75,6 +75,13 @@ _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr __fp_conv_rank_order __fp_ma
     }
   }
   return __fp_conv_rank_order::__unordered;
+}
+
+template <class _Lhs, class _Rhs>
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr bool __fp_is_implicit_conversion() noexcept
+{
+  constexpr auto __order = __fp_make_conv_rank_order<_Lhs, _Rhs>();
+  return __order == __fp_conv_rank_order::__greater || __order == __fp_conv_rank_order::__equal;
 }
 
 _LIBCUDACXX_END_NAMESPACE_STD
