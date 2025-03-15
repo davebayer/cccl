@@ -987,8 +987,9 @@ _LIBCUDACXX_HIDE_FROM_ABI complex<_Tp> proj(const complex<_Tp>& __c)
   return __r;
 }
 
-template <class _Tp>
-_LIBCUDACXX_HIDE_FROM_ABI enable_if_t<__is_complex_float<_Tp>::value, __cccl_complex_complex_type<_Tp>> proj(_Tp __re)
+_CCCL_TEMPLATE(class _Tp)
+_CCCL_REQUIRES(_CCCL_TRAIT(is_floating_point, _Tp) || _CCCL_TRAIT(__is_extended_floating_point, _Tp))
+_LIBCUDACXX_HIDE_FROM_ABI complex<_Tp> proj(_Tp __re)
 {
   if (_CUDA_VSTD::isinf(__re))
   {
@@ -997,10 +998,11 @@ _LIBCUDACXX_HIDE_FROM_ABI enable_if_t<__is_complex_float<_Tp>::value, __cccl_com
   return complex<_Tp>(__re);
 }
 
-template <class _Tp>
-_LIBCUDACXX_HIDE_FROM_ABI enable_if_t<is_integral<_Tp>::value, __cccl_complex_complex_type<_Tp>> proj(_Tp __re)
+_CCCL_TEMPLATE(class _Tp)
+_CCCL_REQUIRES(_CCCL_TRAIT(__cccl_is_integer, _Tp))
+_LIBCUDACXX_HIDE_FROM_ABI complex<_Tp> proj(_Tp __re)
 {
-  return __cccl_complex_complex_type<_Tp>(__re);
+  return complex<_Tp>(__re);
 }
 
 // polar
