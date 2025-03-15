@@ -78,13 +78,6 @@ struct __type_to_vector<__half>
   using __type = __half2;
 };
 
-template <>
-struct __cccl_complex_overload_traits<__half, false, false>
-{
-  using _ValueType   = __half;
-  using _ComplexType = complex<__half>;
-};
-
 template <class _Tp>
 _LIBCUDACXX_HIDE_FROM_ABI __half __convert_to_half(const _Tp& __value) noexcept
 {

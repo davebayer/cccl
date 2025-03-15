@@ -243,12 +243,15 @@ template<class T> complex<T> tanh (const complex<T>&);
 #endif // no system header
 
 #include <cuda/std/__complex/vector_support.h>
+#include <cuda/std/__concepts/concept_macros.h>
 #include <cuda/std/__fwd/get.h>
 #include <cuda/std/__tuple_dir/tuple_element.h>
 #include <cuda/std/__tuple_dir/tuple_size.h>
 #include <cuda/std/__type_traits/enable_if.h>
 #include <cuda/std/__type_traits/is_constructible.h>
+#include <cuda/std/__type_traits/is_extended_floating_point.h>
 #include <cuda/std/__type_traits/is_floating_point.h>
+#include <cuda/std/__type_traits/is_integer.h>
 #include <cuda/std/__type_traits/is_integral.h>
 #include <cuda/std/__type_traits/is_same.h>
 #include <cuda/std/__type_traits/promote.h>
@@ -825,57 +828,45 @@ _LIBCUDACXX_HIDE_FROM_ABI constexpr bool operator!=(const ::std::complex<_Up>& _
 // real
 
 template <class _Tp>
-_LIBCUDACXX_HIDE_FROM_ABI constexpr _Tp real(const complex<_Tp>& __c)
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr _Tp real(const complex<_Tp>& __c)
 {
   return __c.real();
 }
 
-// 26.3.7 values:
-
-template <class _Tp, bool = _CCCL_TRAIT(is_integral, _Tp), bool = _CCCL_TRAIT(is_floating_point, _Tp)>
-struct __cccl_complex_overload_traits
-{};
-
-// Integral Types
-template <class _Tp>
-struct __cccl_complex_overload_traits<_Tp, true, false>
-{
-  using _ValueType   = double;
-  using _ComplexType = complex<double>;
-};
-
-// Floating point types
-template <class _Tp>
-struct __cccl_complex_overload_traits<_Tp, false, true>
-{
-  using _ValueType   = _Tp;
-  using _ComplexType = complex<_Tp>;
-};
-
-template <class _Tp>
-using __cccl_complex_value_type = typename __cccl_complex_overload_traits<_Tp>::_ValueType;
-
-template <class _Tp>
-using __cccl_complex_complex_type = typename __cccl_complex_overload_traits<_Tp>::_ComplexType;
-
-template <class _Tp>
-_LIBCUDACXX_HIDE_FROM_ABI constexpr __cccl_complex_value_type<_Tp> real(_Tp __re)
+_CCCL_TEMPLATE(class _Tp)
+_CCCL_REQUIRES(_CCCL_TRAIT(is_floating_point, _Tp) || _CCCL_TRAIT(__is_extended_floating_point, _Tp))
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr _Tp real(_Tp __re)
 {
   return __re;
+}
+
+_CCCL_TEMPLATE(class _Tp)
+_CCCL_REQUIRES(_CCCL_TRAIT(__cccl_is_integer, _Tp))
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr double real(_Tp __re)
+{
+  return static_cast<double>(__re);
 }
 
 // imag
 
 template <class _Tp>
-_LIBCUDACXX_HIDE_FROM_ABI constexpr _Tp imag(const complex<_Tp>& __c)
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr _Tp imag(const complex<_Tp>& __c)
 {
   return __c.imag();
 }
 
-template <class _Tp>
-_LIBCUDACXX_HIDE_FROM_ABI constexpr __cccl_complex_value_type<_Tp> imag(_Tp)
+_CCCL_TEMPLATE(class _Tp)
+_CCCL_REQUIRES(_CCCL_TRAIT(is_floating_point, _Tp) || _CCCL_TRAIT(__is_extended_floating_point, _Tp))
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr _Tp imag(_Tp __re)
 {
-  return 0;
+  return _Tp{};
+}
+
+_CCCL_TEMPLATE(class _Tp)
+_CCCL_REQUIRES(_CCCL_TRAIT(__cccl_is_integer, _Tp))
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr double imag(_Tp __re)
+{
+  return 0.0;
 }
 
 // abs
@@ -894,25 +885,41 @@ _LIBCUDACXX_HIDE_FROM_ABI _Tp arg(const complex<_Tp>& __c)
   return _CUDA_VSTD::atan2(__c.imag(), __c.real());
 }
 
-#if _CCCL_HAS_LONG_DOUBLE()
-template <class _Tp>
-_LIBCUDACXX_HIDE_FROM_ABI enable_if_t<is_same<_Tp, long double>::value, long double> arg(_Tp __re)
+_CCCL_TEMPLATE(class _Tp)
+_CCCL_REQUIRES(_CCCL_TRAIT(is_floating_point, _Tp) || _CCCL_TRAIT(__is_extended_floating_point, _Tp))
+_LIBCUDACXX_HIDE_FROM_ABI _Tp arg(_Tp __re)
 {
-  return _CUDA_VSTD::atan2l(0.L, __re);
-}
-#endif // _CCCL_HAS_LONG_DOUBLE()
+  if (_CUDA_VSTD::isnan(__re))
+  {
+    return numeric_limits<_Tp>::quiet_NaN();
+  }
 
-template <class _Tp>
-_LIBCUDACXX_HIDE_FROM_ABI enable_if_t<is_integral<_Tp>::value || is_same<_Tp, double>::value, double> arg(_Tp __re)
-{
-  // integrals need to be promoted to double
-  return _CUDA_VSTD::atan2(0., static_cast<double>(__re));
+  if (_CUDA_VSTD::signbit(__re))
+  {
+#if !_CCCL_COMPILER(MSVC)
+    return _CUDA_VSTD::numbers::pi_v<_Tp>;
+#else // ^^^ !_CCCL_COMPILER(MSVC) ^^^ / vvv _CCCL_COMPILER(MSVC) vvv
+    if constexpr (_CCCL_TRAIT(is_floating_point, _Tp))
+    {
+      return _CUDA_VSTD::numbers::pi_v<_Tp>;
+    }
+    else
+    {
+      return _Tp(_CUDA_VSTD::numbers::pi_v<double>);
+    }
+#endif // ^^^ _CCCL_COMPILER(MSVC) ^^^
+  }
+  else
+  {
+    return _Tp{};
+  }
 }
 
-template <class _Tp>
-_LIBCUDACXX_HIDE_FROM_ABI enable_if_t<is_same<_Tp, float>::value, float> arg(_Tp __re)
+_CCCL_TEMPLATE(class _Tp)
+_CCCL_REQUIRES(_CCCL_TRAIT(__cccl_is_integer, _Tp))
+_LIBCUDACXX_HIDE_FROM_ABI constexpr double arg(_Tp __re)
 {
-  return _CUDA_VSTD::atan2f(0.F, __re);
+  return _CUDA_VSTD::cmp_less(__re, _Tp{}) ? _CUDA_VSTD::numbers::pi_v<double> : 0.0;
 }
 
 // norm
@@ -931,10 +938,18 @@ _LIBCUDACXX_HIDE_FROM_ABI constexpr _Tp norm(const complex<_Tp>& __c)
   return __c.real() * __c.real() + __c.imag() * __c.imag();
 }
 
-template <class _Tp>
-_LIBCUDACXX_HIDE_FROM_ABI constexpr __cccl_complex_value_type<_Tp> norm(_Tp __re)
+_CCCL_TEMPLATE(class _Tp)
+_CCCL_REQUIRES(_CCCL_TRAIT(is_floating_point, _Tp) || _CCCL_TRAIT(__is_extended_floating_point, _Tp))
+_LIBCUDACXX_HIDE_FROM_ABI constexpr _Tp norm(_Tp __re)
 {
-  return static_cast<__cccl_complex_value_type<_Tp>>(__re) * __re;
+  return __re * __re;
+}
+
+_CCCL_TEMPLATE(class _Tp)
+_CCCL_REQUIRES(_CCCL_TRAIT(__cccl_is_integer, _Tp))
+_LIBCUDACXX_HIDE_FROM_ABI constexpr double norm(_Tp __re)
+{
+  return static_cast<double>(__re) * static_cast<double>(__re);
 }
 
 // conj
@@ -945,10 +960,18 @@ _LIBCUDACXX_HIDE_FROM_ABI constexpr complex<_Tp> conj(const complex<_Tp>& __c)
   return complex<_Tp>(__c.real(), -__c.imag());
 }
 
-template <class _Tp>
-_LIBCUDACXX_HIDE_FROM_ABI constexpr __cccl_complex_complex_type<_Tp> conj(_Tp __re)
+_CCCL_TEMPLATE(class _Tp)
+_CCCL_REQUIRES(_CCCL_TRAIT(is_floating_point, _Tp) || _CCCL_TRAIT(__is_extended_floating_point, _Tp))
+_LIBCUDACXX_HIDE_FROM_ABI constexpr complex<_Tp> conj(_Tp __re)
 {
-  return __cccl_complex_complex_type<_Tp>(__re);
+  return complex<_Tp>(__re);
+}
+
+_CCCL_TEMPLATE(class _Tp)
+_CCCL_REQUIRES(_CCCL_TRAIT(__cccl_is_integer, _Tp))
+_LIBCUDACXX_HIDE_FROM_ABI constexpr complex<double> conj(_Tp __re)
+{
+  return complex<double>(static_cast<double>(__re));
 }
 
 // proj

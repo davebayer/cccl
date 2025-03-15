@@ -78,13 +78,6 @@ struct __type_to_vector<__nv_bfloat16>
   using __type = __nv_bfloat162;
 };
 
-template <>
-struct __cccl_complex_overload_traits<__nv_bfloat16, false, false>
-{
-  using _ValueType   = __nv_bfloat16;
-  using _ComplexType = complex<__nv_bfloat16>;
-};
-
 template <class _Tp>
 _LIBCUDACXX_HIDE_FROM_ABI __nv_bfloat16 __convert_to_bfloat16(const _Tp& __value) noexcept
 {
