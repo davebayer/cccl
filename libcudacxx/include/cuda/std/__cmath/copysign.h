@@ -38,53 +38,6 @@
 
 _LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI float copysign(float __x, float __y) noexcept
-{
-#if defined(_CCCL_BUILTIN_COPYSIGNF)
-  return _CCCL_BUILTIN_COPYSIGNF(__x, __y);
-#else // ^^^ _CCCL_BUILTIN_COPYSIGNF ^^^ / vvv !_CCCL_BUILTIN_COPYSIGNF vvv
-  return ::copysignf(__x, __y);
-#endif // !_CCCL_BUILTIN_COPYSIGNF
-}
-
-_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI float copysignf(float __x, float __y) noexcept
-{
-#if defined(_CCCL_BUILTIN_COPYSIGNF)
-  return _CCCL_BUILTIN_COPYSIGNF(__x, __y);
-#else // ^^^ _CCCL_BUILTIN_COPYSIGNF ^^^ / vvv !_CCCL_BUILTIN_COPYSIGNF vvv
-  return ::copysignf(__x, __y);
-#endif // !_CCCL_BUILTIN_COPYSIGNF
-}
-
-_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI double copysign(double __x, double __y) noexcept
-{
-#if defined(_CCCL_BUILTIN_COPYSIGN)
-  return _CCCL_BUILTIN_COPYSIGN(__x, __y);
-#else // ^^^ _CCCL_BUILTIN_COPYSIGN ^^^ / vvv !_CCCL_BUILTIN_COPYSIGN vvv
-  return ::copysign(__x, __y);
-#endif // !_CCCL_BUILTIN_COPYSIGN
-}
-
-#if _CCCL_HAS_LONG_DOUBLE()
-_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI long double copysign(long double __x, long double __y) noexcept
-{
-#  if defined(_CCCL_BUILTIN_COPYSIGNL)
-  return _CCCL_BUILTIN_COPYSIGNL(__x, __y);
-#  else // ^^^ _CCCL_BUILTIN_COPYSIGNL ^^^ / vvv !_CCCL_BUILTIN_COPYSIGNL vvv
-  return ::copysignl(__x, __y);
-#  endif // !_CCCL_BUILTIN_COPYSIGNL
-}
-
-_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI long double copysignl(long double __x, long double __y) noexcept
-{
-#  if defined(_CCCL_BUILTIN_COPYSIGNL)
-  return _CCCL_BUILTIN_COPYSIGNL(__x, __y);
-#  else // ^^^ _CCCL_BUILTIN_COPYSIGNL ^^^ / vvv !_CCCL_BUILTIN_COPYSIGNL vvv
-  return ::copysignl(__x, __y);
-#  endif // !_CCCL_BUILTIN_COPYSIGNL
-}
-#endif // _CCCL_HAS_LONG_DOUBLE()
-
 template <class _Tp>
 _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr _Tp __copysign_impl(_Tp __x, [[maybe_unused]] _Tp __y) noexcept
 {
@@ -99,6 +52,33 @@ _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr _Tp __copysign_impl(_Tp __x,
     return __x;
   }
 }
+
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr float copysign(float __x, float __y) noexcept
+{
+  return _CUDA_VSTD::__copysign_impl(__x, __y);
+}
+
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr float copysignf(float __x, float __y) noexcept
+{
+  return _CUDA_VSTD::__copysign_impl(__x, __y);
+}
+
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr double copysign(double __x, double __y) noexcept
+{
+  return _CUDA_VSTD::__copysign_impl(__x, __y);
+}
+
+#if _CCCL_HAS_LONG_DOUBLE()
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI long double copysign(long double __x, long double __y) noexcept
+{
+  return ::copysignl(__x, __y);
+}
+
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI long double copysignl(long double __x, long double __y) noexcept
+{
+  return ::copysignl(__x, __y);
+}
+#endif // _CCCL_HAS_LONG_DOUBLE()
 
 #if _CCCL_HAS_NVFP16()
 _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr __half copysign(__half __x, __half __y) noexcept

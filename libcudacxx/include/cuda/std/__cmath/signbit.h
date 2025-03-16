@@ -25,6 +25,7 @@
 #include <cuda/std/__floating_point/fp.h>
 #include <cuda/std/__type_traits/is_integral.h>
 #include <cuda/std/__type_traits/is_signed.h>
+#include <cuda/std/__type_traits/make_signed.h>
 
 // MSVC and clang cuda need the host side functions included
 #if _CCCL_COMPILER(MSVC) || _CCCL_CUDA_COMPILER(CLANG)
@@ -33,47 +34,36 @@
 
 _LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI bool signbit(float __x) noexcept
-{
-#if defined(_CCCL_BUILTIN_SIGNBIT)
-  return _CCCL_BUILTIN_SIGNBIT(__x);
-#else // ^^^ _CCCL_BUILTIN_SIGNBIT ^^^ / vvv !_CCCL_BUILTIN_SIGNBIT vvv
-  return ::signbit(__x);
-#endif // !_CCCL_BUILTIN_SIGNBIT
-}
-
-_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI bool signbit(double __x) noexcept
-{
-#if defined(_CCCL_BUILTIN_SIGNBIT)
-  return _CCCL_BUILTIN_SIGNBIT(__x);
-#else // ^^^ _CCCL_BUILTIN_SIGNBIT ^^^ / vvv !_CCCL_BUILTIN_SIGNBIT vvv
-  return ::signbit(__x);
-#endif // !_CCCL_BUILTIN_SIGNBIT
-}
-
-#if _CCCL_HAS_LONG_DOUBLE()
-_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI bool signbit(long double __x) noexcept
-{
-#  if defined(_CCCL_BUILTIN_SIGNBIT)
-  return _CCCL_BUILTIN_SIGNBIT(__x);
-#  else // ^^^ _CCCL_BUILTIN_SIGNBIT ^^^ / vvv !_CCCL_BUILTIN_SIGNBIT vvv
-  return ::signbit(__x);
-#  endif // !_CCCL_BUILTIN_SIGNBIT
-}
-#endif // _CCCL_HAS_LONG_DOUBLE()
-
 template <class _Tp>
 _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr bool __signbit_impl(_Tp __x) noexcept
 {
   if constexpr (numeric_limits<_Tp>::is_signed)
   {
-    return _CUDA_VSTD::__fp_get_storage(__x) & __fp_sign_mask_v<_Tp>;
+    using _SignedStorage = make_signed_t<__fp_storage_t<_Tp>>;
+    return static_cast<_SignedStorage>(_CUDA_VSTD::__fp_get_storage(__x)) < _SignedStorage{0};
   }
   else
   {
     return false;
   }
 }
+
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr bool signbit(float __x) noexcept
+{
+  return _CUDA_VSTD::__signbit_impl(__x);
+}
+
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr bool signbit(double __x) noexcept
+{
+  return _CUDA_VSTD::__signbit_impl(__x);
+}
+
+#if _CCCL_HAS_LONG_DOUBLE()
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI bool signbit(long double __x) noexcept
+{
+  return ::signbit(__x);
+}
+#endif // _CCCL_HAS_LONG_DOUBLE()
 
 #if _CCCL_HAS_NVFP16()
 _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr bool signbit(__half __x) noexcept
@@ -104,9 +94,9 @@ _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr bool signbit(__nv_fp8_e5m2 _
 #endif // _CCCL_HAS_NVFP8_E5M2()
 
 #if _CCCL_HAS_NVFP8_E8M0()
-_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr bool signbit(__nv_fp8_e8m0) noexcept
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr bool signbit(__nv_fp8_e8m0 __x) noexcept
 {
-  return false;
+  return _CUDA_VSTD::__signbit_impl(__x);
 }
 #endif // _CCCL_HAS_NVFP8_E8M0()
 

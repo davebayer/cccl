@@ -284,12 +284,6 @@
 #  define _CCCL_BUILTIN_CONSTANT_P(...) __builtin_constant_p(__VA_ARGS__)
 #endif // _CCCL_CHECK_BUILTIN(builtin_constant_p)
 
-#if _CCCL_CHECK_BUILTIN(builtin_copysign) || _CCCL_COMPILER(GCC)
-#  define _CCCL_BUILTIN_COPYSIGNF(...) __builtin_copysignf(__VA_ARGS__)
-#  define _CCCL_BUILTIN_COPYSIGN(...)  __builtin_copysign(__VA_ARGS__)
-#  define _CCCL_BUILTIN_COPYSIGNL(...) __builtin_copysignl(__VA_ARGS__)
-#endif // _CCCL_CHECK_BUILTIN(builtin_copysign)
-
 #if _CCCL_CHECK_BUILTIN(builtin_cos) || _CCCL_COMPILER(GCC)
 #  define _CCCL_BUILTIN_COSF(...) __builtin_cosf(__VA_ARGS__)
 #  define _CCCL_BUILTIN_COS(...)  __builtin_cos(__VA_ARGS__)
@@ -356,12 +350,6 @@
 #if _CCCL_CHECK_BUILTIN(builtin_expect) || _CCCL_COMPILER(MSVC) || _CCCL_COMPILER(GCC)
 #  define _CCCL_BUILTIN_EXPECT(...) __builtin_expect(__VA_ARGS__)
 #endif // _CCCL_CHECK_BUILTIN(builtin_expect)
-
-#if _CCCL_CHECK_BUILTIN(builtin_fabs) || _CCCL_COMPILER(GCC)
-#  define _CCCL_BUILTIN_FABSF(...) __builtin_fabsf(__VA_ARGS__)
-#  define _CCCL_BUILTIN_FABS(...)  __builtin_fabs(__VA_ARGS__)
-#  define _CCCL_BUILTIN_FABSL(...) __builtin_fabsl(__VA_ARGS__)
-#endif // _CCCL_CHECK_BUILTIN(builtin_fabs)
 
 #if _CCCL_CHECK_BUILTIN(builtin_floor) || _CCCL_COMPILER(GCC)
 #  define _CCCL_BUILTIN_FLOORF(...) __builtin_floorf(__VA_ARGS__)
@@ -797,10 +785,6 @@
 #  undef _CCCL_BUILTIN_SCALBN
 #  undef _CCCL_BUILTIN_SCALBNL
 #endif // _CCCL_CUDA_COMPILER(CLANG)
-
-#if _CCCL_CHECK_BUILTIN(builtin_signbit) || _CCCL_COMPILER(GCC)
-#  define _CCCL_BUILTIN_SIGNBIT(...) __builtin_signbit(__VA_ARGS__)
-#endif // _CCCL_CHECK_BUILTIN(builtin_signbit)
 
 #if _CCCL_CHECK_BUILTIN(builtin_sin) || _CCCL_COMPILER(GCC)
 #  define _CCCL_BUILTIN_SINF(...) __builtin_sinf(__VA_ARGS__)

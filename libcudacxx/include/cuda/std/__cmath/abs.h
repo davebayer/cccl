@@ -37,59 +37,42 @@ _LIBCUDACXX_BEGIN_NAMESPACE_STD
 
 // fabs
 
-_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI float fabs(float __x) noexcept
-{
-#if defined(_CCCL_BUILTIN_FABSF)
-  return _CCCL_BUILTIN_FABSF(__x);
-#else // ^^^ _CCCL_BUILTIN_FABSF ^^^ / vvv !_CCCL_BUILTIN_FABSF vvv
-  return ::fabsf(__x);
-#endif // ^^^ !_CCCL_BUILTIN_FABSF ^^^
-}
-
-_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI float fabsf(float __x) noexcept
-{
-#if defined(_CCCL_BUILTIN_FABSF)
-  return _CCCL_BUILTIN_FABSF(__x);
-#else // ^^^ _CCCL_BUILTIN_FABSF ^^^ / vvv !_CCCL_BUILTIN_FABSF vvv
-  return ::fabsf(__x);
-#endif // ^^^ !_CCCL_BUILTIN_FABSF ^^^
-}
-
-_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI double fabs(double __x) noexcept
-{
-#if defined(_CCCL_BUILTIN_FABS)
-  return _CCCL_BUILTIN_FABS(__x);
-#else // ^^^ _CCCL_BUILTIN_FABS ^^^ / vvv !_CCCL_BUILTIN_FABS vvv
-  return ::fabs(__x);
-#endif // ^^^ !_CCCL_BUILTIN_FABS ^^^
-}
-
-#if _CCCL_HAS_LONG_DOUBLE()
-_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI long double fabs(long double __x) noexcept
-{
-#  if defined(_CCCL_BUILTIN_FABSL)
-  return _CCCL_BUILTIN_FABSL(__x);
-#  else // ^^^ _CCCL_BUILTIN_FABSL ^^^ / vvv !_CCCL_BUILTIN_FABSL vvv
-  return ::fabsl(__x);
-#  endif // ^^^ !_CCCL_BUILTIN_FABSL ^^^
-}
-
-_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI long double fabsl(long double __x) noexcept
-{
-#  if defined(_CCCL_BUILTIN_FABSL)
-  return _CCCL_BUILTIN_FABSL(__x);
-#  else // ^^^ _CCCL_BUILTIN_FABSL ^^^ / vvv !_CCCL_BUILTIN_FABSL vvv
-  return ::fabsl(__x);
-#  endif // ^^^ !_CCCL_BUILTIN_FABSL ^^^
-}
-#endif // _CCCL_HAS_LONG_DOUBLE()
-
 template <class _Tp>
 _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr _Tp __fabs_impl(_Tp __x) noexcept
 {
   const auto __val = _CUDA_VSTD::__fp_get_storage(__x) & __fp_exp_mant_mask_v<_Tp>;
   return _CUDA_VSTD::__fp_from_storage<_Tp>(static_cast<__fp_storage_t<_Tp>>(__val));
 }
+
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr float fabs(float __x) noexcept
+{
+  // We cannot use `abs.f32` because it is not IEEE 754 compliant, see docs
+  return _CUDA_VSTD::__fabs_impl(__x);
+}
+
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr float fabsf(float __x) noexcept
+{
+  // We cannot use `abs.f32` because it is not IEEE 754 compliant, see docs
+  return _CUDA_VSTD::__fabs_impl(__x);
+}
+
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr double fabs(double __x) noexcept
+{
+  // We cannot use `abs.f64` because it is not IEEE 754 compliant, see docs
+  return _CUDA_VSTD::__fabs_impl(__x);
+}
+
+#if _CCCL_HAS_LONG_DOUBLE()
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI long double fabs(long double __x) noexcept
+{
+  return ::fabsl(__x);
+}
+
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI long double fabsl(long double __x) noexcept
+{
+  return ::fabsl(__x);
+}
+#endif // _CCCL_HAS_LONG_DOUBLE()
 
 #if _CCCL_HAS_NVFP16()
 _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr __half fabs(__half __x) noexcept
