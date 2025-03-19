@@ -22,6 +22,7 @@
 #endif // no system header
 
 #include <cuda/std/__floating_point/nvfp_types.h>
+#include <cuda/std/__fwd/fp.h>
 #include <cuda/std/__type_traits/is_same.h>
 #include <cuda/std/cfloat>
 
@@ -139,6 +140,9 @@ _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr __fp_format __fp_format_of_v
 
 template <class _Tp>
 _CCCL_INLINE_VAR constexpr __fp_format __fp_format_of_v = _CUDA_VSTD::__fp_format_of_v_impl<_Tp>();
+
+template <__fp_format _Fmt>
+inline constexpr __fp_format __fp_format_of_v<__cccl_fp<_Fmt>> = _Fmt;
 
 _LIBCUDACXX_END_NAMESPACE_STD
 
