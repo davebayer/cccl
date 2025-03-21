@@ -4,12 +4,12 @@
 // under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-// SPDX-FileCopyrightText: Copyright (c) 2024 NVIDIA CORPORATION & AFFILIATES.
+// SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES.
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _CUDA_STD_NEW
-#define _CUDA_STD_NEW
+#ifndef _LIBCUDACXX___NEW_OPERATOR_ALIGN_VAL_T_H
+#define _LIBCUDACXX___NEW_OPERATOR_ALIGN_VAL_T_H
 
 #include <cuda/std/detail/__config>
 
@@ -21,12 +21,22 @@
 #  pragma system_header
 #endif // no system header
 
-#include <cuda/std/__new/align_val_t.h>
-#include <cuda/std/__new/bad_alloc.h>
-#include <cuda/std/__new/launder.h>
-#include <cuda/std/__new/nothrow.h>
-#include <cuda/std/__new/operator_delete.h>
-#include <cuda/std/__new/operator_new.h>
-#include <cuda/std/version>
+#include <cuda/std/cstddef>
 
-#endif // _CUDA_STD_NEW
+#if !_CCCL_COMPILER(NVRTC)
+#  include <new>
+#endif // !_CCCL_COMPILER(NVRTC)
+
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
+
+#if !_CCCL_COMPILER(NVRTC)
+using ::std::align_val_t;
+#else // ^^^ !_CCCL_COMPILER(NVRTC) ^^^ / vvv _CCCL_COMPILER(NVRTC) vvv
+enum class align_val_t : size_t
+{
+};
+#endif // _CCCL_COMPILER(NVRTC)
+
+_LIBCUDACXX_END_NAMESPACE_STD
+
+#endif // _LIBCUDACXX___NEW_OPERATOR_ALIGN_VAL_T_H

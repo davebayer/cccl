@@ -24,17 +24,9 @@
 
 TEST_DIAG_SUPPRESS_MSVC(4324) // structure was padded due to alignment specifier
 
-#if _LIBCUDACXX_HAS_ALIGNED_ALLOCATION()
-static const bool UsingAlignedNew = true;
-#else
-static const bool UsingAlignedNew = false;
-#endif
-
-#ifdef __STDCPP_DEFAULT_NEW_ALIGNMENT__
-TEST_GLOBAL_VARIABLE const cuda::std::size_t MaxAligned = __STDCPP_DEFAULT_NEW_ALIGNMENT__;
-#else
-TEST_GLOBAL_VARIABLE const cuda::std::size_t MaxAligned = cuda::std::alignment_of<cuda::std::max_align_t>::value;
-#endif
+static const cuda::std::size_t MaxAligned = []() {
+  NV_IF_ELSE_TARGET(NV_IS_HOST, (return __STDCPP_DEFAULT_NEW_ALIGNMENT__;), (return 16;))
+}();
 
 TEST_GLOBAL_VARIABLE const cuda::std::size_t OverAligned = MaxAligned * 2;
 
@@ -66,7 +58,7 @@ __host__ __device__ void test_aligned()
   globalMemCounter.reset();
   cuda::std::allocator<T> a;
   const bool IsOverAlignedType = Align > MaxAligned;
-  const bool ExpectAligned     = IsOverAlignedType && UsingAlignedNew;
+  const bool ExpectAligned     = IsOverAlignedType;
   {
     assert(globalMemCounter.checkOutstandingNewEq(0));
     assert(AlignedType_constructed == 0);

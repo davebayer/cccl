@@ -26,11 +26,11 @@
 #define _LIBCUDACXX_HAS_SPACESHIP_OPERATOR()    0
 #define _LIBCUDACXX_HAS_WCHAR_H()               0
 
-#if _CCCL_HAS_CUDA_COMPILER || __cpp_aligned_new < 201606
-#  define _LIBCUDACXX_HAS_ALIGNED_ALLOCATION() 0
-#else
-#  define _LIBCUDACXX_HAS_ALIGNED_ALLOCATION() 1
-#endif // !_CCCL_HAS_CUDA_COMPILER && __cpp_aligned_new >= 201606
+#if __cpp_sized_deallocation >= 201309L
+#  define _LIBCUDACXX_HAS_SIZED_DEALLOCATION() 1
+#else // ^^^ __cpp_sized_deallocation ^^^ / vvv __cpp_sized_deallocation vvv
+#  define _LIBCUDACXX_HAS_SIZED_DEALLOCATION() 0
+#endif // ^^^ __cpp_sized_deallocation ^^^
 
 #if _CCCL_STD_VER <= 2017 || !defined(__cpp_char8_t)
 #  define _LIBCUDACXX_HAS_CHAR8_T() 0
