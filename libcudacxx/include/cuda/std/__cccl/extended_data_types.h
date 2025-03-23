@@ -51,7 +51,7 @@
 #endif
 
 // FIXME: Enable this for clang-cuda in a followup
-#if !_CCCL_HAS_CUDA_COMPILER()
+#if defined(__CUDA_ARCH__)
 #  undef _CCCL_HAS_LONG_DOUBLE
 #  define _CCCL_HAS_LONG_DOUBLE() 1
 #endif // !_CCCL_HAS_CUDA_COMPILER()
