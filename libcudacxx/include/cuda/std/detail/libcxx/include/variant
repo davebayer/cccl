@@ -546,29 +546,24 @@ namespace __visitation
 struct __variant
 {
   // We need to guard against the final invocation where we have processed all variants
-  template <size_t _Remaining, size_t _CurrentVariant, class... _Variants, enable_if_t<_Remaining == 0, int> = 0>
+  _CCCL_TEMPLATE(size_t _Remaining, size_t _CurrentVariant, class... _Variants)
+  _CCCL_REQUIRES((_Remaining == 0))
   _LIBCUDACXX_HIDE_FROM_ABI _CCCL_VISIBILITY_HIDDEN static constexpr size_t
   __get_runtime_index(const _Variants&...) noexcept
   {
     return 0;
   }
 
-  template <size_t _Remaining,
-            size_t _CurrentVariant,
-            class _Variant,
-            class... _OtherVariants,
-            enable_if_t<(_Remaining != 0) && (_CurrentVariant == 0), int> = 0>
+  _CCCL_TEMPLATE(size_t _Remaining, size_t _CurrentVariant, class _Variant, class... _OtherVariants)
+  _CCCL_REQUIRES((_Remaining != 0) _CCCL_AND(_CurrentVariant == 0))
   _LIBCUDACXX_HIDE_FROM_ABI _CCCL_VISIBILITY_HIDDEN static constexpr size_t
   __get_runtime_index(const _Variant& __v, const _OtherVariants&... __vs) noexcept
   {
     return __v.__impl_.index();
   }
 
-  template <size_t _Remaining,
-            size_t _CurrentVariant,
-            class _Variant,
-            class... _OtherVariants,
-            enable_if_t<(_Remaining != 0) && (_CurrentVariant != 0), int> = 0>
+  _CCCL_TEMPLATE(size_t _Remaining, size_t _CurrentVariant, class _Variant, class... _OtherVariants)
+  _CCCL_REQUIRES((_Remaining != 0) _CCCL_AND(_CurrentVariant != 0))
   _LIBCUDACXX_HIDE_FROM_ABI _CCCL_VISIBILITY_HIDDEN static constexpr size_t
   __get_runtime_index(const _Variant& __v, const _OtherVariants&... __vs) noexcept
   {
@@ -589,12 +584,9 @@ struct __variant
       __access::__base::__get_alt<_ProcessedIndices>(_CUDA_VSTD::forward<_Vs>(__vs).__impl_)...);
   }
 
-  template <size_t _CurrentIndex,
-            class _Visitor,
-            class... _Vs,
-            size_t... _ProcessedIndices,
-            size_t... _UnprocessedIndices,
-            enable_if_t<_CurrentIndex != 0, int> = 0>
+  _CCCL_TEMPLATE(
+    size_t _CurrentIndex, class _Visitor, class... _Vs, size_t... _ProcessedIndices, size_t... _UnprocessedIndices)
+  _CCCL_REQUIRES((_CurrentIndex != 0))
   _LIBCUDACXX_HIDE_FROM_ABI _CCCL_VISIBILITY_HIDDEN static constexpr decltype(auto) __visit_impl(
     integer_sequence<size_t, _ProcessedIndices...>,
     integer_sequence<size_t, _CurrentIndex, _UnprocessedIndices...>,
@@ -1161,12 +1153,8 @@ public:
 
 protected:
   _CCCL_EXEC_CHECK_DISABLE
-  template <
-    size_t _Ip,
-    class _Tp,
-    class _Arg,
-    enable_if_t<_CCCL_TRAIT(is_nothrow_constructible, _Tp, _Arg) || !_CCCL_TRAIT(is_nothrow_move_constructible, _Tp),
-                int> = 0>
+  _CCCL_TEMPLATE(size_t _Ip, class _Tp, class _Arg)
+  _CCCL_REQUIRES(_CCCL_TRAIT(is_nothrow_constructible, _Tp, _Arg) || (!_CCCL_TRAIT(is_nothrow_move_constructible, _Tp)))
   _LIBCUDACXX_HIDE_FROM_ABI void __assign_alt(__alt<_Ip, _Tp>& __a, _Arg&& __arg)
   {
     if (this->index() == _Ip)
@@ -1180,12 +1168,9 @@ protected:
   }
 
   _CCCL_EXEC_CHECK_DISABLE
-  template <
-    size_t _Ip,
-    class _Tp,
-    class _Arg,
-    enable_if_t<!_CCCL_TRAIT(is_nothrow_constructible, _Tp, _Arg) && _CCCL_TRAIT(is_nothrow_move_constructible, _Tp),
-                int> = 0>
+  _CCCL_TEMPLATE(size_t _Ip, class _Tp, class _Arg)
+  _CCCL_REQUIRES(
+    (!_CCCL_TRAIT(is_nothrow_constructible, _Tp, _Arg)) _CCCL_AND _CCCL_TRAIT(is_nothrow_move_constructible, _Tp))
   _LIBCUDACXX_HIDE_FROM_ABI void __assign_alt(__alt<_Ip, _Tp>& __a, _Arg&& __arg)
   {
     if (this->index() == _Ip)
@@ -1411,9 +1396,9 @@ struct __overload
 template <class _Tp, size_t>
 struct __overload_bool
 {
-  template <class _Up, class _Ap = remove_cvref_t<_Up>>
-  _LIBCUDACXX_HIDE_FROM_ABI auto operator()(bool, _Up&&) const
-    -> enable_if_t<_CCCL_TRAIT(is_same, _Ap, bool), type_identity<_Tp>>;
+  _CCCL_TEMPLATE(class _Up)
+  _CCCL_REQUIRES(_CCCL_TRAIT(is_same, remove_cvref_t<_Up>, bool))
+  _LIBCUDACXX_HIDE_FROM_ABI type_identity<_Tp> operator()(bool, _Up&&) const;
 };
 
 template <size_t _Idx>
@@ -1538,8 +1523,8 @@ class _CCCL_TYPE_VISIBILITY_DEFAULT variant
 
 public:
   // Needs to be dependent to guard against incomplete types
-  template <bool _Dummy = true,
-            class       = enable_if_t<__dependent_type<is_default_constructible<__first_type>, _Dummy>::value>>
+  _CCCL_TEMPLATE(bool _Dummy = true)
+  _CCCL_REQUIRES(__dependent_type<is_default_constructible<__first_type>, _Dummy>::value)
   _LIBCUDACXX_HIDE_FROM_ABI constexpr variant() noexcept(_CCCL_TRAIT(is_nothrow_default_constructible, __first_type))
       : __impl_(in_place_index<0>)
   {}
@@ -1569,10 +1554,8 @@ public:
         typename __constraints::template __variadic_construct<_Ip, _Args...>,
         __variant_detail::__invalid_variant_constraints>;
 
-  template <size_t _Ip,
-            class... _Args,
-            class _Constraints = __variadic_construct<_Ip, _Args...>,
-            class              = enable_if_t<_Constraints::__constructible>>
+  _CCCL_TEMPLATE(size_t _Ip, class... _Args, class _Constraints = __variadic_construct<_Ip, _Args...>)
+  _CCCL_REQUIRES(_Constraints::__constructible)
   _LIBCUDACXX_HIDE_FROM_ABI explicit constexpr variant(in_place_index_t<_Ip>, _Args&&... __args) noexcept(
     _Constraints::__nothrow_constructible)
       : __impl_(in_place_index<_Ip>, _CUDA_VSTD::forward<_Args>(__args)...)
@@ -1584,32 +1567,30 @@ public:
         typename __constraints::template __variadic_ilist_construct<_Ip, _Up, _Args...>,
         __variant_detail::__invalid_variant_constraints>;
 
-  template <size_t _Ip,
-            class _Up,
-            class... _Args,
-            class _Constraints = __variadic_ilist_construct<_Ip, _Up, _Args...>,
-            class              = enable_if_t<_Constraints::__constructible>>
+  _CCCL_TEMPLATE(
+    size_t _Ip, class _Up, class... _Args, class _Constraints = __variadic_ilist_construct<_Ip, _Up, _Args...>)
+  _CCCL_REQUIRES(_Constraints::__constructible)
   _LIBCUDACXX_HIDE_FROM_ABI explicit constexpr variant(
     in_place_index_t<_Ip>, initializer_list<_Up> __il, _Args&&... __args) noexcept(_Constraints::__nothrow_constructible)
       : __impl_(in_place_index<_Ip>, __il, _CUDA_VSTD::forward<_Args>(__args)...)
   {}
 
-  template <class _Tp,
-            class... _Args,
-            size_t _Ip         = __find_detail::__find_unambiguous_index_sfinae<_Tp, _Types...>::value,
-            class _Constraints = __variadic_construct<_Ip, _Args...>,
-            class              = enable_if_t<_Constraints::__constructible>>
+  _CCCL_TEMPLATE(class _Tp,
+                 class... _Args,
+                 size_t _Ip         = __find_detail::__find_unambiguous_index_sfinae<_Tp, _Types...>::value,
+                 class _Constraints = __variadic_construct<_Ip, _Args...>)
+  _CCCL_REQUIRES(_Constraints::__constructible)
   _LIBCUDACXX_HIDE_FROM_ABI explicit constexpr variant(in_place_type_t<_Tp>, _Args&&... __args) noexcept(
     _Constraints::__nothrow_constructible)
       : __impl_(in_place_index<_Ip>, _CUDA_VSTD::forward<_Args>(__args)...)
   {}
 
-  template <class _Tp,
-            class _Up,
-            class... _Args,
-            size_t _Ip         = __find_detail::__find_unambiguous_index_sfinae<_Tp, _Types...>::value,
-            class _Constraints = __variadic_ilist_construct<_Ip, _Up, _Args...>,
-            class              = enable_if_t<_Constraints::__constructible>>
+  _CCCL_TEMPLATE(class _Tp,
+                 class _Up,
+                 class... _Args,
+                 size_t _Ip         = __find_detail::__find_unambiguous_index_sfinae<_Tp, _Types...>::value,
+                 class _Constraints = __variadic_ilist_construct<_Ip, _Up, _Args...>)
+  _CCCL_REQUIRES(_Constraints::__constructible)
   _LIBCUDACXX_HIDE_FROM_ABI explicit constexpr variant(
     in_place_type_t<_Tp>, initializer_list<_Up> __il, _Args&&... __args) noexcept(_Constraints::__nothrow_constructible)
       : __impl_(in_place_index<_Ip>, __il, _CUDA_VSTD::forward<_Args>(__args)...)
@@ -1626,46 +1607,43 @@ public:
         typename __constraints::template __match_assign<_Arg>,
         __variant_detail::__invalid_variant_constraints>;
 
-  template <class _Arg, class _Constraints = __match_assign<_Arg>, class = enable_if_t<_Constraints::__assignable>>
+  _CCCL_TEMPLATE(class _Arg, class _Constraints = __match_assign<_Arg>)
+  _CCCL_REQUIRES(_Constraints::__assignable)
   _LIBCUDACXX_HIDE_FROM_ABI variant& operator=(_Arg&& __arg) noexcept(_Constraints::__nothrow_assignable)
   {
     __impl_.template __assign<_Constraints::_Ip>(_CUDA_VSTD::forward<_Arg>(__arg));
     return *this;
   }
 
-  template <size_t _Ip,
-            class... _Args,
-            class _Constraints = __variadic_construct<_Ip, _Args...>,
-            class              = enable_if_t<_Constraints::__constructible>>
+  _CCCL_TEMPLATE(size_t _Ip, class... _Args, class _Constraints = __variadic_construct<_Ip, _Args...>)
+  _CCCL_REQUIRES(_Constraints::__constructible)
   _LIBCUDACXX_HIDE_FROM_ABI typename _Constraints::_Tp& emplace(_Args&&... __args)
   {
     return __impl_.template __emplace<_Ip>(_CUDA_VSTD::forward<_Args>(__args)...);
   }
 
-  template <size_t _Ip,
-            class _Up,
-            class... _Args,
-            class _Constraints = __variadic_ilist_construct<_Ip, _Up, _Args...>,
-            class              = enable_if_t<_Constraints::__constructible>>
+  _CCCL_TEMPLATE(
+    size_t _Ip, class _Up, class... _Args, class _Constraints = __variadic_ilist_construct<_Ip, _Up, _Args...>)
+  _CCCL_REQUIRES(_Constraints::__constructible)
   _LIBCUDACXX_HIDE_FROM_ABI typename _Constraints::_Tp& emplace(initializer_list<_Up> __il, _Args&&... __args)
   {
     return __impl_.template __emplace<_Ip>(__il, _CUDA_VSTD::forward<_Args>(__args)...);
   }
 
-  template <class _Tp,
-            class... _Args,
-            size_t _Ip = __find_detail::__find_unambiguous_index_sfinae<_Tp, _Types...>::value,
-            enable_if_t<_CCCL_TRAIT(is_constructible, _Tp, _Args...), int> = 0>
+  _CCCL_TEMPLATE(class _Tp,
+                 class... _Args,
+                 size_t _Ip = __find_detail::__find_unambiguous_index_sfinae<_Tp, _Types...>::value)
+  _CCCL_REQUIRES(_CCCL_TRAIT(is_constructible, _Tp, _Args...))
   _LIBCUDACXX_HIDE_FROM_ABI _Tp& emplace(_Args&&... __args)
   {
     return __impl_.template __emplace<_Ip>(_CUDA_VSTD::forward<_Args>(__args)...);
   }
 
-  template <class _Tp,
-            class _Up,
-            class... _Args,
-            size_t _Ip = __find_detail::__find_unambiguous_index_sfinae<_Tp, _Types...>::value,
-            enable_if_t<_CCCL_TRAIT(is_constructible, _Tp, initializer_list<_Up>&, _Args...), int> = 0>
+  _CCCL_TEMPLATE(class _Tp,
+                 class _Up,
+                 class... _Args,
+                 size_t _Ip = __find_detail::__find_unambiguous_index_sfinae<_Tp, _Types...>::value)
+  _CCCL_REQUIRES(_CCCL_TRAIT(is_constructible, _Tp, initializer_list<_Up>&, _Args...))
   _LIBCUDACXX_HIDE_FROM_ABI _Tp& emplace(initializer_list<_Up> __il, _Args&&... __args)
   {
     return __impl_.template __emplace<_Ip>(__il, _CUDA_VSTD::forward<_Args>(__args)...);
@@ -1686,9 +1664,8 @@ public:
   using __swap_constraint =
     __dependent_type<typename __variant_detail::__variant_constraints<_Types...>::template __swappable<_Dummy>, _Dummy>;
 
-  template <bool _Dummy       = true,
-            class _Constraint = __swap_constraint<_Dummy>,
-            class             = enable_if_t<_Constraint::__is_swappable>>
+  _CCCL_TEMPLATE(bool _Dummy = true, class _Constraint = __swap_constraint<_Dummy>)
+  _CCCL_REQUIRES(_Constraint::__is_swappable)
   _LIBCUDACXX_HIDE_FROM_ABI void swap(variant& __that) noexcept(_Constraint::__is_nothrow_swappable)
   {
     __impl_.__swap(__that.__impl_);

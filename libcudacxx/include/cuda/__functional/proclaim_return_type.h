@@ -21,9 +21,9 @@
 #  pragma system_header
 #endif // no system header
 
+#include <cuda/std/__concepts/concept_macros.h>
 #include <cuda/std/__functional/invoke.h>
 #include <cuda/std/__type_traits/decay.h>
-#include <cuda/std/__type_traits/enable_if.h>
 #include <cuda/std/__type_traits/is_same.h>
 #include <cuda/std/__utility/forward.h>
 #include <cuda/std/__utility/move.h>
@@ -41,7 +41,8 @@ private:
 public:
   __return_type_wrapper() = delete;
 
-  template <class _Fn, class = _CUDA_VSTD::enable_if_t<_CUDA_VSTD::is_same<_CUDA_VSTD::decay_t<_Fn>, _DecayFn>::value>>
+  _CCCL_TEMPLATE(class _Fn)
+  _CCCL_REQUIRES(_CCCL_TRAIT(_CUDA_VSTD::is_same, _CUDA_VSTD::decay_t<_Fn>, _DecayFn))
   _LIBCUDACXX_HIDE_FROM_ABI constexpr explicit __return_type_wrapper(_Fn&& __fn) noexcept
       : __fn_(_CUDA_VSTD::forward<_Fn>(__fn))
   {}

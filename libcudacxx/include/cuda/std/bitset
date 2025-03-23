@@ -26,6 +26,7 @@
 #include <cuda/std/__algorithm/fill.h>
 #include <cuda/std/__algorithm/find.h>
 #include <cuda/std/__bit/reference.h>
+#include <cuda/std/__concepts/concept_macros.h>
 #include <cuda/std/__functional/hash.h>
 #include <cuda/std/__functional/unary_function.h>
 #include <cuda/std/__type_traits/is_char_like_type.h>
@@ -58,7 +59,8 @@ struct __avoid_promotions
 
   _CCCL_HIDE_FROM_ABI constexpr __avoid_promotions() = default;
 
-  template <class _Tp, typename = enable_if_t<_CCCL_TRAIT(is_integral, _Tp)>>
+  _CCCL_TEMPLATE(class _Tp)
+  _CCCL_REQUIRES(_CCCL_TRAIT(is_integral, _Tp))
   _CCCL_HOST_DEVICE constexpr __avoid_promotions(_Tp __i)
       : __data(static_cast<_Int>(__i))
   {}
@@ -673,7 +675,8 @@ public:
   _LIBCUDACXX_HIDE_FROM_ABI constexpr bitset(unsigned long long __v) noexcept
       : base(__v)
   {}
-  template <class _CharT, class = enable_if_t<_IsCharLikeType<_CharT>::value>>
+  _CCCL_TEMPLATE(class _CharT)
+  _CCCL_REQUIRES(_IsCharLikeType<_CharT>::value)
   _LIBCUDACXX_HIDE_FROM_ABI constexpr explicit bitset(
     const _CharT* __str, size_t __n = static_cast<size_t>(-1), _CharT __zero = _CharT('0'), _CharT __one = _CharT('1'))
   {

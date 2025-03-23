@@ -21,17 +21,15 @@
 #endif // no system header
 
 #include <cuda/std/__algorithm/copy.h>
+#include <cuda/std/__concepts/concept_macros.h>
 #include <cuda/std/__iterator/iterator_traits.h>
-#include <cuda/std/__type_traits/enable_if.h>
 #include <cuda/std/__utility/convert_to_integral.h>
 
 _LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-template <class _InputIterator,
-          class _Size,
-          class _OutputIterator,
-          enable_if_t<__is_cpp17_input_iterator<_InputIterator>::value, int>          = 0,
-          enable_if_t<!__is_cpp17_random_access_iterator<_InputIterator>::value, int> = 0>
+_CCCL_TEMPLATE(class _InputIterator, class _Size, class _OutputIterator)
+_CCCL_REQUIRES(
+  __is_cpp17_input_iterator<_InputIterator>::value _CCCL_AND(!__is_cpp17_random_access_iterator<_InputIterator>::value))
 _LIBCUDACXX_HIDE_FROM_ABI _CCCL_CONSTEXPR_CXX20 _OutputIterator
 copy_n(_InputIterator __first, _Size __orig_n, _OutputIterator __result)
 {
@@ -51,10 +49,8 @@ copy_n(_InputIterator __first, _Size __orig_n, _OutputIterator __result)
   return __result;
 }
 
-template <class _InputIterator,
-          class _Size,
-          class _OutputIterator,
-          enable_if_t<__is_cpp17_random_access_iterator<_InputIterator>::value, int> = 0>
+_CCCL_TEMPLATE(class _InputIterator, class _Size, class _OutputIterator)
+_CCCL_REQUIRES(__is_cpp17_random_access_iterator<_InputIterator>::value)
 _LIBCUDACXX_HIDE_FROM_ABI constexpr _OutputIterator
 copy_n(_InputIterator __first, _Size __orig_n, _OutputIterator __result)
 {

@@ -22,6 +22,7 @@
 
 #include <cuda/std/__algorithm/iter_swap.h>
 #include <cuda/std/__algorithm/ranges_iterator_concept.h>
+#include <cuda/std/__concepts/concept_macros.h>
 #include <cuda/std/__iterator/advance.h>
 #include <cuda/std/__iterator/distance.h>
 #include <cuda/std/__iterator/incrementable_traits.h>
@@ -31,7 +32,6 @@
 #include <cuda/std/__iterator/next.h>
 #include <cuda/std/__iterator/prev.h>
 #include <cuda/std/__iterator/readable_traits.h>
-#include <cuda/std/__type_traits/enable_if.h>
 #include <cuda/std/__type_traits/is_reference.h>
 #include <cuda/std/__type_traits/is_same.h>
 #include <cuda/std/__type_traits/remove_cvref.h>
@@ -115,7 +115,8 @@ struct _IterOps<_ClassicAlgPolicy>
   }
 
   // iter_move
-  template <class _Iter, enable_if_t<is_reference<__deref_t<_Iter>>::value, int> = 0>
+  _CCCL_TEMPLATE(class _Iter)
+  _CCCL_REQUIRES(is_reference<__deref_t<_Iter>>::value)
   _LIBCUDACXX_HIDE_FROM_ABI constexpr static
     // If the result of dereferencing `_Iter` is a reference type, deduce the result of calling `_CUDA_VSTD::move` on
     // it. Note that the C++03 mode doesn't support `decltype(auto)` as the return type.
@@ -127,7 +128,8 @@ struct _IterOps<_ClassicAlgPolicy>
     return _CUDA_VSTD::move(*_CUDA_VSTD::forward<_Iter>(__i));
   }
 
-  template <class _Iter, enable_if_t<!is_reference<__deref_t<_Iter>>::value, int> = 0>
+  _CCCL_TEMPLATE(class _Iter)
+  _CCCL_REQUIRES((!is_reference<__deref_t<_Iter>>::value))
   _LIBCUDACXX_HIDE_FROM_ABI constexpr static
     // If the result of dereferencing `_Iter` is a value type, deduce the return value of this function to also be a
     // value -- otherwise, after `operator*` returns a temporary, this function would return a dangling reference to

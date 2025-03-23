@@ -27,7 +27,6 @@
 #include <cuda/std/__bit/has_single_bit.h>
 #include <cuda/std/__concepts/concept_macros.h>
 #include <cuda/std/__memory/addressof.h>
-#include <cuda/std/__type_traits/enable_if.h>
 #include <cuda/std/__type_traits/integral_constant.h>
 #include <cuda/std/__type_traits/is_pointer.h>
 #include <cuda/std/__type_traits/is_void.h>
@@ -44,9 +43,9 @@ struct WarpShuffleResult
   _Tp data;
   bool pred;
 
-  template <typename _Up = _Tp>
-  _CCCL_NODISCARD _CCCL_HIDE_FROM_ABI _CCCL_DEVICE
-  operator cuda::std::enable_if_t<!cuda::std::is_array_v<_Up>, _Up>() const
+  _CCCL_TEMPLATE(class _Up = _Tp)
+  _CCCL_REQUIRES((!cuda::std::is_array_v<_Up>) )
+  _CCCL_NODISCARD _CCCL_HIDE_FROM_ABI _CCCL_DEVICE operator _Up() const
   {
     return data;
   }

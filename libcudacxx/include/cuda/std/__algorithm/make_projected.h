@@ -20,11 +20,11 @@
 #  pragma system_header
 #endif // no system header
 
+#include <cuda/std/__concepts/concept_macros.h>
 #include <cuda/std/__concepts/same_as.h>
 #include <cuda/std/__functional/identity.h>
 #include <cuda/std/__functional/invoke.h>
 #include <cuda/std/__type_traits/decay.h>
-#include <cuda/std/__type_traits/enable_if.h>
 #include <cuda/std/__type_traits/integral_constant.h>
 #include <cuda/std/__type_traits/is_member_pointer.h>
 #include <cuda/std/__type_traits/is_same.h>
@@ -68,9 +68,8 @@ struct _ProjectedPred
   }
 };
 
-template <class _Pred,
-          class _Proj,
-          enable_if_t<!(!is_member_pointer<decay_t<_Pred>>::value && __is_identity<decay_t<_Proj>>::value), int> = 0>
+_CCCL_TEMPLATE(class _Pred, class _Proj)
+_CCCL_REQUIRES((!(!is_member_pointer<decay_t<_Pred>>::value && __is_identity<decay_t<_Proj>>::value)))
 _LIBCUDACXX_HIDE_FROM_ABI constexpr _ProjectedPred<_Pred, _Proj> __make_projected(_Pred& __pred, _Proj& __proj)
 {
   return _ProjectedPred<_Pred, _Proj>(__pred, __proj);
@@ -79,9 +78,8 @@ _LIBCUDACXX_HIDE_FROM_ABI constexpr _ProjectedPred<_Pred, _Proj> __make_projecte
 // Avoid creating the functor and just use the pristine comparator -- for certain algorithms, this would enable
 // optimizations that rely on the type of the comparator. Additionally, this results in less layers of indirection in
 // the call stack when the comparator is invoked, even in an unoptimized build.
-template <class _Pred,
-          class _Proj,
-          enable_if_t<!is_member_pointer<decay_t<_Pred>>::value && __is_identity<decay_t<_Proj>>::value, int> = 0>
+_CCCL_TEMPLATE(class _Pred, class _Proj)
+_CCCL_REQUIRES((!is_member_pointer<decay_t<_Pred>>::value) _CCCL_AND __is_identity<decay_t<_Proj>>::value)
 _LIBCUDACXX_HIDE_FROM_ABI constexpr _Pred& __make_projected(_Pred& __pred, _Proj&)
 {
   return __pred;

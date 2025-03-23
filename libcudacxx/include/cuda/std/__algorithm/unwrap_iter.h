@@ -21,9 +21,9 @@
 #  pragma system_header
 #endif // no system header
 
+#include <cuda/std/__concepts/concept_macros.h>
 #include <cuda/std/__iterator/iterator_traits.h>
 #include <cuda/std/__memory/pointer_traits.h>
-#include <cuda/std/__type_traits/enable_if.h>
 #include <cuda/std/__type_traits/is_copy_constructible.h>
 #include <cuda/std/__utility/declval.h>
 #include <cuda/std/__utility/move.h>
@@ -69,7 +69,8 @@ struct __unwrap_iter_impl<_Iter, true>
   }
 };
 
-template <class _Iter, class _Impl = __unwrap_iter_impl<_Iter>, enable_if_t<is_copy_constructible<_Iter>::value, int> = 0>
+_CCCL_TEMPLATE(class _Iter, class _Impl = __unwrap_iter_impl<_Iter>)
+_CCCL_REQUIRES(_CCCL_TRAIT(is_copy_constructible, _Iter))
 _LIBCUDACXX_HIDE_FROM_ABI constexpr decltype(_Impl::__unwrap(_CUDA_VSTD::declval<_Iter>()))
 __unwrap_iter(_Iter __i) noexcept
 {

@@ -22,7 +22,7 @@
 
 #include <cuda/std/__algorithm/iterator_operations.h>
 #include <cuda/std/__algorithm/unwrap_iter.h>
-#include <cuda/std/__type_traits/enable_if.h>
+#include <cuda/std/__concepts/concept_macros.h>
 #include <cuda/std/__type_traits/is_same.h>
 #include <cuda/std/__type_traits/is_trivially_copyable.h>
 #include <cuda/std/__type_traits/remove_const.h>
@@ -41,11 +41,8 @@ __move_backward(_BidirectionalIterator __first, _BidirectionalIterator __last, _
   return {__first, __result};
 }
 
-template <class _AlgPolicy,
-          class _Tp,
-          class _Up,
-          enable_if_t<_CCCL_TRAIT(is_same, remove_const_t<_Tp>, _Up), int> = 0,
-          enable_if_t<_CCCL_TRAIT(is_trivially_copyable, _Up), int>        = 0>
+_CCCL_TEMPLATE(class _AlgPolicy, class _Tp, class _Up)
+_CCCL_REQUIRES(_CCCL_TRAIT(is_same, remove_const_t<_Tp>, _Up) _CCCL_AND _CCCL_TRAIT(is_trivially_copyable, _Up))
 _LIBCUDACXX_HIDE_FROM_ABI constexpr pair<_Tp*, _Up*> __move_backward(_Tp* __first, _Tp* __last, _Up* __result)
 {
   const ptrdiff_t __n = __last - __first;

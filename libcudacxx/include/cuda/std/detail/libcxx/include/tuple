@@ -280,7 +280,8 @@ public:
   using __can_forward = _And<_IsNotSame<remove_cvref_t<_Tp>, __tuple_leaf>, is_constructible<_Hp, _Tp>>;
 
   _CCCL_EXEC_CHECK_DISABLE
-  template <class _Tp, enable_if_t<__can_forward<_Tp>::value, int> = 0>
+  _CCCL_TEMPLATE(class _Tp)
+  _CCCL_REQUIRES(__can_forward<_Tp>::value)
   _LIBCUDACXX_HIDE_FROM_ABI constexpr explicit __tuple_leaf(_Tp&& __t) noexcept(
     _CCCL_TRAIT(is_nothrow_constructible, _Hp, _Tp))
       : __value_(_CUDA_VSTD::forward<_Tp>(__t))
@@ -353,7 +354,8 @@ public:
   using __can_forward = _And<_IsNotSame<remove_cvref_t<_Tp>, __tuple_leaf>, is_constructible<_Hp, _Tp>>;
 
   _CCCL_EXEC_CHECK_DISABLE
-  template <class _Tp, enable_if_t<__can_forward<_Tp>::value, int> = 0>
+  _CCCL_TEMPLATE(class _Tp)
+  _CCCL_REQUIRES(__can_forward<_Tp>::value)
   _LIBCUDACXX_HIDE_FROM_ABI constexpr explicit __tuple_leaf(_Tp&& __t) noexcept(
     _CCCL_TRAIT(is_nothrow_constructible, _Hp, _Tp))
       : __value_(_CUDA_VSTD::forward<_Tp>(__t))
@@ -449,7 +451,8 @@ public:
   using __can_forward = _And<_IsNotSame<remove_cvref_t<_Tp>, __tuple_leaf>, is_constructible<_Hp, _Tp>>;
 
   _CCCL_EXEC_CHECK_DISABLE
-  template <class _Tp, enable_if_t<__can_forward<_Tp>::value, int> = 0>
+  _CCCL_TEMPLATE(class _Tp)
+  _CCCL_REQUIRES(__can_forward<_Tp>::value)
   _LIBCUDACXX_HIDE_FROM_ABI constexpr explicit __tuple_leaf(_Tp&& __t) noexcept(
     (is_nothrow_constructible<_Hp, _Tp>::value))
       : _Hp(_CUDA_VSTD::forward<_Tp>(__t))
@@ -474,7 +477,8 @@ public:
   {}
 
   _CCCL_EXEC_CHECK_DISABLE
-  template <class _Tp, enable_if_t<_CCCL_TRAIT(is_assignable, _Hp&, const _Tp&), int> = 0>
+  _CCCL_TEMPLATE(class _Tp)
+  _CCCL_REQUIRES(_CCCL_TRAIT(is_assignable, _Hp&, const _Tp&))
   _LIBCUDACXX_HIDE_FROM_ABI __tuple_leaf&
   operator=(const _Tp& __t) noexcept(_CCCL_TRAIT(is_nothrow_assignable, _Hp&, const _Tp&))
   {
@@ -483,7 +487,8 @@ public:
   }
 
   _CCCL_EXEC_CHECK_DISABLE
-  template <class _Tp, enable_if_t<_CCCL_TRAIT(is_assignable, _Hp&, _Tp), int> = 0>
+  _CCCL_TEMPLATE(class _Tp)
+  _CCCL_REQUIRES(_CCCL_TRAIT(is_assignable, _Hp&, _Tp))
   _LIBCUDACXX_HIDE_FROM_ABI __tuple_leaf& operator=(_Tp&& __t) noexcept(_CCCL_TRAIT(is_nothrow_assignable, _Hp&, _Tp))
   {
     _Hp::operator=(_CUDA_VSTD::forward<_Tp>(__t));
@@ -543,6 +548,8 @@ struct _CCCL_DECLSPEC_EMPTY_BASES __tuple_impl<__tuple_indices<_Indx...>, _Tp...
 
   // Handle non-allocator, full initialization
   // Old MSVC cannot handle the noexept specifier outside of template arguments
+  _CCCL_TEMPLATE(class... _Up)
+  _CCCL_REQUIRES()
   template <class... _Up,
             enable_if_t<sizeof...(_Up) == sizeof...(_Tp), int> = 0,
             bool __all_nothrow_constructible = __all<_CCCL_TRAIT(is_nothrow_constructible, _Tp, _Up)...>::value>
