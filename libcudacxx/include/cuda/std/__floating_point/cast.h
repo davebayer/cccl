@@ -21,10 +21,15 @@
 #  pragma system_header
 #endif // no system header
 
+#include <cuda/std/__floating_point/mask.h>
+#include <cuda/std/__floating_point/native_type.h>
 #include <cuda/std/__floating_point/nvfp_types.h>
 #include <cuda/std/__floating_point/storage.h>
+#include <cuda/std/__floating_point/traits.h>
 #include <cuda/std/__type_traits/always_false.h>
+#include <cuda/std/__type_traits/is_integer.h>
 #include <cuda/std/__type_traits/is_same.h>
+#include <cuda/std/__type_traits/make_nbit_int.h>
 
 _LIBCUDACXX_BEGIN_NAMESPACE_STD
 
@@ -797,6 +802,171 @@ _CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI _To __fp_cast(_From __v) noexcept
   else
   {
     static_assert(__always_false_v<_From>, "Unsupported floating point format");
+  }
+}
+
+_CCCL_TEMPLATE(class _To, class _From)
+_CCCL_REQUIRES(__is_fp_v<_To> _CCCL_AND __is_fp_v<_From> _CCCL_AND(__fp_format_of_v<_To> == __fp_format_of_v<_From>))
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr _To __fp_cast_new(const _From& __from) noexcept
+{
+  if constexpr (__fp_is_native_type_v<_To> && __fp_is_native_type_v<_From>)
+  {
+    return static_cast<_To>(__from);
+  }
+  else
+  {
+    return _CUDA_VSTD::__fp_from_storage<_To>(_CUDA_VSTD::__fp_get_storage(__from));
+  }
+}
+
+_CCCL_TEMPLATE(class _To, class _From)
+_CCCL_REQUIRES(__is_fp_v<_To> _CCCL_AND __is_fp_v<_From> _CCCL_AND(__fp_format_of_v<_To> != __fp_format_of_v<_From>))
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr _To __fp_cast_new(const _From& __from) noexcept
+{
+  if constexpr (__fp_is_native_type_v<_To> && __fp_is_native_type_v<_From>)
+  {
+    return static_cast<_To>(__from);
+  }
+  else
+  {
+    // todo: implement conversion
+    return _To{};
+  }
+}
+
+template <class _Tp>
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr _Tp __fp_handle_overflow() noexcept
+{
+  constexpr auto __fmt = __fp_format_of_v<_Tp>;
+
+  if constexpr (__fp_has_inf_v<__fmt>)
+  {
+    return _CUDA_VSTD::__fp_inf<__fmt>();
+  }
+  else if constexpr (__fp_has_nan_v<__fmt>)
+  {
+    return _CUDA_VSTD::__fp_nan<__fmt>();
+  }
+  else if constexpr (__fmt == __fp_format::__fp8_nv_e4m3 || __fmt == __fp_format::__fp6_nv_e2m3
+                     || __fmt == __fp_format::__fp6_nv_e3m2 || __fmt == __fp_format::__fp4_nv_e2m1)
+  {
+    return _CUDA_VSTD::__fp_max<__fmt>();
+  }
+  else
+  {
+    static_assert(__always_false_v<_Tp>, "Unhandled floating point format");
+  }
+}
+
+template <class _Tp>
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr _Tp __fp_handle_underflow() noexcept
+{
+  constexpr auto __fmt = __fp_format_of_v<_Tp>;
+
+  if constexpr (__fmt == __fp_format::__fp8_nv_e8m0)
+  {
+    return _CUDA_VSTD::__fp_nan<__fmt>();
+  }
+  else
+  {
+    const auto __overflow_storage = _CUDA_VSTD::__fp_get_storage(_CUDA_VSTD::__fp_handle_overflow<_Tp>());
+    return _CUDA_VSTD::__fp_from_storage<_Tp>(
+      static_cast<__fp_storage_t<__fmt>>(__overflow_storage | __fp_sign_mask_v<__fmt>));
+  }
+}
+
+template <class _Tp>
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr _Tp __fp_handle_zero() noexcept
+{
+  constexpr auto __fmt = __fp_format_of_v<_Tp>;
+
+  if constexpr (__fmt == __fp_format::__fp8_nv_e8m0)
+  {
+    return _CUDA_VSTD::__fp_handle_underflow<_Tp>();
+  }
+  else
+  {
+    return _Tp{};
+  }
+}
+
+template <class _Int>
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr make_unsigned_t<_Tp> __fp_uabs_helper(const _Tp& __v) noexcept
+{
+  static_assert(is_integral_v<_Tp>, "Integral type expected");
+
+  if constexpr (is_signed_v<_Tp>)
+  {
+    using _Up = make_unsigned_t<_Tp>;
+    return __v >= _Tp{} ? _Up(__v) : (__v != _Tp{-1} ? _Up(-__v) : (_Up(numeric_limits<_Tp>::max()) + _Up(1)));
+  }
+  else
+  {
+    return __v;
+  }
+}
+
+_CCCL_TEMPLATE(class _To, class _From)
+_CCCL_REQUIRES(__is_fp_v<_To> _CCCL_AND is_integral_v<_From>)
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr _To __fp_cast_new(const _From& __from) noexcept
+{
+  constexpr auto __to_fmt = __fp_format_of_v<_To>;
+
+  if constexpr (__fp_has_native_type_v<__to_fmt>)
+  {
+    return _CUDA_VSTD::__fp_cast_new<_To>(static_cast<__fp_native_type_t<__to_fmt>>(__from));
+  }
+  else if constexpr (!_CCCL_TRAIT(__cccl_is_integer, _From))
+  {
+    using _Int = __make_nbit_int_t<sizeof(_From) * CHAR_BIT, is_signed_v<_From>>;
+    return _CUDA_VSTD::__fp_cast_new<_To>(static_cast<_Int>(__from));
+  }
+  else
+  {
+    if (__from == 0)
+    {
+      return _CUDA_VSTD::__fp_cast_handle_zero<_To>();
+    }
+
+    const auto __from_pos = _CUDA_VSTD::__fp_uabs_helper(__from);
+    const auto __msb      = _CUDA_VSTD::countl_zero(__from_pos);
+
+    if (__msb > __fp_exp_max_v<__to_fmt>)
+    {
+      // todo: handle overflow
+      return _To{};
+    }
+
+    const int __exp   = __msb + __fp_exp_bias_v<__to_fmt>;
+    const int __shift = _CUDA_VSTD::max(__fp_exp_nbits_v<__to_fmt> + __fp_mant_nbits_v<__to_fmt> - __msb, 0);
+    const __fp_storage_t<_To> __res = (__fp_storage_t<_To>(__from_pos) << __shift) & __fp_mant_mask_v<__to_fmt>;
+
+    if constexpr (_CCCL_TRAIT(is_signed, _From))
+    {
+      if (__from < 0)
+      {
+        __res |= __fp_sign_mask_v<_To>;
+      }
+    }
+
+    return _CUDA_VSTD::__fp_from_storage<_To>(__res);
+  }
+}
+
+_CCCL_TEMPLATE(class _To, class _From)
+_CCCL_REQUIRES(is_integral_v<_To> _CCCL_AND __is_fp_v<_From>)
+_CCCL_NODISCARD _LIBCUDACXX_HIDE_FROM_ABI constexpr _To __fp_cast_new(const _From& __from) noexcept
+{
+  constexpr auto __from_fmt = __fp_format_of_v<_From>;
+
+  if constexpr (__fp_has_native_type_v<__from_fmt>)
+  {
+    return static_cast<_To>(_CUDA_VSTD::__fp_cast_new<__fp_native_type_t<__from_fmt>>(__from));
+  }
+  else
+  {
+    // todo: implement conversion
+    return _To{};
   }
 }
 
