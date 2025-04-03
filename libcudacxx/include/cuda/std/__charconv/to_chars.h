@@ -85,6 +85,31 @@ _LIBCUDACXX_HIDE_FROM_ABI constexpr void __to_chars_int_generic(char* __last, _T
   } while (__value != 0);
 }
 
+template <class _Tp>
+_LIBCUDACXX_HIDE_FROM_ABI constexpr void __to_chars_int_base_2(char* __last, ptrdiff_t __n, _Tp __value) noexcept
+{
+  constexpr uint32_t __nbits_in_pack        = 4;
+  constexpr uint32_t __pack_mask            = (1u << __nbits_in_pack) - 1;
+  constexpr uint32_t __pack_multiplier      = 0x00'20'40'81u;
+  constexpr uint32_t __pack_correction_mask = 0x01'01'01'01u;
+  constexpr uint32_t __pack_char_offset     = 0x30'30'30'30u;
+
+  for (; __value > __pack_mask; __value >>= __nbits_in_pack)
+  {
+    const uint32_t __pack = __value & 0xf;
+    uint32_t __pack_chars = ((__pack * __pack_multiplier) & __pack_correction_mask) + __pack_char_offset;
+
+    _CCCL_PRAGMA_UNROLL_FULL()
+    for (uint32_t i = 0u; i < __nbits_in_pack; ++i)
+    {
+      *--__last = static_cast<char>(__pack_chars & 0xff);
+      __pack_chars >>= CHAR_BIT;
+    }
+  }
+
+  _CUDA_VSTD::__to_chars_int_generic(__last, __value, 2);
+}
+
 _CCCL_TEMPLATE(class _Tp)
 _CCCL_REQUIRES(_CCCL_TRAIT(__cccl_is_integer, _Tp))
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr to_chars_result
@@ -113,7 +138,15 @@ to_chars(char* __first, char* __last, _Tp __value, int __base = 10) noexcept
 
     char* __new_last = __first + __n;
 
-    _CUDA_VSTD::__to_chars_int_generic(__new_last, __value, __base);
+    switch (__base)
+    {
+      case 2:
+        _CUDA_VSTD::__to_chars_int_base_2(__new_last, __value);
+        break;
+      default:
+        _CUDA_VSTD::__to_chars_int_generic(__new_last, __value, __base);
+        break;
+    }
 
     return {__new_last, errc{}};
   }
