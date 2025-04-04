@@ -107,7 +107,10 @@ _LIBCUDACXX_HIDE_FROM_ABI constexpr void __to_chars_int_base_2(char* __last, ptr
     }
   }
 
+  // if (__n % __nbits_in_pack != 0)
+  // {
   _CUDA_VSTD::__to_chars_int_generic(__last, __value, 2);
+  // }
 }
 
 _CCCL_TEMPLATE(class _Tp)
@@ -141,7 +144,7 @@ to_chars(char* __first, char* __last, _Tp __value, int __base = 10) noexcept
     switch (__base)
     {
       case 2:
-        _CUDA_VSTD::__to_chars_int_base_2(__new_last, __value);
+        _CUDA_VSTD::__to_chars_int_base_2(__new_last, __n, __value);
         break;
       default:
         _CUDA_VSTD::__to_chars_int_generic(__new_last, __value, __base);
