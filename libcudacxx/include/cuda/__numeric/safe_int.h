@@ -46,18 +46,19 @@ public:
   _CCCL_HIDE_FROM_ABI constexpr __cccl_safe_int() noexcept = default;
 
   _CCCL_TEMPLATE(class _Tp)
-  _CCCL_REQUIRES(_CCCL_TRAIT(_CUDA_VSTD::is_integral, _Tp) _CCCL_AND _CUDA_VSTD::in_range<__cccl_safe_int>(
-    _CUDA_VSTD::numeric_limits<_Tp>::min() _CCCL_AND _CUDA_VSTD::numeric_limits<_Tp>::max()))
+  _CCCL_REQUIRES(_CCCL_TRAIT(_CUDA_VSTD::is_integral, _Tp)) //_CCCL_AND _CUDA_VSTD::in_range<__cccl_safe_int>(
+                                                            // _CUDA_VSTD::numeric_limits<_Tp>::min() _CCCL_AND
+                                                            // _CUDA_VSTD::numeric_limits<_Tp>::max()))
   _LIBCUDACXX_HIDE_FROM_ABI constexpr __cccl_safe_int(const _Tp& __v) noexcept
       : __value_((_CUDA_VSTD::in_range<__cccl_safe_int>(__v)) ? static_cast<__int_type>(__v) : __nan_value)
   {}
 
-  _CCCL_TEMPLATE(class _Tp)
-  _CCCL_REQUIRES(_CCCL_TRAIT(_CUDA_VSTD::is_integral, _Tp) _CCCL_AND _CUDA_VSTD::in_range<__cccl_safe_int>(
-    _CUDA_VSTD::numeric_limits<_Tp>::min() _CCCL_AND _CUDA_VSTD::numeric_limits<_Tp>::max()))
-  _LIBCUDACXX_HIDE_FROM_ABI explicit constexpr __cccl_safe_int(const _Tp& __v) noexcept
-      : __value_((_CUDA_VSTD::in_range<__cccl_safe_int>(__v)) ? static_cast<__int_type>(__v) : __nan_value)
-  {}
+  // _CCCL_TEMPLATE(class _Tp)
+  // _CCCL_REQUIRES(_CCCL_TRAIT(_CUDA_VSTD::is_integral, _Tp) _CCCL_AND !(_CUDA_VSTD::in_range<__cccl_safe_int>(
+  //   _CUDA_VSTD::numeric_limits<_Tp>::min() || _CUDA_VSTD::numeric_limits<_Tp>::max())))
+  // _LIBCUDACXX_HIDE_FROM_ABI explicit constexpr __cccl_safe_int(const _Tp& __v) noexcept
+  //     : __value_((_CUDA_VSTD::in_range<__cccl_safe_int>(__v)) ? static_cast<__int_type>(__v) : __nan_value)
+  // {}
 
   _CCCL_TEMPLATE(class _Tp)
   _CCCL_REQUIRES(_CCCL_TRAIT(_CUDA_VSTD::is_floating_point, _Tp))
@@ -116,6 +117,54 @@ using safe_uint64_t = safe_uint<64>;
 #if _CCCL_HAS_INT128()
 using safe_uint128_t = safe_uint<128>;
 #endif // _CCCL_HAS_INT128()
+
+namespace safe_int_literals
+{
+_LIBCUDACXX_HIDE_FROM_ABI constexpr safe_int8_t operator"" _si8(unsigned long long __v) noexcept
+{
+  return safe_int8_t(__v);
+}
+_LIBCUDACXX_HIDE_FROM_ABI constexpr safe_int16_t operator"" _si16(unsigned long long __v) noexcept
+{
+  return safe_int16_t(__v);
+}
+_LIBCUDACXX_HIDE_FROM_ABI constexpr safe_int32_t operator"" _si32(unsigned long long __v) noexcept
+{
+  return safe_int32_t(__v);
+}
+_LIBCUDACXX_HIDE_FROM_ABI constexpr safe_int64_t operator"" _si64(unsigned long long __v) noexcept
+{
+  return safe_int64_t(__v);
+}
+#if _CCCL_HAS_INT128()
+_LIBCUDACXX_HIDE_FROM_ABI constexpr safe_int128_t operator"" _si128(unsigned long long __v) noexcept
+{
+  return safe_int128_t(__v);
+}
+#endif // _CCCL_HAS_INT128()
+_LIBCUDACXX_HIDE_FROM_ABI constexpr safe_uint8_t operator"" _su8(unsigned long long __v) noexcept
+{
+  return safe_uint8_t(__v);
+}
+_LIBCUDACXX_HIDE_FROM_ABI constexpr safe_uint16_t operator"" _su16(unsigned long long __v) noexcept
+{
+  return safe_uint16_t(__v);
+}
+_LIBCUDACXX_HIDE_FROM_ABI constexpr safe_uint32_t operator"" _su32(unsigned long long __v) noexcept
+{
+  return safe_uint32_t(__v);
+}
+_LIBCUDACXX_HIDE_FROM_ABI constexpr safe_uint64_t operator"" _su64(unsigned long long __v) noexcept
+{
+  return safe_uint64_t(__v);
+}
+#if _CCCL_HAS_INT128()
+_LIBCUDACXX_HIDE_FROM_ABI constexpr safe_uint128_t operator"" _su128(unsigned long long __v) noexcept
+{
+  return safe_uint128_t(__v);
+}
+#endif // _CCCL_HAS_INT128()
+} // namespace safe_int_literals
 
 _LIBCUDACXX_END_NAMESPACE_CUDA
 
