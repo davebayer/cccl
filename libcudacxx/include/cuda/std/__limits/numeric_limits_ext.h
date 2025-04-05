@@ -22,9 +22,11 @@
 #  pragma system_header
 #endif // no system header
 
+#include <cuda/__fwd/safe_int.h>
 #include <cuda/std/__bit/bit_cast.h>
 #include <cuda/std/__floating_point/storage.h>
 #include <cuda/std/__limits/numeric_limits.h>
+#include <cuda/std/__type_traits/make_nbit_int.h>
 
 _LIBCUDACXX_BEGIN_NAMESPACE_STD
 
@@ -771,6 +773,85 @@ public:
   static constexpr float_round_style round_style = round_to_nearest;
 };
 #endif // _CCCL_HAS_FLOAT128()
+
+template <size_t _NBits, bool _IsSigned>
+class __numeric_limits_impl<::cuda::__cccl_safe_int<_NBits, _IsSigned>, __numeric_limits_type::__integral>
+{
+  using __int_type = __make_nbit_int<_NBits, _IsSigned>;
+
+public:
+  using type = ::cuda::__cccl_safe_int<_NBits, _IsSigned>;
+
+  static constexpr bool is_specialized = true;
+
+  static constexpr bool is_signed   = numeric_limits<__int_type>::is_signed;
+  static constexpr int digits       = numeric_limits<__int_type>::digits;
+  static constexpr int digits10     = numeric_limits<__int_type>::digits10;
+  static constexpr int max_digits10 = numeric_limits<__int_type>::max_digits10;
+  _LIBCUDACXX_HIDE_FROM_ABI static constexpr type min() noexcept
+  {
+    return type(numeric_limits<__int_type>::min() + is_signed);
+  }
+  _LIBCUDACXX_HIDE_FROM_ABI static constexpr type max() noexcept
+  {
+    return type(numeric_limits<__int_type>::max() - !is_signed);
+  }
+  _LIBCUDACXX_HIDE_FROM_ABI static constexpr type lowest() noexcept
+  {
+    return min();
+  }
+
+  static constexpr bool is_integer = true;
+  static constexpr bool is_exact   = true;
+  static constexpr int radix       = 2;
+  _LIBCUDACXX_HIDE_FROM_ABI static constexpr type epsilon() noexcept
+  {
+    return type(0);
+  }
+  _LIBCUDACXX_HIDE_FROM_ABI static constexpr type round_error() noexcept
+  {
+    return type(0);
+  }
+
+  static constexpr int min_exponent   = 0;
+  static constexpr int min_exponent10 = 0;
+  static constexpr int max_exponent   = 0;
+  static constexpr int max_exponent10 = 0;
+
+  static constexpr bool has_infinity             = false;
+  static constexpr bool has_quiet_NaN            = true;
+  static constexpr bool has_signaling_NaN        = false;
+  static constexpr float_denorm_style has_denorm = denorm_absent;
+  static constexpr bool has_denorm_loss          = false;
+  _LIBCUDACXX_HIDE_FROM_ABI static constexpr type infinity() noexcept
+  {
+    return type(0);
+  }
+  _LIBCUDACXX_HIDE_FROM_ABI static constexpr type quiet_NaN() noexcept
+  {
+    return type((is_signed) ? numeric_limits<__int_type>::min() : numeric_limits<__int_type>::max());
+  }
+  _LIBCUDACXX_HIDE_FROM_ABI static constexpr type signaling_NaN() noexcept
+  {
+    return type(0);
+  }
+  _LIBCUDACXX_HIDE_FROM_ABI static constexpr type denorm_min() noexcept
+  {
+    return type(0);
+  }
+
+  static constexpr bool is_iec559  = false;
+  static constexpr bool is_bounded = true;
+  static constexpr bool is_modulo  = !is_signed;
+
+#if (_CCCL_ARCH(X86_64) && _CCCL_OS(LINUX)) || defined(__pnacl__) || defined(__wasm__)
+  static constexpr bool traps = true;
+#else
+  static constexpr bool traps = false;
+#endif
+  static constexpr bool tinyness_before          = false;
+  static constexpr float_round_style round_style = round_toward_zero;
+};
 
 _LIBCUDACXX_END_NAMESPACE_STD
 

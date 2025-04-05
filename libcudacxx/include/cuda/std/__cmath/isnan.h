@@ -21,6 +21,7 @@
 #  pragma system_header
 #endif // no system header
 
+#include <cuda/__fwd/safe_int.h>
 #include <cuda/std/__bit/popcount.h>
 #include <cuda/std/__concepts/concept_macros.h>
 #include <cuda/std/__floating_point/fp.h>
@@ -159,6 +160,12 @@ template <class _Tp>
 #  endif // ^^^ !_CCCL_BUILTIN_ISNAN ^^^
 }
 #endif // _CCCL_HAS_FLOAT128()
+
+template <size_t _NBits, bool _IsSigned>
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr bool isnan(::cuda::safe_int<_NBits, _IsSigned> __v) noexcept
+{
+  return __v.__is_nan();
+}
 
 _CCCL_TEMPLATE(class _Tp)
 _CCCL_REQUIRES(_CCCL_TRAIT(is_integral, _Tp))
