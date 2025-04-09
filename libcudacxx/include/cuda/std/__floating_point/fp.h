@@ -33,6 +33,7 @@
 #include <cuda/std/__floating_point/nvfp_types.h>
 #include <cuda/std/__floating_point/overflow_handler.h>
 #include <cuda/std/__floating_point/properties.h>
+#include <cuda/std/__floating_point/rounding.h>
 #include <cuda/std/__floating_point/storage.h>
 #include <cuda/std/__floating_point/traits.h>
 
