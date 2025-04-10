@@ -1049,8 +1049,8 @@ class _CCCL_TYPE_VISIBILITY_DEFAULT duration
   struct __no_overflow
   {
   private:
-    static const intmax_t __gcd_n1_n2 = __static_gcd<_R1::num, _R2::num>::value;
-    static const intmax_t __gcd_d1_d2 = __static_gcd<_R1::den, _R2::den>::value;
+    static const intmax_t __gcd_n1_n2 = _CUDA_VSTD::__static_gcd(_R1::num, _R2::num);
+    static const intmax_t __gcd_d1_d2 = _CUDA_VSTD::__static_gcd(_R1::den, _R2::den);
     static const intmax_t __n1        = _R1::num / __gcd_n1_n2;
     static const intmax_t __d1        = _R1::den / __gcd_d1_d2;
     static const intmax_t __n2        = _R2::num / __gcd_n1_n2;

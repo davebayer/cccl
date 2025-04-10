@@ -23,180 +23,102 @@
 
 _CCCL_PUSH_MACROS
 
+#include <cuda/std/__cstdlib/abs.h>
+#include <cuda/std/__numeric/gcd_lcm.h>
 #include <cuda/std/__type_traits/integral_constant.h>
 #include <cuda/std/climits>
 #include <cuda/std/cstdint>
+#include <cuda/std/limits>
 
 _LIBCUDACXX_BEGIN_NAMESPACE_STD
 
+inline constexpr intmax_t __ratio_max = numeric_limits<intmax_t>::max();
+inline constexpr intmax_t __ratio_min = -__ratio_max;
+inline constexpr intmax_t __ratio_nan = numeric_limits<intmax_t>::min();
+
 // __static_gcd
 
-template <intmax_t _Xp, intmax_t _Yp>
-struct __static_gcd
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr intmax_t __static_gcd(intmax_t __x, intmax_t __y) noexcept
 {
-  static const intmax_t value = __static_gcd<_Yp, _Xp % _Yp>::value;
-};
-
-template <intmax_t _Xp>
-struct __static_gcd<_Xp, 0>
-{
-  static const intmax_t value = _Xp;
-};
-
-template <>
-struct __static_gcd<0, 0>
-{
-  static const intmax_t value = 1;
-};
+  if (__y == 0)
+  {
+    return (__x == 0) ? 1 : __x;
+  }
+  else
+  {
+    return _CUDA_VSTD::__static_gcd(__y, __x % __y);
+  }
+}
 
 // __static_lcm
 
-template <intmax_t _Xp, intmax_t _Yp>
-struct __static_lcm
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr intmax_t __static_lcm(intmax_t __x, intmax_t __y) noexcept
 {
-  static const intmax_t value = _Xp / __static_gcd<_Xp, _Yp>::value * _Yp;
-};
+  return __x / _CUDA_VSTD::__static_gcd(__x, __y) * __y;
+}
 
-template <intmax_t _Xp>
-struct __static_abs
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr intmax_t __ratio_sign(intmax_t __x) noexcept
 {
-  static const intmax_t value = _Xp < 0 ? -_Xp : _Xp;
-};
+  return __x == 0 ? 0 : (__x < 0 ? -1 : 1);
+}
 
-template <intmax_t _Xp>
-struct __static_sign
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr intmax_t __ll_add(intmax_t __lhs, intmax_t __rhs) noexcept
 {
-  static const intmax_t value = _Xp == 0 ? 0 : (_Xp < 0 ? -1 : 1);
-};
+  const auto __rhs_sign = _CUDA_VSTD::__ratio_sign(__rhs);
+  if (__rhs_sign == 1)
+  {
+    _CCCL_ASSERT(__lhs <= __ratio_max - __rhs, "overflow in __ll_add");
+  }
+  else if (__rhs_sign == -1)
+  {
+    _CCCL_ASSERT(__ratio_min - __rhs <= __lhs, "overflow in __ll_add");
+  }
 
-template <intmax_t _Xp, intmax_t _Yp, intmax_t = __static_sign<_Yp>::value>
-class __ll_add;
+  return __lhs + __rhs;
+}
 
-template <intmax_t _Xp, intmax_t _Yp>
-class __ll_add<_Xp, _Yp, 1>
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr intmax_t __ll_sub(intmax_t __lhs, intmax_t __rhs) noexcept
 {
-  static const intmax_t min = (1LL << (sizeof(intmax_t) * CHAR_BIT - 1)) + 1;
-  static const intmax_t max = -min;
+  const auto __rhs_sign = _CUDA_VSTD::__ratio_sign(__rhs);
+  if (__rhs_sign == 1)
+  {
+    _CCCL_ASSERT(__ratio_min + __rhs <= __lhs, "overflow in __ll_sub");
+  }
+  else if (__rhs_sign == -1)
+  {
+    _CCCL_ASSERT(__lhs <= __ratio_max + __rhs, "overflow in __ll_sub");
+  }
 
-  static_assert(_Xp <= max - _Yp, "overflow in __ll_add");
+  return __lhs - __rhs;
+}
 
-public:
-  static const intmax_t value = _Xp + _Yp;
-};
-
-template <intmax_t _Xp, intmax_t _Yp>
-class __ll_add<_Xp, _Yp, 0>
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr intmax_t __ll_mul(intmax_t __lhs, intmax_t __rhs) noexcept
 {
-public:
-  static const intmax_t value = _Xp;
-};
+  if (__lhs == 0 || __rhs == 0)
+  {
+    return 0;
+  }
 
-template <intmax_t _Xp, intmax_t _Yp>
-class __ll_add<_Xp, _Yp, -1>
-{
-  static const intmax_t min = (1LL << (sizeof(intmax_t) * CHAR_BIT - 1)) + 1;
-  static const intmax_t max = -min;
+  _CCCL_ASSERT(__lhs != __ratio_nan && __rhs != __ratio_nan, "overflow in __ll_mul");
 
-  static_assert(min - _Yp <= _Xp, "overflow in __ll_add");
+  const auto __lhs_abs = _CUDA_VSTD::abs(__lhs);
+  const auto __rhs_abs = _CUDA_VSTD::abs(__rhs);
 
-public:
-  static const intmax_t value = _Xp + _Yp;
-};
+  _CCCL_ASSERT(__lhs_abs <= __ratio_max / __rhs_abs, "overflow in __ll_mul");
 
-template <intmax_t _Xp, intmax_t _Yp, intmax_t = __static_sign<_Yp>::value>
-class __ll_sub;
-
-template <intmax_t _Xp, intmax_t _Yp>
-class __ll_sub<_Xp, _Yp, 1>
-{
-  static const intmax_t min = (1LL << (sizeof(intmax_t) * CHAR_BIT - 1)) + 1;
-  static const intmax_t max = -min;
-
-  static_assert(min + _Yp <= _Xp, "overflow in __ll_sub");
-
-public:
-  static const intmax_t value = _Xp - _Yp;
-};
-
-template <intmax_t _Xp, intmax_t _Yp>
-class __ll_sub<_Xp, _Yp, 0>
-{
-public:
-  static const intmax_t value = _Xp;
-};
-
-template <intmax_t _Xp, intmax_t _Yp>
-class __ll_sub<_Xp, _Yp, -1>
-{
-  static const intmax_t min = (1LL << (sizeof(intmax_t) * CHAR_BIT - 1)) + 1;
-  static const intmax_t max = -min;
-
-  static_assert(_Xp <= max + _Yp, "overflow in __ll_sub");
-
-public:
-  static const intmax_t value = _Xp - _Yp;
-};
-
-template <intmax_t _Xp, intmax_t _Yp>
-class __ll_mul
-{
-  static const intmax_t nan   = (1LL << (sizeof(intmax_t) * CHAR_BIT - 1));
-  static const intmax_t min   = nan + 1;
-  static const intmax_t max   = -min;
-  static const intmax_t __a_x = __static_abs<_Xp>::value;
-  static const intmax_t __a_y = __static_abs<_Yp>::value;
-
-  static_assert(_Xp != nan && _Yp != nan && __a_x <= max / __a_y, "overflow in __ll_mul");
-
-public:
-  static const intmax_t value = _Xp * _Yp;
-};
-
-template <intmax_t _Yp>
-class __ll_mul<0, _Yp>
-{
-public:
-  static const intmax_t value = 0;
-};
-
-template <intmax_t _Xp>
-class __ll_mul<_Xp, 0>
-{
-public:
-  static const intmax_t value = 0;
-};
-
-template <>
-class __ll_mul<0, 0>
-{
-public:
-  static const intmax_t value = 0;
-};
-
-// Not actually used but left here in case needed in future maintenance
-template <intmax_t _Xp, intmax_t _Yp>
-class __ll_div
-{
-  static const intmax_t nan = (1LL << (sizeof(intmax_t) * CHAR_BIT - 1));
-  static const intmax_t min = nan + 1;
-  static const intmax_t max = -min;
-
-  static_assert(_Xp != nan && _Yp != nan && _Yp != 0, "overflow in __ll_div");
-
-public:
-  static const intmax_t value = _Xp / _Yp;
-};
+  return __lhs * __rhs;
+}
 
 template <intmax_t _Num, intmax_t _Den = 1>
 class _CCCL_TYPE_VISIBILITY_DEFAULT ratio
 {
-  static_assert(__static_abs<_Num>::value >= 0, "ratio numerator is out of range");
+  static_assert(_CUDA_VSTD::abs(_Num) >= 0, "ratio numerator is out of range");
   static_assert(_Den != 0, "ratio divide by 0");
-  static_assert(__static_abs<_Den>::value > 0, "ratio denominator is out of range");
-  static constexpr intmax_t __na  = __static_abs<_Num>::value;
-  static constexpr intmax_t __da  = __static_abs<_Den>::value;
-  static constexpr intmax_t __s   = __static_sign<_Num>::value * __static_sign<_Den>::value;
-  static constexpr intmax_t __gcd = __static_gcd<__na, __da>::value;
+  static_assert(_CUDA_VSTD::abs(_Den) > 0, "ratio denominator is out of range");
+  static constexpr intmax_t __na  = _CUDA_VSTD::abs(_Num);
+  static constexpr intmax_t __da  = _CUDA_VSTD::abs(_Den);
+  static constexpr intmax_t __s   = _CUDA_VSTD::__ratio_sign(_Num) * _CUDA_VSTD::__ratio_sign(_Den);
+  static constexpr intmax_t __gcd = _CUDA_VSTD::__static_gcd(__na, __da);
 
 public:
   static constexpr intmax_t num = __s * __na / __gcd;
@@ -204,12 +126,6 @@ public:
 
   using type = ratio<num, den>;
 };
-
-template <intmax_t _Num, intmax_t _Den>
-constexpr intmax_t ratio<_Num, _Den>::num;
-
-template <intmax_t _Num, intmax_t _Den>
-constexpr intmax_t ratio<_Num, _Den>::den;
 
 template <class _Tp>
 struct __is_ratio : false_type
@@ -235,16 +151,36 @@ using tera  = ratio<1000000000000LL, 1LL>;
 using peta  = ratio<1000000000000000LL, 1LL>;
 using exa   = ratio<1000000000000000000LL, 1LL>;
 
+struct __ratio_vals
+{};
+
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr intmax_t __ll_mul(intmax_t __lhs, intmax_t __rhs) noexcept
+{
+  if (__lhs == 0 || __rhs == 0)
+  {
+    return 0;
+  }
+
+  _CCCL_ASSERT(__lhs != __ratio_nan && __rhs != __ratio_nan, "overflow in __ll_mul");
+
+  const auto __lhs_abs = _CUDA_VSTD::abs(__lhs);
+  const auto __rhs_abs = _CUDA_VSTD::abs(__rhs);
+
+  _CCCL_ASSERT(__lhs_abs <= __ratio_max / __rhs_abs, "overflow in __ll_mul");
+
+  return __lhs * __rhs;
+}
+
 template <class _R1, class _R2>
 struct __ratio_multiply
 {
   // private:
-  static const intmax_t __gcd_n1_d2 = __static_gcd<_R1::num, _R2::den>::value;
-  static const intmax_t __gcd_d1_n2 = __static_gcd<_R1::den, _R2::num>::value;
+  static const intmax_t __gcd_n1_d2 = _CUDA_VSTD::__static_gcd(_R1::num, _R2::den);
+  static const intmax_t __gcd_d1_n2 = _CUDA_VSTD::__static_gcd(_R1::den, _R2::num);
 
 public:
-  using type = typename ratio<__ll_mul<_R1::num / __gcd_n1_d2, _R2::num / __gcd_d1_n2>::value,
-                              __ll_mul<_R2::den / __gcd_n1_d2, _R1::den / __gcd_d1_n2>::value>::type;
+  using type = typename ratio<_CUDA_VSTD::__ll_mul(_R1::num / __gcd_n1_d2, _R2::num / __gcd_d1_n2),
+                              _CUDA_VSTD::__ll_mul(_R2::den / __gcd_n1_d2, _R1::den / __gcd_d1_n2)>::type;
 };
 
 template <class _R1, class _R2>
@@ -254,12 +190,12 @@ template <class _R1, class _R2>
 struct __ratio_divide
 {
   // private:
-  static const intmax_t __gcd_n1_n2 = __static_gcd<_R1::num, _R2::num>::value;
-  static const intmax_t __gcd_d1_d2 = __static_gcd<_R1::den, _R2::den>::value;
+  static const intmax_t __gcd_n1_n2 = _CUDA_VSTD::__static_gcd(_R1::num, _R2::num);
+  static const intmax_t __gcd_d1_d2 = _CUDA_VSTD::__static_gcd(_R1::den, _R2::den);
 
 public:
-  using type = typename ratio<__ll_mul<_R1::num / __gcd_n1_n2, _R2::den / __gcd_d1_d2>::value,
-                              __ll_mul<_R2::num / __gcd_n1_n2, _R1::den / __gcd_d1_d2>::value>::type;
+  using type = typename ratio<_CUDA_VSTD::__ll_mul(_R1::num / __gcd_n1_n2, _R2::den / __gcd_d1_d2),
+                              _CUDA_VSTD::__ll_mul(_R2::num / __gcd_n1_n2, _R1::den / __gcd_d1_d2)>::type;
 };
 
 template <class _R1, class _R2>
@@ -269,15 +205,15 @@ template <class _R1, class _R2>
 struct __ratio_add
 {
   // private:
-  static const intmax_t __gcd_n1_n2 = __static_gcd<_R1::num, _R2::num>::value;
-  static const intmax_t __gcd_d1_d2 = __static_gcd<_R1::den, _R2::den>::value;
+  static const intmax_t __gcd_n1_n2 = _CUDA_VSTD::__static_gcd(_R1::num, _R2::num);
+  static const intmax_t __gcd_d1_d2 = _CUDA_VSTD::__static_gcd(_R1::den, _R2::den);
 
 public:
-  using type =
-    typename ratio_multiply<ratio<__gcd_n1_n2, _R1::den / __gcd_d1_d2>,
-                            ratio<__ll_add<__ll_mul<_R1::num / __gcd_n1_n2, _R2::den / __gcd_d1_d2>::value,
-                                           __ll_mul<_R2::num / __gcd_n1_n2, _R1::den / __gcd_d1_d2>::value>::value,
-                                  _R2::den>>::type;
+  using type = typename ratio_multiply<
+    ratio<__gcd_n1_n2, _R1::den / __gcd_d1_d2>,
+    ratio<_CUDA_VSTD::__ll_add(_CUDA_VSTD::__ll_mul(_R1::num / __gcd_n1_n2, _R2::den / __gcd_d1_d2),
+                               _CUDA_VSTD::__ll_mul(_R2::num / __gcd_n1_n2, _R1::den / __gcd_d1_d2)),
+          _R2::den>>::type;
 };
 
 template <class _R1, class _R2>
@@ -287,15 +223,15 @@ template <class _R1, class _R2>
 struct __ratio_subtract
 {
   // private:
-  static const intmax_t __gcd_n1_n2 = __static_gcd<_R1::num, _R2::num>::value;
-  static const intmax_t __gcd_d1_d2 = __static_gcd<_R1::den, _R2::den>::value;
+  static const intmax_t __gcd_n1_n2 = _CUDA_VSTD::__static_gcd(_R1::num, _R2::num);
+  static const intmax_t __gcd_d1_d2 = _CUDA_VSTD::__static_gcd(_R1::den, _R2::den);
 
 public:
-  using type =
-    typename ratio_multiply<ratio<__gcd_n1_n2, _R1::den / __gcd_d1_d2>,
-                            ratio<__ll_sub<__ll_mul<_R1::num / __gcd_n1_n2, _R2::den / __gcd_d1_d2>::value,
-                                           __ll_mul<_R2::num / __gcd_n1_n2, _R1::den / __gcd_d1_d2>::value>::value,
-                                  _R2::den>>::type;
+  using type = typename ratio_multiply<
+    ratio<__gcd_n1_n2, _R1::den / __gcd_d1_d2>,
+    ratio<_CUDA_VSTD::__ll_sub(_CUDA_VSTD::__ll_mul(_R1::num / __gcd_n1_n2, _R2::den / __gcd_d1_d2),
+                               _CUDA_VSTD::__ll_mul(_R2::num / __gcd_n1_n2, _R1::den / __gcd_d1_d2)),
+          _R2::den>>::type;
 };
 
 template <class _R1, class _R2>
@@ -351,8 +287,8 @@ struct __ratio_less1<_R1, _R2, _Odd, _Qp, _M1, _Qp, _M2>
 
 template <class _R1,
           class _R2,
-          intmax_t _S1 = __static_sign<_R1::num>::value,
-          intmax_t _S2 = __static_sign<_R2::num>::value>
+          intmax_t _S1 = _CUDA_VSTD::__ratio_sign(_R1::num),
+          intmax_t _S2 = _CUDA_VSTD::__ratio_sign(_R2::num)>
 struct __ratio_less
 {
   static const bool value = _S1 < _S2;
@@ -389,7 +325,7 @@ struct _CCCL_TYPE_VISIBILITY_DEFAULT ratio_greater_equal : public bool_constant<
 template <class _R1, class _R2>
 struct __ratio_gcd
 {
-  using type = ratio<__static_gcd<_R1::num, _R2::num>::value, __static_lcm<_R1::den, _R2::den>::value>;
+  using type = ratio<_CUDA_VSTD::__static_gcd(_R1::num, _R2::num), _CUDA_VSTD::__static_lcm(_R1::den, _R2::den)>;
 };
 
 template <class _R1, class _R2>
