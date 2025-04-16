@@ -244,6 +244,7 @@ template<class T> complex<T> tanh (const complex<T>&);
 
 #include <cuda/std/__complex/vector_support.h>
 #include <cuda/std/__concepts/concept_macros.h>
+#include <cuda/std/__floating_point/conversion_rank_order.h>
 #include <cuda/std/__fwd/get.h>
 #include <cuda/std/__tuple_dir/tuple_element.h>
 #include <cuda/std/__tuple_dir/tuple_size.h>
@@ -301,15 +302,22 @@ public:
       , __im_(__im)
   {}
 
-  template <class _Up, enable_if_t<__cccl_internal::__is_non_narrowing_convertible<_Tp, _Up>::value, int> = 0>
+  _CCCL_TEMPLATE(class _Up)
+  _CCCL_REQUIRES(__is_fp_v<_Up> _CCCL_AND __fp_is_implicit_conversion_v<_Up, _Tp>)
   _LIBCUDACXX_HIDE_FROM_ABI constexpr complex(const complex<_Up>& __c)
       : __re_(static_cast<_Tp>(__c.real()))
       , __im_(static_cast<_Tp>(__c.imag()))
   {}
 
-  template <class _Up,
-            enable_if_t<!__cccl_internal::__is_non_narrowing_convertible<_Tp, _Up>::value, int> = 0,
-            enable_if_t<_CCCL_TRAIT(is_constructible, _Tp, _Up), int>                           = 0>
+  _CCCL_TEMPLATE(class _Up)
+  _CCCL_REQUIRES(__is_fp_v<_Up> _CCCL_AND(!__fp_is_implicit_conversion_v<_Up, _Tp>))
+  _LIBCUDACXX_HIDE_FROM_ABI explicit constexpr complex(const complex<_Up>& __c)
+      : __re_(static_cast<_Tp>(__c.real()))
+      , __im_(static_cast<_Tp>(__c.imag()))
+  {}
+
+  _CCCL_TEMPLATE(class _Up)
+  _CCCL_REQUIRES(_CCCL_TRAIT(is_integral, _Up))
   _LIBCUDACXX_HIDE_FROM_ABI explicit constexpr complex(const complex<_Up>& __c)
       : __re_(static_cast<_Tp>(__c.real()))
       , __im_(static_cast<_Tp>(__c.imag()))
