@@ -1,8 +1,10 @@
 //===----------------------------------------------------------------------===//
 //
-// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// Part of libcu++, the C++ Standard Library for your entire system,
+// under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES.
 //
 //===----------------------------------------------------------------------===//
 
@@ -18,27 +20,27 @@
 template <class T>
 __host__ __device__ void test_is_array()
 {
-  static_assert(cuda::std::is_array<T>::value, "");
-  static_assert(cuda::std::is_array<const T>::value, "");
-  static_assert(cuda::std::is_array<volatile T>::value, "");
-  static_assert(cuda::std::is_array<const volatile T>::value, "");
-  static_assert(cuda::std::is_array_v<T>, "");
-  static_assert(cuda::std::is_array_v<const T>, "");
-  static_assert(cuda::std::is_array_v<volatile T>, "");
-  static_assert(cuda::std::is_array_v<const volatile T>, "");
+  static_assert(cuda::std::is_array<T>::value);
+  static_assert(cuda::std::is_array<const T>::value);
+  static_assert(cuda::std::is_array<volatile T>::value);
+  static_assert(cuda::std::is_array<const volatile T>::value);
+  static_assert(cuda::std::is_array_v<T>);
+  static_assert(cuda::std::is_array_v<const T>);
+  static_assert(cuda::std::is_array_v<volatile T>);
+  static_assert(cuda::std::is_array_v<const volatile T>);
 }
 
 template <class T>
 __host__ __device__ void test_is_not_array()
 {
-  static_assert(!cuda::std::is_array<T>::value, "");
-  static_assert(!cuda::std::is_array<const T>::value, "");
-  static_assert(!cuda::std::is_array<volatile T>::value, "");
-  static_assert(!cuda::std::is_array<const volatile T>::value, "");
-  static_assert(!cuda::std::is_array_v<T>, "");
-  static_assert(!cuda::std::is_array_v<const T>, "");
-  static_assert(!cuda::std::is_array_v<volatile T>, "");
-  static_assert(!cuda::std::is_array_v<const volatile T>, "");
+  static_assert(!cuda::std::is_array<T>::value);
+  static_assert(!cuda::std::is_array<const T>::value);
+  static_assert(!cuda::std::is_array<volatile T>::value);
+  static_assert(!cuda::std::is_array<const volatile T>::value);
+  static_assert(!cuda::std::is_array_v<T>);
+  static_assert(!cuda::std::is_array_v<const T>);
+  static_assert(!cuda::std::is_array_v<volatile T>);
+  static_assert(!cuda::std::is_array_v<const volatile T>);
 }
 
 class Empty
@@ -91,6 +93,7 @@ int main(int, char**)
   test_is_not_array<bit_zero>();
   test_is_not_array<NotEmpty>();
   test_is_not_array<incomplete_type>(); //  LWG#2582
+  test_is_not_array<int[0]>();
 
   return 0;
 }

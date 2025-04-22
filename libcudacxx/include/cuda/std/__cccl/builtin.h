@@ -952,11 +952,6 @@
 #  define _CCCL_BUILTIN_IS_ARRAY(...) __is_array(__VA_ARGS__)
 #endif // _CCCL_CHECK_BUILTIN(is_array)
 
-// clang prior to clang-19 gives wrong results for __is_array of _Tp[0]
-#if _CCCL_COMPILER(CLANG, <, 19)
-#  undef _CCCL_BUILTIN_IS_ARRAY
-#endif // clang < 19
-
 #if _CCCL_CHECK_BUILTIN(is_assignable) || _CCCL_COMPILER(MSVC) || _CCCL_COMPILER(GCC, >=, 9)
 #  define _CCCL_BUILTIN_IS_ASSIGNABLE(...) __is_assignable(__VA_ARGS__)
 #endif // _CCCL_CHECK_BUILTIN(is_assignable) && gcc >= 9.0
