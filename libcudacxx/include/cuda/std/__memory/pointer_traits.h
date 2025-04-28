@@ -137,7 +137,7 @@ private:
 
 public:
   _LIBCUDACXX_HIDE_FROM_ABI _CCCL_CONSTEXPR_CXX20 static pointer
-  pointer_to(conditional_t<is_void<element_type>::value, __nat, element_type>& __r)
+  pointer_to(conditional_t<_CCCL_TRAIT(is_void, element_type), __nat, element_type>& __r)
   {
     return pointer::pointer_to(__r);
   }
@@ -163,7 +163,7 @@ private:
 
 public:
   _LIBCUDACXX_HIDE_FROM_ABI _CCCL_CONSTEXPR_CXX20 static pointer
-  pointer_to(conditional_t<is_void<element_type>::value, __nat, element_type>& __r) noexcept
+  pointer_to(conditional_t<_CCCL_TRAIT(is_void, element_type), __nat, element_type>& __r) noexcept
   {
     return _CUDA_VSTD::addressof(__r);
   }

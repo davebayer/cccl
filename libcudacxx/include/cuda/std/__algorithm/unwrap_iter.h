@@ -73,7 +73,9 @@ struct __unwrap_iter_impl<_Iter, true>
   }
 };
 
-template <class _Iter, class _Impl = __unwrap_iter_impl<_Iter>, enable_if_t<is_copy_constructible<_Iter>::value, int> = 0>
+template <class _Iter,
+          class _Impl                                                 = __unwrap_iter_impl<_Iter>,
+          enable_if_t<_CCCL_TRAIT(is_copy_constructible, _Iter), int> = 0>
 _LIBCUDACXX_HIDE_FROM_ABI constexpr decltype(_Impl::__unwrap(_CUDA_VSTD::declval<_Iter>()))
 __unwrap_iter(_Iter __i) noexcept
 {

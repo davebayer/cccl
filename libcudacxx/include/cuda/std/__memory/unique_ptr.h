@@ -69,7 +69,7 @@ struct _CCCL_TYPE_VISIBILITY_DEFAULT default_delete
   _LIBCUDACXX_HIDE_FROM_ABI _CCCL_CONSTEXPR_CXX20 void operator()(_Tp* __ptr) const noexcept
   {
     static_assert(sizeof(_Tp) >= 0, "cannot delete an incomplete type");
-    static_assert(!is_void<_Tp>::value, "cannot delete an incomplete type");
+    static_assert(!_CCCL_TRAIT(is_void, _Tp), "cannot delete an incomplete type");
     delete __ptr;
   }
 };
@@ -156,15 +156,16 @@ private:
 
   template <bool _Dummy, class _Deleter = typename __dependent_type<type_identity<deleter_type>, _Dummy>::type>
   using _EnableIfDeleterDefaultConstructible _CCCL_NODEBUG_ALIAS =
-    typename enable_if<is_default_constructible<_Deleter>::value && !is_pointer<_Deleter>::value>::type;
+    typename enable_if<_CCCL_TRAIT(is_default_constructible, _Deleter) && !_CCCL_TRAIT(is_pointer, _Deleter)>::type;
 
   template <class _ArgType>
   using _EnableIfDeleterConstructible _CCCL_NODEBUG_ALIAS =
-    typename enable_if<is_constructible<deleter_type, _ArgType>::value>::type;
+    typename enable_if<_CCCL_TRAIT(is_constructible, deleter_type, _ArgType)>::type;
 
   template <class _UPtr, class _Up>
   using _EnableIfMoveConvertible _CCCL_NODEBUG_ALIAS =
-    typename enable_if<is_convertible<typename _UPtr::pointer, pointer>::value && !is_array<_Up>::value>::type;
+    typename enable_if<_CCCL_TRAIT(is_convertible, typename _UPtr::pointer, pointer)
+                       && !_CCCL_TRAIT(is_array, _Up)>::type;
 
   template <class _UDel>
   using _EnableIfDeleterConvertible _CCCL_NODEBUG_ALIAS =

@@ -150,13 +150,20 @@ public:
   using _Base1 _CCCL_NODEBUG_ALIAS = __compressed_pair_elem<_T1, 0>;
   using _Base2 _CCCL_NODEBUG_ALIAS = __compressed_pair_elem<_T2, 1>;
 
-  template <bool _Dummy = true,
-            class       = enable_if_t<__dependent_type<is_default_constructible<_T1>, _Dummy>::value
-                                      && __dependent_type<is_default_constructible<_T2>, _Dummy>::value>>
-  _LIBCUDACXX_HIDE_FROM_ABI constexpr explicit __compressed_pair() noexcept(
-    _CCCL_TRAIT(is_nothrow_default_constructible, _T1) && _CCCL_TRAIT(is_nothrow_default_constructible, _T2))
-      : _Base1(__value_init_tag())
-      , _Base2(__value_init_tag())
+  template <
+    bool _Dummy = true,
+    class =
+      enable_if_t < __dependent_type<
+        _CCCL_TRAIT(is_default_constructible, _T1, _Dummy)
+        && __dependent_type<_CCCL_TRAIT(
+          is_default_constructible,
+          _T2,
+          _Dummy)>> _LIBCUDACXX_HIDE_FROM_ABI constexpr explicit __compressed_pair() noexcept(_CCCL_TRAIT(is_nothrow_default_constructible,
+                                                                                                          _T1)
+                                                                                              && _CCCL_TRAIT(
+                                                                                                is_nothrow_default_constructible,
+                                                                                                _T2)) : _Base1(__value_init_tag()),
+    _Base2(__value_init_tag())
   {}
 
   template <class _U1, class _U2>

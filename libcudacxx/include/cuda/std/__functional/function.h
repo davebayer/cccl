@@ -404,8 +404,8 @@ public:
     if (__function::__not_null(__f))
     {
       _FunAlloc __af(__a);
-      if (sizeof(_Fun) <= sizeof(__buf_) && is_nothrow_copy_constructible<_Fp>::value
-          && is_nothrow_copy_constructible<_FunAlloc>::value)
+      if (sizeof(_Fun) <= sizeof(__buf_) && _CCCL_TRAIT(is_nothrow_copy_constructible, _Fp)
+          && _CCCL_TRAIT(is_nothrow_copy_constructible, _FunAlloc))
       {
         __f_ = ::new ((void*) &__buf_) _Fun(_CUDA_VSTD::move(__f), _Alloc(__af));
       }
@@ -419,7 +419,7 @@ public:
     }
   }
 
-  template <class _Fp, class = enable_if_t<!is_same<decay_t<_Fp>, __value_func>::value>>
+  template <class _Fp, class = enable_if_t<!_CCCL_TRAIT(is_same, decay_t<_Fp>, __value_func)>>
   _LIBCUDACXX_HIDE_FROM_ABI explicit __value_func(_Fp&& __f)
       : __value_func(_CUDA_VSTD::forward<_Fp>(__f), allocator<_Fp>())
   {}
@@ -597,7 +597,7 @@ struct __use_small_storage
     : public integral_constant<
         bool,
         sizeof(_Fun) <= sizeof(__policy_storage) && alignof(_Fun) <= alignof(__policy_storage)
-          && is_trivially_copy_constructible<_Fun>::value && is_trivially_destructible<_Fun>::value>
+          && _CCCL_TRAIT(is_trivially_copy_constructible, _Fun) && _CCCL_TRAIT(is_trivially_destructible, _Fun)>
 {};
 
 // Policy contains information about how to copy, destroy, and move the
@@ -687,7 +687,7 @@ private:
 // Used to choose between perfect forwarding or pass-by-value. Pass-by-value is
 // faster for types that can be passed in registers.
 template <typename _Tp>
-using __fast_forward = conditional_t<is_scalar<_Tp>::value, _Tp, _Tp&&>;
+using __fast_forward = conditional_t<_CCCL_TRAIT(is_scalar, _Tp), _Tp, _Tp&&>;
 
 // __policy_invoker calls an instance of __alloc_func held in __policy_storage.
 
@@ -786,7 +786,7 @@ public:
     }
   }
 
-  template <class _Fp, class = enable_if_t<!is_same<decay_t<_Fp>, __policy_func>::value>>
+  template <class _Fp, class = enable_if_t<!_CCCL_TRAIT(is_same, decay_t<_Fp>, __policy_func)>>
   _LIBCUDACXX_HIDE_FROM_ABI explicit __policy_func(_Fp&& __f)
       : __policy_(__policy::__create_empty())
   {
@@ -999,7 +999,7 @@ class _CCCL_TYPE_VISIBILITY_DEFAULT function<_Rp(_ArgTypes...)>
   struct __callable<_Fp, true>
   {
     static const bool value =
-      is_void<_Rp>::value || __is_core_convertible<typename __invoke_of<_Fp, _ArgTypes...>::type, _Rp>::value;
+      _CCCL_TRAIT(is_void, _Rp) || __is_core_convertible<typename __invoke_of<_Fp, _ArgTypes...>::type, _Rp>::value;
   };
   template <class _Fp>
   struct __callable<_Fp, false>

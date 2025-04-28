@@ -61,7 +61,7 @@ template <class _ForwardIterator, class _Tp, class _Compare>
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr _ForwardIterator
 upper_bound(_ForwardIterator __first, _ForwardIterator __last, const _Tp& __value, _Compare __comp)
 {
-  static_assert(is_copy_constructible<_ForwardIterator>::value, "Iterator has to be copy constructible");
+  static_assert(_CCCL_TRAIT(is_copy_constructible, _ForwardIterator), "Iterator has to be copy constructible");
   return _CUDA_VSTD::__upper_bound<_ClassicAlgPolicy>(
     _CUDA_VSTD::move(__first), _CUDA_VSTD::move(__last), __value, _CUDA_VSTD::move(__comp), _CUDA_VSTD::__identity());
 }

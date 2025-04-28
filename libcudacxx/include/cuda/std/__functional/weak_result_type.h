@@ -58,7 +58,7 @@ private:
   static _LIBCUDACXX_HIDE_FROM_ABI __unary_function<_Ap, _Rp> __test(const volatile __unary_function<_Ap, _Rp>*);
 
 public:
-  static const bool value = !is_same<decltype(__test((_Tp*) 0)), __two>::value;
+  static const bool value = !_CCCL_TRAIT(is_same, decltype(__test((_Tp*) 0)), __two);
   using type              = decltype(__test((_Tp*) 0));
 };
 
@@ -77,7 +77,7 @@ private:
   __test(const volatile __binary_function<_A1, _A2, _Rp>*);
 
 public:
-  static const bool value = !is_same<decltype(__test((_Tp*) 0)), __two>::value;
+  static const bool value = !_CCCL_TRAIT(is_same, decltype(__test((_Tp*) 0)), __two);
   using type              = decltype(__test((_Tp*) 0));
 };
 

@@ -322,7 +322,7 @@ struct __is_cpp17_move_insertable<
 template <class _Alloc, class = void>
 struct __is_cpp17_copy_insertable
     : integral_constant<bool,
-                        is_copy_constructible<typename _Alloc::value_type>::value
+                        _CCCL_TRAIT(is_copy_constructible, typename _Alloc::value_type)
                           && __is_cpp17_move_insertable<_Alloc>::value>
 {};
 
@@ -473,7 +473,7 @@ struct _CCCL_TYPE_VISIBILITY_DEFAULT allocator_traits
   template <class _Tp>
   _LIBCUDACXX_HIDE_FROM_ABI static enable_if_t<
     (__is_default_allocator<allocator_type>::value || !__has_construct<allocator_type, _Tp*, _Tp>::value)
-      && is_trivially_move_constructible<_Tp>::value,
+      && _CCCL_TRAIT(is_trivially_move_constructible, _Tp),
     void>
   __construct_forward_with_exception_guarantees(allocator_type&, _Tp* __begin1, _Tp* __end1, _Tp*& __begin2)
   {
@@ -500,7 +500,7 @@ struct _CCCL_TYPE_VISIBILITY_DEFAULT allocator_traits
             class _RawSourceTp = remove_const_t<_SourceTp>,
             class _RawDestTp   = remove_const_t<_DestTp>>
   _LIBCUDACXX_HIDE_FROM_ABI static enable_if_t<
-    is_trivially_move_constructible<_DestTp>::value && is_same<_RawSourceTp, _RawDestTp>::value
+    _CCCL_TRAIT(is_trivially_move_constructible, _DestTp) && _CCCL_TRAIT(is_same, _RawSourceTp, _RawDestTp)
       && (__is_default_allocator<allocator_type>::value || !__has_construct<allocator_type, _DestTp*, _SourceTp&>::value),
     void>
   __construct_range_forward(allocator_type&, _SourceTp* __begin1, _SourceTp* __end1, _DestTp*& __begin2)
@@ -536,7 +536,7 @@ struct _CCCL_TYPE_VISIBILITY_DEFAULT allocator_traits
   template <class _Tp>
   _LIBCUDACXX_HIDE_FROM_ABI static enable_if_t<
     (__is_default_allocator<allocator_type>::value || !__has_construct<allocator_type, _Tp*, _Tp>::value)
-      && is_trivially_move_constructible<_Tp>::value,
+      && _CCCL_TRAIT(is_trivially_move_constructible, _Tp),
     void>
   __construct_backward_with_exception_guarantees(allocator_type&, _Tp* __begin1, _Tp* __end1, _Tp*& __end2)
   {

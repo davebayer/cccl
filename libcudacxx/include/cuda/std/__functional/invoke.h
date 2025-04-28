@@ -255,8 +255,8 @@ struct __member_pointer_traits_imp<_Rp _Class::*, false, true>
 template <class _MP>
 struct __member_pointer_traits
     : public __member_pointer_traits_imp<remove_cv_t<_MP>,
-                                         is_member_function_pointer<_MP>::value,
-                                         is_member_object_pointer<_MP>::value>
+                                         _CCCL_TRAIT(is_member_function_pointer, _MP),
+                                         _CCCL_TRAIT(is_member_object_pointer, _MP)>
 {
   //     typedef ... _ClassType;
   //     typedef ... _ReturnType;
@@ -279,11 +279,11 @@ template <class _Fp,
           class _DecayA0 = typename decay<_A0>::type,
           class _ClassT  = typename __member_pointer_class_type<_DecayFp>::type>
 using __enable_if_bullet1 =
-  enable_if_t<is_member_function_pointer<_DecayFp>::value && is_base_of<_ClassT, _DecayA0>::value>;
+  enable_if_t<_CCCL_TRAIT(is_member_function_pointer, _DecayFp) && _CCCL_TRAIT(is_base_of, _ClassT, _DecayA0)>;
 
 template <class _Fp, class _A0, class _DecayFp = decay_t<_Fp>, class _DecayA0 = typename decay<_A0>::type>
 using __enable_if_bullet2 =
-  enable_if_t<is_member_function_pointer<_DecayFp>::value && __is_reference_wrapper<_DecayA0>::value>;
+  enable_if_t<_CCCL_TRAIT(is_member_function_pointer, _DecayFp) && __is_reference_wrapper<_DecayA0>::value>;
 
 template <class _Fp,
           class _A0,
@@ -291,7 +291,7 @@ template <class _Fp,
           class _DecayA0 = typename decay<_A0>::type,
           class _ClassT  = typename __member_pointer_class_type<_DecayFp>::type>
 using __enable_if_bullet3 =
-  enable_if_t<is_member_function_pointer<_DecayFp>::value && !is_base_of<_ClassT, _DecayA0>::value
+  enable_if_t<_CCCL_TRAIT(is_member_function_pointer, _DecayFp) && !_CCCL_TRAIT(is_base_of, _ClassT, _DecayA0)
               && !__is_reference_wrapper<_DecayA0>::value>;
 
 template <class _Fp,
@@ -300,11 +300,11 @@ template <class _Fp,
           class _DecayA0 = typename decay<_A0>::type,
           class _ClassT  = typename __member_pointer_class_type<_DecayFp>::type>
 using __enable_if_bullet4 =
-  enable_if_t<is_member_object_pointer<_DecayFp>::value && is_base_of<_ClassT, _DecayA0>::value>;
+  enable_if_t<_CCCL_TRAIT(is_member_object_pointer, _DecayFp) && _CCCL_TRAIT(is_base_of, _ClassT, _DecayA0)>;
 
 template <class _Fp, class _A0, class _DecayFp = decay_t<_Fp>, class _DecayA0 = typename decay<_A0>::type>
 using __enable_if_bullet5 =
-  enable_if_t<is_member_object_pointer<_DecayFp>::value && __is_reference_wrapper<_DecayA0>::value>;
+  enable_if_t<_CCCL_TRAIT(is_member_object_pointer, _DecayFp) && __is_reference_wrapper<_DecayA0>::value>;
 
 template <class _Fp,
           class _A0,
@@ -312,7 +312,7 @@ template <class _Fp,
           class _DecayA0 = typename decay<_A0>::type,
           class _ClassT  = typename __member_pointer_class_type<_DecayFp>::type>
 using __enable_if_bullet6 =
-  enable_if_t<is_member_object_pointer<_DecayFp>::value && !is_base_of<_ClassT, _DecayA0>::value
+  enable_if_t<_CCCL_TRAIT(is_member_object_pointer, _DecayFp) && !_CCCL_TRAIT(is_base_of, _ClassT, _DecayA0)
               && !__is_reference_wrapper<_DecayA0>::value>;
 
 // __invoke forward declarations
@@ -408,7 +408,7 @@ struct __invokable_r
   using _Result = decltype(__try_call<_Fp, _Args...>(0));
 
   using type              = conditional_t<_IsNotSame<_Result, __nat>::value,
-                                          conditional_t<is_void<_Ret>::value, true_type, __is_core_convertible<_Result, _Ret>>,
+                                          conditional_t<_CCCL_TRAIT(is_void, _Ret), true_type, __is_core_convertible<_Result, _Ret>>,
                                           false_type>;
   static const bool value = type::value;
 };
@@ -441,7 +441,7 @@ struct __nothrow_invokable_r_imp<true, true, _Ret, _Fp, _Args...>
 
 template <class _Ret, class _Fp, class... _Args>
 using __nothrow_invokable_r =
-  __nothrow_invokable_r_imp<__invokable_r<_Ret, _Fp, _Args...>::value, is_void<_Ret>::value, _Ret, _Fp, _Args...>;
+  __nothrow_invokable_r_imp<__invokable_r<_Ret, _Fp, _Args...>::value, _CCCL_TRAIT(is_void, _Ret), _Ret, _Fp, _Args...>;
 
 template <class _Fp, class... _Args>
 using __nothrow_invokable = __nothrow_invokable_r_imp<__invokable<_Fp, _Args...>::value, true, void, _Fp, _Args...>;
@@ -470,7 +470,7 @@ struct __invoke_of
 #endif
 };
 
-template <class _Ret, bool = is_void<_Ret>::value>
+template <class _Ret, bool = _CCCL_TRAIT(is_void, _Ret)>
 struct __invoke_void_return_wrapper
 {
   template <class... _Args>

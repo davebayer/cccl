@@ -50,7 +50,7 @@ get_temporary_buffer(ptrdiff_t __n) noexcept
 #if _LIBCUDACXX_HAS_ALIGNED_ALLOCATION()
     if (__is_overaligned_for_new(alignof(_Tp)))
     {
-      _CUDA_VSTD::align_val_t __al = _CUDA_VSTD::align_val_t(_CUDA_VSTD::alignment_of<_Tp>::value);
+      _CUDA_VSTD::align_val_t __al = _CUDA_VSTD::align_val_t(_CCCL_TRAIT(_CUDA_VSTD::alignment_of, _Tp));
       __r.first                    = static_cast<_Tp*>(::operator new(__n * sizeof(_Tp), __al));
     }
     else

@@ -43,8 +43,8 @@ template <class _Tp, class _Alloc, class... _Args>
 struct __uses_alloc_ctor_imp
 {
   using _RawAlloc _CCCL_NODEBUG_ALIAS = remove_cvref_t<_Alloc>;
-  static const bool __ua              = uses_allocator<_Tp, _RawAlloc>::value;
-  static const bool __ic              = is_constructible<_Tp, allocator_arg_t, _Alloc, _Args...>::value;
+  static const bool __ua              = _CCCL_TRAIT(uses_allocator, _Tp, _RawAlloc);
+  static const bool __ic              = _CCCL_TRAIT(is_constructible, _Tp, allocator_arg_t, _Alloc, _Args...);
   static const int value              = __ua ? 2 - __ic : 0;
 };
 

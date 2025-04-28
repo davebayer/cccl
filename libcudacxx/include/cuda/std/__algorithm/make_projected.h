@@ -68,9 +68,10 @@ struct _ProjectedPred
   }
 };
 
-template <class _Pred,
-          class _Proj,
-          enable_if_t<!(!is_member_pointer<decay_t<_Pred>>::value && __is_identity<decay_t<_Proj>>::value), int> = 0>
+template <
+  class _Pred,
+  class _Proj,
+  enable_if_t<!(!_CCCL_TRAIT(is_member_pointer, decay_t<_Pred>) && __is_identity<decay_t<_Proj>>::value), int> = 0>
 _LIBCUDACXX_HIDE_FROM_ABI constexpr _ProjectedPred<_Pred, _Proj> __make_projected(_Pred& __pred, _Proj& __proj)
 {
   return _ProjectedPred<_Pred, _Proj>(__pred, __proj);
@@ -81,7 +82,7 @@ _LIBCUDACXX_HIDE_FROM_ABI constexpr _ProjectedPred<_Pred, _Proj> __make_projecte
 // the call stack when the comparator is invoked, even in an unoptimized build.
 template <class _Pred,
           class _Proj,
-          enable_if_t<!is_member_pointer<decay_t<_Pred>>::value && __is_identity<decay_t<_Proj>>::value, int> = 0>
+          enable_if_t<!_CCCL_TRAIT(is_member_pointer, decay_t<_Pred>) && __is_identity<decay_t<_Proj>>::value, int> = 0>
 _LIBCUDACXX_HIDE_FROM_ABI constexpr _Pred& __make_projected(_Pred& __pred, _Proj&)
 {
   return __pred;

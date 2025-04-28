@@ -53,7 +53,7 @@ public:
   template <class _Up>
   _LIBCUDACXX_HIDE_FROM_ABI constexpr __wrap_iter(
     const __wrap_iter<_Up>& __u,
-    typename enable_if<is_convertible<_Up, iterator_type>::value>::type* = nullptr) noexcept
+    typename enable_if<_CCCL_TRAIT(is_convertible, _Up, iterator_type)>::type* = nullptr) noexcept
       : __i_(__u.base())
   {}
   _LIBCUDACXX_HIDE_FROM_ABI constexpr reference operator*() const noexcept

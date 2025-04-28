@@ -115,7 +115,7 @@ __mu_expand(_Ti& __ti, tuple<_Uj...>& __uj, __tuple_indices<_Indx...>)
 }
 
 template <class _Ti, class... _Uj>
-_LIBCUDACXX_HIDE_FROM_ABI enable_if_t<is_bind_expression<_Ti>::value, __invoke_of<_Ti&, _Uj...>>
+_LIBCUDACXX_HIDE_FROM_ABI enable_if_t<_CCCL_TRAIT(is_bind_expression, _Ti), __invoke_of<_Ti&, _Uj...>>
 __mu(_Ti& __ti, tuple<_Uj...>& __uj)
 {
   using __indices = __make_tuple_indices_t<sizeof...(_Uj)>;
@@ -129,22 +129,22 @@ struct __mu_return2
 template <class _Ti, class _Uj>
 struct __mu_return2<true, _Ti, _Uj>
 {
-  using type = tuple_element_t<is_placeholder<_Ti>::value - 1, _Uj>;
+  using type = tuple_element_t<_CCCL_TRAIT(is_placeholder, _Ti) - 1, _Uj>;
 };
 
 template <class _Ti, class _Uj>
-_LIBCUDACXX_HIDE_FROM_ABI
-enable_if_t<0 < is_placeholder<_Ti>::value, typename __mu_return2<0 < is_placeholder<_Ti>::value, _Ti, _Uj>::type>
+_LIBCUDACXX_HIDE_FROM_ABI enable_if_t<0 < _CCCL_TRAIT(is_placeholder, _Ti),
+                                      typename __mu_return2<0 < _CCCL_TRAIT(is_placeholder, _Ti), _Ti, _Uj>::type>
 __mu(_Ti&, _Uj& __uj)
 {
-  const size_t _Indx = is_placeholder<_Ti>::value - 1;
+  const size_t _Indx = _CCCL_TRAIT(is_placeholder, _Ti) - 1;
   return _CUDA_VSTD::forward<tuple_element_t<_Indx, _Uj>>(_CUDA_VSTD::get<_Indx>(__uj));
 }
 
 template <class _Ti, class _Uj>
-_LIBCUDACXX_HIDE_FROM_ABI
-enable_if_t<!is_bind_expression<_Ti>::value && is_placeholder<_Ti>::value == 0 && !__is_reference_wrapper<_Ti>::value,
-            _Ti&>
+_LIBCUDACXX_HIDE_FROM_ABI enable_if_t<
+  !_CCCL_TRAIT(is_bind_expression, _Ti) && _CCCL_TRAIT(is_placeholder, _Ti) == 0 && !__is_reference_wrapper<_Ti>::value,
+  _Ti&>
 __mu(_Ti& __ti, _Uj&)
 {
   return __ti;
@@ -173,7 +173,7 @@ struct __mu_return_impl<_Ti, false, true, false, tuple<_Uj...>>
 template <class _Ti, class _TupleUj>
 struct __mu_return_impl<_Ti, false, false, true, _TupleUj>
 {
-  using type = tuple_element_t<is_placeholder<_Ti>::value - 1, _TupleUj>&&;
+  using type = tuple_element_t<_CCCL_TRAIT(is_placeholder, _Ti) - 1, _TupleUj>&&;
 };
 
 template <class _Ti, class _TupleUj>
@@ -193,8 +193,8 @@ struct __mu_return
     : public __mu_return_impl<
         _Ti,
         __is_reference_wrapper<_Ti>::value,
-        is_bind_expression<_Ti>::value,
-        0 < is_placeholder<_Ti>::value && is_placeholder<_Ti>::value <= tuple_size<_TupleUj>::value,
+        _CCCL_TRAIT(is_bind_expression, _Ti),
+        0 < _CCCL_TRAIT(is_placeholder, _Ti) && _CCCL_TRAIT(is_placeholder, _Ti) <= _CCCL_TRAIT(tuple_size, _TupleUj),
         _TupleUj>
 {};
 
@@ -257,7 +257,8 @@ private:
 public:
   template <class _Gp,
             class... _BA,
-            class = enable_if_t<is_constructible<_Fd, _Gp>::value && !is_same<remove_reference_t<_Gp>, __bind>::value>>
+            class = enable_if_t<_CCCL_TRAIT(is_constructible, _Fd, _Gp)
+                                && !_CCCL_TRAIT(is_same, remove_reference_t<_Gp>, __bind)>>
   _LIBCUDACXX_HIDE_FROM_ABI _CCCL_CONSTEXPR_CXX20 explicit __bind(_Gp&& __f, _BA&&... __bound_args)
       : __f_(_CUDA_VSTD::forward<_Gp>(__f))
       , __bound_args_(_CUDA_VSTD::forward<_BA>(__bound_args)...)
@@ -296,15 +297,16 @@ public:
 
   template <class _Gp,
             class... _BA,
-            class = enable_if_t<is_constructible<_Fd, _Gp>::value && !is_same<remove_reference_t<_Gp>, __bind_r>::value>>
+            class = enable_if_t<_CCCL_TRAIT(is_constructible, _Fd, _Gp)
+                                && !_CCCL_TRAIT(is_same, remove_reference_t<_Gp>, __bind_r)>>
   _LIBCUDACXX_HIDE_FROM_ABI _CCCL_CONSTEXPR_CXX20 explicit __bind_r(_Gp&& __f, _BA&&... __bound_args)
       : base(_CUDA_VSTD::forward<_Gp>(__f), _CUDA_VSTD::forward<_BA>(__bound_args)...)
   {}
 
   template <class... _Args>
-  _LIBCUDACXX_HIDE_FROM_ABI _CCCL_CONSTEXPR_CXX20
-  enable_if_t<is_convertible<__bind_return_t<_Fd, _Td, tuple<_Args&&...>>, result_type>::value || is_void<_Rp>::value,
-              result_type>
+  _LIBCUDACXX_HIDE_FROM_ABI _CCCL_CONSTEXPR_CXX20 enable_if_t<
+    _CCCL_TRAIT(is_convertible, __bind_return_t<_Fd, _Td, tuple<_Args&&...>>, result_type) || _CCCL_TRAIT(is_void, _Rp),
+    result_type>
   operator()(_Args&&... __args)
   {
     using _Invoker = __invoke_void_return_wrapper<_Rp>;
@@ -312,9 +314,10 @@ public:
   }
 
   template <class... _Args>
-  _LIBCUDACXX_HIDE_FROM_ABI _CCCL_CONSTEXPR_CXX20 enable_if_t<
-    is_convertible<__bind_return_t<const _Fd, const _Td, tuple<_Args&&...>>, result_type>::value || is_void<_Rp>::value,
-    result_type>
+  _LIBCUDACXX_HIDE_FROM_ABI _CCCL_CONSTEXPR_CXX20
+  enable_if_t<_CCCL_TRAIT(is_convertible, __bind_return_t<const _Fd, const _Td, tuple<_Args&&...>>, result_type)
+                || _CCCL_TRAIT(is_void, _Rp),
+              result_type>
   operator()(_Args&&... __args) const
   {
     using _Invoker = __invoke_void_return_wrapper<_Rp>;

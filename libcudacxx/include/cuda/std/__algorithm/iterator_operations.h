@@ -108,7 +108,7 @@ struct _IterOps<_ClassicAlgPolicy>
   _LIBCUDACXX_HIDE_FROM_ABI constexpr static void __validate_iter_reference()
   {
     static_assert(
-      is_same<__deref_t<_Iter>, typename iterator_traits<remove_cvref_t<_Iter>>::reference>::value,
+      _CCCL_TRAIT(is_same, __deref_t<_Iter>, typename iterator_traits<remove_cvref_t<_Iter>>::reference),
       "It looks like your iterator's `iterator_traits<It>::reference` does not match the return type of "
       "dereferencing the iterator, i.e., calling `*it`. This is undefined behavior according to [input.iterators] "
       "and can lead to dangling reference issues at runtime, so we are flagging this.");
@@ -116,7 +116,7 @@ struct _IterOps<_ClassicAlgPolicy>
 
   // iter_move
   _CCCL_EXEC_CHECK_DISABLE
-  template <class _Iter, enable_if_t<is_reference<__deref_t<_Iter>>::value, int> = 0>
+  template <class _Iter, enable_if_t<_CCCL_TRAIT(is_reference, __deref_t<_Iter>), int> = 0>
   _LIBCUDACXX_HIDE_FROM_ABI constexpr static
     // If the result of dereferencing `_Iter` is a reference type, deduce the result of calling `_CUDA_VSTD::move` on
     // it. Note that the C++03 mode doesn't support `decltype(auto)` as the return type.
@@ -129,7 +129,7 @@ struct _IterOps<_ClassicAlgPolicy>
   }
 
   _CCCL_EXEC_CHECK_DISABLE
-  template <class _Iter, enable_if_t<!is_reference<__deref_t<_Iter>>::value, int> = 0>
+  template <class _Iter, enable_if_t<!_CCCL_TRAIT(is_reference, __deref_t<_Iter>), int> = 0>
   _LIBCUDACXX_HIDE_FROM_ABI constexpr static
     // If the result of dereferencing `_Iter` is a value type, deduce the return value of this function to also be a
     // value -- otherwise, after `operator*` returns a temporary, this function would return a dangling reference to

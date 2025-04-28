@@ -56,8 +56,9 @@ _CCCL_DIAG_SUPPRESS_MSVC(4146) // unary minus applied to an unsigned type
 template <class _Int>
 struct __avoid_promotions
 {
-  using __base =
-    conditional_t<(sizeof(_Int) >= sizeof(int)), _Int, conditional_t<is_unsigned<_Int>::value, unsigned int, signed int>>;
+  using __base = conditional_t<(sizeof(_Int) >= sizeof(int)),
+                               _Int,
+                               conditional_t<_CCCL_TRAIT(is_unsigned, _Int), unsigned int, signed int>>;
 
   _CCCL_HIDE_FROM_ABI constexpr __avoid_promotions() = default;
 

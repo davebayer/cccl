@@ -145,6 +145,9 @@
 #include <cuda/__cmath/ceil_div.h>
 #include <cuda/barrier>
 #include <cuda/discard_memory>
+#include <cuda/std/__cstddef/types.h>
+#include <cuda/std/__type_traits/is_assignable.h>
+#include <cuda/std/__type_traits/is_same.h>
 #include <cuda/std/cstdint>
 #include <cuda/std/detail/__access_property>
 
@@ -252,11 +255,12 @@ template <class _Tp, class _Property>
 _CCCL_HOST_DEVICE _Tp* associate_access_property(_Tp* __ptr, _Property __prop)
 {
   static_assert(
-    std::is_same<_Property, access_property>::value || std::is_same<_Property, access_property::persisting>::value
-      || std::is_same<_Property, access_property::streaming>::value
-      || std::is_same<_Property, access_property::normal>::value
-      || std::is_same<_Property, access_property::global>::value
-      || std::is_same<_Property, access_property::shared>::value,
+    _CCCL_TRAIT(_CUDA_VSTD::is_same, _Property, access_property)
+      || _CCCL_TRAIT(_CUDA_VSTD::is_same, _Property, access_property::persisting)
+      || _CCCL_TRAIT(_CUDA_VSTD::is_same, _Property, access_property::streaming)
+      || _CCCL_TRAIT(_CUDA_VSTD::is_same, _Property, access_property::normal)
+      || _CCCL_TRAIT(_CUDA_VSTD::is_same, _Property, access_property::global)
+      || _CCCL_TRAIT(_CUDA_VSTD::is_same, _Property, access_property::shared),
     "property is not convertible to cuda::access_property");
   return __detail_ap::__associate(__ptr, __prop);
 }
@@ -358,10 +362,11 @@ public:
   _CCCL_HOST_DEVICE explicit annotated_ptr(pointer __p)
       : __repr(__p)
   {
-    NV_IF_TARGET(NV_IS_DEVICE,
-                 (_CCCL_ASSERT((std::is_same<_Property, access_property::shared>::value && __isShared((void*) __p))
-                                 || __isGlobal((void*) __p),
-                               "");))
+    NV_IF_TARGET(
+      NV_IS_DEVICE,
+      (_CCCL_ASSERT((_CCCL_TRAIT(_CUDA_VSTD::is_same, _Property, access_property::shared) && __isShared((void*) __p))
+                      || __isGlobal((void*) __p),
+                    "");))
   }
 
   template <typename _RuntimeProperty>
@@ -369,14 +374,14 @@ public:
       : __detail_ap::__annotated_ptr_base<_Property>(static_cast<std::uint64_t>(access_property(__prop)))
       , __repr(__p)
   {
-    static_assert(std::is_same<_Property, access_property>::value,
+    static_assert(_CCCL_TRAIT(_CUDA_VSTD::is_same, _Property, access_property),
                   "This method requires annotated_ptr<T, cuda::access_property>");
     static_assert(
-      std::is_same<_RuntimeProperty, access_property::global>::value
-        || std::is_same<_RuntimeProperty, access_property::normal>::value
-        || std::is_same<_RuntimeProperty, access_property::streaming>::value
-        || std::is_same<_RuntimeProperty, access_property::persisting>::value
-        || std::is_same<_RuntimeProperty, access_property>::value,
+      _CCCL_TRAIT(_CUDA_VSTD::is_same, _RuntimeProperty, access_property::global)
+        || _CCCL_TRAIT(_CUDA_VSTD::is_same, _RuntimeProperty, access_property::normal)
+        || _CCCL_TRAIT(_CUDA_VSTD::is_same, _RuntimeProperty, access_property::streaming)
+        || _CCCL_TRAIT(_CUDA_VSTD::is_same, _RuntimeProperty, access_property::persisting)
+        || _CCCL_TRAIT(_CUDA_VSTD::is_same, _RuntimeProperty, access_property),
       "This method requires RuntimeProperty=global|normal|streaming|persisting|access_property");
     NV_IF_TARGET(NV_IS_DEVICE, (_CCCL_ASSERT((__isGlobal((void*) __p) == true), "");))
   }
@@ -395,7 +400,7 @@ public:
     {
       return nullptr;
     }
-    constexpr bool __is_shared = std::is_same<_Property, access_property::shared>::value;
+    constexpr bool __is_shared = _CCCL_TRAIT(_CUDA_VSTD::is_same, _Property, access_property::shared);
     return __is_shared ? __repr : &(*annotated_ptr<value_type, access_property::global>(__repr));
   }
 
@@ -411,10 +416,12 @@ _CCCL_HOST_DEVICE annotated_ptr<_Tp, _Property>::annotated_ptr(const annotated_p
     : __detail_ap::__annotated_ptr_base<_Property>(__other.__property())
     , __repr(__other.get())
 {
-  static_assert(std::is_assignable<pointer&, _TTp*>::value, "pointer must be assignable from other pointer");
+  static_assert(_CCCL_TRAIT(_CUDA_VSTD::is_assignable, pointer&, _TTp*),
+                "pointer must be assignable from other pointer");
   static_assert(
-    (std::is_same<_Property, access_property>::value && !std::is_same<_Prop, access_property::shared>::value)
-      || std::is_same<_Property, _Prop>::value,
+    (_CCCL_TRAIT(_CUDA_VSTD::is_same, _Property, access_property)
+     && !_CCCL_TRAIT(_CUDA_VSTD::is_same, _Prop, access_property::shared))
+      || _CCCL_TRAIT(_CUDA_VSTD::is_same, _Property, _Prop),
     "Property must be either access_property or other property, and both properties must have same address space");
   // note: precondition "__other.__rep must be compatible with _Property" currently always holds
 }

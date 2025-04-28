@@ -41,7 +41,8 @@ private:
 public:
   __return_type_wrapper() = delete;
 
-  template <class _Fn, class = _CUDA_VSTD::enable_if_t<_CUDA_VSTD::is_same<_CUDA_VSTD::decay_t<_Fn>, _DecayFn>::value>>
+  template <class _Fn,
+            class = _CUDA_VSTD::enable_if_t<_CCCL_TRAIT(_CUDA_VSTD::is_same, _CUDA_VSTD::decay_t<_Fn>, _DecayFn >)>>
   _LIBCUDACXX_HIDE_FROM_ABI constexpr explicit __return_type_wrapper(_Fn&& __fn) noexcept
       : __fn_(_CUDA_VSTD::forward<_Fn>(__fn))
   {}

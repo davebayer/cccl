@@ -134,7 +134,7 @@ _CCCL_HOST_DEVICE inline constexpr int __atomic_failure_order_to_int(memory_orde
                         : (__order == memory_order_acq_rel ? __ATOMIC_ACQUIRE : __ATOMIC_CONSUME))));
 }
 
-static_assert((is_same<underlying_type<memory_order>::type, __memory_order_underlying_t>::value),
+static_assert((_CCCL_TRAIT(is_same, underlying_type_t<memory_order>, __memory_order_underlying_t)),
               "unexpected underlying type for std::memory_order");
 
 _LIBCUDACXX_END_NAMESPACE_STD

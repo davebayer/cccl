@@ -35,7 +35,7 @@ _CCCL_EXEC_CHECK_DISABLE
 template <class _InputIter,
           class _Distance,
           class _IntegralDistance = decltype(_CUDA_VSTD::__convert_to_integral(_CUDA_VSTD::declval<_Distance>())),
-          class                   = enable_if_t<is_integral<_IntegralDistance>::value>>
+          class                   = enable_if_t<_CCCL_TRAIT(is_integral, _IntegralDistance)>>
 _LIBCUDACXX_HIDE_FROM_ABI constexpr void advance(_InputIter& __i, _Distance __orig_n)
 {
   using _Difference = typename iterator_traits<_InputIter>::difference_type;

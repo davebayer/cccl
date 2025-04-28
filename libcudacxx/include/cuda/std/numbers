@@ -21,20 +21,17 @@
 #endif // no system header
 
 #include <cuda/std/__floating_point/nvfp_types.h>
+#include <cuda/std/__type_traits/always_false.h>
 #include <cuda/std/__type_traits/enable_if.h>
 #include <cuda/std/__type_traits/is_floating_point.h>
 #include <cuda/std/version>
 
 _LIBCUDACXX_BEGIN_NAMESPACE_STD
 
-template <class _Tp>
-struct __numbers_ill_formed_impl : false_type
-{};
-
 template <class _Tp, class = void>
 struct __numbers
 {
-  static_assert(__numbers_ill_formed_impl<_Tp>::value,
+  static_assert(__always_false_v<_Tp>,
                 "[math.constants] A program that instantiates a primary template of a mathematical constant variable "
                 "template is ill-formed.");
 };

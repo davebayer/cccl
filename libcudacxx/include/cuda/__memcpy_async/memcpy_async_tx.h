@@ -51,7 +51,8 @@ _CCCL_DEVICE inline async_contract_fulfillment memcpy_async_tx(
   // memcpy_async when compiling with GCC 4.8.
   // FIXME: remove the #if once GCC 4.8 is no longer supported.
 #    if !_CCCL_COMPILER(GCC) || _CCCL_COMPILER(GCC, >, 4, 8)
-  static_assert(_CUDA_VSTD::is_trivially_copyable<_Tp>::value, "memcpy_async_tx requires a trivially copyable type");
+  static_assert(_CCCL_TRAIT(_CUDA_VSTD::is_trivially_copyable, _Tp),
+                "memcpy_async_tx requires a trivially copyable type");
 #    endif
   static_assert(16 <= _Alignment, "mempcy_async_tx expects arguments to be at least 16 byte aligned.");
 

@@ -119,15 +119,16 @@ public:
       , current(__x)
   {}
 
-  template <class _Up, class = enable_if_t<!is_same<_Up, _Iter>::value && is_convertible<_Up const&, _Iter>::value>>
+  template <class _Up,
+            class = enable_if_t<!_CCCL_TRAIT(is_same, _Up, _Iter) && _CCCL_TRAIT(is_convertible, _Up const&, _Iter)>>
   _LIBCUDACXX_HIDE_FROM_ABI constexpr reverse_iterator(const reverse_iterator<_Up>& __u)
       : __t_(__u.base())
       , current(__u.base())
   {}
 
   template <class _Up,
-            class = enable_if_t<!is_same<_Up, _Iter>::value && is_convertible<_Up const&, _Iter>::value
-                                && is_assignable<_Iter&, _Up const&>::value>>
+            class = enable_if_t<!_CCCL_TRAIT(is_same, _Up, _Iter) && _CCCL_TRAIT(is_convertible, _Up const&, _Iter)
+                                && _CCCL_TRAIT(is_assignable, _Iter&, _Up const&)>>
   _LIBCUDACXX_HIDE_FROM_ABI constexpr reverse_iterator& operator=(const reverse_iterator<_Up>& __u)
   {
     __t_ = current = __u.base();
@@ -142,14 +143,15 @@ public:
       : current(__x)
   {}
 
-  template <class _Up, class = enable_if_t<!is_same<_Up, _Iter>::value && is_convertible<_Up const&, _Iter>::value>>
+  template <class _Up,
+            class = enable_if_t<!_CCCL_TRAIT(is_same, _Up, _Iter) && _CCCL_TRAIT(is_convertible, _Up const&, _Iter)>>
   _LIBCUDACXX_HIDE_FROM_ABI constexpr reverse_iterator(const reverse_iterator<_Up>& __u)
       : current(__u.base())
   {}
 
   template <class _Up,
-            class = enable_if_t<!is_same<_Up, _Iter>::value && is_convertible<_Up const&, _Iter>::value
-                                && is_assignable<_Iter&, _Up const&>::value>>
+            class = enable_if_t<!_CCCL_TRAIT(is_same, _Up, _Iter) && _CCCL_TRAIT(is_convertible, _Up const&, _Iter)
+                                && _CCCL_TRAIT(is_assignable, _Iter&, _Up const&)>>
   _LIBCUDACXX_HIDE_FROM_ABI constexpr reverse_iterator& operator=(const reverse_iterator<_Up>& __u)
   {
     current = __u.base();

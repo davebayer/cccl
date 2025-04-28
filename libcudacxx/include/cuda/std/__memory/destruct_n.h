@@ -66,19 +66,19 @@ public:
   template <class _Tp>
   _LIBCUDACXX_HIDE_FROM_ABI void __incr() noexcept
   {
-    __incr(integral_constant<bool, is_trivially_destructible<_Tp>::value>());
+    __incr(integral_constant<bool, _CCCL_TRAIT(is_trivially_destructible, _Tp)>());
   }
 
   template <class _Tp>
   _LIBCUDACXX_HIDE_FROM_ABI void __set(size_t __s, _Tp*) noexcept
   {
-    __set(__s, integral_constant<bool, is_trivially_destructible<_Tp>::value>());
+    __set(__s, integral_constant<bool, _CCCL_TRAIT(is_trivially_destructible, _Tp)>());
   }
 
   template <class _Tp>
   _LIBCUDACXX_HIDE_FROM_ABI void operator()(_Tp* __p) noexcept
   {
-    __process(__p, integral_constant<bool, is_trivially_destructible<_Tp>::value>());
+    __process(__p, integral_constant<bool, _CCCL_TRAIT(is_trivially_destructible, _Tp)>());
   }
 };
 
