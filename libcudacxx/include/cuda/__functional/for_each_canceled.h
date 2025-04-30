@@ -28,12 +28,10 @@
 
 #include <nv/target>
 
-#if _CCCL_HAS_CUDA_COMPILER()
-
 _LIBCUDACXX_BEGIN_NAMESPACE_CUDA
 
+#if _CCCL_DEVICE_COMPILATION()
 #  if _CCCL_HAS_INT128()
-
 #    if __cccl_ptx_isa >= 870
 
 template <int _Index>
@@ -199,7 +197,9 @@ __for_each_canceled_block_sm100(dim3 __block_idx, bool __is_leader, __UnaryFunct
 }
 #    endif // __cccl_ptx_isa <= 870
 #  endif // _CCCL_HAS_INT128()
+#endif // _CCCL_DEVICE_COMPILATION()
 
+#if _CCCL_CUDA_COMPILATION()
 //! This API for implementing work-stealing, repeatedly attempts to cancel the launch of a thread block
 //! from the current grid. On success, it invokes the unary function `__uf` before trying again.
 //! On failure, it returns.
@@ -267,9 +267,8 @@ _CCCL_DEVICE _CCCL_HIDE_FROM_ABI void for_each_canceled_block(__UnaryFunction __
       threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0, _CUDA_VSTD::move(__uf));
   }
 }
+#endif // _CCCL_CUDA_COMPILATION()
 
 _LIBCUDACXX_END_NAMESPACE_CUDA
-
-#endif // _CCCL_HAS_CUDA_COMPILER()
 
 #endif // _CUDA__FUNCTIONAL_FOR_EACH_CANCELED_H

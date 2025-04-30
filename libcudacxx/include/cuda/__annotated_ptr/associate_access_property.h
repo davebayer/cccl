@@ -172,7 +172,7 @@ inline constexpr bool __is_global_access_property_v =
                             access_property::streaming,
                             access_property>;
 
-#if _CCCL_HAS_CUDA_COMPILER()
+#if _CCCL_DEVICE_COMPILATION()
 
 template <typename _Property>
 [[nodiscard]] _CCCL_HIDE_FROM_ABI _CCCL_DEVICE void*
@@ -215,7 +215,7 @@ template <typename _Property>
   return __ptr;
 }
 
-#endif // _CCCL_HAS_CUDA_COMPILER()
+#endif // _CCCL_DEVICE_COMPILATION()
 
 template <typename _Type, typename _Property>
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI _Type* __associate(_Type* __ptr, [[maybe_unused]] _Property __prop) noexcept
