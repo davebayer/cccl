@@ -60,8 +60,6 @@ public:
     --(*this);
     return __tmp;
   }
-  _LIBCUDACXX_HIDE_FROM_ABI constexpr day& operator+=(const days& __dd) noexcept;
-  _LIBCUDACXX_HIDE_FROM_ABI constexpr day& operator-=(const days& __dd) noexcept;
   _LIBCUDACXX_HIDE_FROM_ABI explicit constexpr operator unsigned() const noexcept
   {
     return __d_;
@@ -70,51 +68,69 @@ public:
   {
     return __d_ >= 1 && __d_ <= 31;
   }
+
+  _CCCL_NODISCARD_FRIEND _LIBCUDACXX_HIDE_FROM_ABI constexpr bool operator==(const day& __lhs, const day& __rhs) noexcept
+  {
+    return static_cast<unsigned>(__lhs) == static_cast<unsigned>(__rhs);
+  }
+
+  _CCCL_NODISCARD_FRIEND _LIBCUDACXX_HIDE_FROM_ABI constexpr bool operator!=(const day& __lhs, const day& __rhs) noexcept
+  {
+    return !(__lhs == __rhs);
+  }
+
+  _CCCL_NODISCARD_FRIEND _LIBCUDACXX_HIDE_FROM_ABI constexpr bool operator<(const day& __lhs, const day& __rhs) noexcept
+  {
+    return static_cast<unsigned>(__lhs) < static_cast<unsigned>(__rhs);
+  }
+
+  _CCCL_NODISCARD_FRIEND _LIBCUDACXX_HIDE_FROM_ABI constexpr bool operator>(const day& __lhs, const day& __rhs) noexcept
+  {
+    return __rhs < __lhs;
+  }
+
+  _CCCL_NODISCARD_FRIEND _LIBCUDACXX_HIDE_FROM_ABI constexpr bool operator<=(const day& __lhs, const day& __rhs) noexcept
+  {
+    return !(__rhs < __lhs);
+  }
+
+  _CCCL_NODISCARD_FRIEND _LIBCUDACXX_HIDE_FROM_ABI constexpr bool operator>=(const day& __lhs, const day& __rhs) noexcept
+  {
+    return !(__lhs < __rhs);
+  }
+
+  _CCCL_NODISCARD_FRIEND _LIBCUDACXX_HIDE_FROM_ABI constexpr day operator+(const day& __lhs, const days& __rhs) noexcept
+  {
+    return day(static_cast<unsigned>(__lhs) + __rhs.count());
+  }
+
+  _CCCL_NODISCARD_FRIEND _LIBCUDACXX_HIDE_FROM_ABI constexpr day operator+(const days& __lhs, const day& __rhs) noexcept
+  {
+    return __rhs + __lhs;
+  }
+
+  _CCCL_NODISCARD_FRIEND _LIBCUDACXX_HIDE_FROM_ABI constexpr day operator-(const day& __lhs, const days& __rhs) noexcept
+  {
+    return __lhs + -__rhs;
+  }
+
+  _CCCL_NODISCARD_FRIEND _LIBCUDACXX_HIDE_FROM_ABI constexpr days operator-(const day& __lhs, const day& __rhs) noexcept
+  {
+    return days(static_cast<int>(static_cast<unsigned>(__lhs)) - static_cast<int>(static_cast<unsigned>(__rhs)));
+  }
+
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr day& operator+=(const days& __dd) noexcept
+  {
+    *this = *this + __dd;
+    return *this;
+  }
+
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr day& operator-=(const days& __dd) noexcept
+  {
+    *this = *this - __dd;
+    return *this;
+  }
 };
-
-_LIBCUDACXX_HIDE_FROM_ABI constexpr bool operator==(const day& __lhs, const day& __rhs) noexcept
-{
-  return static_cast<unsigned>(__lhs) == static_cast<unsigned>(__rhs);
-}
-
-#if _LIBCUDACXX_HAS_SPACESHIP_OPERATOR()
-_LIBCUDACXX_HIDE_FROM_ABI constexpr strong_ordering operator<=>(const day& __lhs, const day& __rhs) noexcept
-{
-  return static_cast<unsigned>(__lhs) <=> static_cast<unsigned>(__rhs);
-}
-#endif // _LIBCUDACXX_HAS_SPACESHIP_OPERATOR()
-
-_LIBCUDACXX_HIDE_FROM_ABI constexpr day operator+(const day& __lhs, const days& __rhs) noexcept
-{
-  return day(static_cast<unsigned>(__lhs) + __rhs.count());
-}
-
-_LIBCUDACXX_HIDE_FROM_ABI constexpr day operator+(const days& __lhs, const day& __rhs) noexcept
-{
-  return __rhs + __lhs;
-}
-
-_LIBCUDACXX_HIDE_FROM_ABI constexpr day operator-(const day& __lhs, const days& __rhs) noexcept
-{
-  return __lhs + -__rhs;
-}
-
-_LIBCUDACXX_HIDE_FROM_ABI constexpr days operator-(const day& __lhs, const day& __rhs) noexcept
-{
-  return days(static_cast<int>(static_cast<unsigned>(__lhs)) - static_cast<int>(static_cast<unsigned>(__rhs)));
-}
-
-_LIBCUDACXX_HIDE_FROM_ABI constexpr day& day::operator+=(const days& __dd) noexcept
-{
-  *this = *this + __dd;
-  return *this;
-}
-
-_LIBCUDACXX_HIDE_FROM_ABI constexpr day& day::operator-=(const days& __dd) noexcept
-{
-  *this = *this - __dd;
-  return *this;
-}
 
 } // namespace chrono
 

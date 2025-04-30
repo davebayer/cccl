@@ -351,30 +351,19 @@ using years        = duration<int, ratio_multiply<ratio<146097, 400>, days::peri
 using months       = duration<int, ratio_divide<years::period, ratio<12>>>;
 // Duration ==
 
-template <class _LhsDuration, class _RhsDuration>
-struct __duration_eq
-{
-  _LIBCUDACXX_HIDE_FROM_ABI constexpr bool operator()(const _LhsDuration& __lhs, const _RhsDuration& __rhs) const
-  {
-    using _Ct = common_type_t<_LhsDuration, _RhsDuration>;
-    return _Ct(__lhs).count() == _Ct(__rhs).count();
-  }
-};
-
-template <class _LhsDuration>
-struct __duration_eq<_LhsDuration, _LhsDuration>
-{
-  _LIBCUDACXX_HIDE_FROM_ABI constexpr bool operator()(const _LhsDuration& __lhs, const _LhsDuration& __rhs) const
-  {
-    return __lhs.count() == __rhs.count();
-  }
-};
-
 template <class _Rep1, class _Period1, class _Rep2, class _Period2>
 _LIBCUDACXX_HIDE_FROM_ABI constexpr bool
 operator==(const duration<_Rep1, _Period1>& __lhs, const duration<_Rep2, _Period2>& __rhs)
 {
-  return __duration_eq<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>()(__lhs, __rhs);
+  if constexpr (is_same_v<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>)
+  {
+    return __lhs.count() == __rhs.count();
+  }
+  else
+  {
+    using _Ct = common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>;
+    return _Ct(__lhs).count() == _Ct(__rhs).count();
+  }
 }
 
 // Duration !=
@@ -388,30 +377,19 @@ operator!=(const duration<_Rep1, _Period1>& __lhs, const duration<_Rep2, _Period
 
 // Duration <
 
-template <class _LhsDuration, class _RhsDuration>
-struct __duration_lt
-{
-  _LIBCUDACXX_HIDE_FROM_ABI constexpr bool operator()(const _LhsDuration& __lhs, const _RhsDuration& __rhs) const
-  {
-    using _Ct = common_type_t<_LhsDuration, _RhsDuration>;
-    return _Ct(__lhs).count() < _Ct(__rhs).count();
-  }
-};
-
-template <class _LhsDuration>
-struct __duration_lt<_LhsDuration, _LhsDuration>
-{
-  _LIBCUDACXX_HIDE_FROM_ABI constexpr bool operator()(const _LhsDuration& __lhs, const _LhsDuration& __rhs) const
-  {
-    return __lhs.count() < __rhs.count();
-  }
-};
-
 template <class _Rep1, class _Period1, class _Rep2, class _Period2>
 _LIBCUDACXX_HIDE_FROM_ABI constexpr bool
 operator<(const duration<_Rep1, _Period1>& __lhs, const duration<_Rep2, _Period2>& __rhs)
 {
-  return __duration_lt<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>()(__lhs, __rhs);
+  if constexpr (is_same_v<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>)
+  {
+    return __lhs.count() < __rhs.count();
+  }
+  else
+  {
+    using _Ct = common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>;
+    return __duration_lt<_Ct, _Ct>()(__lhs, __rhs);
+  }
 }
 
 // Duration >
@@ -440,19 +418,6 @@ operator>=(const duration<_Rep1, _Period1>& __lhs, const duration<_Rep2, _Period
 {
   return !(__lhs < __rhs);
 }
-
-#if _LIBCUDACXX_HAS_SPACESHIP_OPERATOR()
-
-template <class _Rep1, class _Period1, class _Rep2, class _Period2>
-  requires three_way_comparable<common_type_t<_Rep1, _Rep2>>
-_LIBCUDACXX_HIDE_FROM_ABI constexpr auto
-operator<=>(const duration<_Rep1, _Period1>& __lhs, const duration<_Rep2, _Period2>& __rhs)
-{
-  using _Ct = common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>;
-  return _Ct(__lhs).count() <=> _Ct(__rhs).count();
-}
-
-#endif // _LIBCUDACXX_HAS_SPACESHIP_OPERATOR()
 
 // Duration +
 
