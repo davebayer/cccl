@@ -22,7 +22,7 @@
 #  pragma system_header
 #endif // no system header
 
-#if _CCCL_HAS_CUDA_COMPILER()
+#if _CCCL_CUDA_COMPILATION()
 #  if __cccl_ptx_isa >= 800
 
 #    include <cuda/__barrier/barrier_block_scope.h>
@@ -62,6 +62,6 @@ barrier_expect_tx(barrier<thread_scope_block>& __b, _CUDA_VSTD::ptrdiff_t __tran
 _LIBCUDACXX_END_NAMESPACE_CUDA_DEVICE
 
 #  endif // __cccl_ptx_isa >= 800
-#endif // _CCCL_CUDA_COMPILER
+#endif // _CCCL_CUDA_COMPILATION()
 
 #endif // _CUDA_PTX_BARRIER_EXPECT_TX_H_

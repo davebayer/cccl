@@ -22,7 +22,7 @@
 #  pragma system_header
 #endif // no system header
 
-#if _CCCL_HAS_CUDA_COMPILER()
+#if _CCCL_CUDA_COMPILATION()
 #  if __cccl_ptx_isa >= 800
 
 #    include <cuda/__barrier/aligned_size.h>
@@ -85,6 +85,6 @@ _CCCL_DEVICE inline async_contract_fulfillment memcpy_async_tx(
 _LIBCUDACXX_END_NAMESPACE_CUDA_DEVICE
 
 #  endif // __cccl_ptx_isa >= 800
-#endif // _CCCL_CUDA_COMPILER
+#endif // _CCCL_CUDA_COMPILATION()
 
 #endif // _CUDA_PTX__MEMCPY_ASYNC_MEMCPY_ASYNC_TX_H_

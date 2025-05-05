@@ -22,7 +22,7 @@
 #  pragma system_header
 #endif // no system header
 
-#if _CCCL_HAS_CUDA_COMPILER()
+#if _CCCL_CUDA_COMPILATION()
 #  if __cccl_ptx_isa >= 800
 
 #    include <cuda/__ptx/instructions/cp_async_bulk.h>
@@ -51,6 +51,6 @@ inline _CCCL_DEVICE void __cp_async_bulk_shared_global(
 _LIBCUDACXX_END_NAMESPACE_CUDA
 
 #  endif // __cccl_ptx_isa >= 800
-#endif // _CCCL_CUDA_COMPILER
+#endif // _CCCL_CUDA_COMPILATION()
 
 #endif // _CUDA_PTX__MEMCPY_ASYNC_CP_ASYNC_BULK_SHARED_GLOBAL_H_

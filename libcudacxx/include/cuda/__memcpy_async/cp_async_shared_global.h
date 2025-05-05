@@ -22,7 +22,7 @@
 #  pragma system_header
 #endif // no system header
 
-#if _CCCL_HAS_CUDA_COMPILER()
+#if _CCCL_CUDA_COMPILATION()
 
 #  include <cuda/__ptx/ptx_dot_variants.h>
 #  include <cuda/__ptx/ptx_helper_functions.h>
@@ -89,6 +89,6 @@ __cp_async_shared_global_mechanism(_Group __g, char* __dest, const char* __src, 
 
 _LIBCUDACXX_END_NAMESPACE_CUDA
 
-#endif // _CCCL_CUDA_COMPILER
+#endif // _CCCL_CUDA_COMPILATION()
 
 #endif // _CUDA_PTX__MEMCPY_ASYNC_CP_ASYNC_SHARED_GLOBAL_H_
