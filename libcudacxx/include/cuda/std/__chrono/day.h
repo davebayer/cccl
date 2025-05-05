@@ -64,7 +64,7 @@ public:
   {
     return __d_;
   }
-  _LIBCUDACXX_HIDE_FROM_ABI constexpr bool ok() const noexcept
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr bool ok() const noexcept
   {
     return __d_ >= 1 && __d_ <= 31;
   }

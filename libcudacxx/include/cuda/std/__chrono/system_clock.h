@@ -32,15 +32,15 @@ namespace chrono
 class _CCCL_TYPE_VISIBILITY_DEFAULT system_clock
 {
 public:
-  using duration                        = microseconds;
-  using rep                             = duration::rep;
-  using period                          = duration::period;
-  using time_point                      = chrono::time_point<system_clock>;
-  static constexpr const bool is_steady = false;
+  using duration                  = microseconds;
+  using rep                       = duration::rep;
+  using period                    = duration::period;
+  using time_point                = chrono::time_point<system_clock>;
+  static constexpr bool is_steady = false;
 
-  _LIBCUDACXX_HIDE_FROM_ABI static time_point now() noexcept {}
-  _LIBCUDACXX_HIDE_FROM_ABI static time_t to_time_t(const time_point& __t) noexcept {}
-  _LIBCUDACXX_HIDE_FROM_ABI static time_point from_time_t(time_t __t) noexcept {}
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI static time_point now() noexcept {}
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI static time_t to_time_t(const time_point& __t) noexcept {}
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI static time_point from_time_t(time_t __t) noexcept {}
 };
 
 template <class _Duration>

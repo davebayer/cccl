@@ -40,41 +40,46 @@ public:
       : __m_{__mval}
       , __wdi_{__wdival}
   {}
-  _LIBCUDACXX_HIDE_FROM_ABI constexpr chrono::month month() const noexcept
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr chrono::month month() const noexcept
   {
     return __m_;
   }
-  _LIBCUDACXX_HIDE_FROM_ABI constexpr chrono::weekday_indexed weekday_indexed() const noexcept
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr chrono::weekday_indexed weekday_indexed() const noexcept
   {
     return __wdi_;
   }
-  _LIBCUDACXX_HIDE_FROM_ABI constexpr bool ok() const noexcept
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr bool ok() const noexcept
   {
     return __m_.ok() && __wdi_.ok();
   }
 };
 
-_LIBCUDACXX_HIDE_FROM_ABI constexpr bool operator==(const month_weekday& __lhs, const month_weekday& __rhs) noexcept
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr bool
+operator==(const month_weekday& __lhs, const month_weekday& __rhs) noexcept
 {
   return __lhs.month() == __rhs.month() && __lhs.weekday_indexed() == __rhs.weekday_indexed();
 }
 
-_LIBCUDACXX_HIDE_FROM_ABI constexpr month_weekday operator/(const month& __lhs, const weekday_indexed& __rhs) noexcept
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr month_weekday
+operator/(const month& __lhs, const weekday_indexed& __rhs) noexcept
 {
   return month_weekday{__lhs, __rhs};
 }
 
-_LIBCUDACXX_HIDE_FROM_ABI constexpr month_weekday operator/(int __lhs, const weekday_indexed& __rhs) noexcept
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr month_weekday
+operator/(int __lhs, const weekday_indexed& __rhs) noexcept
 {
   return month_weekday{month(__lhs), __rhs};
 }
 
-_LIBCUDACXX_HIDE_FROM_ABI constexpr month_weekday operator/(const weekday_indexed& __lhs, const month& __rhs) noexcept
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr month_weekday
+operator/(const weekday_indexed& __lhs, const month& __rhs) noexcept
 {
   return month_weekday{__rhs, __lhs};
 }
 
-_LIBCUDACXX_HIDE_FROM_ABI constexpr month_weekday operator/(const weekday_indexed& __lhs, int __rhs) noexcept
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr month_weekday
+operator/(const weekday_indexed& __lhs, int __rhs) noexcept
 {
   return month_weekday{month(__rhs), __lhs};
 }
@@ -90,42 +95,46 @@ public:
       : __m_{__mval}
       , __wdl_{__wdlval}
   {}
-  _LIBCUDACXX_HIDE_FROM_ABI constexpr chrono::month month() const noexcept
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr chrono::month month() const noexcept
   {
     return __m_;
   }
-  _LIBCUDACXX_HIDE_FROM_ABI constexpr chrono::weekday_last weekday_last() const noexcept
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr chrono::weekday_last weekday_last() const noexcept
   {
     return __wdl_;
   }
-  _LIBCUDACXX_HIDE_FROM_ABI constexpr bool ok() const noexcept
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr bool ok() const noexcept
   {
     return __m_.ok() && __wdl_.ok();
   }
 };
 
-_LIBCUDACXX_HIDE_FROM_ABI constexpr bool
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr bool
 operator==(const month_weekday_last& __lhs, const month_weekday_last& __rhs) noexcept
 {
   return __lhs.month() == __rhs.month() && __lhs.weekday_last() == __rhs.weekday_last();
 }
 
-_LIBCUDACXX_HIDE_FROM_ABI constexpr month_weekday_last operator/(const month& __lhs, const weekday_last& __rhs) noexcept
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr month_weekday_last
+operator/(const month& __lhs, const weekday_last& __rhs) noexcept
 {
   return month_weekday_last{__lhs, __rhs};
 }
 
-_LIBCUDACXX_HIDE_FROM_ABI constexpr month_weekday_last operator/(int __lhs, const weekday_last& __rhs) noexcept
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr month_weekday_last
+operator/(int __lhs, const weekday_last& __rhs) noexcept
 {
   return month_weekday_last{month(__lhs), __rhs};
 }
 
-_LIBCUDACXX_HIDE_FROM_ABI constexpr month_weekday_last operator/(const weekday_last& __lhs, const month& __rhs) noexcept
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr month_weekday_last
+operator/(const weekday_last& __lhs, const month& __rhs) noexcept
 {
   return month_weekday_last{__rhs, __lhs};
 }
 
-_LIBCUDACXX_HIDE_FROM_ABI constexpr month_weekday_last operator/(const weekday_last& __lhs, int __rhs) noexcept
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr month_weekday_last
+operator/(const weekday_last& __lhs, int __rhs) noexcept
 {
   return month_weekday_last{month(__rhs), __lhs};
 }

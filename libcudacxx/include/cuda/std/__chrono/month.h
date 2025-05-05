@@ -72,36 +72,37 @@ public:
   }
 };
 
-_LIBCUDACXX_HIDE_FROM_ABI constexpr bool operator==(const month& __lhs, const month& __rhs) noexcept
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr bool operator==(const month& __lhs, const month& __rhs) noexcept
 {
   return static_cast<unsigned>(__lhs) == static_cast<unsigned>(__rhs);
 }
 
 #if _LIBCUDACXX_HAS_SPACESHIP_OPERATOR()
-_LIBCUDACXX_HIDE_FROM_ABI constexpr strong_ordering operator<=>(const month& __lhs, const month& __rhs) noexcept
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr strong_ordering
+operator<=>(const month& __lhs, const month& __rhs) noexcept
 {
   return static_cast<unsigned>(__lhs) <=> static_cast<unsigned>(__rhs);
 }
 #endif // _LIBCUDACXX_HAS_SPACESHIP_OPERATOR()
 
-_LIBCUDACXX_HIDE_FROM_ABI constexpr month operator+(const month& __lhs, const months& __rhs) noexcept
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr month operator+(const month& __lhs, const months& __rhs) noexcept
 {
   auto const __mu = static_cast<long long>(static_cast<unsigned>(__lhs)) + (__rhs.count() - 1);
   auto const __yr = (__mu >= 0 ? __mu : __mu - 11) / 12;
   return month{static_cast<unsigned>(__mu - __yr * 12 + 1)};
 }
 
-_LIBCUDACXX_HIDE_FROM_ABI constexpr month operator+(const months& __lhs, const month& __rhs) noexcept
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr month operator+(const months& __lhs, const month& __rhs) noexcept
 {
   return __rhs + __lhs;
 }
 
-_LIBCUDACXX_HIDE_FROM_ABI constexpr month operator-(const month& __lhs, const months& __rhs) noexcept
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr month operator-(const month& __lhs, const months& __rhs) noexcept
 {
   return __lhs + -__rhs;
 }
 
-_LIBCUDACXX_HIDE_FROM_ABI constexpr months operator-(const month& __lhs, const month& __rhs) noexcept
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr months operator-(const month& __lhs, const month& __rhs) noexcept
 {
   auto const __dm = static_cast<unsigned>(__lhs) - static_cast<unsigned>(__rhs);
   return months(__dm <= 11 ? __dm : __dm + 12);

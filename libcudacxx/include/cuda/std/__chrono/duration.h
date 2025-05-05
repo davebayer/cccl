@@ -134,15 +134,15 @@ template <class _Rep>
 struct duration_values
 {
 public:
-  _LIBCUDACXX_HIDE_FROM_ABI static constexpr _Rep zero() noexcept
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI static constexpr _Rep zero() noexcept
   {
     return _Rep(0);
   }
-  _LIBCUDACXX_HIDE_FROM_ABI static constexpr _Rep max() noexcept
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI static constexpr _Rep max() noexcept
   {
     return numeric_limits<_Rep>::max();
   }
-  _LIBCUDACXX_HIDE_FROM_ABI static constexpr _Rep min() noexcept
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI static constexpr _Rep min() noexcept
   {
     return numeric_limits<_Rep>::lowest();
   }
@@ -150,7 +150,7 @@ public:
 
 _CCCL_TEMPLATE(class _ToDuration, class _Rep, class _Period)
 _CCCL_REQUIRES(__is_duration_v<_ToDuration>)
-_LIBCUDACXX_HIDE_FROM_ABI constexpr _ToDuration floor(const duration<_Rep, _Period>& __d)
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr _ToDuration floor(const duration<_Rep, _Period>& __d)
 {
   _ToDuration __t = chrono::duration_cast<_ToDuration>(__d);
   if (__t > __d)
@@ -162,7 +162,7 @@ _LIBCUDACXX_HIDE_FROM_ABI constexpr _ToDuration floor(const duration<_Rep, _Peri
 
 _CCCL_TEMPLATE(class _ToDuration, class _Rep, class _Period)
 _CCCL_REQUIRES(__is_duration_v<_ToDuration>)
-_LIBCUDACXX_HIDE_FROM_ABI constexpr _ToDuration ceil(const duration<_Rep, _Period>& __d)
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr _ToDuration ceil(const duration<_Rep, _Period>& __d)
 {
   _ToDuration __t = chrono::duration_cast<_ToDuration>(__d);
   if (__t < __d)
@@ -174,7 +174,7 @@ _LIBCUDACXX_HIDE_FROM_ABI constexpr _ToDuration ceil(const duration<_Rep, _Perio
 
 _CCCL_TEMPLATE(class _ToDuration, class _Rep, class _Period)
 _CCCL_REQUIRES(__is_duration_v<_ToDuration>)
-_LIBCUDACXX_HIDE_FROM_ABI constexpr _ToDuration round(const duration<_Rep, _Period>& __d)
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr _ToDuration round(const duration<_Rep, _Period>& __d)
 {
   _ToDuration __lower = chrono::floor<_ToDuration>(__d);
   _ToDuration __upper = __lower + _ToDuration{1};
@@ -257,7 +257,7 @@ public:
 
   // observer
 
-  _LIBCUDACXX_HIDE_FROM_ABI constexpr rep count() const
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr rep count() const
   {
     return __rep_;
   }
@@ -323,17 +323,151 @@ public:
     return *this;
   }
 
+  // Comparisons
+
+  template <class _Rep1, class _Period1, class _Rep2, class _Period2>
+  _CCCL_NODISCARD_FRIEND _LIBCUDACXX_HIDE_FROM_ABI constexpr bool
+  operator==(const duration<_Rep1, _Period1>& __lhs, const duration<_Rep2, _Period2>& __rhs)
+  {
+    if constexpr (is_same_v<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>)
+    {
+      return __lhs.count() == __rhs.count();
+    }
+    else
+    {
+      using _Ct = common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>;
+      return _Ct(__lhs).count() == _Ct(__rhs).count();
+    }
+  }
+
+  template <class _Rep1, class _Period1, class _Rep2, class _Period2>
+  _CCCL_NODISCARD_FRIEND _LIBCUDACXX_HIDE_FROM_ABI constexpr bool
+  operator!=(const duration<_Rep1, _Period1>& __lhs, const duration<_Rep2, _Period2>& __rhs)
+  {
+    return !(__lhs == __rhs);
+  }
+
+  template <class _Rep1, class _Period1, class _Rep2, class _Period2>
+  _CCCL_NODISCARD_FRIEND _LIBCUDACXX_HIDE_FROM_ABI constexpr bool
+  operator<(const duration<_Rep1, _Period1>& __lhs, const duration<_Rep2, _Period2>& __rhs)
+  {
+    if constexpr (is_same_v<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>)
+    {
+      return __lhs.count() < __rhs.count();
+    }
+    else
+    {
+      using _Ct = common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>;
+      return __duration_lt<_Ct, _Ct>()(__lhs, __rhs);
+    }
+  }
+
+  template <class _Rep1, class _Period1, class _Rep2, class _Period2>
+  _CCCL_NODISCARD_FRIEND _LIBCUDACXX_HIDE_FROM_ABI constexpr bool
+  operator>(const duration<_Rep1, _Period1>& __lhs, const duration<_Rep2, _Period2>& __rhs)
+  {
+    return __rhs < __lhs;
+  }
+
+  template <class _Rep1, class _Period1, class _Rep2, class _Period2>
+  _CCCL_NODISCARD_FRIEND _LIBCUDACXX_HIDE_FROM_ABI constexpr bool
+  operator<=(const duration<_Rep1, _Period1>& __lhs, const duration<_Rep2, _Period2>& __rhs)
+  {
+    return !(__rhs < __lhs);
+  }
+
+  template <class _Rep1, class _Period1, class _Rep2, class _Period2>
+  _CCCL_NODISCARD_FRIEND _LIBCUDACXX_HIDE_FROM_ABI constexpr bool
+  operator>=(const duration<_Rep1, _Period1>& __lhs, const duration<_Rep2, _Period2>& __rhs)
+  {
+    return !(__lhs < __rhs);
+  }
+
+  template <class _Rep1, class _Period1, class _Rep2, class _Period2>
+  _CCCL_NODISCARD_FRIEND
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>
+  operator+(const duration<_Rep1, _Period1>& __lhs, const duration<_Rep2, _Period2>& __rhs)
+  {
+    using _Cd = common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>;
+    return _Cd(_Cd(__lhs).count() + _Cd(__rhs).count());
+  }
+
+  template <class _Rep1, class _Period1, class _Rep2, class _Period2>
+  _CCCL_NODISCARD_FRIEND
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>
+  operator-(const duration<_Rep1, _Period1>& __lhs, const duration<_Rep2, _Period2>& __rhs)
+  {
+    using _Cd = common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>;
+    return _Cd(_Cd(__lhs).count() - _Cd(__rhs).count());
+  }
+
+  _CCCL_TEMPLATE(class _Rep1, class _Period, class _Rep2)
+  _CCCL_REQUIRES(is_convertible_v<const _Rep2&, common_type_t<_Rep1, _Rep2>>)
+  _CCCL_NODISCARD_FRIEND _LIBCUDACXX_HIDE_FROM_ABI constexpr duration<common_type_t<_Rep1, _Rep2>, _Period>
+  operator*(const duration<_Rep1, _Period>& __d, const _Rep2& __s)
+  {
+    using _Cr = common_type_t<_Rep1, _Rep2>;
+    using _Cd = duration<_Cr, _Period>;
+    return _Cd(_Cd(__d).count() * static_cast<_Cr>(__s));
+  }
+
+  _CCCL_TEMPLATE(class _Rep1, class _Period, class _Rep2)
+  _CCCL_REQUIRES(is_convertible_v<const _Rep1&, common_type_t<_Rep1, _Rep2>>)
+  _CCCL_NODISCARD_FRIEND _LIBCUDACXX_HIDE_FROM_ABI constexpr duration<common_type_t<_Rep1, _Rep2>, _Period>
+  operator*(const _Rep1& __s, const duration<_Rep2, _Period>& __d)
+  {
+    return __d * __s;
+  }
+
+  _CCCL_TEMPLATE(class _Rep1, class _Period, class _Rep2)
+  _CCCL_REQUIRES((!__is_duration_v<_Rep2>) _CCCL_AND is_convertible_v<const _Rep2&, common_type_t<_Rep1, _Rep2>>)
+  _CCCL_NODISCARD_FRIEND _LIBCUDACXX_HIDE_FROM_ABI constexpr duration<common_type_t<_Rep1, _Rep2>, _Period>
+  operator/(const duration<_Rep1, _Period>& __d, const _Rep2& __s)
+  {
+    using _Cr = common_type_t<_Rep1, _Rep2>;
+    using _Cd = duration<_Cr, _Period>;
+    return _Cd(_Cd(__d).count() / static_cast<_Cr>(__s));
+  }
+
+  template <class _Rep1, class _Period1, class _Rep2, class _Period2>
+  _CCCL_NODISCARD_FRIEND _LIBCUDACXX_HIDE_FROM_ABI constexpr common_type_t<_Rep1, _Rep2>
+  operator/(const duration<_Rep1, _Period1>& __lhs, const duration<_Rep2, _Period2>& __rhs)
+  {
+    using _Ct = common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>;
+    return _Ct(__lhs).count() / _Ct(__rhs).count();
+  }
+
+  _CCCL_TEMPLATE(class _Rep1, class _Period, class _Rep2)
+  _CCCL_REQUIRES((!__is_duration_v<_Rep2>) _CCCL_AND is_convertible_v<const _Rep2&, common_type_t<_Rep1, _Rep2>>)
+  _CCCL_NODISCARD_FRIEND _LIBCUDACXX_HIDE_FROM_ABI constexpr duration<common_type_t<_Rep1, _Rep2>, _Period>
+  operator%(const duration<_Rep1, _Period>& __d, const _Rep2& __s)
+  {
+    using _Cr = common_type_t<_Rep1, _Rep2>;
+    using _Cd = duration<_Cr, _Period>;
+    return _Cd(_Cd(__d).count() % static_cast<_Cr>(__s));
+  }
+
+  template <class _Rep1, class _Period1, class _Rep2, class _Period2>
+  _CCCL_NODISCARD_FRIEND
+  _LIBCUDACXX_HIDE_FROM_ABI constexpr common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>
+  operator%(const duration<_Rep1, _Period1>& __lhs, const duration<_Rep2, _Period2>& __rhs)
+  {
+    using _Cr = common_type_t<_Rep1, _Rep2>;
+    using _Cd = common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>;
+    return _Cd(static_cast<_Cr>(_Cd(__lhs).count()) % static_cast<_Cr>(_Cd(__rhs).count()));
+  }
+
   // special values
 
-  _LIBCUDACXX_HIDE_FROM_ABI static constexpr duration zero() noexcept
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI static constexpr duration zero() noexcept
   {
     return duration(duration_values<rep>::zero());
   }
-  _LIBCUDACXX_HIDE_FROM_ABI static constexpr duration min() noexcept
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI static constexpr duration min() noexcept
   {
     return duration(duration_values<rep>::min());
   }
-  _LIBCUDACXX_HIDE_FROM_ABI static constexpr duration max() noexcept
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI static constexpr duration max() noexcept
   {
     return duration(duration_values<rep>::max());
   }
@@ -349,156 +483,6 @@ using days         = duration<int, ratio_multiply<ratio<24>, hours::period>>;
 using weeks        = duration<int, ratio_multiply<ratio<7>, days::period>>;
 using years        = duration<int, ratio_multiply<ratio<146097, 400>, days::period>>;
 using months       = duration<int, ratio_divide<years::period, ratio<12>>>;
-// Duration ==
-
-template <class _Rep1, class _Period1, class _Rep2, class _Period2>
-_LIBCUDACXX_HIDE_FROM_ABI constexpr bool
-operator==(const duration<_Rep1, _Period1>& __lhs, const duration<_Rep2, _Period2>& __rhs)
-{
-  if constexpr (is_same_v<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>)
-  {
-    return __lhs.count() == __rhs.count();
-  }
-  else
-  {
-    using _Ct = common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>;
-    return _Ct(__lhs).count() == _Ct(__rhs).count();
-  }
-}
-
-// Duration !=
-
-template <class _Rep1, class _Period1, class _Rep2, class _Period2>
-_LIBCUDACXX_HIDE_FROM_ABI constexpr bool
-operator!=(const duration<_Rep1, _Period1>& __lhs, const duration<_Rep2, _Period2>& __rhs)
-{
-  return !(__lhs == __rhs);
-}
-
-// Duration <
-
-template <class _Rep1, class _Period1, class _Rep2, class _Period2>
-_LIBCUDACXX_HIDE_FROM_ABI constexpr bool
-operator<(const duration<_Rep1, _Period1>& __lhs, const duration<_Rep2, _Period2>& __rhs)
-{
-  if constexpr (is_same_v<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>)
-  {
-    return __lhs.count() < __rhs.count();
-  }
-  else
-  {
-    using _Ct = common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>;
-    return __duration_lt<_Ct, _Ct>()(__lhs, __rhs);
-  }
-}
-
-// Duration >
-
-template <class _Rep1, class _Period1, class _Rep2, class _Period2>
-_LIBCUDACXX_HIDE_FROM_ABI constexpr bool
-operator>(const duration<_Rep1, _Period1>& __lhs, const duration<_Rep2, _Period2>& __rhs)
-{
-  return __rhs < __lhs;
-}
-
-// Duration <=
-
-template <class _Rep1, class _Period1, class _Rep2, class _Period2>
-_LIBCUDACXX_HIDE_FROM_ABI constexpr bool
-operator<=(const duration<_Rep1, _Period1>& __lhs, const duration<_Rep2, _Period2>& __rhs)
-{
-  return !(__rhs < __lhs);
-}
-
-// Duration >=
-
-template <class _Rep1, class _Period1, class _Rep2, class _Period2>
-_LIBCUDACXX_HIDE_FROM_ABI constexpr bool
-operator>=(const duration<_Rep1, _Period1>& __lhs, const duration<_Rep2, _Period2>& __rhs)
-{
-  return !(__lhs < __rhs);
-}
-
-// Duration +
-
-template <class _Rep1, class _Period1, class _Rep2, class _Period2>
-_LIBCUDACXX_HIDE_FROM_ABI constexpr common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>
-operator+(const duration<_Rep1, _Period1>& __lhs, const duration<_Rep2, _Period2>& __rhs)
-{
-  using _Cd = common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>;
-  return _Cd(_Cd(__lhs).count() + _Cd(__rhs).count());
-}
-
-// Duration -
-
-template <class _Rep1, class _Period1, class _Rep2, class _Period2>
-_LIBCUDACXX_HIDE_FROM_ABI constexpr common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>
-operator-(const duration<_Rep1, _Period1>& __lhs, const duration<_Rep2, _Period2>& __rhs)
-{
-  using _Cd = common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>;
-  return _Cd(_Cd(__lhs).count() - _Cd(__rhs).count());
-}
-
-// Duration *
-
-_CCCL_TEMPLATE(class _Rep1, class _Period, class _Rep2)
-_CCCL_REQUIRES(is_convertible_v<const _Rep2&, common_type_t<_Rep1, _Rep2>>)
-_LIBCUDACXX_HIDE_FROM_ABI constexpr duration<common_type_t<_Rep1, _Rep2>, _Period>
-operator*(const duration<_Rep1, _Period>& __d, const _Rep2& __s)
-{
-  using _Cr = common_type_t<_Rep1, _Rep2>;
-  using _Cd = duration<_Cr, _Period>;
-  return _Cd(_Cd(__d).count() * static_cast<_Cr>(__s));
-}
-
-_CCCL_TEMPLATE(class _Rep1, class _Period, class _Rep2)
-_CCCL_REQUIRES(is_convertible_v<const _Rep1&, common_type_t<_Rep1, _Rep2>>)
-_LIBCUDACXX_HIDE_FROM_ABI constexpr duration<common_type_t<_Rep1, _Rep2>, _Period>
-operator*(const _Rep1& __s, const duration<_Rep2, _Period>& __d)
-{
-  return __d * __s;
-}
-
-// Duration /
-
-_CCCL_TEMPLATE(class _Rep1, class _Period, class _Rep2)
-_CCCL_REQUIRES((!__is_duration_v<_Rep2>) _CCCL_AND is_convertible_v<const _Rep2&, common_type_t<_Rep1, _Rep2>>)
-_LIBCUDACXX_HIDE_FROM_ABI constexpr duration<common_type_t<_Rep1, _Rep2>, _Period>
-operator/(const duration<_Rep1, _Period>& __d, const _Rep2& __s)
-{
-  using _Cr = common_type_t<_Rep1, _Rep2>;
-  using _Cd = duration<_Cr, _Period>;
-  return _Cd(_Cd(__d).count() / static_cast<_Cr>(__s));
-}
-
-template <class _Rep1, class _Period1, class _Rep2, class _Period2>
-_LIBCUDACXX_HIDE_FROM_ABI constexpr common_type_t<_Rep1, _Rep2>
-operator/(const duration<_Rep1, _Period1>& __lhs, const duration<_Rep2, _Period2>& __rhs)
-{
-  using _Ct = common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>;
-  return _Ct(__lhs).count() / _Ct(__rhs).count();
-}
-
-// Duration %
-
-_CCCL_TEMPLATE(class _Rep1, class _Period, class _Rep2)
-_CCCL_REQUIRES((!__is_duration_v<_Rep2>) _CCCL_AND is_convertible_v<const _Rep2&, common_type_t<_Rep1, _Rep2>>)
-_LIBCUDACXX_HIDE_FROM_ABI constexpr duration<common_type_t<_Rep1, _Rep2>, _Period>
-operator%(const duration<_Rep1, _Period>& __d, const _Rep2& __s)
-{
-  using _Cr = common_type_t<_Rep1, _Rep2>;
-  using _Cd = duration<_Cr, _Period>;
-  return _Cd(_Cd(__d).count() % static_cast<_Cr>(__s));
-}
-
-template <class _Rep1, class _Period1, class _Rep2, class _Period2>
-_LIBCUDACXX_HIDE_FROM_ABI constexpr common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>
-operator%(const duration<_Rep1, _Period1>& __lhs, const duration<_Rep2, _Period2>& __rhs)
-{
-  using _Cr = common_type_t<_Rep1, _Rep2>;
-  using _Cd = common_type_t<duration<_Rep1, _Period1>, duration<_Rep2, _Period2>>;
-  return _Cd(static_cast<_Cr>(_Cd(__lhs).count()) % static_cast<_Cr>(_Cd(__rhs).count()));
-}
 
 } // namespace chrono
 

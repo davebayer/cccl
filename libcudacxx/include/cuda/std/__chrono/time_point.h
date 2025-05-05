@@ -65,7 +65,7 @@ public:
 
   // observer
 
-  _LIBCUDACXX_HIDE_FROM_ABI constexpr duration time_since_epoch() const
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr duration time_since_epoch() const
   {
     return __d_;
   }
@@ -85,11 +85,11 @@ public:
 
   // special values
 
-  _LIBCUDACXX_HIDE_FROM_ABI static constexpr time_point min() noexcept
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI static constexpr time_point min() noexcept
   {
     return time_point(duration::min());
   }
-  _LIBCUDACXX_HIDE_FROM_ABI static constexpr time_point max() noexcept
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI static constexpr time_point max() noexcept
   {
     return time_point(duration::max());
   }
@@ -107,7 +107,7 @@ namespace chrono
 {
 
 template <class _ToDuration, class _Clock, class _Duration>
-_LIBCUDACXX_HIDE_FROM_ABI constexpr time_point<_Clock, _ToDuration>
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr time_point<_Clock, _ToDuration>
 time_point_cast(const time_point<_Clock, _Duration>& __t)
 {
   return time_point<_Clock, _ToDuration>(chrono::duration_cast<_ToDuration>(__t.time_since_epoch()));
@@ -115,28 +115,31 @@ time_point_cast(const time_point<_Clock, _Duration>& __t)
 
 _CCCL_TEMPLATE(class _ToDuration, class _Clock, class _Duration)
 _CCCL_REQUIRES(__is_duration_v<_ToDuration>)
-_LIBCUDACXX_HIDE_FROM_ABI constexpr time_point<_Clock, _ToDuration> floor(const time_point<_Clock, _Duration>& __t)
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr time_point<_Clock, _ToDuration>
+floor(const time_point<_Clock, _Duration>& __t)
 {
   return time_point<_Clock, _ToDuration>{chrono::floor<_ToDuration>(__t.time_since_epoch())};
 }
 
 _CCCL_TEMPLATE(class _ToDuration, class _Clock, class _Duration)
 _CCCL_REQUIRES(__is_duration_v<_ToDuration>)
-_LIBCUDACXX_HIDE_FROM_ABI constexpr time_point<_Clock, _ToDuration> ceil(const time_point<_Clock, _Duration>& __t)
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr time_point<_Clock, _ToDuration>
+ceil(const time_point<_Clock, _Duration>& __t)
 {
   return time_point<_Clock, _ToDuration>{chrono::ceil<_ToDuration>(__t.time_since_epoch())};
 }
 
 _CCCL_TEMPLATE(class _ToDuration, class _Clock, class _Duration)
 _CCCL_REQUIRES(__is_duration_v<_ToDuration>)
-_LIBCUDACXX_HIDE_FROM_ABI constexpr time_point<_Clock, _ToDuration> round(const time_point<_Clock, _Duration>& __t)
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr time_point<_Clock, _ToDuration>
+round(const time_point<_Clock, _Duration>& __t)
 {
   return time_point<_Clock, _ToDuration>{chrono::round<_ToDuration>(__t.time_since_epoch())};
 }
 
 _CCCL_TEMPLATE(class _Rep, class _Period)
 _CCCL_REQUIRES(numeric_limits<_Rep>::is_signed)
-_LIBCUDACXX_HIDE_FROM_ABI constexpr duration<_Rep, _Period> abs(duration<_Rep, _Period> __d)
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr duration<_Rep, _Period> abs(duration<_Rep, _Period> __d)
 {
   return __d >= __d.zero() ? +__d : -__d;
 }
@@ -144,7 +147,7 @@ _LIBCUDACXX_HIDE_FROM_ABI constexpr duration<_Rep, _Period> abs(duration<_Rep, _
 // time_point ==
 
 template <class _Clock, class _Duration1, class _Duration2>
-_LIBCUDACXX_HIDE_FROM_ABI constexpr bool
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr bool
 operator==(const time_point<_Clock, _Duration1>& __lhs, const time_point<_Clock, _Duration2>& __rhs)
 {
   return __lhs.time_since_epoch() == __rhs.time_since_epoch();
@@ -153,7 +156,7 @@ operator==(const time_point<_Clock, _Duration1>& __lhs, const time_point<_Clock,
 // time_point !=
 
 template <class _Clock, class _Duration1, class _Duration2>
-_LIBCUDACXX_HIDE_FROM_ABI constexpr bool
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr bool
 operator!=(const time_point<_Clock, _Duration1>& __lhs, const time_point<_Clock, _Duration2>& __rhs)
 {
   return !(__lhs == __rhs);
@@ -162,7 +165,7 @@ operator!=(const time_point<_Clock, _Duration1>& __lhs, const time_point<_Clock,
 // time_point <
 
 template <class _Clock, class _Duration1, class _Duration2>
-_LIBCUDACXX_HIDE_FROM_ABI constexpr bool
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr bool
 operator<(const time_point<_Clock, _Duration1>& __lhs, const time_point<_Clock, _Duration2>& __rhs)
 {
   return __lhs.time_since_epoch() < __rhs.time_since_epoch();
@@ -171,7 +174,7 @@ operator<(const time_point<_Clock, _Duration1>& __lhs, const time_point<_Clock, 
 // time_point >
 
 template <class _Clock, class _Duration1, class _Duration2>
-_LIBCUDACXX_HIDE_FROM_ABI constexpr bool
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr bool
 operator>(const time_point<_Clock, _Duration1>& __lhs, const time_point<_Clock, _Duration2>& __rhs)
 {
   return __rhs < __lhs;
@@ -180,7 +183,7 @@ operator>(const time_point<_Clock, _Duration1>& __lhs, const time_point<_Clock, 
 // time_point <=
 
 template <class _Clock, class _Duration1, class _Duration2>
-_LIBCUDACXX_HIDE_FROM_ABI constexpr bool
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr bool
 operator<=(const time_point<_Clock, _Duration1>& __lhs, const time_point<_Clock, _Duration2>& __rhs)
 {
   return !(__rhs < __lhs);
@@ -189,7 +192,7 @@ operator<=(const time_point<_Clock, _Duration1>& __lhs, const time_point<_Clock,
 // time_point >=
 
 template <class _Clock, class _Duration1, class _Duration2>
-_LIBCUDACXX_HIDE_FROM_ABI constexpr bool
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr bool
 operator>=(const time_point<_Clock, _Duration1>& __lhs, const time_point<_Clock, _Duration2>& __rhs)
 {
   return !(__lhs < __rhs);
@@ -198,7 +201,7 @@ operator>=(const time_point<_Clock, _Duration1>& __lhs, const time_point<_Clock,
 #if _LIBCUDACXX_HAS_SPACESHIP_OPERATOR()
 
 template <class _Clock, class _Duration1, three_way_comparable_with<_Duration1> _Duration2>
-_LIBCUDACXX_HIDE_FROM_ABI constexpr auto
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr auto
 operator<=>(const time_point<_Clock, _Duration1>& __lhs, const time_point<_Clock, _Duration2>& __rhs)
 {
   return __lhs.time_since_epoch() <=> __rhs.time_since_epoch();
@@ -209,6 +212,7 @@ operator<=>(const time_point<_Clock, _Duration1>& __lhs, const time_point<_Clock
 // time_point operator+(time_point x, duration y);
 
 template <class _Clock, class _Duration1, class _Rep2, class _Period2>
+[[nodiscard]]
 _LIBCUDACXX_HIDE_FROM_ABI constexpr time_point<_Clock, typename common_type<_Duration1, duration<_Rep2, _Period2>>::type>
 operator+(const time_point<_Clock, _Duration1>& __lhs, const duration<_Rep2, _Period2>& __rhs)
 {
@@ -219,6 +223,7 @@ operator+(const time_point<_Clock, _Duration1>& __lhs, const duration<_Rep2, _Pe
 // time_point operator+(duration x, time_point y);
 
 template <class _Rep1, class _Period1, class _Clock, class _Duration2>
+[[nodiscard]]
 _LIBCUDACXX_HIDE_FROM_ABI constexpr time_point<_Clock, typename common_type<duration<_Rep1, _Period1>, _Duration2>::type>
 operator+(const duration<_Rep1, _Period1>& __lhs, const time_point<_Clock, _Duration2>& __rhs)
 {
@@ -228,6 +233,7 @@ operator+(const duration<_Rep1, _Period1>& __lhs, const time_point<_Clock, _Dura
 // time_point operator-(time_point x, duration y);
 
 template <class _Clock, class _Duration1, class _Rep2, class _Period2>
+[[nodiscard]]
 _LIBCUDACXX_HIDE_FROM_ABI constexpr time_point<_Clock, typename common_type<_Duration1, duration<_Rep2, _Period2>>::type>
 operator-(const time_point<_Clock, _Duration1>& __lhs, const duration<_Rep2, _Period2>& __rhs)
 {
@@ -238,7 +244,7 @@ operator-(const time_point<_Clock, _Duration1>& __lhs, const duration<_Rep2, _Pe
 // duration operator-(time_point x, time_point y);
 
 template <class _Clock, class _Duration1, class _Duration2>
-_LIBCUDACXX_HIDE_FROM_ABI constexpr typename common_type<_Duration1, _Duration2>::type
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr typename common_type<_Duration1, _Duration2>::type
 operator-(const time_point<_Clock, _Duration1>& __lhs, const time_point<_Clock, _Duration2>& __rhs)
 {
   return __lhs.time_since_epoch() - __rhs.time_since_epoch();

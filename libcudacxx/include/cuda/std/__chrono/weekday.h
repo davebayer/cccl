@@ -37,10 +37,14 @@ class weekday
 {
 private:
   unsigned char __wd_;
-  _LIBCUDACXX_HIDE_FROM_ABI static constexpr unsigned char __weekday_from_days(int __days) noexcept;
+  _LIBCUDACXX_HIDE_FROM_ABI static constexpr unsigned char __weekday_from_days(int __days) noexcept
+  {
+    // https://howardhinnant.github.io/date_algorithms.html#weekday_from_days
+    return static_cast<unsigned char>(static_cast<unsigned>(__days >= -4 ? (__days + 4) % 7 : (__days + 5) % 7 + 6));
+  }
 
 public:
-  weekday() = default;
+  _CCCL_HIDE_FROM_ABI constexpr weekday() noexcept = default;
   _LIBCUDACXX_HIDE_FROM_ABI explicit constexpr weekday(unsigned __val) noexcept
       : __wd_(static_cast<unsigned char>(__val == 7 ? 0 : __val))
   {}
@@ -75,27 +79,21 @@ public:
   }
   _LIBCUDACXX_HIDE_FROM_ABI constexpr weekday& operator+=(const days& __dd) noexcept;
   _LIBCUDACXX_HIDE_FROM_ABI constexpr weekday& operator-=(const days& __dd) noexcept;
-  _LIBCUDACXX_HIDE_FROM_ABI constexpr unsigned c_encoding() const noexcept
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr unsigned c_encoding() const noexcept
   {
     return __wd_;
   }
-  _LIBCUDACXX_HIDE_FROM_ABI constexpr unsigned iso_encoding() const noexcept
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr unsigned iso_encoding() const noexcept
   {
     return __wd_ == 0u ? 7 : __wd_;
   }
-  _LIBCUDACXX_HIDE_FROM_ABI constexpr bool ok() const noexcept
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr bool ok() const noexcept
   {
     return __wd_ <= 6;
   }
-  _LIBCUDACXX_HIDE_FROM_ABI constexpr weekday_indexed operator[](unsigned __index) const noexcept;
-  _LIBCUDACXX_HIDE_FROM_ABI constexpr weekday_last operator[](last_spec) const noexcept;
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr weekday_indexed operator[](unsigned __index) const noexcept;
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr weekday_last operator[](last_spec) const noexcept;
 };
-
-// https://howardhinnant.github.io/date_algorithms.html#weekday_from_days
-_LIBCUDACXX_HIDE_FROM_ABI constexpr unsigned char weekday::__weekday_from_days(int __days) noexcept
-{
-  return static_cast<unsigned char>(static_cast<unsigned>(__days >= -4 ? (__days + 4) % 7 : (__days + 5) % 7 + 6));
-}
 
 _LIBCUDACXX_HIDE_FROM_ABI constexpr bool operator==(const weekday& __lhs, const weekday& __rhs) noexcept
 {
@@ -145,26 +143,27 @@ private:
   unsigned char __idx_;
 
 public:
-  weekday_indexed() = default;
+  _CCCL_HIDE_FROM_ABI constexpr weekday_indexed() noexcept = default;
   _LIBCUDACXX_HIDE_FROM_ABI constexpr weekday_indexed(const chrono::weekday& __wdval, unsigned __idxval) noexcept
       : __wd_{__wdval}
       , __idx_(__idxval)
   {}
-  _LIBCUDACXX_HIDE_FROM_ABI constexpr chrono::weekday weekday() const noexcept
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr chrono::weekday weekday() const noexcept
   {
     return __wd_;
   }
-  _LIBCUDACXX_HIDE_FROM_ABI constexpr unsigned index() const noexcept
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr unsigned index() const noexcept
   {
     return __idx_;
   }
-  _LIBCUDACXX_HIDE_FROM_ABI constexpr bool ok() const noexcept
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr bool ok() const noexcept
   {
     return __wd_.ok() && __idx_ >= 1 && __idx_ <= 5;
   }
 };
 
-_LIBCUDACXX_HIDE_FROM_ABI constexpr bool operator==(const weekday_indexed& __lhs, const weekday_indexed& __rhs) noexcept
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr bool
+operator==(const weekday_indexed& __lhs, const weekday_indexed& __rhs) noexcept
 {
   return __lhs.weekday() == __rhs.weekday() && __lhs.index() == __rhs.index();
 }
@@ -178,27 +177,28 @@ public:
   _LIBCUDACXX_HIDE_FROM_ABI explicit constexpr weekday_last(const chrono::weekday& __val) noexcept
       : __wd_{__val}
   {}
-  _LIBCUDACXX_HIDE_FROM_ABI constexpr chrono::weekday weekday() const noexcept
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr chrono::weekday weekday() const noexcept
   {
     return __wd_;
   }
-  _LIBCUDACXX_HIDE_FROM_ABI constexpr bool ok() const noexcept
+  [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr bool ok() const noexcept
   {
     return __wd_.ok();
   }
 };
 
-_LIBCUDACXX_HIDE_FROM_ABI constexpr bool operator==(const weekday_last& __lhs, const weekday_last& __rhs) noexcept
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr bool
+operator==(const weekday_last& __lhs, const weekday_last& __rhs) noexcept
 {
   return __lhs.weekday() == __rhs.weekday();
 }
 
-_LIBCUDACXX_HIDE_FROM_ABI constexpr weekday_indexed weekday::operator[](unsigned __index) const noexcept
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr weekday_indexed weekday::operator[](unsigned __index) const noexcept
 {
   return weekday_indexed{*this, __index};
 }
 
-_LIBCUDACXX_HIDE_FROM_ABI constexpr weekday_last weekday::operator[](last_spec) const noexcept
+[[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr weekday_last weekday::operator[](last_spec) const noexcept
 {
   return weekday_last{*this};
 }
