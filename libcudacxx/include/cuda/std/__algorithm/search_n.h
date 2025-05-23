@@ -143,7 +143,7 @@ search_n(_ForwardIterator __first, _ForwardIterator __last, _Size __count, const
   return _CUDA_VSTD::__search_n<add_lvalue_reference_t<_BinaryPredicate>>(
     __first,
     __last,
-    __convert_to_integral(__count),
+    _CUDA_VSTD::__convert_to_integral(__count),
     __value_,
     __pred,
     typename iterator_traits<_ForwardIterator>::iterator_category());
@@ -153,7 +153,7 @@ template <class _ForwardIterator, class _Size, class _Tp>
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr _ForwardIterator
 search_n(_ForwardIterator __first, _ForwardIterator __last, _Size __count, const _Tp& __value_)
 {
-  return _CUDA_VSTD::search_n(__first, __last, __convert_to_integral(__count), __value_, __equal_to{});
+  return _CUDA_VSTD::search_n(__first, __last, _CUDA_VSTD::__convert_to_integral(__count), __value_, __equal_to{});
 }
 
 _LIBCUDACXX_END_NAMESPACE_STD

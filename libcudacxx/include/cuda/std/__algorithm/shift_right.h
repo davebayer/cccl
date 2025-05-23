@@ -134,7 +134,7 @@ _LIBCUDACXX_HIDE_FROM_ABI constexpr _ForwardIterator shift_right(
   }
 
   using _IterCategory = typename iterator_traits<_ForwardIterator>::iterator_category;
-  return __shift_right(__first, __last, __n, _IterCategory());
+  return _CUDA_VSTD::__shift_right(__first, __last, __n, _IterCategory());
 }
 
 _LIBCUDACXX_END_NAMESPACE_STD

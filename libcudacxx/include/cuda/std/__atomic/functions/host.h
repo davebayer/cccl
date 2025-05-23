@@ -54,25 +54,27 @@ __atomic_alignment_wrapper<_Tp>* __atomic_force_align_host(_Tp* __a)
 // Guard ifdef for lock free query in case it is assigned elsewhere (MSVC/CUDA)
 inline void __atomic_thread_fence_host(memory_order __order)
 {
-  __atomic_thread_fence(__atomic_order_to_int(__order));
+  _CUDA_VSTD::__atomic_thread_fence(_CUDA_VSTD::__atomic_order_to_int(__order));
 }
 
 inline void __atomic_signal_fence_host(memory_order __order)
 {
-  __atomic_signal_fence(__atomic_order_to_int(__order));
+  _CUDA_VSTD::__atomic_signal_fence(_CUDA_VSTD::__atomic_order_to_int(__order));
 }
 
 template <typename _Tp, typename _Up>
 inline void __atomic_store_host(_Tp* __a, _Up __val, memory_order __order)
 {
-  __atomic_store(&__atomic_force_align_host(__a)->__atom, &__val, __atomic_order_to_int(__order));
+  _CUDA_VSTD::__atomic_store(
+    &_CUDA_VSTD::__atomic_force_align_host(__a)->__atom, &__val, _CUDA_VSTD::__atomic_order_to_int(__order));
 }
 
 template <typename _Tp>
 inline auto __atomic_load_host(_Tp* __a, memory_order __order) -> remove_cv_t<_Tp>
 {
   remove_cv_t<_Tp> __ret;
-  __atomic_load(&__atomic_force_align_host(__a)->__atom, &__ret, __atomic_order_to_int(__order));
+  _CUDA_VSTD::__atomic_load(
+    &_CUDA_VSTD::__atomic_force_align_host(__a)->__atom, &__ret, _CUDA_VSTD::__atomic_order_to_int(__order));
   return __ret;
 }
 
@@ -80,7 +82,8 @@ template <typename _Tp, typename _Up>
 inline auto __atomic_exchange_host(_Tp* __a, _Up __val, memory_order __order) -> remove_cv_t<_Tp>
 {
   remove_cv_t<_Tp> __ret;
-  __atomic_exchange(&__atomic_force_align_host(__a)->__atom, &__val, &__ret, __atomic_order_to_int(__order));
+  _CUDA_VSTD::__atomic_exchange(
+    &_CUDA_VSTD::__atomic_force_align_host(__a)->__atom, &__val, &__ret, _CUDA_VSTD::__atomic_order_to_int(__order));
   return __ret;
 }
 

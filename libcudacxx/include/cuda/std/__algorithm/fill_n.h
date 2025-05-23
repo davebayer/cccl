@@ -41,7 +41,7 @@ _LIBCUDACXX_HIDE_FROM_ABI constexpr _OutputIterator __fill_n(_OutputIterator __f
 template <class _OutputIterator, class _Size, class _Tp>
 _LIBCUDACXX_HIDE_FROM_ABI constexpr _OutputIterator fill_n(_OutputIterator __first, _Size __n, const _Tp& __value_)
 {
-  return _CUDA_VSTD::__fill_n(__first, __convert_to_integral(__n), __value_);
+  return _CUDA_VSTD::__fill_n(__first, _CUDA_VSTD::__convert_to_integral(__n), __value_);
 }
 
 _LIBCUDACXX_END_NAMESPACE_STD

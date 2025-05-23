@@ -88,7 +88,7 @@ __constexpr_tail_overlap(_Tp* __first, _Up* __needle, [[maybe_unused]] _Tp* __la
 #if defined(_CCCL_BUILTIN_CONSTANT_P)
   NV_IF_ELSE_TARGET(NV_IS_HOST,
                     (return _CCCL_BUILTIN_CONSTANT_P(__first < __needle) && __first < __needle;),
-                    (return __constexpr_tail_overlap_fallback(__first, __needle, __last);))
+                    (return _CUDA_VSTD::__constexpr_tail_overlap_fallback(__first, __needle, __last);))
 #else // ^^^ _CCCL_BUILTIN_CONSTANT_P ^^^ / vvv !_CCCL_BUILTIN_CONSTANT_P vvv
   return __constexpr_tail_overlap_fallback(__first, __needle, __last);
 #endif // !_CCCL_BUILTIN_CONSTANT_P
@@ -105,12 +105,12 @@ _LIBCUDACXX_HIDE_FROM_ABI constexpr pair<_Tp*, _Up*> __copy(_Tp* __first, _Tp* _
   const ptrdiff_t __n = __last - __first;
   if (__n > 0)
   {
-    if (__dispatch_memmove(__result, __first, __n))
+    if (_CUDA_VSTD::__dispatch_memmove(__result, __first, __n))
     {
       return {__last, __result + __n};
     }
     if ((!_CUDA_VSTD::is_constant_evaluated() && __first < __result)
-        || __constexpr_tail_overlap(__first, __result, __last))
+        || _CUDA_VSTD::__constexpr_tail_overlap(__first, __result, __last))
     {
       for (ptrdiff_t __i = __n; __i > 0; --__i)
       {
@@ -132,7 +132,8 @@ template <class _InputIterator, class _OutputIterator>
 _LIBCUDACXX_HIDE_FROM_ABI constexpr _OutputIterator
 copy(_InputIterator __first, _InputIterator __last, _OutputIterator __result)
 {
-  return _CUDA_VSTD::__copy<_ClassicAlgPolicy>(__unwrap_iter(__first), __unwrap_iter(__last), __unwrap_iter(__result))
+  return _CUDA_VSTD::__copy<_ClassicAlgPolicy>(
+           _CUDA_VSTD::__unwrap_iter(__first), _CUDA_VSTD::__unwrap_iter(__last), _CUDA_VSTD::__unwrap_iter(__result))
     .second;
 }
 
