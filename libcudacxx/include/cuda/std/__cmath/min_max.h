@@ -90,18 +90,18 @@ _LIBCUDACXX_BEGIN_NAMESPACE_STD
 {
   NV_IF_ELSE_TARGET(NV_IS_DEVICE,
                     (return ::__hmax(__x, __y);),
-                    (return __float2half(_CUDA_VSTD::fmaxf(__half2float(__x), __half2float(__y)));))
+                    (return ::__float2half(_CUDA_VSTD::fmaxf(::__half2float(__x), ::__half2float(__y)));))
 }
 template <class _A1, enable_if_t<_CCCL_TRAIT(is_arithmetic, _A1), int> = 0>
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __promote_t<float, _A1> fmax(__half __x, _A1 __y) noexcept
 {
-  return _CUDA_VSTD::fmaxf(__half2float(__x), __y);
+  return _CUDA_VSTD::fmaxf(::__half2float(__x), __y);
 }
 
 template <class _A1, enable_if_t<_CCCL_TRAIT(is_arithmetic, _A1), int> = 0>
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __promote_t<_A1, float> fmax(_A1 __x, __half __y) noexcept
 {
-  return _CUDA_VSTD::fmaxf(__x, __half2float(__y));
+  return _CUDA_VSTD::fmaxf(__x, ::__half2float(__y));
 }
 #endif // _LIBCUDACXX_HAS_NVFP16()
 
@@ -110,18 +110,18 @@ template <class _A1, enable_if_t<_CCCL_TRAIT(is_arithmetic, _A1), int> = 0>
 {
   NV_IF_ELSE_TARGET(NV_IS_DEVICE,
                     (return ::__hmax(__x, __y);),
-                    (return __float2bfloat16(_CUDA_VSTD::fmaxf(__bfloat162float(__x), __bfloat162float(__y)));))
+                    (return ::__float2bfloat16(_CUDA_VSTD::fmaxf(::__bfloat162float(__x), ::__bfloat162float(__y)));))
 }
 template <class _A1, enable_if_t<_CCCL_TRAIT(is_arithmetic, _A1), int> = 0>
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __promote_t<float, _A1> fmax(__nv_bfloat16 __x, _A1 __y) noexcept
 {
-  return _CUDA_VSTD::fmaxf(__bfloat162float(__x), __y);
+  return _CUDA_VSTD::fmaxf(::__bfloat162float(__x), __y);
 }
 
 template <class _A1, enable_if_t<_CCCL_TRAIT(is_arithmetic, _A1), int> = 0>
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __promote_t<_A1, float> fmax(_A1 __x, __nv_bfloat16 __y) noexcept
 {
-  return _CUDA_VSTD::fmaxf(__x, __bfloat162float(__y));
+  return _CUDA_VSTD::fmaxf(__x, ::__bfloat162float(__y));
 }
 #endif // _LIBCUDACXX_HAS_NVBF16()
 
@@ -186,18 +186,18 @@ template <class _A1, class _A2, enable_if_t<_CCCL_TRAIT(is_arithmetic, _A1) && _
 {
   NV_IF_ELSE_TARGET(NV_IS_DEVICE,
                     (return ::__hmin(__x, __y);),
-                    (return __float2half(_CUDA_VSTD::fminf(__half2float(__x), __half2float(__y)));))
+                    (return ::__float2half(_CUDA_VSTD::fminf(::__half2float(__x), ::__half2float(__y)));))
 }
 template <class _A1, enable_if_t<_CCCL_TRAIT(is_arithmetic, _A1), int> = 0>
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __promote_t<float, _A1> fmin(__half __x, _A1 __y) noexcept
 {
-  return _CUDA_VSTD::fminf(__half2float(__x), __y);
+  return _CUDA_VSTD::fminf(::__half2float(__x), __y);
 }
 
 template <class _A1, enable_if_t<_CCCL_TRAIT(is_arithmetic, _A1), int> = 0>
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __promote_t<_A1, float> fmin(_A1 __x, __half __y) noexcept
 {
-  return _CUDA_VSTD::fminf(__x, __half2float(__y));
+  return _CUDA_VSTD::fminf(__x, ::__half2float(__y));
 }
 #endif // _LIBCUDACXX_HAS_NVFP16()
 
@@ -206,18 +206,18 @@ template <class _A1, enable_if_t<_CCCL_TRAIT(is_arithmetic, _A1), int> = 0>
 {
   NV_IF_ELSE_TARGET(NV_IS_DEVICE,
                     (return ::__hmin(__x, __y);),
-                    (return __float2bfloat16(_CUDA_VSTD::fminf(__bfloat162float(__x), __bfloat162float(__y)));))
+                    (return ::__float2bfloat16(_CUDA_VSTD::fminf(::__bfloat162float(__x), ::__bfloat162float(__y)));))
 }
 template <class _A1, enable_if_t<_CCCL_TRAIT(is_arithmetic, _A1), int> = 0>
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __promote_t<float, _A1> fmin(__nv_bfloat16 __x, _A1 __y) noexcept
 {
-  return _CUDA_VSTD::fminf(__bfloat162float(__x), __y);
+  return _CUDA_VSTD::fminf(::__bfloat162float(__x), __y);
 }
 
 template <class _A1, enable_if_t<_CCCL_TRAIT(is_arithmetic, _A1), int> = 0>
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __promote_t<_A1, float> fmin(_A1 __x, __nv_bfloat16 __y) noexcept
 {
-  return _CUDA_VSTD::fminf(__x, __bfloat162float(__y));
+  return _CUDA_VSTD::fminf(__x, ::__bfloat162float(__y));
 }
 #endif // _LIBCUDACXX_HAS_NVBF16()
 

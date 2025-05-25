@@ -36,21 +36,23 @@ template <typename _Tp, typename _Sco>
 _LIBCUDACXX_HIDE_FROM_ABI void
 __atomic_try_wait_slow(_Tp const volatile* __a, __atomic_underlying_remove_cv_t<_Tp> __val, memory_order __order, _Sco)
 {
-  NV_DISPATCH_TARGET(NV_PROVIDES_SM_70, __atomic_try_wait_slow_fallback(__a, __val, __order, _Sco{});
-                     , NV_IS_HOST, __atomic_try_wait_slow_fallback(__a, __val, __order, _Sco{});
-                     , NV_ANY_TARGET, __atomic_try_wait_unsupported_before_SM_70__(););
+  NV_DISPATCH_TARGET(NV_PROVIDES_SM_70, _CUDA_VSTD::__atomic_try_wait_slow_fallback(__a, __val, __order, _Sco{});
+                     , NV_IS_HOST, _CUDA_VSTD::__atomic_try_wait_slow_fallback(__a, __val, __order, _Sco{});
+                     , NV_ANY_TARGET, _CUDA_VSTD::__atomic_try_wait_unsupported_before_SM_70__(););
 }
 
 template <typename _Tp, typename _Sco>
 _LIBCUDACXX_HIDE_FROM_ABI void __atomic_notify_one(_Tp const volatile*, _Sco)
 {
-  NV_DISPATCH_TARGET(NV_PROVIDES_SM_70, , NV_IS_HOST, , NV_ANY_TARGET, __atomic_try_wait_unsupported_before_SM_70__(););
+  NV_DISPATCH_TARGET(
+    NV_PROVIDES_SM_70, , NV_IS_HOST, , NV_ANY_TARGET, _CUDA_VSTD::__atomic_try_wait_unsupported_before_SM_70__(););
 }
 
 template <typename _Tp, typename _Sco>
 _LIBCUDACXX_HIDE_FROM_ABI void __atomic_notify_all(_Tp const volatile*, _Sco)
 {
-  NV_DISPATCH_TARGET(NV_PROVIDES_SM_70, , NV_IS_HOST, , NV_ANY_TARGET, __atomic_try_wait_unsupported_before_SM_70__(););
+  NV_DISPATCH_TARGET(
+    NV_PROVIDES_SM_70, , NV_IS_HOST, , NV_ANY_TARGET, _CUDA_VSTD::__atomic_try_wait_unsupported_before_SM_70__(););
 }
 
 template <typename _Tp>
@@ -69,7 +71,7 @@ _LIBCUDACXX_HIDE_FROM_ABI void __atomic_wait(
 {
   for (int __i = 0; __i < _LIBCUDACXX_POLLING_COUNT; ++__i)
   {
-    if (!__nonatomic_compare_equal(__atomic_load_dispatch(__a, __order, _Sco{}), __val))
+    if (!_CUDA_VSTD::__nonatomic_compare_equal(_CUDA_VSTD::__atomic_load_dispatch(__a, __order, _Sco{}), __val))
     {
       return;
     }
@@ -82,9 +84,9 @@ _LIBCUDACXX_HIDE_FROM_ABI void __atomic_wait(
       _CUDA_VSTD::__cccl_thread_yield();
     }
   }
-  while (__nonatomic_compare_equal(__atomic_load_dispatch(__a, __order, _Sco{}), __val))
+  while (_CUDA_VSTD::__nonatomic_compare_equal(_CUDA_VSTD::__atomic_load_dispatch(__a, __order, _Sco{}), __val))
   {
-    __atomic_try_wait_slow(__a, __val, __order, _Sco{});
+    _CUDA_VSTD::__atomic_try_wait_slow(__a, __val, __order, _Sco{});
   }
 }
 

@@ -74,7 +74,7 @@ lerp(long double __a, long double __b, long double __t) noexcept
 #if _LIBCUDACXX_HAS_NVFP16()
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __half lerp(__half __a, __half __b, __half __t) noexcept
 {
-  return __float2half(_CUDA_VSTD::__lerp(__half2float(__a), __half2float(__b), __half2float(__t)));
+  return ::__float2half(_CUDA_VSTD::__lerp(::__half2float(__a), ::__half2float(__b), ::__half2float(__t)));
 }
 #endif // _LIBCUDACXX_HAS_NVFP16()
 
@@ -82,7 +82,8 @@ lerp(long double __a, long double __b, long double __t) noexcept
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __nv_bfloat16
 lerp(__nv_bfloat16 __a, __nv_bfloat16 __b, __nv_bfloat16 __t) noexcept
 {
-  return __float2bfloat16(_CUDA_VSTD::__lerp(__bfloat162float(__a), __bfloat162float(__b), __bfloat162float(__t)));
+  return ::__float2bfloat16(
+    _CUDA_VSTD::__lerp(::__bfloat162float(__a), ::__bfloat162float(__b), ::__bfloat162float(__t)));
 }
 #endif // _LIBCUDACXX_HAS_NVBF16()
 

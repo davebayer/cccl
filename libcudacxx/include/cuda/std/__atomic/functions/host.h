@@ -91,44 +91,44 @@ template <typename _Tp, typename _Up>
 inline bool __atomic_compare_exchange_strong_host(
   _Tp* __a, _Up* __expected, _Up __desired, memory_order __success, memory_order __failure)
 {
-  return __atomic_compare_exchange(
-    &__atomic_force_align_host(__a)->__atom,
+  return _CUDA_VSTD::__atomic_compare_exchange(
+    &_CUDA_VSTD::__atomic_force_align_host(__a)->__atom,
     // This is only alignment wrapped in order to prevent GCC-6 from triggering unused warning
-    &__atomic_force_align_host(__expected)->__atom,
+    &_CUDA_VSTD::__atomic_force_align_host(__expected)->__atom,
     &__desired,
     false,
-    __atomic_order_to_int(__success),
-    __atomic_failure_order_to_int(__failure));
+    _CUDA_VSTD::__atomic_order_to_int(__success),
+    _CUDA_VSTD::__atomic_failure_order_to_int(__failure));
 }
 
 template <typename _Tp, typename _Up>
 inline bool __atomic_compare_exchange_weak_host(
   _Tp* __a, _Up* __expected, _Up __desired, memory_order __success, memory_order __failure)
 {
-  return __atomic_compare_exchange(
-    &__atomic_force_align_host(__a)->__atom,
+  return _CUDA_VSTD::__atomic_compare_exchange(
+    &_CUDA_VSTD::__atomic_force_align_host(__a)->__atom,
     // This is only alignment wrapped in order to prevent GCC-6 from triggering unused warning
-    &__atomic_force_align_host(__expected)->__atom,
+    &_CUDA_VSTD::__atomic_force_align_host(__expected)->__atom,
     &__desired,
     true,
-    __atomic_order_to_int(__success),
-    __atomic_failure_order_to_int(__failure));
+    _CUDA_VSTD::__atomic_order_to_int(__success),
+    _CUDA_VSTD::__atomic_failure_order_to_int(__failure));
 }
 
 template <typename _Tp, typename _Td, enable_if_t<!is_floating_point<_Tp>::value, int> = 0>
 inline remove_cv_t<_Tp> __atomic_fetch_add_host(_Tp* __a, _Td __delta, memory_order __order)
 {
   constexpr auto __skip_v = __atomic_ptr_skip_t<_Tp>::__skip;
-  return __atomic_fetch_add(__a, __delta * __skip_v, __atomic_order_to_int(__order));
+  return _CUDA_VSTD::__atomic_fetch_add(__a, __delta * __skip_v, _CUDA_VSTD::__atomic_order_to_int(__order));
 }
 
 template <typename _Tp, typename _Td, enable_if_t<is_floating_point<_Tp>::value, int> = 0>
 inline remove_cv_t<_Tp> __atomic_fetch_add_host(_Tp* __a, _Td __delta, memory_order __order)
 {
-  auto __expected = __atomic_load_host(__a, memory_order_relaxed);
+  auto __expected = _CUDA_VSTD::__atomic_load_host(__a, memory_order_relaxed);
   auto __desired  = __expected + __delta;
 
-  while (!__atomic_compare_exchange_strong_host(__a, &__expected, __desired, __order, __order))
+  while (!_CUDA_VSTD::__atomic_compare_exchange_strong_host(__a, &__expected, __desired, __order, __order))
   {
     __desired = __expected + __delta;
   }
@@ -140,16 +140,16 @@ template <typename _Tp, typename _Td, enable_if_t<!is_floating_point<_Tp>::value
 inline remove_cv_t<_Tp> __atomic_fetch_sub_host(_Tp* __a, _Td __delta, memory_order __order)
 {
   constexpr auto __skip_v = __atomic_ptr_skip_t<_Tp>::__skip;
-  return __atomic_fetch_sub(__a, __delta * __skip_v, __atomic_order_to_int(__order));
+  return _CUDA_VSTD::__atomic_fetch_sub(__a, __delta * __skip_v, _CUDA_VSTD::__atomic_order_to_int(__order));
 }
 
 template <typename _Tp, typename _Td, enable_if_t<is_floating_point<_Tp>::value, int> = 0>
 inline remove_cv_t<_Tp> __atomic_fetch_sub_host(_Tp* __a, _Td __delta, memory_order __order)
 {
-  auto __expected = __atomic_load_host(__a, memory_order_relaxed);
+  auto __expected = _CUDA_VSTD::__atomic_load_host(__a, memory_order_relaxed);
   auto __desired  = __expected - __delta;
 
-  while (!__atomic_compare_exchange_strong_host(__a, &__expected, __desired, __order, __order))
+  while (!_CUDA_VSTD::__atomic_compare_exchange_strong_host(__a, &__expected, __desired, __order, __order))
   {
     __desired = __expected - __delta;
   }
@@ -160,28 +160,29 @@ inline remove_cv_t<_Tp> __atomic_fetch_sub_host(_Tp* __a, _Td __delta, memory_or
 template <typename _Tp, typename _Td>
 inline remove_cv_t<_Tp> __atomic_fetch_and_host(_Tp* __a, _Td __pattern, memory_order __order)
 {
-  return __atomic_fetch_and(__a, __pattern, __atomic_order_to_int(__order));
+  return _CUDA_VSTD::__atomic_fetch_and(__a, __pattern, _CUDA_VSTD::__atomic_order_to_int(__order));
 }
 
 template <typename _Tp, typename _Td>
 inline remove_cv_t<_Tp> __atomic_fetch_or_host(_Tp* __a, _Td __pattern, memory_order __order)
 {
-  return __atomic_fetch_or(__a, __pattern, __atomic_order_to_int(__order));
+  return _CUDA_VSTD::__atomic_fetch_or(__a, __pattern, _CUDA_VSTD::__atomic_order_to_int(__order));
 }
 
 template <typename _Tp, typename _Td>
 inline remove_cv_t<_Tp> __atomic_fetch_xor_host(_Tp* __a, _Td __pattern, memory_order __order)
 {
-  return __atomic_fetch_xor(__a, __pattern, __atomic_order_to_int(__order));
+  return _CUDA_VSTD::__atomic_fetch_xor(__a, __pattern, _CUDA_VSTD::__atomic_order_to_int(__order));
 }
 
 template <typename _Tp, typename _Td>
 inline remove_cv_t<_Tp> __atomic_fetch_max_host(_Tp* __a, _Td __val, memory_order __order)
 {
-  auto __expected = __atomic_load_host(__a, memory_order_relaxed);
+  auto __expected = _CUDA_VSTD::__atomic_load_host(__a, memory_order_relaxed);
   auto __desired  = __expected > __val ? __expected : __val;
 
-  while (__desired == __val && !__atomic_compare_exchange_strong_host(__a, &__expected, __desired, __order, __order))
+  while (__desired == __val
+         && !_CUDA_VSTD::__atomic_compare_exchange_strong_host(__a, &__expected, __desired, __order, __order))
   {
     __desired = __expected > __val ? __expected : __val;
   }
@@ -192,10 +193,11 @@ inline remove_cv_t<_Tp> __atomic_fetch_max_host(_Tp* __a, _Td __val, memory_orde
 template <typename _Tp, typename _Td>
 inline remove_cv_t<_Tp> __atomic_fetch_min_host(_Tp* __a, _Td __val, memory_order __order)
 {
-  auto __expected = __atomic_load_host(__a, memory_order_relaxed);
+  auto __expected = _CUDA_VSTD::__atomic_load_host(__a, memory_order_relaxed);
   auto __desired  = __expected < __val ? __expected : __val;
 
-  while (__desired == __val && !__atomic_compare_exchange_strong_host(__a, &__expected, __desired, __order, __order))
+  while (__desired == __val
+         && !_CUDA_VSTD::__atomic_compare_exchange_strong_host(__a, &__expected, __desired, __order, __order))
   {
     __desired = __expected < __val ? __expected : __val;
   }

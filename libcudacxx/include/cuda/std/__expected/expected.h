@@ -534,7 +534,7 @@ public:
                   "expected::value() const& requires is_copy_constructible_v<E>");
     if (!this->__has_val_)
     {
-      __throw_bad_expected_access<_Err>(this->__union_.__unex_);
+      _CUDA_VSTD::__throw_bad_expected_access<_Err>(this->__union_.__unex_);
     }
     return this->__union_.__val_;
   }
@@ -544,7 +544,7 @@ public:
     static_assert(_CCCL_TRAIT(is_copy_constructible, _Err), "expected::value() & requires is_copy_constructible_v<E>");
     if (!this->__has_val_)
     {
-      __throw_bad_expected_access<_Err>(_CUDA_VSTD::as_const(this->__union_.__unex_));
+      _CUDA_VSTD::__throw_bad_expected_access<_Err>(_CUDA_VSTD::as_const(this->__union_.__unex_));
     }
     return this->__union_.__val_;
   }
@@ -557,7 +557,7 @@ public:
                   "expected::value() const&& requires is_constructible_v<E, decltype(_CUDA_VSTD::move(error()))>");
     if (!this->__has_val_)
     {
-      __throw_bad_expected_access<_Err>(_CUDA_VSTD::move(this->__union_.__unex_));
+      _CUDA_VSTD::__throw_bad_expected_access<_Err>(_CUDA_VSTD::move(this->__union_.__unex_));
     }
     return _CUDA_VSTD::move(this->__union_.__val_);
   }
@@ -569,7 +569,7 @@ public:
                   "expected::value() && requires is_constructible_v<E, decltype(_CUDA_VSTD::move(error()))>");
     if (!this->__has_val_)
     {
-      __throw_bad_expected_access<_Err>(_CUDA_VSTD::move(this->__union_.__unex_));
+      _CUDA_VSTD::__throw_bad_expected_access<_Err>(_CUDA_VSTD::move(this->__union_.__unex_));
     }
     return _CUDA_VSTD::move(this->__union_.__val_);
   }
@@ -1452,7 +1452,7 @@ public:
                   "expected::value() const& requires is_copy_constructible_v<E>");
     if (!this->__has_val_)
     {
-      __throw_bad_expected_access<_Err>(this->__union_.__unex_);
+      _CUDA_VSTD::__throw_bad_expected_access<_Err>(this->__union_.__unex_);
     }
   }
 
@@ -1462,7 +1462,7 @@ public:
     static_assert(_CCCL_TRAIT(is_move_constructible, _Err), "expected::value() && requires is_move_constructible_v<E>");
     if (!this->__has_val_)
     {
-      __throw_bad_expected_access<_Err>(_CUDA_VSTD::move(this->__union_.__unex_));
+      _CUDA_VSTD::__throw_bad_expected_access<_Err>(_CUDA_VSTD::move(this->__union_.__unex_));
     }
   }
 

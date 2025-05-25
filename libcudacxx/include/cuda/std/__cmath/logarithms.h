@@ -90,7 +90,7 @@ _LIBCUDACXX_BEGIN_NAMESPACE_STD
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __half log(__half __x) noexcept
 {
   NV_IF_ELSE_TARGET(NV_PROVIDES_SM_53, (return ::hlog(__x);), ({
-                      float __vf            = __half2float(__x);
+                      float __vf            = ::__half2float(__x);
                       __vf                  = _CUDA_VSTD::logf(__vf);
                       __half_raw __ret_repr = ::__float2half_rn(__vf);
 
@@ -113,7 +113,7 @@ _LIBCUDACXX_BEGIN_NAMESPACE_STD
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __nv_bfloat16 log(__nv_bfloat16 __x) noexcept
 {
   NV_IF_ELSE_TARGET(
-    NV_IS_DEVICE, (return ::hlog(__x);), (return __float2bfloat16(_CUDA_VSTD::logf(__bfloat162float(__x)));))
+    NV_IS_DEVICE, (return ::hlog(__x);), (return ::__float2bfloat16(_CUDA_VSTD::logf(::__bfloat162float(__x)));))
 }
 #endif // _LIBCUDACXX_HAS_NVBF16()
 
@@ -180,7 +180,7 @@ template <class _Integer, enable_if_t<_CCCL_TRAIT(is_integral, _Integer), int> =
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __half log10(__half __x) noexcept
 {
   NV_IF_ELSE_TARGET(
-    NV_PROVIDES_SM_53, (return ::hlog10(__x);), (return __float2half(_CUDA_VSTD::log10f(__half2float(__x)));))
+    NV_PROVIDES_SM_53, (return ::hlog10(__x);), (return ::__float2half(_CUDA_VSTD::log10f(::__half2float(__x)));))
 }
 #endif // _LIBCUDACXX_HAS_NVFP16()
 
@@ -188,7 +188,7 @@ template <class _Integer, enable_if_t<_CCCL_TRAIT(is_integral, _Integer), int> =
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __nv_bfloat16 log10(__nv_bfloat16 __x) noexcept
 {
   NV_IF_ELSE_TARGET(
-    NV_IS_DEVICE, (return ::hlog10(__x);), (return __float2bfloat16(_CUDA_VSTD::log10f(__bfloat162float(__x)));))
+    NV_IS_DEVICE, (return ::hlog10(__x);), (return ::__float2bfloat16(_CUDA_VSTD::log10f(::__bfloat162float(__x)));))
 }
 #endif // _LIBCUDACXX_HAS_NVBF16()
 
@@ -254,14 +254,14 @@ template <class _Integer, enable_if_t<_CCCL_TRAIT(is_integral, _Integer), int> =
 #if _LIBCUDACXX_HAS_NVFP16()
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI int ilogb(__half __x) noexcept
 {
-  return _CUDA_VSTD::ilogbf(__half2float(__x));
+  return _CUDA_VSTD::ilogbf(::__half2float(__x));
 }
 #endif // _LIBCUDACXX_HAS_NVFP16()
 
 #if _LIBCUDACXX_HAS_NVBF16()
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI int ilogb(__nv_bfloat16 __x) noexcept
 {
-  return _CUDA_VSTD::ilogbf(__bfloat162float(__x));
+  return _CUDA_VSTD::ilogbf(::__bfloat162float(__x));
 }
 #endif // _LIBCUDACXX_HAS_NVBF16()
 
@@ -327,14 +327,14 @@ template <class _Integer, enable_if_t<_CCCL_TRAIT(is_integral, _Integer), int> =
 #if _LIBCUDACXX_HAS_NVFP16()
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __half log1p(__half __x) noexcept
 {
-  return __float2half(_CUDA_VSTD::log1pf(__half2float(__x)));
+  return ::__float2half(_CUDA_VSTD::log1pf(::__half2float(__x)));
 }
 #endif // _LIBCUDACXX_HAS_NVFP16()
 
 #if _LIBCUDACXX_HAS_NVBF16()
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __nv_bfloat16 log1p(__nv_bfloat16 __x) noexcept
 {
-  return __float2bfloat16(_CUDA_VSTD::log1pf(__bfloat162float(__x)));
+  return ::__float2bfloat16(_CUDA_VSTD::log1pf(::__bfloat162float(__x)));
 }
 #endif // _LIBCUDACXX_HAS_NVBF16()
 
@@ -401,7 +401,7 @@ template <class _Integer, enable_if_t<_CCCL_TRAIT(is_integral, _Integer), int> =
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __half log2(__half __x) noexcept
 {
   NV_IF_ELSE_TARGET(
-    NV_PROVIDES_SM_53, (return ::hlog2(__x);), (return __float2half(_CUDA_VSTD::log2f(__half2float(__x)));))
+    NV_PROVIDES_SM_53, (return ::hlog2(__x);), (return ::__float2half(_CUDA_VSTD::log2f(::__half2float(__x)));))
 }
 #endif // _LIBCUDACXX_HAS_NVFP16()
 
@@ -409,7 +409,7 @@ template <class _Integer, enable_if_t<_CCCL_TRAIT(is_integral, _Integer), int> =
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __nv_bfloat16 log2(__nv_bfloat16 __x) noexcept
 {
   NV_IF_ELSE_TARGET(
-    NV_IS_DEVICE, (return ::hlog2(__x);), (return __float2bfloat16(_CUDA_VSTD::log2f(__bfloat162float(__x)));))
+    NV_IS_DEVICE, (return ::hlog2(__x);), (return ::__float2bfloat16(_CUDA_VSTD::log2f(::__bfloat162float(__x)));))
 }
 #endif // _LIBCUDACXX_HAS_NVBF16()
 
@@ -475,14 +475,14 @@ template <class _Integer, enable_if_t<_CCCL_TRAIT(is_integral, _Integer), int> =
 #if _LIBCUDACXX_HAS_NVFP16()
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __half logb(__half __x) noexcept
 {
-  return __float2half(_CUDA_VSTD::logbf(__half2float(__x)));
+  return ::__float2half(_CUDA_VSTD::logbf(::__half2float(__x)));
 }
 #endif // _LIBCUDACXX_HAS_NVFP16()
 
 #if _LIBCUDACXX_HAS_NVBF16()
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __nv_bfloat16 logb(__nv_bfloat16 __x) noexcept
 {
-  return __float2bfloat16(_CUDA_VSTD::logbf(__bfloat162float(__x)));
+  return ::__float2bfloat16(_CUDA_VSTD::logbf(::__bfloat162float(__x)));
 }
 #endif // _LIBCUDACXX_HAS_NVBF16()
 

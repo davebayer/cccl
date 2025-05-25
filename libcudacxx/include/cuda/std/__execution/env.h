@@ -96,11 +96,12 @@ _LIBCUDACXX_BEGIN_NAMESPACE_EXECUTION
 namespace __detail
 {
 template <class _Env, class _Query>
-_CCCL_API auto __query_result_() -> decltype(declval<_Env>().query(_Query()));
+_CCCL_API auto __query_result_() -> decltype(_CUDA_VSTD::declval<_Env>().query(_Query()));
 
 #if _CCCL_HAS_EXCEPTIONS()
 template <class _Env, class _Query>
-using __nothrow_queryable_with_t _CCCL_NODEBUG_ALIAS = enable_if_t<noexcept(declval<_Env>().query(_Query{}))>;
+using __nothrow_queryable_with_t _CCCL_NODEBUG_ALIAS =
+  enable_if_t<noexcept(_CUDA_VSTD::declval<_Env>().query(_Query{}))>;
 #endif // _CCCL_HAS_EXCEPTIONS()
 
 template <class _Ty>
@@ -353,7 +354,7 @@ struct _CCCL_TYPE_VISIBILITY_DEFAULT env<_Env0, _Env1>
 struct get_env_t
 {
   template <class _Ty>
-  using __env_of _CCCL_NODEBUG_ALIAS = decltype(declval<_Ty>().get_env());
+  using __env_of _CCCL_NODEBUG_ALIAS = decltype(_CUDA_VSTD::declval<_Ty>().get_env());
 
   _CCCL_EXEC_CHECK_DISABLE
   template <class _Ty>
@@ -372,7 +373,7 @@ struct get_env_t
 _CCCL_GLOBAL_CONSTANT get_env_t get_env{};
 
 template <class _Ty>
-using env_of_t _CCCL_NODEBUG_ALIAS = decltype(get_env(declval<_Ty>()));
+using env_of_t _CCCL_NODEBUG_ALIAS = decltype(get_env(_CUDA_VSTD::declval<_Ty>()));
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // forwarding_query_t

@@ -90,7 +90,7 @@ _LIBCUDACXX_BEGIN_NAMESPACE_STD
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __half cos(__half __x) noexcept
 {
   NV_IF_ELSE_TARGET(NV_PROVIDES_SM_53, (return ::hcos(__x);), ({
-                      float __xf            = __half2float(__x);
+                      float __xf            = ::__half2float(__x);
                       __xf                  = _CUDA_VSTD::cosf(__xf);
                       __half_raw __ret_repr = ::__float2half_rn(__xf);
 
@@ -114,7 +114,7 @@ _LIBCUDACXX_BEGIN_NAMESPACE_STD
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __nv_bfloat16 cos(__nv_bfloat16 __x) noexcept
 {
   NV_IF_ELSE_TARGET(
-    NV_IS_DEVICE, (return ::hcos(__x);), (return __float2bfloat16(_CUDA_VSTD::cosf(__bfloat162float(__x)));))
+    NV_IS_DEVICE, (return ::hcos(__x);), (return ::__float2bfloat16(_CUDA_VSTD::cosf(::__bfloat162float(__x)));))
 }
 #endif // _LIBCUDACXX_HAS_NVBF16()
 
@@ -177,7 +177,7 @@ template <class _Integer, enable_if_t<_CCCL_TRAIT(is_integral, _Integer), int> =
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __half sin(__half __x) noexcept
 {
   NV_IF_ELSE_TARGET(NV_PROVIDES_SM_53, (return ::hsin(__x);), ({
-                      float __xf            = __half2float(__x);
+                      float __xf            = ::__half2float(__x);
                       __xf                  = _CUDA_VSTD::sinf(__xf);
                       __half_raw __ret_repr = ::__float2half_rn(__xf);
 
@@ -206,7 +206,7 @@ template <class _Integer, enable_if_t<_CCCL_TRAIT(is_integral, _Integer), int> =
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __nv_bfloat16 sin(__nv_bfloat16 __x) noexcept
 {
   NV_IF_ELSE_TARGET(
-    NV_IS_DEVICE, (return ::hsin(__x);), (return __float2bfloat16(_CUDA_VSTD::sinf(__bfloat162float(__x)));))
+    NV_IS_DEVICE, (return ::hsin(__x);), (return ::__float2bfloat16(_CUDA_VSTD::sinf(::__bfloat162float(__x)));))
 }
 #endif // _LIBCUDACXX_HAS_NVBF16()
 
@@ -268,14 +268,14 @@ template <class _Integer, enable_if_t<_CCCL_TRAIT(is_integral, _Integer), int> =
 #if _LIBCUDACXX_HAS_NVFP16()
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __half tan(__half __x) noexcept
 {
-  return __float2half(_CUDA_VSTD::tanf(__half2float(__x)));
+  return ::__float2half(_CUDA_VSTD::tanf(::__half2float(__x)));
 }
 #endif // _LIBCUDACXX_HAS_NVFP16()
 
 #if _LIBCUDACXX_HAS_NVBF16()
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __nv_bfloat16 tan(__nv_bfloat16 __x) noexcept
 {
-  return __float2bfloat16(_CUDA_VSTD::tanf(__bfloat162float(__x)));
+  return ::__float2bfloat16(_CUDA_VSTD::tanf(::__bfloat162float(__x)));
 }
 #endif // _LIBCUDACXX_HAS_NVBF16()
 

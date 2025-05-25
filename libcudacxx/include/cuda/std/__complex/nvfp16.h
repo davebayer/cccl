@@ -93,12 +93,12 @@ _LIBCUDACXX_HIDE_FROM_ABI __half __convert_to_half(const _Tp& __value) noexcept
 
 _LIBCUDACXX_HIDE_FROM_ABI __half __convert_to_half(const float& __value) noexcept
 {
-  return __float2half(__value);
+  return ::__float2half(__value);
 }
 
 _LIBCUDACXX_HIDE_FROM_ABI __half __convert_to_half(const double& __value) noexcept
 {
-  return __double2half(__value);
+  return ::__double2half(__value);
 }
 
 template <>
@@ -121,14 +121,14 @@ public:
 
   template <class _Up, enable_if_t<__cccl_internal::__is_non_narrowing_convertible<value_type, _Up>::value, int> = 0>
   _LIBCUDACXX_HIDE_FROM_ABI complex(const complex<_Up>& __c)
-      : __repr_(__convert_to_half(__c.real()), __convert_to_half(__c.imag()))
+      : __repr_(_CUDA_VSTD::__convert_to_half(__c.real()), _CUDA_VSTD::__convert_to_half(__c.imag()))
   {}
 
   template <class _Up,
             enable_if_t<!__cccl_internal::__is_non_narrowing_convertible<value_type, _Up>::value, int> = 0,
             enable_if_t<_CCCL_TRAIT(is_constructible, value_type, _Up), int>                           = 0>
   _LIBCUDACXX_HIDE_FROM_ABI explicit complex(const complex<_Up>& __c)
-      : __repr_(__convert_to_half(__c.real()), __convert_to_half(__c.imag()))
+      : __repr_(_CUDA_VSTD::__convert_to_half(__c.real()), _CUDA_VSTD::__convert_to_half(__c.imag()))
   {}
 
   _LIBCUDACXX_HIDE_FROM_ABI complex& operator=(const value_type& __re)
@@ -141,8 +141,8 @@ public:
   template <class _Up>
   _LIBCUDACXX_HIDE_FROM_ABI complex& operator=(const complex<_Up>& __c)
   {
-    __repr_.x = __convert_to_half(__c.real());
-    __repr_.y = __convert_to_half(__c.imag());
+    __repr_.x = _CUDA_VSTD::__convert_to_half(__c.real());
+    __repr_.y = _CUDA_VSTD::__convert_to_half(__c.imag());
     return *this;
   }
 
@@ -196,66 +196,66 @@ public:
 
   _LIBCUDACXX_HIDE_FROM_ABI complex& operator+=(const value_type& __re)
   {
-    __repr_.x = __hadd(__repr_.x, __re);
+    __repr_.x = ::__hadd(__repr_.x, __re);
     return *this;
   }
   _LIBCUDACXX_HIDE_FROM_ABI complex& operator-=(const value_type& __re)
   {
-    __repr_.x = __hsub(__repr_.x, __re);
+    __repr_.x = ::__hsub(__repr_.x, __re);
     return *this;
   }
   _LIBCUDACXX_HIDE_FROM_ABI complex& operator*=(const value_type& __re)
   {
-    __repr_.x = __hmul(__repr_.x, __re);
-    __repr_.y = __hmul(__repr_.y, __re);
+    __repr_.x = ::__hmul(__repr_.x, __re);
+    __repr_.y = ::__hmul(__repr_.y, __re);
     return *this;
   }
   _LIBCUDACXX_HIDE_FROM_ABI complex& operator/=(const value_type& __re)
   {
-    __repr_.x = __hdiv(__repr_.x, __re);
-    __repr_.y = __hdiv(__repr_.y, __re);
+    __repr_.x = ::__hdiv(__repr_.x, __re);
+    __repr_.y = ::__hdiv(__repr_.y, __re);
     return *this;
   }
 
   // We can utilize vectorized operations for those operators
   _LIBCUDACXX_HIDE_FROM_ABI friend complex& operator+=(complex& __lhs, const complex& __rhs) noexcept
   {
-    __lhs.__repr_ = __hadd2(__lhs.__repr_, __rhs.__repr_);
+    __lhs.__repr_ = ::__hadd2(__lhs.__repr_, __rhs.__repr_);
     return __lhs;
   }
 
   _LIBCUDACXX_HIDE_FROM_ABI friend complex& operator-=(complex& __lhs, const complex& __rhs) noexcept
   {
-    __lhs.__repr_ = __hsub2(__lhs.__repr_, __rhs.__repr_);
+    __lhs.__repr_ = ::__hsub2(__lhs.__repr_, __rhs.__repr_);
     return __lhs;
   }
 
   [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI friend bool operator==(const complex& __lhs, const complex& __rhs) noexcept
   {
-    return __hbeq2(__lhs.__repr_, __rhs.__repr_);
+    return ::__hbeq2(__lhs.__repr_, __rhs.__repr_);
   }
 };
 
 template <> // complex<float>
 template <> // complex<__half>
 _LIBCUDACXX_HIDE_FROM_ABI complex<float>::complex(const complex<__half>& __c)
-    : __re_(__half2float(__c.real()))
-    , __im_(__half2float(__c.imag()))
+    : __re_(::__half2float(__c.real()))
+    , __im_(::__half2float(__c.imag()))
 {}
 
 template <> // complex<double>
 template <> // complex<__half>
 _LIBCUDACXX_HIDE_FROM_ABI complex<double>::complex(const complex<__half>& __c)
-    : __re_(__half2float(__c.real()))
-    , __im_(__half2float(__c.imag()))
+    : __re_(::__half2float(__c.real()))
+    , __im_(::__half2float(__c.imag()))
 {}
 
 template <> // complex<float>
 template <> // complex<__half>
 _LIBCUDACXX_HIDE_FROM_ABI complex<float>& complex<float>::operator=(const complex<__half>& __c)
 {
-  __re_ = __half2float(__c.real());
-  __im_ = __half2float(__c.imag());
+  __re_ = ::__half2float(__c.real());
+  __im_ = ::__half2float(__c.imag());
   return *this;
 }
 
@@ -263,14 +263,14 @@ template <> // complex<double>
 template <> // complex<__half>
 _LIBCUDACXX_HIDE_FROM_ABI complex<double>& complex<double>::operator=(const complex<__half>& __c)
 {
-  __re_ = __half2float(__c.real());
-  __im_ = __half2float(__c.imag());
+  __re_ = ::__half2float(__c.real());
+  __im_ = ::__half2float(__c.imag());
   return *this;
 }
 
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __half arg(__half __re)
 {
-  return _CUDA_VSTD::atan2(__int2half_rn(0), __re);
+  return _CUDA_VSTD::atan2(::__int2half_rn(0), __re);
 }
 
 // We have performance issues with some trigonometric functions with __half

@@ -92,7 +92,7 @@ _LIBCUDACXX_BEGIN_NAMESPACE_STD
 {
   {
     NV_IF_ELSE_TARGET(NV_PROVIDES_SM_53, (return ::hexp(__x);), ({
-                        float __xf            = __half2float(__x);
+                        float __xf            = ::__half2float(__x);
                         __xf                  = ::expf(__xf);
                         __half_raw __ret_repr = ::__float2half_rn(__xf);
 
@@ -117,7 +117,7 @@ _LIBCUDACXX_BEGIN_NAMESPACE_STD
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __nv_bfloat16 exp(__nv_bfloat16 __x) noexcept
 {
   NV_IF_ELSE_TARGET(
-    NV_IS_DEVICE, (return ::hexp(__x);), (return __float2bfloat16(_CUDA_VSTD::expf(__bfloat162float(__x)));))
+    NV_IS_DEVICE, (return ::hexp(__x);), (return ::__float2bfloat16(_CUDA_VSTD::expf(::__bfloat162float(__x)));))
 }
 #endif // _LIBCUDACXX_HAS_NVBF16()
 
@@ -179,14 +179,14 @@ template <class _Integer, enable_if_t<_CCCL_TRAIT(is_integral, _Integer), int> =
 #if _LIBCUDACXX_HAS_NVFP16()
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __half frexp(__half __x, int* __e) noexcept
 {
-  return __float2half(_CUDA_VSTD::frexpf(__half2float(__x), __e));
+  return ::__float2half(_CUDA_VSTD::frexpf(::__half2float(__x), __e));
 }
 #endif // _LIBCUDACXX_HAS_NVFP16()
 
 #if _LIBCUDACXX_HAS_NVBF16()
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __nv_bfloat16 frexp(__nv_bfloat16 __x, int* __e) noexcept
 {
-  return __float2bfloat16(_CUDA_VSTD::frexpf(__bfloat162float(__x), __e));
+  return ::__float2bfloat16(_CUDA_VSTD::frexpf(::__bfloat162float(__x), __e));
 }
 #endif // _LIBCUDACXX_HAS_NVBF16()
 
@@ -248,14 +248,14 @@ template <class _Integer, enable_if_t<_CCCL_TRAIT(is_integral, _Integer), int> =
 #if _LIBCUDACXX_HAS_NVFP16()
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __half ldexp(__half __x, int __e) noexcept
 {
-  return __float2half(_CUDA_VSTD::ldexpf(__half2float(__x), __e));
+  return ::__float2half(_CUDA_VSTD::ldexpf(::__half2float(__x), __e));
 }
 #endif // _LIBCUDACXX_HAS_NVFP16()
 
 #if _LIBCUDACXX_HAS_NVBF16()
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __nv_bfloat16 ldexp(__nv_bfloat16 __x, int __e) noexcept
 {
-  return __float2bfloat16(_CUDA_VSTD::ldexpf(__bfloat162float(__x), __e));
+  return ::__float2bfloat16(_CUDA_VSTD::ldexpf(::__bfloat162float(__x), __e));
 }
 #endif // _LIBCUDACXX_HAS_NVBF16()
 
@@ -317,7 +317,8 @@ template <class _Integer, enable_if_t<_CCCL_TRAIT(is_integral, _Integer), int> =
 #if _LIBCUDACXX_HAS_NVFP16()
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __half exp2(__half __x) noexcept
 {
-  NV_IF_ELSE_TARGET(NV_IS_DEVICE, (return ::hexp2(__x);), (return __float2half(_CUDA_VSTD::exp2f(__half2float(__x)));))
+  NV_IF_ELSE_TARGET(
+    NV_IS_DEVICE, (return ::hexp2(__x);), (return ::__float2half(_CUDA_VSTD::exp2f(::__half2float(__x)));))
 }
 #endif // _LIBCUDACXX_HAS_NVFP16()
 
@@ -325,7 +326,7 @@ template <class _Integer, enable_if_t<_CCCL_TRAIT(is_integral, _Integer), int> =
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __nv_bfloat16 exp2(__nv_bfloat16 __x) noexcept
 {
   NV_IF_ELSE_TARGET(
-    NV_IS_DEVICE, (return ::hexp2(__x);), (return __float2bfloat16(_CUDA_VSTD::exp2f(__bfloat162float(__x)));))
+    NV_IS_DEVICE, (return ::hexp2(__x);), (return ::__float2bfloat16(_CUDA_VSTD::exp2f(::__bfloat162float(__x)));))
 }
 #endif // _LIBCUDACXX_HAS_NVBF16()
 
@@ -387,14 +388,14 @@ template <class _Integer, enable_if_t<_CCCL_TRAIT(is_integral, _Integer), int> =
 #if _LIBCUDACXX_HAS_NVFP16()
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __half expm1(__half __x) noexcept
 {
-  return __float2half(_CUDA_VSTD::expm1f(__half2float(__x)));
+  return ::__float2half(_CUDA_VSTD::expm1f(::__half2float(__x)));
 }
 #endif // _LIBCUDACXX_HAS_NVFP16()
 
 #if _LIBCUDACXX_HAS_NVBF16()
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __nv_bfloat16 expm1(__nv_bfloat16 __x) noexcept
 {
-  return __float2bfloat16(_CUDA_VSTD::expm1f(__bfloat162float(__x)));
+  return ::__float2bfloat16(_CUDA_VSTD::expm1f(::__bfloat162float(__x)));
 }
 #endif // _LIBCUDACXX_HAS_NVBF16()
 
@@ -456,14 +457,14 @@ template <class _Integer, enable_if_t<_CCCL_TRAIT(is_integral, _Integer), int> =
 #if _LIBCUDACXX_HAS_NVFP16()
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __half scalbln(__half __x, long __y) noexcept
 {
-  return __float2half(_CUDA_VSTD::scalblnf(__half2float(__x), __y));
+  return ::__float2half(_CUDA_VSTD::scalblnf(::__half2float(__x), __y));
 }
 #endif // _LIBCUDACXX_HAS_NVFP16()
 
 #if _LIBCUDACXX_HAS_NVBF16()
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __nv_bfloat16 scalbln(__nv_bfloat16 __x, long __y) noexcept
 {
-  return __float2bfloat16(_CUDA_VSTD::scalblnf(__bfloat162float(__x), __y));
+  return ::__float2bfloat16(_CUDA_VSTD::scalblnf(::__bfloat162float(__x), __y));
 }
 #endif // _LIBCUDACXX_HAS_NVBF16()
 
@@ -525,14 +526,14 @@ template <class _Integer, enable_if_t<_CCCL_TRAIT(is_integral, _Integer), int> =
 #if _LIBCUDACXX_HAS_NVFP16()
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __half scalbn(__half __x, int __y) noexcept
 {
-  return __float2half(_CUDA_VSTD::scalbnf(__half2float(__x), __y));
+  return ::__float2half(_CUDA_VSTD::scalbnf(::__half2float(__x), __y));
 }
 #endif // _LIBCUDACXX_HAS_NVFP16()
 
 #if _LIBCUDACXX_HAS_NVBF16()
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __nv_bfloat16 scalbn(__nv_bfloat16 __x, int __y) noexcept
 {
-  return __float2bfloat16(_CUDA_VSTD::scalbnf(__bfloat162float(__x), __y));
+  return ::__float2bfloat16(_CUDA_VSTD::scalbnf(::__bfloat162float(__x), __y));
 }
 #endif // _LIBCUDACXX_HAS_NVBF16()
 
@@ -594,14 +595,14 @@ template <class _Integer, enable_if_t<_CCCL_TRAIT(is_integral, _Integer), int> =
 #if _LIBCUDACXX_HAS_NVFP16()
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __half pow(__half __x, __half __y) noexcept
 {
-  return __float2half(_CUDA_VSTD::powf(__half2float(__x), __half2float(__y)));
+  return ::__float2half(_CUDA_VSTD::powf(::__half2float(__x), ::__half2float(__y)));
 }
 #endif // _LIBCUDACXX_HAS_NVFP16()
 
 #if _LIBCUDACXX_HAS_NVBF16()
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI __nv_bfloat16 pow(__nv_bfloat16 __x, __nv_bfloat16 __y) noexcept
 {
-  return __float2bfloat16(_CUDA_VSTD::powf(__bfloat162float(__x), __bfloat162float(__y)));
+  return ::__float2bfloat16(_CUDA_VSTD::powf(::__bfloat162float(__x), ::__bfloat162float(__y)));
 }
 #endif // _LIBCUDACXX_HAS_NVBF16()
 

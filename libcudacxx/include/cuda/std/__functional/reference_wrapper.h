@@ -47,9 +47,11 @@ private:
   static void __fun(_Tp&&) = delete;
 
 public:
-  template <class _Up,
-            class = enable_if_t<!__is_same_uncvref<_Up, reference_wrapper>::value, decltype(__fun(declval<_Up>()))>>
-  _LIBCUDACXX_HIDE_FROM_ABI _CCCL_CONSTEXPR_CXX20 reference_wrapper(_Up&& __u) noexcept(noexcept(__fun(declval<_Up>())))
+  template <
+    class _Up,
+    class = enable_if_t<!__is_same_uncvref<_Up, reference_wrapper>::value, decltype(__fun(_CUDA_VSTD::declval<_Up>()))>>
+  _LIBCUDACXX_HIDE_FROM_ABI _CCCL_CONSTEXPR_CXX20
+  reference_wrapper(_Up&& __u) noexcept(noexcept(__fun(_CUDA_VSTD::declval<_Up>())))
   {
     type& __f = static_cast<_Up&&>(__u);
     __f_      = _CUDA_VSTD::addressof(__f);
