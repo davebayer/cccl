@@ -67,7 +67,7 @@ using __cccl_tls_key = long;
 
 _LIBCUDACXX_HIDE_FROM_ABI void __cccl_thread_yield()
 {
-  SwitchToThread();
+  ::SwitchToThread();
 }
 
 _LIBCUDACXX_HIDE_FROM_ABI void __cccl_thread_sleep_for(chrono::nanoseconds __ns)
@@ -75,7 +75,7 @@ _LIBCUDACXX_HIDE_FROM_ABI void __cccl_thread_sleep_for(chrono::nanoseconds __ns)
   using namespace chrono;
   // round-up to the nearest millisecond
   milliseconds __ms = duration_cast<milliseconds>(__ns + chrono::nanoseconds(999999));
-  Sleep(static_cast<DWORD>(__ms.count()));
+  ::Sleep(static_cast<DWORD>(__ms.count()));
 }
 
 _LIBCUDACXX_END_NAMESPACE_STD

@@ -49,7 +49,7 @@ template <class _Tp>
   while (__n > 0)
   {
 #if _LIBCUDACXX_HAS_ALIGNED_ALLOCATION()
-    if (__is_overaligned_for_new(alignof(_Tp)))
+    if (_CUDA_VSTD::__is_overaligned_for_new(alignof(_Tp)))
     {
       _CUDA_VSTD::align_val_t __al = _CUDA_VSTD::align_val_t(_CUDA_VSTD::alignment_of<_Tp>::value);
       __r.first                    = static_cast<_Tp*>(::operator new(__n * sizeof(_Tp), __al));
@@ -59,7 +59,7 @@ template <class _Tp>
       __r.first = static_cast<_Tp*>(::operator new(__n * sizeof(_Tp)));
     }
 #else // ^^^ _LIBCUDACXX_HAS_ALIGNED_ALLOCATION() ^^^ / vvv !_LIBCUDACXX_HAS_ALIGNED_ALLOCATION() vvv
-    if (__is_overaligned_for_new(alignof(_Tp)))
+    if (_CUDA_VSTD::__is_overaligned_for_new(alignof(_Tp)))
     {
       // Since aligned operator new is unavailable, return an empty
       // buffer rather than one with invalid alignment.

@@ -40,7 +40,7 @@ _CCCL_HOST_DEVICE static bool_constant<noexcept(_CUDA_VSTD::__test_noexcept<_To>
 __is_nothrow_convertible_test();
 
 template <typename _Fm, typename _To>
-struct __is_nothrow_convertible_helper : decltype(__is_nothrow_convertible_test<_Fm, _To>())
+struct __is_nothrow_convertible_helper : decltype(_CUDA_VSTD::__is_nothrow_convertible_test<_Fm, _To>())
 {};
 
 template <typename _Fm, typename _To>

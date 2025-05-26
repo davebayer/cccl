@@ -88,7 +88,7 @@ _LIBCUDACXX_HIDE_FROM_ABI pair<_InputIterator, _ForwardIterator> __uninitialized
   _InputIterator __ifirst, _Sentinel1 __ilast, _ForwardIterator __ofirst, _EndPredicate __stop_copying)
 {
   _ForwardIterator __idx = __ofirst;
-  auto __guard           = __make_exception_guard(__simple_rollback<_ForwardIterator>{__ofirst, __idx});
+  auto __guard           = _CUDA_VSTD::__make_exception_guard(__simple_rollback<_ForwardIterator>{__ofirst, __idx});
   for (; __ifirst != __ilast && !__stop_copying(__idx); ++__ifirst, (void) ++__idx)
   {
     ::new (_CUDA_VSTD::__voidify(*__idx)) _ValueType(*__ifirst);
@@ -116,7 +116,7 @@ _LIBCUDACXX_HIDE_FROM_ABI pair<_InputIterator, _ForwardIterator>
 __uninitialized_copy_n(_InputIterator __ifirst, _Size __n, _ForwardIterator __ofirst, _EndPredicate __stop_copying)
 {
   _ForwardIterator __idx = __ofirst;
-  auto __guard           = __make_exception_guard(__simple_rollback<_ForwardIterator>{__ofirst, __idx});
+  auto __guard           = _CUDA_VSTD::__make_exception_guard(__simple_rollback<_ForwardIterator>{__ofirst, __idx});
   for (; __n > 0 && !__stop_copying(__idx); ++__ifirst, (void) ++__idx, (void) --__n)
   {
     ::new (_CUDA_VSTD::__voidify(*__idx)) _ValueType(*__ifirst);
@@ -144,7 +144,7 @@ _LIBCUDACXX_HIDE_FROM_ABI _ForwardIterator
 __uninitialized_fill(_ForwardIterator __first, _Sentinel __last, const _Tp& __x)
 {
   _ForwardIterator __idx = __first;
-  auto __guard           = __make_exception_guard(__simple_rollback<_ForwardIterator>{__first, __idx});
+  auto __guard           = _CUDA_VSTD::__make_exception_guard(__simple_rollback<_ForwardIterator>{__first, __idx});
   for (; __idx != __last; ++__idx)
   {
     ::new (_CUDA_VSTD::__voidify(*__idx)) _ValueType(__x);
@@ -168,7 +168,7 @@ template <class _ValueType, class _ForwardIterator, class _Size, class _Tp>
 _LIBCUDACXX_HIDE_FROM_ABI _ForwardIterator __uninitialized_fill_n(_ForwardIterator __first, _Size __n, const _Tp& __x)
 {
   _ForwardIterator __idx = __first;
-  auto __guard           = __make_exception_guard(__simple_rollback<_ForwardIterator>{__first, __idx});
+  auto __guard           = _CUDA_VSTD::__make_exception_guard(__simple_rollback<_ForwardIterator>{__first, __idx});
   for (; __n > 0; ++__idx, (void) --__n)
   {
     ::new (_CUDA_VSTD::__voidify(*__idx)) _ValueType(__x);
@@ -192,7 +192,7 @@ template <class _ValueType, class _ForwardIterator, class _Sentinel>
 _LIBCUDACXX_HIDE_FROM_ABI _ForwardIterator __uninitialized_default_construct(_ForwardIterator __first, _Sentinel __last)
 {
   auto __idx   = __first;
-  auto __guard = __make_exception_guard(__simple_rollback<_ForwardIterator>{__first, __idx});
+  auto __guard = _CUDA_VSTD::__make_exception_guard(__simple_rollback<_ForwardIterator>{__first, __idx});
   for (; __idx != __last; ++__idx)
   {
     ::new (_CUDA_VSTD::__voidify(*__idx)) _ValueType;
@@ -216,7 +216,7 @@ template <class _ValueType, class _ForwardIterator, class _Size>
 _LIBCUDACXX_HIDE_FROM_ABI _ForwardIterator __uninitialized_default_construct_n(_ForwardIterator __first, _Size __n)
 {
   auto __idx   = __first;
-  auto __guard = __make_exception_guard(__simple_rollback<_ForwardIterator>{__first, __idx});
+  auto __guard = _CUDA_VSTD::__make_exception_guard(__simple_rollback<_ForwardIterator>{__first, __idx});
   for (; __n > 0; ++__idx, (void) --__n)
   {
     ::new (_CUDA_VSTD::__voidify(*__idx)) _ValueType;
@@ -240,7 +240,7 @@ template <class _ValueType, class _ForwardIterator, class _Sentinel>
 _LIBCUDACXX_HIDE_FROM_ABI _ForwardIterator __uninitialized_value_construct(_ForwardIterator __first, _Sentinel __last)
 {
   auto __idx   = __first;
-  auto __guard = __make_exception_guard(__simple_rollback<_ForwardIterator>{__first, __idx});
+  auto __guard = _CUDA_VSTD::__make_exception_guard(__simple_rollback<_ForwardIterator>{__first, __idx});
   for (; __idx != __last; ++__idx)
   {
     ::new (_CUDA_VSTD::__voidify(*__idx)) _ValueType();
@@ -264,7 +264,7 @@ template <class _ValueType, class _ForwardIterator, class _Size>
 _LIBCUDACXX_HIDE_FROM_ABI _ForwardIterator __uninitialized_value_construct_n(_ForwardIterator __first, _Size __n)
 {
   auto __idx   = __first;
-  auto __guard = __make_exception_guard(__simple_rollback<_ForwardIterator>{__first, __idx});
+  auto __guard = _CUDA_VSTD::__make_exception_guard(__simple_rollback<_ForwardIterator>{__first, __idx});
   for (; __n > 0; ++__idx, (void) --__n)
   {
     ::new (_CUDA_VSTD::__voidify(*__idx)) _ValueType();
@@ -294,7 +294,7 @@ _LIBCUDACXX_HIDE_FROM_ABI pair<_InputIterator, _ForwardIterator> __uninitialized
   _InputIterator __ifirst, _Sentinel1 __ilast, _ForwardIterator __ofirst, _EndPredicate __stop_moving)
 {
   auto __idx   = __ofirst;
-  auto __guard = __make_exception_guard(__simple_rollback<_ForwardIterator>{__ofirst, __idx});
+  auto __guard = _CUDA_VSTD::__make_exception_guard(__simple_rollback<_ForwardIterator>{__ofirst, __idx});
   for (; __ifirst != __ilast && !__stop_moving(__idx); ++__idx, (void) ++__ifirst)
   {
     ::new (_CUDA_VSTD::__voidify(*__idx)) _ValueType(_IterOps::__iter_move(__ifirst));
@@ -322,7 +322,7 @@ _LIBCUDACXX_HIDE_FROM_ABI pair<_InputIterator, _ForwardIterator>
 __uninitialized_move_n(_InputIterator __ifirst, _Size __n, _ForwardIterator __ofirst, _EndPredicate __stop_moving)
 {
   auto __idx   = __ofirst;
-  auto __guard = __make_exception_guard(__simple_rollback<_ForwardIterator>{__ofirst, __idx});
+  auto __guard = _CUDA_VSTD::__make_exception_guard(__simple_rollback<_ForwardIterator>{__ofirst, __idx});
   for (; __n > 0 && !__stop_moving(__idx); ++__idx, (void) ++__ifirst, --__n)
   {
     ::new (_CUDA_VSTD::__voidify(*__idx)) _ValueType(_IterOps::__iter_move(__ifirst));

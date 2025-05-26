@@ -51,7 +51,7 @@ struct __numeric_type
   _LIBCUDACXX_HIDE_FROM_ABI static double __test(double);
   _LIBCUDACXX_HIDE_FROM_ABI static long double __test(long double);
 
-  using type              = decltype(__test(declval<_Tp>()));
+  using type              = decltype(__test(_CUDA_VSTD::declval<_Tp>()));
   static const bool value = _IsNotSame<type, void>::value;
 };
 

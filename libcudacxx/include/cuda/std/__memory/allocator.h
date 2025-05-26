@@ -126,7 +126,7 @@ public:
   {
     if (__n > allocator_traits<allocator>::max_size(*this))
     {
-      __throw_bad_array_new_length();
+      _CUDA_VSTD::__throw_bad_array_new_length();
     }
 #if defined(_CCCL_HAS_CONSTEXPR_ALLOCATION)
     if (_CUDA_VSTD::is_constant_evaluated())
@@ -229,7 +229,7 @@ public:
   {
     if (__n > allocator_traits<allocator>::max_size(*this))
     {
-      __throw_bad_array_new_length();
+      _CUDA_VSTD::__throw_bad_array_new_length();
     }
     if (_CUDA_VSTD::is_constant_evaluated())
     {

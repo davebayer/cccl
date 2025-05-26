@@ -131,13 +131,13 @@ _LIBCUDACXX_HIDE_FROM_ABI bool atomic_is_lock_free(const atomic<_Tp>* __o) noexc
 template <class _Tp>
 _LIBCUDACXX_HIDE_FROM_ABI void atomic_init(volatile atomic<_Tp>* __o, _Tp __d) noexcept
 {
-  __atomic_init_dispatch(&__o->__a, __d);
+  _CUDA_VSTD::__atomic_init_dispatch(&__o->__a, __d);
 }
 
 template <class _Tp>
 _LIBCUDACXX_HIDE_FROM_ABI void atomic_init(atomic<_Tp>* __o, _Tp __d) noexcept
 {
-  __atomic_init_dispatch(&__o->__a, __d);
+  _CUDA_VSTD::__atomic_init_dispatch(&__o->__a, __d);
 }
 
 // atomic_store
@@ -577,55 +577,59 @@ struct atomic_flag
 
   _LIBCUDACXX_HIDE_FROM_ABI bool test(memory_order __m = memory_order_seq_cst) const volatile noexcept
   {
-    return _LIBCUDACXX_ATOMIC_FLAG_TYPE(true) == __atomic_load_dispatch(&__a, __m, __thread_scope_system_tag{});
+    return _LIBCUDACXX_ATOMIC_FLAG_TYPE(true)
+        == _CUDA_VSTD::__atomic_load_dispatch(&__a, __m, __thread_scope_system_tag{});
   }
   _LIBCUDACXX_HIDE_FROM_ABI bool test(memory_order __m = memory_order_seq_cst) const noexcept
   {
-    return _LIBCUDACXX_ATOMIC_FLAG_TYPE(true) == __atomic_load_dispatch(&__a, __m, __thread_scope_system_tag{});
+    return _LIBCUDACXX_ATOMIC_FLAG_TYPE(true)
+        == _CUDA_VSTD::__atomic_load_dispatch(&__a, __m, __thread_scope_system_tag{});
   }
 
   _LIBCUDACXX_HIDE_FROM_ABI bool test_and_set(memory_order __m = memory_order_seq_cst) volatile noexcept
   {
-    return __atomic_exchange_dispatch(&__a, _LIBCUDACXX_ATOMIC_FLAG_TYPE(true), __m, __thread_scope_system_tag{});
+    return _CUDA_VSTD::__atomic_exchange_dispatch(
+      &__a, _LIBCUDACXX_ATOMIC_FLAG_TYPE(true), __m, __thread_scope_system_tag{});
   }
   _LIBCUDACXX_HIDE_FROM_ABI bool test_and_set(memory_order __m = memory_order_seq_cst) noexcept
   {
-    return __atomic_exchange_dispatch(&__a, _LIBCUDACXX_ATOMIC_FLAG_TYPE(true), __m, __thread_scope_system_tag{});
+    return _CUDA_VSTD::__atomic_exchange_dispatch(
+      &__a, _LIBCUDACXX_ATOMIC_FLAG_TYPE(true), __m, __thread_scope_system_tag{});
   }
   _LIBCUDACXX_HIDE_FROM_ABI void clear(memory_order __m = memory_order_seq_cst) volatile noexcept
   {
-    __atomic_store_dispatch(&__a, _LIBCUDACXX_ATOMIC_FLAG_TYPE(false), __m, __thread_scope_system_tag{});
+    _CUDA_VSTD::__atomic_store_dispatch(&__a, _LIBCUDACXX_ATOMIC_FLAG_TYPE(false), __m, __thread_scope_system_tag{});
   }
   _LIBCUDACXX_HIDE_FROM_ABI void clear(memory_order __m = memory_order_seq_cst) noexcept
   {
-    __atomic_store_dispatch(&__a, _LIBCUDACXX_ATOMIC_FLAG_TYPE(false), __m, __thread_scope_system_tag{});
+    _CUDA_VSTD::__atomic_store_dispatch(&__a, _LIBCUDACXX_ATOMIC_FLAG_TYPE(false), __m, __thread_scope_system_tag{});
   }
 
   _LIBCUDACXX_HIDE_FROM_ABI void wait(_LIBCUDACXX_ATOMIC_FLAG_TYPE __v, memory_order __m = memory_order_seq_cst) const
     volatile noexcept
   {
-    __atomic_wait(&__a, __v, __m, __thread_scope_system_tag{});
+    _CUDA_VSTD::__atomic_wait(&__a, __v, __m, __thread_scope_system_tag{});
   }
   _LIBCUDACXX_HIDE_FROM_ABI void
   wait(_LIBCUDACXX_ATOMIC_FLAG_TYPE __v, memory_order __m = memory_order_seq_cst) const noexcept
   {
-    __atomic_wait(&__a, __v, __m, __thread_scope_system_tag{});
+    _CUDA_VSTD::__atomic_wait(&__a, __v, __m, __thread_scope_system_tag{});
   }
   _LIBCUDACXX_HIDE_FROM_ABI void notify_one() volatile noexcept
   {
-    __atomic_notify_one(&__a, __thread_scope_system_tag{});
+    _CUDA_VSTD::__atomic_notify_one(&__a, __thread_scope_system_tag{});
   }
   _LIBCUDACXX_HIDE_FROM_ABI void notify_one() noexcept
   {
-    __atomic_notify_one(&__a, __thread_scope_system_tag{});
+    _CUDA_VSTD::__atomic_notify_one(&__a, __thread_scope_system_tag{});
   }
   _LIBCUDACXX_HIDE_FROM_ABI void notify_all() volatile noexcept
   {
-    __atomic_notify_all(&__a, __thread_scope_system_tag{});
+    _CUDA_VSTD::__atomic_notify_all(&__a, __thread_scope_system_tag{});
   }
   _LIBCUDACXX_HIDE_FROM_ABI void notify_all() noexcept
   {
-    __atomic_notify_all(&__a, __thread_scope_system_tag{});
+    _CUDA_VSTD::__atomic_notify_all(&__a, __thread_scope_system_tag{});
   }
 
   _CCCL_HIDE_FROM_ABI atomic_flag() noexcept = default;
@@ -748,12 +752,12 @@ _LIBCUDACXX_HIDE_FROM_ABI void atomic_flag_notify_all(atomic_flag* __o) noexcept
 
 _LIBCUDACXX_HIDE_FROM_ABI void atomic_thread_fence(memory_order __m) noexcept
 {
-  __atomic_thread_fence_dispatch(__m);
+  _CUDA_VSTD::__atomic_thread_fence_dispatch(__m);
 }
 
 _LIBCUDACXX_HIDE_FROM_ABI void atomic_signal_fence(memory_order __m) noexcept
 {
-  __atomic_signal_fence_dispatch(__m);
+  _CUDA_VSTD::__atomic_signal_fence_dispatch(__m);
 }
 
 // Atomics for standard typedef types

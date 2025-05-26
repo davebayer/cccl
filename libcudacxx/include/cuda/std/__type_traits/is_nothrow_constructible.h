@@ -55,7 +55,7 @@ _LIBCUDACXX_HIDE_FROM_ABI void __implicit_conversion_to(_Tp) noexcept
 
 template <class _Tp, class _Arg>
 struct __cccl_is_nothrow_constructible</*is constructible*/ true, /*is reference*/ true, _Tp, _Arg>
-    : public integral_constant<bool, noexcept(__implicit_conversion_to<_Tp>(_CUDA_VSTD::declval<_Arg>()))>
+    : public integral_constant<bool, noexcept(_CUDA_VSTD::__implicit_conversion_to<_Tp>(_CUDA_VSTD::declval<_Arg>()))>
 {};
 
 template <class _Tp, bool _IsReference, class... _Args>

@@ -951,7 +951,7 @@ public:
   {
     if (!this->has_value())
     {
-      __throw_bad_optional_access();
+      _CUDA_VSTD::__throw_bad_optional_access();
     }
     return this->__get();
   }
@@ -960,7 +960,7 @@ public:
   {
     if (!this->has_value())
     {
-      __throw_bad_optional_access();
+      _CUDA_VSTD::__throw_bad_optional_access();
     }
     return this->__get();
   }
@@ -969,7 +969,7 @@ public:
   {
     if (!this->has_value())
     {
-      __throw_bad_optional_access();
+      _CUDA_VSTD::__throw_bad_optional_access();
     }
     return _CUDA_VSTD::move(this->__get());
   }
@@ -978,7 +978,7 @@ public:
   {
     if (!this->has_value())
     {
-      __throw_bad_optional_access();
+      _CUDA_VSTD::__throw_bad_optional_access();
     }
     return _CUDA_VSTD::move(this->__get());
   }
@@ -1668,7 +1668,7 @@ public:
     }
     else
     {
-      __throw_bad_optional_access();
+      _CUDA_VSTD::__throw_bad_optional_access();
     }
   }
 

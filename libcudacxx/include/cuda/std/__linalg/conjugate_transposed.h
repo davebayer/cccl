@@ -43,7 +43,7 @@ template <class _ElementType, class _Extents, class _Layout, class _Accessor>
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr auto
 conjugate_transposed(mdspan<_ElementType, _Extents, _Layout, _Accessor> __a)
 {
-  return conjugated(transposed(__a));
+  return _CUDA_VSTD::linalg::conjugated(_CUDA_VSTD::linalg::transposed(__a));
 }
 
 } // end namespace linalg

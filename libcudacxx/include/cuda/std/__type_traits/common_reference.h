@@ -51,7 +51,8 @@ template <class _Tp>
 _Tp __returns_exactly() noexcept; // not defined
 
 template <class _Xp, class _Yp>
-using __cond_res_if_right = decltype(false ? __returns_exactly<_Xp>() : __returns_exactly<_Yp>());
+using __cond_res_if_right =
+  decltype(false ? _CUDA_VSTD::__returns_exactly<_Xp>() : _CUDA_VSTD::__returns_exactly<_Yp>());
 
 template <class _Tp, class _Up, class = void>
 struct __cond_res_workaround

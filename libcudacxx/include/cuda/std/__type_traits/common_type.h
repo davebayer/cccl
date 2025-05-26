@@ -42,7 +42,7 @@ using common_type_t _CCCL_NODEBUG_ALIAS = typename common_type<_Tp...>::type;
 
 // Let COND_RES(X, Y) be:
 template <class _Tp, class _Up>
-using __cond_type = decltype(false ? declval<_Tp>() : declval<_Up>());
+using __cond_type = decltype(false ? _CUDA_VSTD::declval<_Tp>() : _CUDA_VSTD::declval<_Up>());
 
 // We need to ensure that extended floating point types like __half and __nv bfloat16 have a common type with real
 // floating point types

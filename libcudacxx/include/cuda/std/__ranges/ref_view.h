@@ -50,7 +50,7 @@ struct __conversion_tester
 
 template <class _Tp, class _Range>
 _CCCL_CONCEPT __convertible_to_lvalue =
-  _CCCL_REQUIRES_EXPR((_Tp, _Range))((__conversion_tester<_Range>::__fun(declval<_Tp>())));
+  _CCCL_REQUIRES_EXPR((_Tp, _Range))((__conversion_tester<_Range>::__fun(_CUDA_VSTD::declval<_Tp>())));
 
 #if !defined(_CCCL_NO_CONCEPTS)
 

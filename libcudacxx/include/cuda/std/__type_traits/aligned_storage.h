@@ -83,7 +83,7 @@ _CCCL_HOST_DEVICE constexpr size_t __select_align_fn_2_(size_t __len, size_t __m
 
 _CCCL_HOST_DEVICE constexpr size_t __select_align_fn_(size_t __len, size_t __a1, size_t __a2)
 {
-  return __select_align_fn_2_(__len, __a2 < __a1 ? __a2 : __a1, __a1 < __a2 ? __a2 : __a1);
+  return _CUDA_VSTD::__select_align_fn_2_(__len, __a2 < __a1 ? __a2 : __a1, __a1 < __a2 ? __a2 : __a1);
 }
 
 template <size_t _Len>

@@ -40,13 +40,13 @@ struct __is_implicitly_default_constructible : false_type
 
 template <class _Tp>
 struct __is_implicitly_default_constructible<_Tp,
-                                             decltype(__test_implicit_default_constructible<_Tp const&>({})),
+                                             decltype(_CUDA_VSTD::__test_implicit_default_constructible<_Tp const&>({})),
                                              true_type> : true_type
 {};
 
 template <class _Tp>
 struct __is_implicitly_default_constructible<_Tp,
-                                             decltype(__test_implicit_default_constructible<_Tp const&>({})),
+                                             decltype(_CUDA_VSTD::__test_implicit_default_constructible<_Tp const&>({})),
                                              false_type> : false_type
 {};
 

@@ -257,7 +257,7 @@ struct __transposed_layout<layout_left>
     using __original_mapping_type = typename layout_left::template mapping<_OriginalExtents>;
     using __extents_type          = __transpose_extents_t<typename __original_mapping_type::extents_type>;
     using __return_mapping_type   = typename __layout_type::template mapping<__extents_type>;
-    return __return_mapping_type{__transpose_extents(__orig_map.extents())};
+    return __return_mapping_type{_CUDA_VSTD::linalg::__detail::__transpose_extents(__orig_map.extents())};
   }
 };
 
@@ -273,7 +273,7 @@ struct __transposed_layout<layout_right>
     using __original_mapping_type = typename layout_right::template mapping<_OriginalExtents>;
     using __extents_type          = __transpose_extents_t<typename __original_mapping_type::extents_type>;
     using __return_mapping_type   = typename __layout_type::template mapping<__extents_type>;
-    return __return_mapping_type{__transpose_extents(__orig_map.extents())};
+    return __return_mapping_type{_CUDA_VSTD::linalg::__detail::__transpose_extents(__orig_map.extents())};
   }
 };
 
@@ -291,7 +291,7 @@ struct __transposed_layout<layout_stride>
     using __extents_type          = __transpose_extents_t<__original_extents_type>;
     using __return_mapping_type   = typename __layout_type::template mapping<__extents_type>;
     return __return_mapping_type{
-      __transpose_extents(__orig_map.extents()),
+      _CUDA_VSTD::linalg::__detail::__transpose_extents(__orig_map.extents()),
       array<typename __extents_type::index_type, _OriginalExtents::rank() /* __orig_map.rank() */>{
         __orig_map.stride(1), __orig_map.stride(0)}};
   }

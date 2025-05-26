@@ -84,10 +84,11 @@ _CCCL_GLOBAL_CONSTANT auto all = __all::__fn{};
 
 #if !defined(_CCCL_NO_CONCEPTS)
 template <_CUDA_VRANGES::viewable_range _Range>
-using all_t = decltype(_CUDA_VIEWS::all(declval<_Range>()));
+using all_t = decltype(_CUDA_VIEWS::all(_CUDA_VSTD::declval<_Range>()));
 #else // ^^^ !_CCCL_NO_CONCEPTS ^^^ / vvv _CCCL_NO_CONCEPTS vvv
 template <class _Range>
-using all_t = enable_if_t<_CUDA_VRANGES::viewable_range<_Range>, decltype(_CUDA_VIEWS::all(declval<_Range>()))>;
+using all_t =
+  enable_if_t<_CUDA_VRANGES::viewable_range<_Range>, decltype(_CUDA_VIEWS::all(_CUDA_VSTD::declval<_Range>()))>;
 #endif // _CCCL_NO_CONCEPTS
 
 _LIBCUDACXX_END_NAMESPACE_VIEWS

@@ -245,7 +245,8 @@ protected:
   _LIBCUDACXX_HIDE_FROM_ABI void __uninitialized_value_construct(iterator __first, iterator __last)
   {
     iterator __idx = __first;
-    auto __guard   = __make_exception_guard(_Rollback_change_size<__inplace_vector_storage>{this, __first, __idx});
+    auto __guard =
+      _CUDA_VSTD::__make_exception_guard(_Rollback_change_size<__inplace_vector_storage>{this, __first, __idx});
     for (; __idx != __last; ++__idx)
     {
       ::new (_CUDA_VSTD::__voidify(*__idx)) _Tp();
@@ -271,7 +272,8 @@ protected:
   _LIBCUDACXX_HIDE_FROM_ABI void __uninitialized_fill(iterator __first, iterator __last, const _Tp& __value)
   {
     iterator __idx = __first;
-    auto __guard   = __make_exception_guard(_Rollback_change_size<__inplace_vector_storage>{this, __first, __idx});
+    auto __guard =
+      _CUDA_VSTD::__make_exception_guard(_Rollback_change_size<__inplace_vector_storage>{this, __first, __idx});
     for (; __idx != __last; ++__idx)
     {
       ::new (_CUDA_VSTD::__voidify(*__idx)) _Tp(__value);
@@ -297,7 +299,8 @@ protected:
   _LIBCUDACXX_HIDE_FROM_ABI void __uninitialized_copy(_Iter __first, _Iter __last, iterator __dest)
   {
     iterator __curr = __dest;
-    auto __guard    = __make_exception_guard(_Rollback_change_size<__inplace_vector_storage>{this, __dest, __curr});
+    auto __guard =
+      _CUDA_VSTD::__make_exception_guard(_Rollback_change_size<__inplace_vector_storage>{this, __dest, __curr});
     for (; __first != __last; ++__curr, (void) ++__first)
     {
       ::new (_CUDA_VSTD::__voidify(*__curr)) _Tp(*__first);
@@ -323,7 +326,8 @@ protected:
   _LIBCUDACXX_HIDE_FROM_ABI void __uninitialized_move(_Iter __first, _Iter __last, iterator __dest)
   {
     iterator __curr = __dest;
-    auto __guard    = __make_exception_guard(_Rollback_change_size<__inplace_vector_storage>{this, __dest, __curr});
+    auto __guard =
+      _CUDA_VSTD::__make_exception_guard(_Rollback_change_size<__inplace_vector_storage>{this, __dest, __curr});
     for (; __first != __last; ++__curr, (void) ++__first)
     {
       ::new (_CUDA_VSTD::__voidify(*__curr)) _Tp(_CUDA_VRANGES::iter_move(__first));
@@ -478,7 +482,7 @@ struct __inplace_vector_move_assign<_Tp, _Capacity, true> : __inplace_vector_cop
 // Specialization for non-trivial types. Nothing in here can be constexpr
 template <class _Tp,
           size_t _Capacity,
-          __inplace_vector_specialization _Spec = __select_inplace_vector_specialization<_Tp, _Capacity>()>
+          __inplace_vector_specialization _Spec = _CUDA_VSTD::__select_inplace_vector_specialization<_Tp, _Capacity>()>
 struct __inplace_vector_base : __inplace_vector_move_assign<_Tp, _Capacity>
 {
   _LIBCUDACXX_DELEGATE_CONSTRUCTORS(__inplace_vector_base, __inplace_vector_move_assign, _Tp, _Capacity);
