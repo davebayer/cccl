@@ -32,7 +32,7 @@ _LIBCUDACXX_BEGIN_NAMESPACE_CUDA
 // 1) must be an enum (class) type or a class with a `value_type` member type
 // 2) must be convertible to the `underlying_type_t` or the `value_type` (can be explicit)
 // 3) must be constructible from the `underlying_type_t` or the `value_type` (can be explicit)
-// 4) the `broadcast_value_type_t` must be an integral type, may be signed or unsigned
+// 4) the `broadcast_value_type_t` must be an integer type, may be signed or unsigned
 
 //! Tells whether a type is a cv-qualified bitmask type.
 //! Users are allowed to specialize this template for their own types.
