@@ -40,10 +40,10 @@ _CCCL_REQUIRES(_CUDA_VSTD::__cccl_is_unsigned_integer_v<_Tp>)
 }
 
 _CCCL_TEMPLATE(class _Tp)
-_CCCL_REQUIRES(is_bitmask_v<_Tp>)
+_CCCL_REQUIRES(__is_bitmask_v<_Tp>)
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr bool has_single_bit(_Tp __v) noexcept
 {
-  return _CUDA_VSTD::has_single_bit(_CUDA_VSTD::__to_unsigned_like(static_cast<bitmask_value_type_t<_Tp>>(__v)));
+  return _CUDA_VSTD::has_single_bit(_CUDA_VSTD::__to_unsigned_like(static_cast<__bitmask_value_type_t<_Tp>>(__v)));
 }
 
 _LIBCUDACXX_END_NAMESPACE_CUDA

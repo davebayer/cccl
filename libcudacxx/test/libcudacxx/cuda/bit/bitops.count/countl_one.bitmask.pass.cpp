@@ -47,16 +47,16 @@ public:
 };
 
 template <>
-inline constexpr bool cuda::is_bitmask_v<EnumMask> = true;
+inline constexpr bool cuda::__is_bitmask_v<EnumMask> = true;
 template <>
-inline constexpr bool cuda::is_bitmask_v<EnumClassMask> = true;
+inline constexpr bool cuda::__is_bitmask_v<EnumClassMask> = true;
 template <>
-inline constexpr bool cuda::is_bitmask_v<ClassMask> = true;
+inline constexpr bool cuda::__is_bitmask_v<ClassMask> = true;
 
 template <class T>
 __host__ __device__ constexpr void test_countl_one(int zero_value)
 {
-  using VT = cuda::bitmask_value_type_t<T>;
+  using VT = cuda::__bitmask_value_type_t<T>;
 
   static_assert(cuda::std::is_same_v<int, decltype(cuda::countl_one(cuda::std::declval<T>()))>);
   static_assert(noexcept(cuda::countl_one(cuda::std::declval<T>())));

@@ -40,10 +40,10 @@ _CCCL_REQUIRES(_CUDA_VSTD::__cccl_is_unsigned_integer_v<_Tp>)
 }
 
 _CCCL_TEMPLATE(class _Tp)
-_CCCL_REQUIRES(is_bitmask_v<_Tp>)
+_CCCL_REQUIRES(__is_bitmask_v<_Tp>)
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr _Tp rotl(_Tp __v, int __cnt) noexcept
 {
-  return _Tp(_CUDA_VSTD::rotl(_CUDA_VSTD::__to_unsigned_like(static_cast<bitmask_value_type_t<_Tp>>(__v), __cnt)));
+  return _Tp(_CUDA_VSTD::rotl(_CUDA_VSTD::__to_unsigned_like(static_cast<__bitmask_value_type_t<_Tp>>(__v), __cnt)));
 }
 
 _CCCL_TEMPLATE(class _Tp)
@@ -54,10 +54,10 @@ _CCCL_REQUIRES(_CUDA_VSTD::__cccl_is_unsigned_integer_v<_Tp>)
 }
 
 _CCCL_TEMPLATE(class _Tp)
-_CCCL_REQUIRES(is_bitmask_v<_Tp>)
+_CCCL_REQUIRES(__is_bitmask_v<_Tp>)
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr _Tp rotr(_Tp __v, int __cnt) noexcept
 {
-  return _Tp(_CUDA_VSTD::rotr(_CUDA_VSTD::__to_unsigned_like(static_cast<bitmask_value_type_t<_Tp>>(__v), __cnt)));
+  return _Tp(_CUDA_VSTD::rotr(_CUDA_VSTD::__to_unsigned_like(static_cast<__bitmask_value_type_t<_Tp>>(__v), __cnt)));
 }
 
 _LIBCUDACXX_END_NAMESPACE_STD

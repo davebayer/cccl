@@ -31,20 +31,20 @@ _LIBCUDACXX_BEGIN_NAMESPACE_CUDA
 //! Tells whether a type is a cv-qualified bitmask type.
 //! Users are allowed to specialize this template for their own types.
 template <class _Tp>
-inline constexpr bool is_bitmask_v = false;
+inline constexpr bool __is_bitmask_v = false;
 template <class _Tp>
-inline constexpr bool is_bitmask_v<const _Tp> = is_bitmask_v<_Tp>;
+inline constexpr bool __is_bitmask_v<const _Tp> = __is_bitmask_v<_Tp>;
 template <class _Tp>
-inline constexpr bool is_bitmask_v<volatile _Tp> = is_bitmask_v<_Tp>;
+inline constexpr bool __is_bitmask_v<volatile _Tp> = __is_bitmask_v<_Tp>;
 template <class _Tp>
-inline constexpr bool is_bitmask_v<const volatile _Tp> = is_bitmask_v<_Tp>;
+inline constexpr bool __is_bitmask_v<const volatile _Tp> = __is_bitmask_v<_Tp>;
 
 template <>
-inline constexpr bool is_bitmask_v<_CUDA_DEVICE::lane_mask> = true;
+inline constexpr bool __is_bitmask_v<_CUDA_DEVICE::lane_mask> = true;
 
 // we define the trait as alias, so users cannot specialize it (they should specialize the variable template instead)
-template <class _Tp>
-using is_bitmask = _CUDA_VSTD::bool_constant<is_bitmask_v<_Tp>>;
+// template <class _Tp>
+// using __is_bitmask = _CUDA_VSTD::bool_constant<__is_bitmask_v<_Tp>>;
 
 _LIBCUDACXX_END_NAMESPACE_CUDA
 

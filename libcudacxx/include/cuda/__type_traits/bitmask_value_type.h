@@ -42,15 +42,15 @@ template <class _Tp>
   }
 }
 
-template <class _Tp>
-struct bitmask_value_type
-{
-  static_assert(is_bitmask_v<_Tp>, "bitmask_value_type requires a bitmask type");
-  using type = decltype(::cuda::__cccl_bitmask_value_type_impl<_Tp>());
-};
+// template <class _Tp>
+// struct __bitmask_value_type
+// {
+//   static_assert(__is_bitmask_v<_Tp>, "bitmask_value_type requires a bitmask type");
+//   using type = decltype(::cuda::__cccl_bitmask_value_type_impl<_Tp>());
+// };
 
 template <class _Tp>
-using bitmask_value_type_t _CCCL_NODEBUG_ALIAS = typename bitmask_value_type<_Tp>::type;
+using __bitmask_value_type_t _CCCL_NODEBUG_ALIAS = decltype(::cuda::__cccl_bitmask_value_type_impl<_Tp>());
 
 _LIBCUDACXX_END_NAMESPACE_CUDA
 
