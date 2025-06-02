@@ -24,6 +24,12 @@
 #include <cuda/__bit/bit_reverse.h>
 #include <cuda/__bit/bitfield.h>
 #include <cuda/__bit/bitmask.h>
+#include <cuda/__bit/countl.h>
+#include <cuda/__bit/countr.h>
+#include <cuda/__bit/has_single_bit.h>
+#include <cuda/__bit/integral.h>
+#include <cuda/__bit/popcount.h>
+#include <cuda/__bit/rotate.h>
 #include <cuda/std/bit>
 
 #endif // _CUDA_BIT

@@ -36,6 +36,9 @@ class lane_mask
   _CUDA_VSTD::uint32_t __value_;
 
 public:
+  //! @brief Value type of the lane mask.
+  using value_type = _CUDA_VSTD::uint32_t;
+
   //! @brief Constructs a lane mask object from a 32-bit unsigned integer.
   //!
   //! @param __v The value to initialize the lane mask with. Defaults to 0.

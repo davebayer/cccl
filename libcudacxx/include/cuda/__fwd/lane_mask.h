@@ -8,8 +8,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _CUDA_TYPE_TRAITS_
-#define _CUDA_TYPE_TRAITS_
+#ifndef _CUDA___FWD_LANE_MASK_H
+#define _CUDA___FWD_LANE_MASK_H
 
 #include <cuda/std/detail/__config>
 
@@ -21,9 +21,14 @@
 #  pragma system_header
 #endif // no system header
 
-#include <cuda/__type_traits/bitmask_value_type.h>
-#include <cuda/__type_traits/is_bitmask.h>
-#include <cuda/__type_traits/is_floating_point.h>
-#include <cuda/std/type_traits>
+#include <cuda/std/__cccl/prologue.h>
 
-#endif // _CUDA_TYPE_TRAITS_
+_LIBCUDACXX_BEGIN_NAMESPACE_CUDA_DEVICE
+
+class lane_mask;
+
+_LIBCUDACXX_END_NAMESPACE_CUDA_DEVICE
+
+#include <cuda/std/__cccl/epilogue.h>
+
+#endif // _CUDA___FWD_BARRIER_H
