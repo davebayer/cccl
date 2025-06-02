@@ -32,6 +32,7 @@ _LIBCUDACXX_BEGIN_NAMESPACE_CUDA
 template <class _Tp>
 [[nodiscard]] _LIBCUDACXX_HIDE_FROM_ABI constexpr auto __cccl_bitmask_value_type_impl() noexcept
 {
+  static_assert(__is_bitmask_v<_Tp>, "bitmask_value_type requires a bitmask type");
   if constexpr (_CUDA_VSTD::is_enum_v<_Tp>)
   {
     return _CUDA_VSTD::underlying_type_t<_Tp>{};
@@ -45,7 +46,6 @@ template <class _Tp>
 // template <class _Tp>
 // struct __bitmask_value_type
 // {
-//   static_assert(__is_bitmask_v<_Tp>, "bitmask_value_type requires a bitmask type");
 //   using type = decltype(::cuda::__cccl_bitmask_value_type_impl<_Tp>());
 // };
 
