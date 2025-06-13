@@ -29,6 +29,7 @@
 #include <cuda/std/__type_traits/always_false.h>
 #include <cuda/std/__type_traits/conditional.h>
 #include <cuda/std/__type_traits/extent.h>
+#include <cuda/std/__type_traits/is_bounded_array.h>
 #include <cuda/std/__type_traits/is_integer.h>
 #include <cuda/std/__type_traits/remove_const.h>
 #include <cuda/std/cstdint>
