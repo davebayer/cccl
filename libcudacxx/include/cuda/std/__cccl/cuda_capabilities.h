@@ -40,4 +40,10 @@
 #  define _CCCL_PDL_TRIGGER_NEXT_LAUNCH()
 #endif // _CCCL_HAS_PDL
 
+#if _CCCL_CUDA_COMPILATION() && (defined(__CUDACC_EXTENDED_LAMBDA__) || _CCCL_CUDA_COMPILER(NVHPC))
+#  define _CCCL_HAS_EXTENDED_LAMBDA() 1
+#else // ^^^ has extended lambda ^^^ / vvv no extended lambda vvv
+#  define _CCCL_HAS_EXTENDED_LAMBDA() 0
+#endif // ^^^ no extended lambda ^^^
+
 #endif // __CCCL_CUDA_CAPABILITIES
