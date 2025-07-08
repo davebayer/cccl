@@ -11,6 +11,18 @@
 #ifndef __CCCL_PREPROCESSOR_H
 #define __CCCL_PREPROCESSOR_H
 
+// Convert parameter to string
+#define _CCCL_TO_STRING2(_STR) #_STR
+#define _CCCL_TO_STRING(_STR)  _CCCL_TO_STRING2(_STR)
+
+// Issue a warning if the MSVC traditional preprocessor is used
+#if (defined(_MSC_VER) && !defined(__clang__)) && (!defined(_MSVC_TRADITIONAL) || _MSVC_TRADITIONAL)
+#  if !defined(CCCL_IGNORE_MSVC_TRADITIONAL_PREPROCESSOR_WARNING)
+#    pragma message(__FILE__ ":" _CCCL_TO_STRING( \
+      __LINE__) ": warning: CCCL does not support the MSVC traditional preprocessor. Problems may occur when defining macros like #define NVCC or #define MSVC. Please, use the '/Zc:preprocessor' option when compiling with MSVC to enable the C++ compliant preprocessor or define CCCL_IGNORE_MSVC_TRADITIONAL_PREPROCESSOR_WARNING to suppress this warning.")
+#  endif // !defined(CCCL_IGNORE_MSVC_TRADITIONAL_PREPROCESSOR_WARNING)
+#endif // (defined(_MSC_VER) && !defined(__clang__)) && (!defined(_MSVC_TRADITIONAL) || _MSVC_TRADITIONAL)
+
 #ifdef __has_include
 #  define _CCCL_HAS_INCLUDE(_X) __has_include(_X)
 #else
@@ -22,10 +34,6 @@
 #else
 #  define _CCCL_COUNTER() __LINE__
 #endif
-
-// Convert parameter to string
-#define _CCCL_TO_STRING2(_STR) #_STR
-#define _CCCL_TO_STRING(_STR)  _CCCL_TO_STRING2(_STR)
 
 #define _CCCL_PP_FIRST(first, ...)      first
 #define _CCCL_PP_SECOND(_, second, ...) second
