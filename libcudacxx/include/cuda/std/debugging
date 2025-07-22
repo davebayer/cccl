@@ -1,0 +1,62 @@
+//===----------------------------------------------------------------------===//
+//
+// Part of libcu++, the C++ Standard Library for your entire system,
+// under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+// SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES.
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef _CUDA_STD_DEBUGGING
+#define _CUDA_STD_DEBUGGING
+
+#include <cuda/std/detail/__config>
+
+#if defined(_CCCL_IMPLICIT_SYSTEM_HEADER_GCC)
+#  pragma GCC system_header
+#elif defined(_CCCL_IMPLICIT_SYSTEM_HEADER_CLANG)
+#  pragma clang system_header
+#elif defined(_CCCL_IMPLICIT_SYSTEM_HEADER_MSVC)
+#  pragma system_header
+#endif // no system header
+
+#include <cuda/std/__type_traits/always_false.h>
+#include <cuda/std/version>
+
+#include <nv/target>
+
+#if _CCCL_COMPILER(MSVC)
+#  include <intrin.h>
+#endif // _CCCL_COMPILER(MSVC)
+
+#include <cuda/std/__cccl/prologue.h>
+
+_LIBCUDACXX_BEGIN_NAMESPACE_STD
+
+template <class _Tp = void>
+_CCCL_HOST_API _CCCL_FORCEINLINE void __cccl_breakpoint_impl_host() noexcept
+{
+#if _CCCL_HAS_BUILTIN(__builtin_debugtrap)
+  __builtin_debugtrap();
+#elif _CCCL_COMPILER(MSVC)
+  ::__debugbreak();
+#elif _CCCL_ARCH(X86_64)
+  asm volatile("int 3");
+#elif _CCCL_ARCH(ARM64)
+  asm volatile(".inst 0xd4200000");
+#else // ^^^ known architectures ^^^ / vvv unknown architecture vvv
+  static_assert(__always_false_v<_Tp>, "Unsupported architecture for breakpoint.");
+#endif // ^^^ unknown architecture ^^^
+}
+
+_CCCL_API _CCCL_FORCEINLINE void breakpoint() noexcept
+{
+  NV_IF_ELSE_TARGET(NV_IS_DEVICE, (::__brkpt();), (_CUDA_VSTD::__cccl_breakpoint_impl_host();))
+}
+
+_LIBCUDACXX_END_NAMESPACE_STD
+
+#include <cuda/std/__cccl/epilogue.h>
+
+#endif //_CUDA_STD_DEBUGGING
