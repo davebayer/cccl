@@ -52,6 +52,10 @@ Compared to the corresponding CUDA C functions ``__isGlobal()``, ``__isShared()`
 
 - ``ptr`` is not a null pointer. (1)
 
+**Preconditions**
+
+- ``ptr`` is not a null pointer.
+
 **Performance considerations**
 
 - If possible, the ``__isGlobal``, ``__isShared``, ``__isConstant``, ``__isLocal``, ``__isGridConstant``, or ``__isClusterShared`` built-in functions are used to determine the address space.
