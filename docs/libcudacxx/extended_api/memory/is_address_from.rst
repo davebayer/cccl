@@ -34,6 +34,14 @@ The function checks if a pointer ``ptr`` with a generic address is from a ``spac
 
 The function checks if an object ``obj`` with a generic address is from a ``space`` address state space.
 
+.. code:: cpp
+
+   template <typename T>
+   [[nodiscard]] __device__ inline
+   bool is_object_from(T& obj, address_space space)
+
+The function checks if an object ``obj`` with a generic address is from a ``space`` address state space.
+
 Compared to the corresponding CUDA C functions ``__isGlobal()``, ``__isShared()``, ``__isConstant()``, ``__isLocal()``, ``__isGridConstant()``, or ``__isClusterShared()``, ``is_address_from()`` is portable across any compute capability and checks that the pointer is not a null in debug mode.
 
 **Parameters**
