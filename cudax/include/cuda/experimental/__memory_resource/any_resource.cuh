@@ -851,7 +851,7 @@ using any_synchronous_resource = basic_any_resource<_ResourceKind::_Synchronous,
 //! Type erased wrapper around an `resource`
 //! ----------------------------------------------
 //!
-//! ``any_resource`` wraps any given :ref:`resource
+//! ``any_resource`` wraps any given :ref:`synchronous_resource
 //! <libcudacxx-extended-api-memory-resources-resource>` that satisfies the
 //! required properties. It owns the contained resource, taking care of
 //! construction / destruction. This makes it especially suited for use in e.g.
@@ -926,8 +926,9 @@ auto make_any_synchronous_resource(_Args&&... __args) -> any_synchronous_resourc
 template <class _Resource, class... _Properties, class... _Args>
 auto make_any_resource(_Args&&... __args) -> any_resource<_Properties...>
 {
-  static_assert(_CUDA_VMR::resource<_Resource>, "_Resource does not satisfy the cuda::mr::resource concept");
-  static_assert(_CUDA_VMR::resource_with<_Resource, _Properties...>,
+  static_assert(_CUDA_VMR::synchronous_resource<_Resource>,
+                "_Resource does not satisfy the cuda::mr::synchronous_resource concept");
+  static_assert(_CUDA_VMR::synchronous_resource_with<_Resource, _Properties...>,
                 "The provided _Resource type does not support the requested properties");
   return any_resource<_Properties...>{_CUDA_VSTD::in_place_type<_Resource>, _CUDA_VSTD::forward<_Args>(__args)...};
 }
