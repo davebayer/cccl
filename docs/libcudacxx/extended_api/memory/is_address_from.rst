@@ -28,7 +28,6 @@ The function checks if a pointer ``ptr`` with a generic address is from a ``spac
 
 .. code:: cpp
 
-   template <typename T>
    [[nodiscard]] __device__ inline
    bool is_object_from(T& obj, address_space space) noexcept; // (2)
 
@@ -38,7 +37,7 @@ The function checks if an object ``obj`` with a generic address is from a ``spac
 
    template <typename T>
    [[nodiscard]] __device__ inline
-   bool is_object_from(T& obj, address_space space)
+   bool is_object_from(T& obj, address_space space) noexcept; // (2)
 
 The function checks if an object ``obj`` with a generic address is from a ``space`` address state space.
 
@@ -62,7 +61,7 @@ Compared to the corresponding CUDA C functions ``__isGlobal()``, ``__isShared()`
 
 **Preconditions**
 
-- ``ptr`` is not a null pointer.
+- ``ptr`` is not a null pointer. (1)
 
 **Performance considerations**
 
