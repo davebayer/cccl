@@ -38,7 +38,7 @@
 
 #  include <cuda/std/__cccl/prologue.h>
 
-_LIBCUDACXX_BEGIN_NAMESPACE_CUDA_MR
+_CCCL_BEGIN_NAMESPACE_CUDA_MR
 
 union _AnyResourceStorage
 {
@@ -644,7 +644,7 @@ using synchronous_resource_ref = basic_resource_ref<_AllocType::_Synchronous, _P
 template <class... _Properties>
 using resource_ref = basic_resource_ref<_AllocType::_Default, _Properties...>;
 
-_LIBCUDACXX_END_NAMESPACE_CUDA_MR
+_CCCL_END_NAMESPACE_CUDA_MR
 
 #  include <cuda/std/__cccl/epilogue.h>
 
