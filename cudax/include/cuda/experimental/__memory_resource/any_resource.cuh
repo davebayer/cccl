@@ -384,7 +384,7 @@ struct _CCCL_DECLSPEC_EMPTY_BASES resource_ref
 {
   // Conversions from the synchronous_resource_ref types in cuda::mr is not supported.
   template <class... _OtherProperties>
-  resource_ref(_CUDA_VMR::resource_ref<_OtherProperties...>) = delete;
+  resource_ref(_CUDA_VMR::synchronous_resource_ref<_OtherProperties...>) = delete;
 
   // Inherit other constructors from __basic_any
   _LIBCUDACXX_DELEGATE_CONSTRUCTORS(resource_ref, ::cuda::__basic_any, experimental::__iasync_resource<_Properties...>&);
