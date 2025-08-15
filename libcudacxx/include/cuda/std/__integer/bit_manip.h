@@ -7,8 +7,8 @@
 //
 //===---------------------------------------------------------------------===//
 
-#ifndef _LIBCUDACXX___INTEGER_CONSTANTS_H
-#define _LIBCUDACXX___INTEGER_CONSTANTS_H
+#ifndef _LIBCUDACXX___INTEGER_BIT_MANIP_H
+#define _LIBCUDACXX___INTEGER_BIT_MANIP_H
 
 #include <cuda/std/detail/__config>
 
@@ -28,49 +28,49 @@
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
 template <class _Tp>
-[[nodiscard]] _CCCL_API constexpr _Tp __int_one() noexcept
+[[nodiscard]] _CCCL_API constexpr bool __int_get_bit(_Tp __v, size_t __i) noexcept
 {
+  _CCCL_ASSERT(__i < __int_nbits_v<_Tp>, "index out of bounds");
   if constexpr (__is_cccl_int_v<_Tp>)
   {
-    _Tp __ret{};
-    __ret.__storage[0] = 1;
-    return __ret;
+    const size_t __word_idx = __i / _Tp::__word_nbits;
+    return (__v.__storage[__word_idx] >> (__i % _Tp::__word_nbits)) & 1;
   }
   else
   {
-    return static_cast<_Tp>(1);
+    return (__v >> __i) & 1;
   }
 }
 
 template <class _Tp>
-[[nodiscard]] _CCCL_API constexpr _Tp __int_all_ones() noexcept
+[[nodiscard]] _CCCL_API constexpr void __int_set_bit(_Tp& __v, size_t __i, bool __bit_val = true) noexcept
 {
+  _CCCL_ASSERT(__i < __int_nbits_v<_Tp>, "index out of bounds");
   if constexpr (__is_cccl_int_v<_Tp>)
   {
-    _Tp __ret;
-    for (size_t i = 0; i < _Tp::__storage_size; ++i)
-    {
-      __ret.__storage[i] = ~static_cast<typename _Tp::__word_type>(0);
-    }
-    return __ret;
+    const size_t __word_idx = __i / _Tp::__word_nbits;
+    __v.__storage[__word_idx] |= (static_cast<typename _Tp::__word_type>(__bit_val) << (__i % _Tp::__word_nbits));
   }
   else
   {
-    return ~_Tp{};
+    __v |= (static_cast<_Tp>(__bit_val) << __i);
   }
 }
 
 template <class _Tp>
-[[nodiscard]] _CCCL_API constexpr _Tp __int_max() noexcept
+[[nodiscard]] _CCCL_API constexpr bool __int_get_msb(_Tp __v) noexcept
 {
-  _Tp __ret{};
-  if constexpr (__is_cccl_int_v<_Tp>)
-  {
-  }
+  return _CUDA_STD::__int_get_bit(__v, __int_nbits_v - 1);
+}
+
+template <class _Tp>
+[[nodiscard]] _CCCL_API constexpr bool __int_set_msb(_Tp& __v, bool __bit_val = true) noexcept
+{
+  return _CUDA_STD::__int_set_bit(__v, __int_nbits_v - 1, __bit_val);
 }
 
 _CCCL_END_NAMESPACE_CUDA_STD
 
 #include <cuda/std/__cccl/epilogue.h>
 
-#endif // _LIBCUDACXX___INTEGER_CONSTANTS_H
+#endif // _LIBCUDACXX___INTEGER_BIT_MANIP_H

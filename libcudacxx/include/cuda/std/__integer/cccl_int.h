@@ -750,20 +750,6 @@ public:
     return __storage[i];
   }
 
-  // Return the i-th bit of the number.
-  LIBC_INLINE constexpr bool get_bit(size_t i) const
-  {
-    const size_t word_index = i / __word_size;
-    return 1 & (__storage[word_index] >> (i % __word_size));
-  }
-
-  // Set the i-th bit of the number.
-  LIBC_INLINE constexpr void set_bit(size_t i)
-  {
-    const size_t word_index = i / __word_size;
-    __storage[word_index] |= _Word(1) << (i % __word_size);
-  }
-
 private:
   LIBC_INLINE friend constexpr int cmp(const __cccl_int& lhs, const __cccl_int& rhs)
   {

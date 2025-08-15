@@ -7,8 +7,8 @@
 //
 //===---------------------------------------------------------------------===//
 
-#ifndef _LIBCUDACXX___INTEGER_BIT_OPS_H
-#define _LIBCUDACXX___INTEGER_BIT_OPS_H
+#ifndef _LIBCUDACXX___INTEGER_PROPERTIES_H
+#define _LIBCUDACXX___INTEGER_PROPERTIES_H
 
 #include <cuda/std/detail/__config>
 
@@ -26,15 +26,11 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
-template <size_t _NBits, bool _IsSigned, class _Word>
-[[nodiscard]] _CCCL_API constexpr __cccl_int<_NBits, _IsSigned, _Word> __int_get_bit(size_t __i) noexcept
-{
-  using _Int            = __cccl_int<_NBits, _IsSigned, _Word>;
-  const auto __word_idx = __i / _Int::__word_nbits;
-}
+template <class _Tp>
+inline constexpr size_t __int_nbits_v = sizeof(_Tp) * CHAR_BIT;
 
 _CCCL_END_NAMESPACE_CUDA_STD
 
 #include <cuda/std/__cccl/epilogue.h>
 
-#endif // _LIBCUDACXX___INTEGER_BIT_OPS_H
+#endif // _LIBCUDACXX___INTEGER_PROPERTIES_H

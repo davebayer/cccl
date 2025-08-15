@@ -30,6 +30,12 @@ _CCCL_BEGIN_NAMESPACE_CUDA_STD
 template <size_t _NBits, bool _IsSigned, class _Word>
 class __cccl_int;
 
+template <class _Tp>
+inline constexpr bool __is_cccl_int_v = false;
+
+template <size_t _NBits, bool _IsSigned, class _Word>
+inline constexpr bool __is_cccl_int_v<__cccl_int<_NBits, _IsSigned, _Word>> = true;
+
 _CCCL_END_NAMESPACE_CUDA_STD
 
 #include <cuda/std/__cccl/epilogue.h>
