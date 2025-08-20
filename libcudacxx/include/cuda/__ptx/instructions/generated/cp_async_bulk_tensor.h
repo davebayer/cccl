@@ -25,8 +25,8 @@ _CCCL_DEVICE static inline void cp_async_bulk_tensor(
   ::cuda::ptx::space_global_t,
   void* __dstMem,
   const void* __tensorMap,
-  const _CUDA_VSTD::int32_t (&__tensorCoords)[1],
-  _CUDA_VSTD::uint64_t* __smem_bar)
+  const ::cuda::std::int32_t (&__tensorCoords)[1],
+  ::cuda::std::uint64_t* __smem_bar)
 {
 // __space == space_cluster (due to parameter type constraint)
 // __space == space_global (due to parameter type constraint)
@@ -64,8 +64,8 @@ _CCCL_DEVICE static inline void cp_async_bulk_tensor(
   ::cuda::ptx::space_global_t,
   void* __dstMem,
   const void* __tensorMap,
-  const _CUDA_VSTD::int32_t (&__tensorCoords)[1],
-  _CUDA_VSTD::uint64_t* __smem_bar)
+  const ::cuda::std::int32_t (&__tensorCoords)[1],
+  ::cuda::std::uint64_t* __smem_bar)
 {
 // __space == space_shared (due to parameter type constraint)
 // __space == space_global (due to parameter type constraint)
@@ -107,8 +107,8 @@ _CCCL_DEVICE static inline void cp_async_bulk_tensor(
   ::cuda::ptx::cta_group_t<_Cta_Group> __cta_group,
   void* __dstMem,
   const void* __tensorMap,
-  const _CUDA_VSTD::int32_t (&__tensorCoords)[1],
-  _CUDA_VSTD::uint64_t* __smem_bar)
+  const ::cuda::std::int32_t (&__tensorCoords)[1],
+  ::cuda::std::uint64_t* __smem_bar)
 {
   // __space == space_shared (due to parameter type constraint)
   // __space == space_global (due to parameter type constraint)
@@ -163,7 +163,7 @@ _CCCL_DEVICE static inline void cp_async_bulk_tensor(
   ::cuda::ptx::space_global_t,
   ::cuda::ptx::space_shared_t,
   const void* __tensorMap,
-  const _CUDA_VSTD::int32_t (&__tensorCoords)[1],
+  const ::cuda::std::int32_t (&__tensorCoords)[1],
   const void* __srcMem)
 {
 // __space == space_global (due to parameter type constraint)
@@ -202,8 +202,8 @@ _CCCL_DEVICE static inline void cp_async_bulk_tensor(
   ::cuda::ptx::space_global_t,
   void* __dstMem,
   const void* __tensorMap,
-  const _CUDA_VSTD::int32_t (&__tensorCoords)[2],
-  _CUDA_VSTD::uint64_t* __smem_bar)
+  const ::cuda::std::int32_t (&__tensorCoords)[2],
+  ::cuda::std::uint64_t* __smem_bar)
 {
 // __space == space_cluster (due to parameter type constraint)
 // __space == space_global (due to parameter type constraint)
@@ -245,8 +245,8 @@ _CCCL_DEVICE static inline void cp_async_bulk_tensor(
   ::cuda::ptx::space_global_t,
   void* __dstMem,
   const void* __tensorMap,
-  const _CUDA_VSTD::int32_t (&__tensorCoords)[2],
-  _CUDA_VSTD::uint64_t* __smem_bar)
+  const ::cuda::std::int32_t (&__tensorCoords)[2],
+  ::cuda::std::uint64_t* __smem_bar)
 {
 // __space == space_shared (due to parameter type constraint)
 // __space == space_global (due to parameter type constraint)
@@ -292,8 +292,8 @@ _CCCL_DEVICE static inline void cp_async_bulk_tensor(
   ::cuda::ptx::cta_group_t<_Cta_Group> __cta_group,
   void* __dstMem,
   const void* __tensorMap,
-  const _CUDA_VSTD::int32_t (&__tensorCoords)[2],
-  _CUDA_VSTD::uint64_t* __smem_bar)
+  const ::cuda::std::int32_t (&__tensorCoords)[2],
+  ::cuda::std::uint64_t* __smem_bar)
 {
   // __space == space_shared (due to parameter type constraint)
   // __space == space_global (due to parameter type constraint)
@@ -356,7 +356,7 @@ _CCCL_DEVICE static inline void cp_async_bulk_tensor(
   ::cuda::ptx::space_global_t,
   ::cuda::ptx::space_shared_t,
   const void* __tensorMap,
-  const _CUDA_VSTD::int32_t (&__tensorCoords)[2],
+  const ::cuda::std::int32_t (&__tensorCoords)[2],
   const void* __srcMem)
 {
 // __space == space_global (due to parameter type constraint)
@@ -395,8 +395,8 @@ _CCCL_DEVICE static inline void cp_async_bulk_tensor(
   ::cuda::ptx::space_global_t,
   void* __dstMem,
   const void* __tensorMap,
-  const _CUDA_VSTD::int32_t (&__tensorCoords)[3],
-  _CUDA_VSTD::uint64_t* __smem_bar)
+  const ::cuda::std::int32_t (&__tensorCoords)[3],
+  ::cuda::std::uint64_t* __smem_bar)
 {
 // __space == space_cluster (due to parameter type constraint)
 // __space == space_global (due to parameter type constraint)
@@ -439,8 +439,8 @@ _CCCL_DEVICE static inline void cp_async_bulk_tensor(
   ::cuda::ptx::space_global_t,
   void* __dstMem,
   const void* __tensorMap,
-  const _CUDA_VSTD::int32_t (&__tensorCoords)[3],
-  _CUDA_VSTD::uint64_t* __smem_bar)
+  const ::cuda::std::int32_t (&__tensorCoords)[3],
+  ::cuda::std::uint64_t* __smem_bar)
 {
 // __space == space_shared (due to parameter type constraint)
 // __space == space_global (due to parameter type constraint)
@@ -487,8 +487,8 @@ _CCCL_DEVICE static inline void cp_async_bulk_tensor(
   ::cuda::ptx::cta_group_t<_Cta_Group> __cta_group,
   void* __dstMem,
   const void* __tensorMap,
-  const _CUDA_VSTD::int32_t (&__tensorCoords)[3],
-  _CUDA_VSTD::uint64_t* __smem_bar)
+  const ::cuda::std::int32_t (&__tensorCoords)[3],
+  ::cuda::std::uint64_t* __smem_bar)
 {
   // __space == space_shared (due to parameter type constraint)
   // __space == space_global (due to parameter type constraint)
@@ -553,7 +553,7 @@ _CCCL_DEVICE static inline void cp_async_bulk_tensor(
   ::cuda::ptx::space_global_t,
   ::cuda::ptx::space_shared_t,
   const void* __tensorMap,
-  const _CUDA_VSTD::int32_t (&__tensorCoords)[3],
+  const ::cuda::std::int32_t (&__tensorCoords)[3],
   const void* __srcMem)
 {
 // __space == space_global (due to parameter type constraint)
@@ -596,8 +596,8 @@ _CCCL_DEVICE static inline void cp_async_bulk_tensor(
   ::cuda::ptx::space_global_t,
   void* __dstMem,
   const void* __tensorMap,
-  const _CUDA_VSTD::int32_t (&__tensorCoords)[4],
-  _CUDA_VSTD::uint64_t* __smem_bar)
+  const ::cuda::std::int32_t (&__tensorCoords)[4],
+  ::cuda::std::uint64_t* __smem_bar)
 {
 // __space == space_cluster (due to parameter type constraint)
 // __space == space_global (due to parameter type constraint)
@@ -642,8 +642,8 @@ _CCCL_DEVICE static inline void cp_async_bulk_tensor(
   ::cuda::ptx::space_global_t,
   void* __dstMem,
   const void* __tensorMap,
-  const _CUDA_VSTD::int32_t (&__tensorCoords)[4],
-  _CUDA_VSTD::uint64_t* __smem_bar)
+  const ::cuda::std::int32_t (&__tensorCoords)[4],
+  ::cuda::std::uint64_t* __smem_bar)
 {
 // __space == space_shared (due to parameter type constraint)
 // __space == space_global (due to parameter type constraint)
@@ -691,8 +691,8 @@ _CCCL_DEVICE static inline void cp_async_bulk_tensor(
   ::cuda::ptx::cta_group_t<_Cta_Group> __cta_group,
   void* __dstMem,
   const void* __tensorMap,
-  const _CUDA_VSTD::int32_t (&__tensorCoords)[4],
-  _CUDA_VSTD::uint64_t* __smem_bar)
+  const ::cuda::std::int32_t (&__tensorCoords)[4],
+  ::cuda::std::uint64_t* __smem_bar)
 {
   // __space == space_shared (due to parameter type constraint)
   // __space == space_global (due to parameter type constraint)
@@ -759,7 +759,7 @@ _CCCL_DEVICE static inline void cp_async_bulk_tensor(
   ::cuda::ptx::space_global_t,
   ::cuda::ptx::space_shared_t,
   const void* __tensorMap,
-  const _CUDA_VSTD::int32_t (&__tensorCoords)[4],
+  const ::cuda::std::int32_t (&__tensorCoords)[4],
   const void* __srcMem)
 {
 // __space == space_global (due to parameter type constraint)
@@ -803,8 +803,8 @@ _CCCL_DEVICE static inline void cp_async_bulk_tensor(
   ::cuda::ptx::space_global_t,
   void* __dstMem,
   const void* __tensorMap,
-  const _CUDA_VSTD::int32_t (&__tensorCoords)[5],
-  _CUDA_VSTD::uint64_t* __smem_bar)
+  const ::cuda::std::int32_t (&__tensorCoords)[5],
+  ::cuda::std::uint64_t* __smem_bar)
 {
 // __space == space_cluster (due to parameter type constraint)
 // __space == space_global (due to parameter type constraint)
@@ -850,8 +850,8 @@ _CCCL_DEVICE static inline void cp_async_bulk_tensor(
   ::cuda::ptx::space_global_t,
   void* __dstMem,
   const void* __tensorMap,
-  const _CUDA_VSTD::int32_t (&__tensorCoords)[5],
-  _CUDA_VSTD::uint64_t* __smem_bar)
+  const ::cuda::std::int32_t (&__tensorCoords)[5],
+  ::cuda::std::uint64_t* __smem_bar)
 {
 // __space == space_shared (due to parameter type constraint)
 // __space == space_global (due to parameter type constraint)
@@ -901,8 +901,8 @@ _CCCL_DEVICE static inline void cp_async_bulk_tensor(
   ::cuda::ptx::cta_group_t<_Cta_Group> __cta_group,
   void* __dstMem,
   const void* __tensorMap,
-  const _CUDA_VSTD::int32_t (&__tensorCoords)[5],
-  _CUDA_VSTD::uint64_t* __smem_bar)
+  const ::cuda::std::int32_t (&__tensorCoords)[5],
+  ::cuda::std::uint64_t* __smem_bar)
 {
   // __space == space_shared (due to parameter type constraint)
   // __space == space_global (due to parameter type constraint)
@@ -971,7 +971,7 @@ _CCCL_DEVICE static inline void cp_async_bulk_tensor(
   ::cuda::ptx::space_global_t,
   ::cuda::ptx::space_shared_t,
   const void* __tensorMap,
-  const _CUDA_VSTD::int32_t (&__tensorCoords)[5],
+  const ::cuda::std::int32_t (&__tensorCoords)[5],
   const void* __srcMem)
 {
 // __space == space_global (due to parameter type constraint)
