@@ -58,6 +58,25 @@ using ::longlong4_32a;
 using ::ulonglong4_32a;
 #  endif // _CUDA_PTX_CUDACC_MAJOR() < 13
 
+#  if _CUDA_PTX_CUDACC_MAJOR() < 13
+struct alignas(32) longlong4_32a
+{
+  long long x, y, z, w;
+};
+struct alignas(32) ulonglong4_32a
+{
+  unsigned long long x, y, z, w;
+};
+struct alignas(32) double4_32a
+{
+  double x, y, z, w;
+};
+#  else
+using ::double4_32a;
+using ::longlong4_32a;
+using ::ulonglong4_32a;
+#  endif // _CUDA_PTX_CUDACC_MAJOR() < 13
+
 /*************************************************************
  *
  * Conversion from generic pointer -> state space "pointer"
