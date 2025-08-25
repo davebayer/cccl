@@ -32,20 +32,25 @@ _CCCL_BEGIN_NAMESPACE_CUDA_STD
 template <__fp_format _Fmt>
 [[nodiscard]] _CCCL_API constexpr __fp_storage_t<_Fmt> __fp_neg(__fp_storage_t<_Fmt> __v) noexcept
 {
+  static_assert(__fp_is_signed_v<_Fmt>, "Unsigned floating point type cannot be negated");
+
   return static_cast<__fp_storage_t<_Fmt>>(__v ^ __fp_sign_mask_v<_Fmt>);
 }
 
 template <class _Tp>
 [[nodiscard]] _CCCL_API constexpr _Tp __fp_neg(const _Tp& __v) noexcept
 {
+  constexpr auto __fmt = __fp_format_of_v<_Tp>;
+
+  static_assert(__fp_is_signed_v<__fmt>, "Unsigned floating point type cannot be negated");
+
   if constexpr (__fp_is_native_type_v<_Tp>)
   {
     return -__v;
   }
   else
   {
-    return ::cuda::std::__fp_from_storage<_Tp>(
-      ::cuda::std::__fp_neg<__fp_format_of_v<_Tp>>(::cuda::std::__fp_get_storage(__v)));
+    return ::cuda::std::__fp_from_storage<_Tp>(::cuda::std::__fp_neg<__fmt>(::cuda::std::__fp_get_storage(__v)));
   }
 }
 
