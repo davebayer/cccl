@@ -20,12 +20,18 @@
 #  pragma system_header
 #endif // no system header
 
+#include <cuda/std/__concepts/concept_macros.h>
 #include <cuda/std/__format/format_arg.h>
+#include <cuda/std/__format/format_context.h>
 #include <cuda/std/__format/format_error.h>
 #include <cuda/std/__format/formatter.h>
 #include <cuda/std/__format/parse_arg_id.h>
 #include <cuda/std/__format/validation.h>
+#include <cuda/std/__iterator/concepts.h>
 #include <cuda/std/__iterator/iterator_traits.h>
+#include <cuda/std/__type_traits/is_same.h>
+#include <cuda/std/__utility/monostate.h>
+#include <cuda/std/__utility/move.h>
 
 #include <cuda/std/__cccl/prologue.h>
 
@@ -165,6 +171,40 @@ _CCCL_API constexpr typename _Ctx::iterator __fmt_vformat_to(_ParseCtx&& __parse
   }
   return __out_it;
 }
+
+template <class _OutIt, class _CharT, class _FmtOutIt>
+[[nodiscard]] _CCCL_API _OutIt __fmt_vformat_to(
+  _OutIt __out_it, basic_string_view<_CharT> __fmt, basic_format_args<basic_format_context<_FmtOutIt, _CharT>> __args)
+{
+  if constexpr (is_same_v<_OutIt, _FmtOutIt>)
+  {
+    return ::cuda::std::__fmt_vformat_to(basic_format_parse_context{__fmt, __args.size()},
+                                         ::cuda::std::__fmt_make_format_context(::cuda::std::move(__out_it), __args));
+  }
+  else
+  {
+    static_assert(is_same_v<_OutIt, _FmtOutIt>, "Not implemented");
+  }
+}
+
+// The function is _CCCL_FORCE_INLINE since the compiler is bad at inlining
+// https://reviews.llvm.org/D110499#inline-1180704
+// TODO FMT Evaluate whether we want to file a Clang bug report regarding this.
+_CCCL_TEMPLATE(class _OutIt)
+_CCCL_REQUIRES(output_iterator<_OutIt, const char&>)
+_CCCL_API _CCCL_FORCEINLINE _OutIt vformat_to(_OutIt __out_it, string_view __fmt, format_args __args)
+{
+  return ::cuda::std::__fmt_vformat_to(::cuda::std::move(__out_it), __fmt, __args);
+}
+
+#if _CCCL_HAS_WCHAR_T()
+_CCCL_TEMPLATE(_OutIt)
+_CCCL_REQUIRES(output_iterator<_OutIt, const wchar_t&>)
+_CCCL_API _CCCL_FORCEINLINE _OutIt vformat_to(_OutIt __out_it, wstring_view __fmt, wformat_args __args)
+{
+  return ::cuda::std::__fmt_vformat_to(::cuda::std::move(__out_it), __fmt, __args);
+}
+#endif // _CCCL_HAS_WCHAR_T()
 
 _CCCL_END_NAMESPACE_CUDA_STD
 
