@@ -105,8 +105,6 @@ private:
   bool __completed_;
 };
 
-_LIBCUDACXX_CTAD_SUPPORTED_FOR_TYPE(__exception_guard_exceptions);
-
 template <class _Rollback>
 struct __exception_guard_noexceptions
 {
@@ -137,8 +135,6 @@ struct __exception_guard_noexceptions
 private:
   bool __completed_ = false;
 };
-
-_LIBCUDACXX_CTAD_SUPPORTED_FOR_TYPE(__exception_guard_noexceptions);
 
 #if !_CCCL_HAS_EXCEPTIONS()
 template <class _Rollback>

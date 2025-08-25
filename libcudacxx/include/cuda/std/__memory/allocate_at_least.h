@@ -36,7 +36,6 @@ struct allocation_result
   _Pointer ptr;
   size_t count;
 };
-_LIBCUDACXX_CTAD_SUPPORTED_FOR_TYPE(allocation_result);
 
 template <class _Alloc>
 [[nodiscard]] _CCCL_API constexpr allocation_result<typename allocator_traits<_Alloc>::pointer>

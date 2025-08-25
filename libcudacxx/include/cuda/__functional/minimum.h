@@ -37,7 +37,6 @@ struct _CCCL_TYPE_VISIBILITY_DEFAULT minimum
     return (__lhs < __rhs) ? __lhs : __rhs;
   }
 };
-_LIBCUDACXX_CTAD_SUPPORTED_FOR_TYPE(minimum);
 
 template <>
 struct _CCCL_TYPE_VISIBILITY_DEFAULT minimum<void>

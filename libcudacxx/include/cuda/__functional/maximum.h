@@ -37,7 +37,6 @@ struct _CCCL_TYPE_VISIBILITY_DEFAULT maximum
     return (__lhs < __rhs) ? __rhs : __lhs;
   }
 };
-_LIBCUDACXX_CTAD_SUPPORTED_FOR_TYPE(maximum);
 
 template <>
 struct _CCCL_TYPE_VISIBILITY_DEFAULT maximum<void>

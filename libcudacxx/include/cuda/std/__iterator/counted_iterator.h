@@ -413,7 +413,6 @@ public:
     return ::cuda::std::ranges::iter_swap(__x.__current_, __y.__current_);
   }
 };
-_LIBCUDACXX_CTAD_SUPPORTED_FOR_TYPE(counted_iterator);
 _LIBCUDACXX_END_HIDDEN_FRIEND_NAMESPACE(counted_iterator)
 
 // Not a hidden friend because of MSVC

@@ -408,7 +408,6 @@ public:
     return ::cuda::std::ranges::iter_swap(__x.__current_, __y.__current_);
   }
 };
-_LIBCUDACXX_CTAD_SUPPORTED_FOR_TYPE(move_iterator);
 _LIBCUDACXX_END_HIDDEN_FRIEND_NAMESPACE(move_iterator)
 
 // Some compilers have issues determining _IsFancyPointer

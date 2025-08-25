@@ -115,8 +115,6 @@ private:
   size_t __num_args_;
 };
 
-_LIBCUDACXX_CTAD_SUPPORTED_FOR_TYPE(basic_format_parse_context);
-
 _CCCL_END_NAMESPACE_CUDA_STD
 
 #include <cuda/std/__cccl/epilogue.h>

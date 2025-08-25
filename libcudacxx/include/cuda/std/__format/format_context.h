@@ -76,8 +76,6 @@ private:
   basic_format_args<basic_format_context> __args_;
 };
 
-_LIBCUDACXX_CTAD_SUPPORTED_FOR_TYPE(basic_format_context);
-
 template <class _OutIt, class _CharT>
 [[nodiscard]] _CCCL_API basic_format_context<_OutIt, _CharT>
 __fmt_make_format_context(_OutIt __out_it, basic_format_args<basic_format_context<_OutIt, _CharT>> __args)

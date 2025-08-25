@@ -84,7 +84,6 @@ public:
   }
 };
 _CCCL_SUPPRESS_DEPRECATED_POP
-_LIBCUDACXX_CTAD_SUPPORTED_FOR_TYPE(front_insert_iterator);
 
 template <class _Container>
 [[nodiscard]] _CCCL_API constexpr front_insert_iterator<_Container> front_inserter(_Container& __x) noexcept

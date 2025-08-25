@@ -64,7 +64,6 @@ private:
   _ForwardIterator __last_;
   _BinaryPredicate __pred_;
 };
-_LIBCUDACXX_CTAD_SUPPORTED_FOR_TYPE(default_searcher);
 
 #endif // __cuda_std__
 

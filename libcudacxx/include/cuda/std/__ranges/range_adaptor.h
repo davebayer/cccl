@@ -59,7 +59,6 @@ struct __pipeable
       : _Fn(::cuda::std::move(__f))
   {}
 };
-_LIBCUDACXX_CTAD_SUPPORTED_FOR_TYPE(__pipeable);
 
 template <class _Tp>
 _CCCL_HOST_DEVICE _Tp __derived_from_range_adaptor_closure(__range_adaptor_closure<_Tp>*);
