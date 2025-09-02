@@ -33,7 +33,7 @@
  *
  */
 
-#pragma once
+#pragma onceasdfasdfsadf
 
 // For _CCCL_IMPLICIT_SYSTEM_HEADER
 #include <cuda/__cccl_config>
