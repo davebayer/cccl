@@ -184,12 +184,11 @@
 // We currently do not support any of the STL wchar facilities
 #define _CCCL_HAS_WCHAR_T() 0
 
-// Fixme: replace the condition with (!_CCCL_DEVICE_COMPILATION())
 // FIXME: Enable this for clang-cuda in a followup
-#if !_CCCL_HAS_CUDA_COMPILER()
+#if !_CCCL_DEVICE_COMPILATION()
 #  define _CCCL_HAS_LONG_DOUBLE() 1
-#else // ^^^ !_CCCL_HAS_CUDA_COMPILER() ^^^ / vvv _CCCL_HAS_CUDA_COMPILER() vvv
+#else // ^^^ !_CCCL_DEVICE_COMPILATION() ^^^ / vvv _CCCL_DEVICE_COMPILATION() vvv
 #  define _CCCL_HAS_LONG_DOUBLE() 0
-#endif // ^^^ _CCCL_HAS_CUDA_COMPILER() ^^^
+#endif // ^^^ _CCCL_DEVICE_COMPILATION() ^^^
 
 #endif // __CCCL_DIALECT_H
