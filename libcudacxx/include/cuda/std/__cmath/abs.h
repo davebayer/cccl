@@ -35,6 +35,10 @@
 #  define _CCCL_BUILTIN_FABSL(...) __builtin_fabsl(__VA_ARGS__)
 #endif // _CCCL_CHECK_BUILTIN(builtin_fabs)
 
+#if _CCCL_HAS_FLOAT128() && (_CCCL_HAS_BUILTIN(__builtin_fabsf128) || _CCCL_COMPILER(GCC))
+#  define _CCCL_BUILTIN_FABSF128(...) __builtin_fabsf128(__VA_ARGS__)
+#endif // _CCCL_HAS_FLOAT128() && (_CCCL_HAS_BUILTIN(__builtin_fabsf128) || _CCCL_COMPILER(GCC))
+
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
 // fabs
@@ -94,6 +98,19 @@ _CCCL_REQUIRES(__is_extended_arithmetic_v<_Tp>)
       }
     }
 #endif // _LIBCUDACXX_HAS_NVBF16()
+#if _CCCL_HAS_FLOAT128()
+    if constexpr (is_same_v<_Tp, __float128>)
+    {
+      _CCCL_IF_NOT_CONSTEVAL_DEFAULT
+      {
+#  if defined(_CCCL_BUILTIN_FABSF128)
+        return _CCCL_BUILTIN_FABSF128(__x);
+#  else // ^^^ _CCCL_BUILTIN_FABSF128 ^^^ / vvv !_CCCL_BUILTIN_FABSF128 vvv
+        NV_IF_TARGET(NV_IS_DEVICE, (return ::__nv_fp128_fabs(__x);))
+#  endif // ^^^ !_CCCL_BUILTIN_FABSF128 ^^^
+      }
+    }
+#endif // _CCCL_HAS_FLOAT128()
     const auto __val = ::cuda::std::__fp_get_storage(__x) & __fp_exp_mant_mask_of_v<_Tp>;
     return ::cuda::std::__fp_from_storage<_Tp>(static_cast<__fp_storage_of_t<_Tp>>(__val));
   }
