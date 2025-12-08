@@ -352,13 +352,13 @@ C2H_CCCLRT_TEST("global devices vector", "[device]")
 C2H_CCCLRT_TEST("memory location", "[device]")
 {
   cuda::memory_location loc = cuda::devices[0];
-  CCCLRT_REQUIRE(loc.type == ::cudaMemLocationTypeDevice);
+  CCCLRT_REQUIRE(loc.type == ::CU_MEM_LOCATION_TYPE_DEVICE);
   CCCLRT_REQUIRE(loc.id == 0);
 
   if (cuda::devices.size() > 1)
   {
     loc = cuda::device_ref{1};
-    CCCLRT_REQUIRE(loc.type == ::cudaMemLocationTypeDevice);
+    CCCLRT_REQUIRE(loc.type == ::CU_MEM_LOCATION_TYPE_DEVICE);
     CCCLRT_REQUIRE(loc.id == 1);
   }
 }
