@@ -23,14 +23,15 @@
 
 #if _CCCL_HAS_CTK() && !_CCCL_COMPILER(NVRTC)
 
+#  include <cuda.h>
+
 #  include <cuda/std/__cccl/prologue.h>
 
 _CCCL_BEGIN_NAMESPACE_CUDA
 
-using memory_location = ::cudaMemLocation;
-#  if _CCCL_CTK_AT_LEAST(12, 2)
-inline constexpr memory_location host_memory_location = {::cudaMemLocationTypeHost, 0};
-#  endif // _CCCL_CTK_AT_LEAST(12, 2)
+using memory_location = ::CUmemLocation;
+
+inline constexpr memory_location host_memory_location{::CU_MEM_LOCATION_TYPE_HOST, 0};
 
 _CCCL_END_NAMESPACE_CUDA
 

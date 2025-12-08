@@ -118,7 +118,7 @@ public:
   //! @return The memory location of this device
   [[nodiscard]] _CCCL_HOST_API operator memory_location() const noexcept
   {
-    return memory_location{::cudaMemLocationTypeDevice, get()};
+    return memory_location{::CU_MEM_LOCATION_TYPE_DEVICE, get()};
   }
 
   //! @brief Initializes the primary context of the device.
