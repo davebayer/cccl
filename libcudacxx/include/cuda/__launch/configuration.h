@@ -471,27 +471,29 @@ _CCCL_CONCEPT __kernel_has_default_config =
  * @tparam Options
  * Types of options that were added to this configuration object
  */
-template <typename Hierarchy, typename... Options>
+template <class _Hierarchy, class... _Options>
 struct kernel_config
 {
-  static_assert(::cuda::std::_And<::cuda::std::is_base_of<__detail::launch_option, Options>...>::value);
-  static_assert(__detail::no_duplicate_options<Options...>);
+  static_assert((::cuda::std::is_base_of_v<__detail::launch_option, _Options> && ...));
+  static_assert(__detail::no_duplicate_options<_Options...>);
 
-  constexpr kernel_config(const Hierarchy& hierarchy, const Options&... opts)
-      : __hierarchy(hierarchy)
-      , __options(opts...) {};
-  constexpr kernel_config(const Hierarchy& hierarchy, const ::cuda::std::tuple<Options...>& opts)
-      : __hierarchy(hierarchy)
-      , __options(opts) {};
+  using hierarchy_type = _Hierarchy;
 
-  [[nodiscard]] _CCCL_API constexpr const Hierarchy& hierarchy() const noexcept
+  _CCCL_HOST_API constexpr kernel_config(const _Hierarchy& __hierarchy, const _Options&... __opts)
+      : __hierarchy_(__hierarchy)
+      , __options_(__opts...){};
+  _CCCL_HOST_API constexpr kernel_config(const _Hierarchy& __hierarchy, const ::cuda::std::tuple<_Options...>& __opts)
+      : __hierarchy_(__hierarchy)
+      , __options_(__opts){};
+
+  [[nodiscard]] _CCCL_API constexpr const _Hierarchy& hierarchy() const noexcept
   {
-    return __hierarchy;
+    return __hierarchy_;
   }
 
-  [[nodiscard]] _CCCL_API constexpr const ::cuda::std::tuple<Options...>& options() const noexcept
+  [[nodiscard]] _CCCL_API constexpr const ::cuda::std::tuple<_Options...>& options() const noexcept
   {
-    return __options;
+    return __options_;
   }
 
   /**
@@ -500,14 +502,14 @@ struct kernel_config
    * Returns a new kernel_config that has all option and dimensions from this
    * kernel_config with the option from the argument added to it
    *
-   * @param new_option
+   * @param __new_opts
    * Option to be added to the configuration
    */
-  template <typename... NewOptions>
-  [[nodiscard]] auto add(const NewOptions&... new_options) const
+  template <class... _NewOptions>
+  [[nodiscard]] _CCCL_HOST_API auto add(const _NewOptions&... __new_opts) const
   {
-    return kernel_config<Hierarchy, Options..., NewOptions...>(
-      __hierarchy, ::cuda::std::tuple_cat(__options, ::cuda::std::make_tuple(new_options...)));
+    return kernel_config<_Hierarchy, _Options..., _NewOptions...>(
+      __hierarchy_, ::cuda::std::tuple_cat(__options_, ::cuda::std::make_tuple(__new_opts...)));
   }
 
   /**
@@ -528,14 +530,15 @@ struct kernel_config
    * @param __other_config
    * Other configuration to combine with this configuration
    */
-  template <typename _OtherDimensions, typename... _OtherOptions>
-  [[nodiscard]] auto combine(const kernel_config<_OtherDimensions, _OtherOptions...>& __other_config) const
+  template <class _OtherDimensions, class... _OtherOptions>
+  [[nodiscard]] _CCCL_HOST_API auto
+  combine(const kernel_config<_OtherDimensions, _OtherOptions...>& __other_config) const
   {
     // can't use fully qualified kernel_config name here because of nvcc bug,
     // TODO remove __make_config_from_tuple once fixed
     return __make_config_from_tuple(
-      __hierarchy.combine(__other_config.hierarchy()),
-      ::cuda::std::tuple_cat(__options, ::cuda::std::apply(__filter_options<Options...>{}, __other_config.options())));
+      __hierarchy_.combine(__other_config.hierarchy()),
+      ::cuda::std::tuple_cat(__options_, ::cuda::std::apply(__filter_options<_Options...>{}, __other_config.options())));
   }
 
   /**
@@ -553,8 +556,8 @@ struct kernel_config
    * @param __kernel
    * Kernel functor to search for the default configuration
    */
-  template <typename _Kernel>
-  [[nodiscard]] auto combine_with_default(const _Kernel& __kernel) const
+  template <class _Kernel>
+  [[nodiscard]] _CCCL_HOST_API auto combine_with_default(const _Kernel& __kernel) const
   {
     if constexpr (__kernel_has_default_config<_Kernel>)
     {
@@ -567,8 +570,8 @@ struct kernel_config
   }
 
 private:
-  Hierarchy __hierarchy;
-  ::cuda::std::tuple<Options...> __options;
+  _Hierarchy __hierarchy_;
+  ::cuda::std::tuple<_Options...> __options_;
 };
 
 // We can consider removing the operator&, but its convenient for in-line
