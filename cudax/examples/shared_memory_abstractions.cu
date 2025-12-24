@@ -151,7 +151,7 @@ int main()
   printf("\n");
 
   printf("Demo4:\n");
-  demo3<<<1, 4>>>();
+  demo4<<<1, 4>>>();
   assert(cudaDeviceSynchronize() == cudaSuccess);
   printf("\n");
 }
