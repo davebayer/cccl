@@ -26,31 +26,34 @@
 #include <cuda/std/__cstddef/types.h>
 #include <cuda/std/__limits/numeric_limits.h>
 #include <cuda/std/__memory/construct_at.h>
+#include <cuda/std/__type_traits/always_false.h>
+#include <cuda/std/__type_traits/is_array.h>
 #include <cuda/std/__type_traits/is_constructible.h>
 #include <cuda/std/__type_traits/is_destructible.h>
+#include <cuda/std/__type_traits/is_fully_bounded_array.h>
 #include <cuda/std/__type_traits/is_nothrow_constructible.h>
 #include <cuda/std/__type_traits/is_nothrow_destructible.h>
 #include <cuda/std/__type_traits/is_void.h>
+#include <cuda/std/__type_traits/rank.h>
+#include <cuda/std/__type_traits/remove_all_extents.h>
 #include <cuda/std/__utility/forward.h>
 
 #include <cuda/experimental/__memory/static_shared_storage.cuh>
 
 namespace cuda::experimental
 {
-//! @brief A RAII wrapper for an object living in static shared memory.
-//!
-//! @tparam _Tp The type of the object.
-//! @tparam _Align The alignment of the object.
-template <class _Tp, ::cuda::std::size_t _Align = alignof(_Tp)>
-class [[nodiscard]] static_shared : static_shared_storage<sizeof(_Tp), _Align>
+template <class _Tp, ::cuda::std::size_t _Align>
+class __static_shared_base : protected static_shared_storage<sizeof(_Tp), _Align>
 {
-  static_assert(!::cuda::std::is_void_v<_Tp>, "_Tp must not be void");
   static_assert(::cuda::is_power_of_two(_Align), "_Align must be power of two");
   static_assert(_Align >= alignof(_Tp), "_Align must be at least alignof(_Tp)");
 
-  static_assert(!::cuda::std::is_array_v<_Tp>, "Arrays are not supported yet");
-
   using __base_type = static_shared_storage<sizeof(_Tp), _Align>;
+
+protected:
+  using value_type   = _Tp; //!< The type of the object stored in the static shared memory.
+  using element_type = ::cuda::std::remove_all_extents_t<_Tp>; //!< The element type of the object in the static shared
+                                                               //!< memory.
 
   enum class __state_type
   {
@@ -61,13 +64,62 @@ class [[nodiscard]] static_shared : static_shared_storage<sizeof(_Tp), _Align>
 
   __state_type __state_{__state_type::__uninitialized}; //!< The state of the object.
 
+  _CCCL_DEVICE_API _CCCL_FORCEINLINE __static_shared_base() noexcept {}
+
+  __static_shared_base(const __static_shared_base&) = delete;
+
+  __static_shared_base(__static_shared_base&&) = delete;
+
+  __static_shared_base& operator=(const __static_shared_base&) = delete;
+
+  __static_shared_base& operator=(__static_shared_base&&) = delete;
+
   //! @brief Gets the pointer to the object stored in the static shared memory.
   //!
   //! @return The pointer to the object stored in the static shared memory.
-  [[nodiscard]] _CCCL_DEVICE_API shared_memory_ptr<_Tp> __ptr() const noexcept
+  [[nodiscard]] _CCCL_DEVICE_API shared_memory_ptr<element_type> __ptr() const noexcept
   {
-    return shared_memory_ptr<_Tp>{__base_type::get().__get_smem_addr()};
+    return shared_memory_ptr<element_type>{__base_type::get().__get_smem_addr()};
   }
+
+  //! @brief Gets a reference to the object stored in the static shared memory.
+  //!
+  //! @returns A reference to the object stored in the static shared memory.
+  [[nodiscard]] _CCCL_DEVICE_API _Tp& get() const noexcept
+  {
+    if constexpr (!::cuda::std::is_trivially_default_constructible_v<element_type>)
+    {
+      _CCCL_ASSERT(__state_ != __state_type::__uninitialized, "accessing uninitialized static shared memory object");
+    }
+    _CCCL_ASSERT(__state_ != __state_type::__destroyed, "accessing destroyed static shared memory object");
+    return *shared_memory_ptr<_Tp>{__base_type::get().__get_smem_addr()};
+  }
+
+  //! @brief Gets a pointer to the object stored in the static shared memory.
+  //!
+  //! @returns A pointer to the object stored in the static shared memory.
+  [[nodiscard]] _CCCL_DEVICE_API shared_memory_ptr<element_type> operator&() const noexcept
+  {
+    return __ptr();
+  }
+};
+
+template <class _Tp, ::cuda::std::size_t _Align = alignof(_Tp)>
+class [[nodiscard]] static_shared;
+
+//! @brief A RAII wrapper for an object living in static shared memory.
+//!
+//! @tparam _Tp The type of the object.
+//! @tparam _Align The alignment of the object.
+template <class _Tp, ::cuda::std::size_t _Align>
+class [[nodiscard]] static_shared : __static_shared_base<_Tp, _Align>
+{
+  static_assert(!::cuda::std::is_void_v<_Tp>, "_Tp must not be void");
+
+  using __base_type = __static_shared_base<_Tp, _Align>;
+  using __base_type::__ptr;
+  using __base_type::__state_;
+  using typename __base_type::__state_type;
 
   //! @brief Implements the destruction of the object. No assertions are performed.
   //!
@@ -88,9 +140,10 @@ public:
   //! @brief The default 3D index of the thread used to construct/destroy the object.
   static constexpr ::uint3 default_thread_index{0, 0, 0};
 
-  using value_type = _Tp; //!< The type of the object stored in the static shared memory.
-  using __base_type::alignment; //!< The alignment of the static shared memory.
-  using __base_type::size; //!< The size of the static shared memory.
+  using __base_type::alignment;
+  using __base_type::size;
+  using typename __base_type::element_type;
+  using typename __base_type::value_type;
 
   //! @brief Allocates the static shared memory without constructing the object. The object is expected to be
   //!        constructed later by calling construct(...)/construct_by(...) methods.
@@ -168,29 +221,130 @@ public:
     __destroy_by_impl(__chosen_thread);
   }
 
-  //! @brief Gets a reference to the object stored in the static shared memory.
-  //!
-  //! @returns A reference to the object stored in the static shared memory.
-  [[nodiscard]] _CCCL_DEVICE_API _Tp& get() const noexcept
-  {
-    _CCCL_ASSERT(__state_ != __state_type::__uninitialized, "accessing uninitialized static shared memory object");
-    _CCCL_ASSERT(__state_ != __state_type::__destroyed, "accessing destroyed static shared memory object");
-    return *__ptr();
-  }
-
-  //! @brief Gets a pointer to the object stored in the static shared memory.
-  //!
-  //! @returns A pointer to the object stored in the static shared memory.
-  [[nodiscard]] _CCCL_DEVICE_API shared_memory_ptr<_Tp> operator&() const noexcept
-  {
-    return __ptr();
-  }
+  using __base_type::get;
+  using __base_type::operator&;
 
   //! @brief Casts the static shared memory object to a reference to the object stored in the static shared memory.
   _CCCL_DEVICE_API operator _Tp&() const noexcept
   {
     return get();
   }
+};
+
+template <class _Tp, ::cuda::std::size_t... _Is>
+[[nodiscard]] _CCCL_CONSTEVAL ::cuda::std::size_t __cccl_mdarray_nelem_impl(::cuda::std::index_sequence<_Is...>) noexcept
+{
+  return (::cuda::std::size_t{0} + ... + ::cuda::std::extent_v<_Tp, _Is>);
+}
+
+template <class _Tp>
+[[nodiscard]] _CCCL_CONSTEVAL ::cuda::std::size_t __cccl_mdarray_nelem() noexcept
+{
+  return __cccl_mdarray_nelem_impl<_Tp>(::cuda::std::make_index_sequence<::cuda::std::rank_v<_Tp>>{});
+}
+
+template <class _Tp, ::cuda::std::size_t _Size, ::cuda::std::size_t _Align>
+class static_shared<_Tp[_Size], _Align> : __static_shared_base<_Tp[_Size], _Align>
+{
+  static_assert(!::cuda::std::is_array_v<_Tp> || ::cuda::std::__is_fully_bounded_array_v<_Tp>,
+                "_Tp must be a fully-bounded array");
+  static_assert(::cuda::std::is_default_constructible_v<_Tp>, "_Tp must be default constructible");
+
+  static constexpr auto __nelems = static_cast<unsigned>(__cccl_mdarray_nelem<_Tp[_Size]>());
+
+  using __full_type = _Tp[_Size];
+  using __base_type = __static_shared_base<_Tp[_Size], _Align>;
+  using typename __base_type::__state_type;
+
+  using __base_type::__ptr;
+  using __base_type::__state_;
+
+  //! @brief Implements the destruction of the objects. No assertions are performed.
+  _CCCL_DEVICE_API void __destroy_impl() noexcept(::cuda::std::is_nothrow_destructible_v<element_type>)
+  {
+    if (__state_ == __state_type::__constructed)
+    {
+      auto __smem_addr = static_cast<unsigned>(operator&().__get_smem_addr());
+      unsigned __count;
+      for (unsigned __i = ((threadIdx.z * blockDim.y) + threadIdx.y) * blockDim.x + threadIdx.x; __i < __nelems;
+           __i += blockDim.z * blockDim.y * blockDim.x)
+      {
+        void* __ptr = ::__cvta_shared_to_generic(__smem_addr + __i * sizeof(element_type));
+        ::cuda::std::__destroy_at(static_cast<element_type*>(__ptr));
+      }
+      __state_ = __state_type::__destroyed;
+    }
+  }
+
+public:
+  using __base_type::alignment;
+  using __base_type::size;
+  using typename __base_type::element_type;
+  using typename __base_type::value_type;
+  using index_type = unsigned;
+
+  //! @brief Allocates the static shared memory and default constructs the objects.
+  _CCCL_DEVICE_API _CCCL_FORCEINLINE
+  static_shared() noexcept(::cuda::std::is_nothrow_default_constructible_v<element_type>)
+  {
+    construct();
+  }
+
+  //! @brief Allocates the static shared memory without constructing the objects. The objects are expected to be
+  //!        constructed later by calling construct(...) methods.
+  _CCCL_DEVICE_API _CCCL_FORCEINLINE static_shared(cuda::no_init_t) noexcept {}
+
+  static_shared(const static_shared&) = delete;
+
+  static_shared(static_shared&&) = delete;
+
+  //! @brief Destroys the stored objects.
+  _CCCL_DEVICE_API ~static_shared() noexcept(::cuda::std::is_nothrow_destructible_v<element_type>)
+  {
+    __destroy_impl();
+  }
+
+  static_shared& operator=(const static_shared&) = delete;
+
+  static_shared& operator=(static_shared&&) = delete;
+
+  //! @brief Constructs the stored objects in-place by calling the default constructor.
+  _CCCL_DEVICE_API void construct() noexcept(::cuda::std::is_nothrow_default_constructible_v<element_type>)
+  {
+    _CCCL_ASSERT(__state_ != __state_type::__constructed, "static shared memory objects are already constructed");
+    _CCCL_ASSERT(__state_ != __state_type::__destroyed, "static shared memory objects cannot be reconstructed");
+
+    auto __smem_addr = static_cast<unsigned>(operator&().__get_smem_addr());
+    for (unsigned __i = ((threadIdx.z * blockDim.y) + threadIdx.y) * blockDim.x + threadIdx.x; __i < __nelems;
+         __i += blockDim.z * blockDim.y * blockDim.x)
+    {
+      void* __ptr = ::__cvta_shared_to_generic(__smem_addr + __i * sizeof(element_type));
+      ::cuda::std::__construct_at(static_cast<element_type*>(__ptr));
+    }
+    __state_ = __state_type::__constructed;
+  }
+
+  //! @brief Destroys the objects stored in the static shared memory.
+  _CCCL_DEVICE_API void destroy() noexcept(::cuda::std::is_nothrow_destructible_v<element_type>)
+  {
+    _CCCL_ASSERT(__state_ != __state_type::__destroyed, "destroying already destroyed static shared memory objects");
+    __destroy_impl();
+  }
+
+  using __base_type::get;
+  using __base_type::operator&;
+
+  //! @brief Casts the static shared memory object to a reference to the objects stored in the static shared memory.
+  _CCCL_DEVICE_API operator __full_type&() const noexcept
+  {
+    return get();
+  }
+};
+
+template <class _Tp, ::cuda::std::size_t _Align>
+class static_shared<_Tp[], _Align>
+{
+  static_assert(::cuda::std::__always_false_v<_Tp>, "static_shared<T[]> is not allowed");
 };
 } // namespace cuda::experimental
 

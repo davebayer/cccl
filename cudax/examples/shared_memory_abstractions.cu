@@ -117,6 +117,22 @@ __global__ void demo3()
   }
 }
 
+__global__ void demo4()
+{
+  // The default constructor is called by threads 0, 1 and 2.
+  cudax::static_shared<SharedObj[4]> shared_obj{};
+
+  // Wait for the construction to complete.
+  __syncthreads();
+
+  use(cudax::shared_memory_ptr{&shared_obj.get()[threadIdx.x]});
+
+  // Wait for all threads to complete before destructing the objects.
+  __syncthreads();
+
+  // The object will be destructed by threads 0, 1 and 2 when the object goes out of scope.
+}
+
 int main()
 {
   printf("Demo1:\n");
@@ -130,6 +146,11 @@ int main()
   printf("\n");
 
   printf("Demo3:\n");
+  demo3<<<1, 4>>>();
+  assert(cudaDeviceSynchronize() == cudaSuccess);
+  printf("\n");
+
+  printf("Demo4:\n");
   demo3<<<1, 4>>>();
   assert(cudaDeviceSynchronize() == cudaSuccess);
   printf("\n");
