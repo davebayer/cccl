@@ -21,9 +21,11 @@
 #  pragma system_header
 #endif // no system header
 
-#if _CCCL_HAS_EXCEPTIONS()
-
+#if !_CCCL_COMPILER(NVRTC)
 #  include <optional>
+#endif // !_CCCL_COMPILER(NVRTC)
+
+#if _CCCL_HAS_EXCEPTIONS()
 
 #  include <cuda/std/__cccl/prologue.h>
 
