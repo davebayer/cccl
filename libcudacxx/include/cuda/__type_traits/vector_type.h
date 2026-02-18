@@ -361,7 +361,7 @@ template <class _Tp, ::cuda::std::size_t _Size>
     }
   }
 #  endif // _CCCL_HAS_NVBF16()
-#  if _CCCL_HAS_NVFP8()
+#  if _CCCL_HAS_NVFP8_E5M2()
   else if constexpr (::cuda::std::is_same_v<_Tp, ::__nv_fp8_e5m2>)
   {
     if constexpr (_Size == 2)
@@ -377,6 +377,8 @@ template <class _Tp, ::cuda::std::size_t _Size>
       return;
     }
   }
+#  endif // _CCCL_HAS_NVFP8_E5M2()
+#  if _CCCL_HAS_NVFP8_E4M3()
   else if constexpr (::cuda::std::is_same_v<_Tp, ::__nv_fp8_e4m3>)
   {
     if constexpr (_Size == 2)
@@ -392,7 +394,8 @@ template <class _Tp, ::cuda::std::size_t _Size>
       return;
     }
   }
-#    if _CCCL_CTK_AT_LEAST(12, 8)
+#  endif // _CCCL_HAS_NVFP8_E4M3()
+#  if _CCCL_HAS_NVFP8_E8M0()
   else if constexpr (::cuda::std::is_same_v<_Tp, ::__nv_fp8_e8m0>)
   {
     if constexpr (_Size == 2)
@@ -408,9 +411,8 @@ template <class _Tp, ::cuda::std::size_t _Size>
       return;
     }
   }
-#    endif // _CCCL_CTK_AT_LEAST(12, 8)
-#  endif // _CCCL_HAS_NVFP8()
-#  if _CCCL_HAS_NVFP6()
+#  endif // _CCCL_HAS_NVFP8_E8M0()
+#  if _CCCL_HAS_NVFP6_E3M2()
   else if constexpr (::cuda::std::is_same_v<_Tp, ::__nv_fp6_e3m2>)
   {
     if constexpr (_Size == 2)
@@ -426,6 +428,8 @@ template <class _Tp, ::cuda::std::size_t _Size>
       return;
     }
   }
+#  endif // _CCCL_HAS_NVFP6_E3M2()
+#  if _CCCL_HAS_NVFP6_E2M3()
   else if constexpr (::cuda::std::is_same_v<_Tp, ::__nv_fp6_e2m3>)
   {
     if constexpr (_Size == 2)
@@ -441,8 +445,8 @@ template <class _Tp, ::cuda::std::size_t _Size>
       return;
     }
   }
-#  endif // _CCCL_HAS_NVFP6()
-#  if _CCCL_HAS_NVFP4()
+#  endif // _CCCL_HAS_NVFP6_E2M3()
+#  if _CCCL_HAS_NVFP4_E2M1()
   else if constexpr (::cuda::std::is_same_v<_Tp, ::__nv_fp4_e2m1>)
   {
     if constexpr (_Size == 2)
@@ -458,7 +462,7 @@ template <class _Tp, ::cuda::std::size_t _Size>
       return;
     }
   }
-#  endif // _CCCL_HAS_NVFP4()
+#  endif // _CCCL_HAS_NVFP4_E2M1()
   else
   {
     return;

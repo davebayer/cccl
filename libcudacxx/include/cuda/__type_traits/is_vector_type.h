@@ -189,40 +189,47 @@ template <>
 inline constexpr bool is_extended_fp_vector_type_v<::__nv_bfloat162> = true;
 #  endif // _CCCL_HAS_NVBF16()
 
-#  if _CCCL_HAS_NVFP8()
+#  if _CCCL_HAS_NVFP8_E4M3()
 template <>
 inline constexpr bool is_extended_fp_vector_type_v<::__nv_fp8x2_e4m3> = true;
 template <>
+inline constexpr bool is_extended_fp_vector_type_v<::__nv_fp8x4_e4m3> = true;
+#  endif // _CCCL_HAS_NVFP8_E4M3()
+
+#  if _CCCL_HAS_NVFP8_E5M2()
+template <>
 inline constexpr bool is_extended_fp_vector_type_v<::__nv_fp8x2_e5m2> = true;
 template <>
-inline constexpr bool is_extended_fp_vector_type_v<::__nv_fp8x4_e4m3> = true;
-template <>
 inline constexpr bool is_extended_fp_vector_type_v<::__nv_fp8x4_e5m2> = true;
-#    if _CCCL_CTK_AT_LEAST(12, 8)
+#  endif // _CCCL_HAS_NVFP8_E5M2()
+
+#  if _CCCL_HAS_NVFP8_E8M0()
 template <>
 inline constexpr bool is_extended_fp_vector_type_v<::__nv_fp8x2_e8m0> = true;
 template <>
 inline constexpr bool is_extended_fp_vector_type_v<::__nv_fp8x4_e8m0> = true;
-#    endif // _CCCL_CTK_AT_LEAST(12, 8)
-#  endif // _CCCL_HAS_NVFP8()
+#  endif // _CCCL_HAS_NVFP8_E8M0()
 
-#  if _CCCL_HAS_NVFP6()
+#  if _CCCL_HAS_NVFP6_E2M3()
 template <>
 inline constexpr bool is_extended_fp_vector_type_v<::__nv_fp6x2_e2m3> = true;
 template <>
+inline constexpr bool is_extended_fp_vector_type_v<::__nv_fp6x4_e2m3> = true;
+#  endif // _CCCL_HAS_NVFP6_E2M3()
+
+#  if _CCCL_HAS_NVFP6_E3M2()
+template <>
 inline constexpr bool is_extended_fp_vector_type_v<::__nv_fp6x2_e3m2> = true;
 template <>
-inline constexpr bool is_extended_fp_vector_type_v<::__nv_fp6x4_e2m3> = true;
-template <>
 inline constexpr bool is_extended_fp_vector_type_v<::__nv_fp6x4_e3m2> = true;
-#  endif // _CCCL_HAS_NVFP6()
+#  endif // _CCCL_HAS_NVFP6_E3M2()
 
-#  if _CCCL_HAS_NVFP4()
+#  if _CCCL_HAS_NVFP4_E2M1()
 template <>
 inline constexpr bool is_extended_fp_vector_type_v<::__nv_fp4x2_e2m1> = true;
 template <>
 inline constexpr bool is_extended_fp_vector_type_v<::__nv_fp4x4_e2m1> = true;
-#  endif // _CCCL_HAS_NVFP4()
+#  endif // _CCCL_HAS_NVFP4_E2M1()
 
 _CCCL_SUPPRESS_DEPRECATED_POP
 _CCCL_END_NAMESPACE_CUDA
