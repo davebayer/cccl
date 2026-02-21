@@ -527,12 +527,15 @@ struct kernel_config
   static_assert(::cuda::std::_And<::cuda::std::is_base_of<__detail::launch_option, Options>...>::value);
   static_assert(__detail::no_duplicate_options<Options...>);
 
-  constexpr kernel_config(const Hierarchy& hierarchy, const Options&... opts)
+  _CCCL_API constexpr kernel_config(const Hierarchy& hierarchy, const Options&... opts)
       : __hierarchy(hierarchy)
-      , __options(opts...) {};
-  constexpr kernel_config(const Hierarchy& hierarchy, const ::cuda::std::tuple<Options...>& opts)
+      , __options(opts...)
+  {}
+
+  _CCCL_API constexpr kernel_config(const Hierarchy& hierarchy, const ::cuda::std::tuple<Options...>& opts)
       : __hierarchy(hierarchy)
-      , __options(opts) {};
+      , __options(opts)
+  {}
 
   [[nodiscard]] _CCCL_API constexpr const Hierarchy& hierarchy() const noexcept
   {

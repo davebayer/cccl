@@ -106,6 +106,51 @@ _CCCL_BEGIN_NAMESPACE_CUDA
 #        define _CCCL_GRID_DIM_Z                     gridDim.z
 #      endif // ^^^ !_CCCL_CUDA_COMPILER(CLANG) ^^^
 
+template <class _Config>
+_CCCL_DEVICE_API _CCCL_FORCEINLINE _Config __reconstruct_kernel_config(const _Config& __config) noexcept
+{
+  using _Hierarchy = typename _Config::hierarchy_type;
+
+  using _BlockDesc = typename _Hierarchy::template level_desc_type<block_level>;
+  using _BlockExts = typename _BlockDesc::extents_type;
+  const _BlockDesc __block_desc{_BlockExts{
+    gpu_thread.dims(block).x,
+    gpu_thread.dims(block).y,
+    gpu_thread.dims(block).z,
+  }};
+
+  using _GridDesc = typename _Hierarchy::template level_desc_type<grid_level>;
+  using _GridExts = typename _GridDesc::extents_type;
+
+  if constexpr (_Hierarchy::has_level(cluster))
+  {
+    using _ClusterDesc = typename _Hierarchy::template level_desc_type<grid_level>;
+    using _ClusterExts = typename _BlockDesc::extents_type;
+    const _ClusterDesc __cluster_desc{_ClusterExts{
+      block.dims(cluster).x,
+      block.dims(cluster).y,
+      block.dims(cluster).z,
+    }};
+
+    const _GridDesc __grid_desc{_GridExts{
+      cluster.dims(grid).x,
+      cluster.dims(grid).y,
+      cluster.dims(grid).z,
+    }};
+
+    return _Config{_Hierarchy{__grid_desc, __cluster_desc, __block_desc}, __config.options()};
+  }
+  else
+  {
+    const _GridDesc __grid_desc{_GridExts{
+      block.dims(grid).x,
+      block.dims(grid).y,
+      block.dims(grid).z,
+    }};
+    return _Config{_Hierarchy{__grid_desc, __block_desc}, __config.options()};
+  }
+}
+
 template <class _Hierarchy>
 _CCCL_DEVICE_API _CCCL_FORCEINLINE void __assume_known_info() noexcept
 {
@@ -281,7 +326,10 @@ __global__ static void _CCCL_LAUNCH_BOUNDS(::cuda::__max_nthreads_per_block<_Con
 
   if constexpr (__invoke_kernel_functor_with_config_v<_Kernel, _Config, _Args...>)
   {
-    __kernel_fn(__conf, __args...);
+    // If we would just pass __conf to the kernel_fn, the hierarchy queries would use the dimensions passed in the
+    // kernel config's hierarchy object, not the builtin registers. To fix this, we reconstruct the kernel config using
+    // the builtin registers as the dimensions for the hierarchy. The object is completely optimized out.
+    __kernel_fn(::cuda::__reconstruct_kernel_config(__conf), __args...);
   }
   else
   {
@@ -300,7 +348,10 @@ __global__ static void __kernel_launcher(const _CCCL_GRID_CONSTANT _Config __con
 
   if constexpr (__invoke_kernel_functor_with_config_v<_Kernel, _Config, _Args...>)
   {
-    __kernel_fn(__conf, __args...);
+    // If we would just pass __conf to the kernel_fn, the hierarchy queries would use the dimensions passed in the
+    // kernel config's hierarchy object, not the builtin registers. To fix this, we reconstruct the kernel config using
+    // the builtin registers as the dimensions for the hierarchy. The object is completely optimized out.
+    __kernel_fn(::cuda::__reconstruct_kernel_config(__conf), __args...);
   }
   else
   {
