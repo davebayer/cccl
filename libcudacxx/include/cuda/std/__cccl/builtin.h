@@ -260,10 +260,6 @@
 #  define _CCCL_BUILTIN_HAS_NOTHROW_COPY(...) __has_nothrow_copy(__VA_ARGS__)
 #endif // _CCCL_CHECK_BUILTIN(has_nothrow_copy) && gcc >= 4.3
 
-#if _CCCL_HAS_BUILTIN(__integer_pack)
-#  define _CCCL_BUILTIN_INTEGER_PACK(...) __integer_pack(__VA_ARGS__)
-#endif // _CCCL_HAS_BUILTIN(__integer_pack)
-
 #if _CCCL_CHECK_BUILTIN(is_array)
 #  define _CCCL_BUILTIN_IS_ARRAY(...) __is_array(__VA_ARGS__)
 #endif // _CCCL_CHECK_BUILTIN(is_array)
@@ -296,18 +292,6 @@
 #if _CCCL_CHECK_BUILTIN(is_lvalue_reference)
 #  define _CCCL_BUILTIN_IS_LVALUE_REFERENCE(...) __is_lvalue_reference(__VA_ARGS__)
 #endif // _CCCL_CHECK_BUILTIN(is_lvalue_reference)
-
-#if _CCCL_HAS_BUILTIN(__is_member_function_pointer)
-#  define _CCCL_BUILTIN_IS_MEMBER_FUNCTION_POINTER(...) __is_member_function_pointer(__VA_ARGS__)
-#endif // _CCCL_HAS_BUILTIN(__is_member_function_pointer)
-
-#if _CCCL_HAS_BUILTIN(__is_member_object_pointer)
-#  define _CCCL_BUILTIN_IS_MEMBER_OBJECT_POINTER(...) __is_member_object_pointer(__VA_ARGS__)
-#endif // _CCCL_HAS_BUILTIN(__is_member_object_pointer)
-
-#if _CCCL_HAS_BUILTIN(__is_member_pointer)
-#  define _CCCL_BUILTIN_IS_MEMBER_POINTER(...) __is_member_pointer(__VA_ARGS__)
-#endif // _CCCL_HAS_BUILTIN(__is_member_pointer)
 
 #if _CCCL_CHECK_BUILTIN(is_nothrow_assignable) || _CCCL_COMPILER(MSVC) || _CCCL_COMPILER(NVRTC)
 #  define _CCCL_BUILTIN_IS_NOTHROW_ASSIGNABLE(...) __is_nothrow_assignable(__VA_ARGS__)
@@ -351,10 +335,6 @@
 #if 0 // _CCCL_HAS_BUILTIN(__is_scalar)
 #  define _CCCL_BUILTIN_IS_SCALAR(...) __is_scalar(__VA_ARGS__)
 #endif // _CCCL_HAS_BUILTIN(__is_scalar)
-
-#if _CCCL_CHECK_BUILTIN(make_integer_seq) || _CCCL_COMPILER(MSVC, >=, 19, 23)
-#  define _CCCL_BUILTIN_MAKE_INTEGER_SEQ(...) __make_integer_seq<__VA_ARGS__>
-#endif // _CCCL_CHECK_BUILTIN(make_integer_seq)
 
 #if _CCCL_HAS_BUILTIN(__reference_constructs_from_temporary)
 #  define _CCCL_BUILTIN_REFERENCE_CONSTRUCTS_FROM_TEMPORARY(...) __reference_constructs_from_temporary(__VA_ARGS__)
@@ -401,15 +381,6 @@
 #if _CCCL_HAS_BUILTIN(__remove_volatile) && _CCCL_CUDA_COMPILER(CLANG)
 #  define _CCCL_BUILTIN_REMOVE_VOLATILE(...) __remove_volatile(__VA_ARGS__)
 #endif // _CCCL_HAS_BUILTIN(__remove_volatile)
-
-#if _CCCL_HAS_BUILTIN(__type_pack_element)
-#  define _CCCL_BUILTIN_TYPE_PACK_ELEMENT(...) __type_pack_element<__VA_ARGS__>
-#endif // _CCCL_HAS_BUILTIN(__type_pack_element)
-
-// NVCC prior to 12.2 have trouble with pack expansion into __type_pack_element in an alias template
-#if _CCCL_CUDACC_BELOW(12, 2)
-#  undef _CCCL_BUILTIN_TYPE_PACK_ELEMENT
-#endif // _CCCL_CUDACC_BELOW(12, 2)
 
 #if _CCCL_COMPILER(MSVC) // To use __builtin_FUNCSIG(), both MSVC and nvcc need to support it
 #  if _CCCL_COMPILER(MSVC, >=, 19, 35) && _CCCL_CUDACC_AT_LEAST(12, 3)

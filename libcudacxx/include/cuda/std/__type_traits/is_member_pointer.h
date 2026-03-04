@@ -26,13 +26,17 @@
 
 #include <cuda/std/__cccl/prologue.h>
 
+#if _CCCL_HAS_BUILTIN(__is_member_pointer)
+#  define _CCCL_BUILTIN_IS_MEMBER_POINTER(...) __is_member_pointer(__VA_ARGS__)
+#endif // _CCCL_HAS_BUILTIN(__is_member_pointer)
+
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
 #if defined(_CCCL_BUILTIN_IS_MEMBER_POINTER) && !defined(_LIBCUDACXX_USE_IS_MEMBER_POINTER_FALLBACK)
 
 template <class _Tp>
 struct _CCCL_TYPE_VISIBILITY_DEFAULT
-is_member_pointer : public integral_constant<bool, _CCCL_BUILTIN_IS_MEMBER_POINTER(_Tp)>
+is_member_pointer : bool_constant<_CCCL_BUILTIN_IS_MEMBER_POINTER(_Tp)>
 {};
 
 template <class _Tp>
@@ -41,12 +45,11 @@ inline constexpr bool is_member_pointer_v = _CCCL_BUILTIN_IS_MEMBER_POINTER(_Tp)
 #else // ^^^ _CCCL_BUILTIN_IS_MEMBER_POINTER ^^^ / vvv !_CCCL_BUILTIN_IS_MEMBER_POINTER vvv
 
 template <class _Tp>
-struct _CCCL_TYPE_VISIBILITY_DEFAULT
-is_member_pointer : public integral_constant<bool, __cccl_is_member_pointer<remove_cv_t<_Tp>>::__is_member>
-{};
+inline constexpr bool is_member_pointer_v = __cccl_is_member_pointer<remove_cv_t<_Tp>>::__is_member;
 
 template <class _Tp>
-inline constexpr bool is_member_pointer_v = is_member_pointer<_Tp>::value;
+struct _CCCL_TYPE_VISIBILITY_DEFAULT is_member_pointer : bool_constant<is_member_pointer_v<_Tp>>
+{};
 
 #endif // !_CCCL_BUILTIN_IS_MEMBER_POINTER
 
