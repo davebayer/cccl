@@ -21,6 +21,22 @@ workflows:
   #       args: '--preset libcudacxx --lit-tests "cuda/utility/basic_any.pass.cpp"' }
   #
   override:
+  # CTK 12.0 full matrix build: default projects
+    - {jobs: ['build'], project: 'libcudacxx', std: 'all', ctk: '12.0', cxx: ['gcc7', 'gcc8', 'gcc9', 'gcc10', 'gcc11', 'gcc12']}
+    - {jobs: ['build'], project: 'libcudacxx', std: 'all', ctk: '12.0', cxx: ['clang14']}
+    - {jobs: ['build'], project: 'libcudacxx', std: 'all', ctk: '12.0', cxx: ['msvc2019', 'msvc14.39']}
+    # CTK 12.X full matrix build: default projects
+    - {jobs: ['build'], project: 'libcudacxx', std: 'all', ctk: '12.X', cxx: ['gcc7', 'gcc8', 'gcc9', 'gcc10', 'gcc11', 'gcc12', 'gcc13', 'gcc14']}
+    - {jobs: ['build'], project: 'libcudacxx', std: 'all', ctk: '12.X', cxx: ['clang14', 'clang15', 'clang16', 'clang17', 'clang18', 'clang19']}
+    - {jobs: ['build'], project: 'libcudacxx', std: 'all', ctk: '12.X', cxx: ['msvc2019', 'msvc2022']}
+    # CTK 13.0 full matrix build: default projects
+    - {jobs: ['build'], project: 'libcudacxx', std: 'all', ctk: '13.0', cxx: ['gcc11', 'gcc12', 'gcc13', 'gcc14']}
+    - {jobs: ['build'], project: 'libcudacxx', std: 'all', ctk: '13.0', cxx: ['clang15', 'clang16', 'clang17', 'clang18', 'clang19', 'clang20']}
+    - {jobs: ['build'], project: 'libcudacxx', std: 'all', ctk: '13.0', cxx: ['msvc2019', 'msvc2022']}
+    # CTK '13.X' full matrix build: default projects
+    - {jobs: ['build'], project: 'libcudacxx', std: 'all', ctk: '13.X', cxx: ['gcc11', 'gcc12', 'gcc13', 'gcc14']}
+    - {jobs: ['build'], project: 'libcudacxx', std: 'all', ctk: '13.X', cxx: ['clang15', 'clang16', 'clang17', 'clang18', 'clang19', 'clang20']}
+    - {jobs: ['build'], project: 'libcudacxx', std: 'all', ctk: '13.X', cxx: ['msvc2019', 'msvc2022']}
 
   pull_request:
     # Old CTK: Oldest/newest supported host compilers:
