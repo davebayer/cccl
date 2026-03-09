@@ -35,17 +35,7 @@ struct policy_getter : PolicySelector
 
 #if !defined(CUB_DEFINE_RUNTIME_POLICIES) && !_CCCL_COMPILER(NVRTC)
 #  if _CCCL_STD_VER < 2020
-template <typename PolicySelector, size_t N>
-_CCCL_API constexpr auto find_lowest_arch_with_same_policy(
-  PolicySelector policy_selector, size_t i, const ::cuda::std::array<::cuda::arch_id, N>& all_arches) -> ::cuda::arch_id
-{
-  const auto policy = policy_selector(all_arches[i]);
-  while (i > 0 && policy_selector(all_arches[i - 1]) == policy)
-  {
-    --i;
-  }
-  return all_arches[i];
-}
+[[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_CONSTEVAL {}
 
 template <int ArchMult, typename CudaArchSeq, typename PolicySelector, size_t... Is>
 struct lowest_arch_resolver;
@@ -84,11 +74,16 @@ struct lowest_arch_resolver<ArchMult, ::cuda::std::integer_sequence<int, CudaArc
 };
 #  endif // if _CCCL_STD_VER < 2020
 
-template <int ArchMult, int... CudaArches, typename PolicySelector, typename FunctorT, size_t... Is>
+template <typename PolicySelector, typename FunctorT, size_t... Is>
 CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t dispatch_to_arch_list(
   PolicySelector policy_selector, ::cuda::arch_id device_arch, FunctorT&& f, ::cuda::std::index_sequence<Is...>)
 {
-  _CCCL_ASSERT(((device_arch == ::cuda::arch_id{(CudaArches * ArchMult) / 10}) || ...),
+  // Currently, we dispatch only based on the compute capability of the device, not taking into account arch-specific
+  // and family-specific features.
+  constexpr auto target_cc_list = ::cuda::__target_compute_capabilities();
+  const ::cuda::compute_capability device_cc{device_arch};
+
+  _CCCL_ASSERT(((device_cc == target_cc_list[Is]) || ...),
                "device_arch must appear in the list of architectures compiled for");
 
   cudaError_t e = cudaErrorInvalidDeviceFunction;
@@ -96,11 +91,10 @@ CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t dispatch_to_arch_list(
   // In C++20, we just create an integral_constant holding the policy, because policies are structural types in C++20.
   // This causes f to be only instantiated for each distinct policy, since the same policy for different arches results
   // in the same integral_constant type passed to f
-  using policy_t = decltype(policy_selector(::cuda::arch_id{}));
+  using policy_t = decltype(policy_selector(::cuda::compute_capability{}));
   (...,
-   (device_arch == ::cuda::arch_id{(CudaArches * ArchMult) / 10}
-      ? (e = f(
-           ::cuda::std::integral_constant<policy_t, policy_selector(::cuda::arch_id{(CudaArches * ArchMult) / 10})>{}))
+   (device_cc == target_cc_list[Is]
+      ? (e = f(::cuda::std::integral_constant<policy_t, policy_selector(target_cc_list[Is])>{}))
       : cudaSuccess));
 #  else // if _CCCL_STD_VER >= 2020
   // In C++17, we have to collapse architectures with the same policies ourselves, so we instantiate call_for_arch once
@@ -108,22 +102,12 @@ CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t dispatch_to_arch_list(
   using resolver_t =
     lowest_arch_resolver<ArchMult, ::cuda::std::integer_sequence<int, CudaArches...>, PolicySelector, Is...>;
   (...,
-   (device_arch == ::cuda::arch_id{(CudaArches * ArchMult) / 10}
+   (device_cc == target_cc_list[Is]
       ? (e = f(policy_getter<PolicySelector, resolver_t::lowest_arch_with_same_policy[Is]>{policy_selector}))
       : cudaSuccess));
-
 #  endif // if _CCCL_STD_VER >= 2020
   return e;
 }
-
-template <typename PolicySelector, typename FunctorT, size_t... Is>
-CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t dispatch_all_arches_helper(
-  PolicySelector policy_selector, ::cuda::arch_id device_arch, FunctorT&& f, ::cuda::std::index_sequence<Is...> seq)
-{
-  static constexpr auto all_arches = ::cuda::__all_arch_ids();
-  return dispatch_to_arch_list<10, static_cast<int>(all_arches[Is])...>(policy_selector, device_arch, f, seq);
-}
-
 //! Takes a policy hub and instantiates f with the minimum possible number of nullary functor types that return a policy
 //! at compile-time (if possible), and then calls the appropriate instantiation based on a runtime GPU architecture.
 //! Depending on the used compiler, C++ standard, and available macros, a different number of instantiations may be
@@ -134,24 +118,11 @@ dispatch_arch(PolicySelector policy_selector, ::cuda::arch_id device_arch, F&& f
 {
   // when not using CCCL.C, policy_selector is empty since all information is contained in its type
   static_assert(::cuda::std::is_empty_v<PolicySelector>);
-
-  // if we have __CUDA_ARCH_LIST__ or NV_TARGET_SM_INTEGER_LIST, we only poll the policy hub for those arches.
-#  ifdef __CUDA_ARCH_LIST__
-  [[maybe_unused]] static constexpr auto arch_seq = ::cuda::std::integer_sequence<int, __CUDA_ARCH_LIST__>{};
-  return dispatch_to_arch_list<1, __CUDA_ARCH_LIST__>(
-    policy_selector, device_arch, ::cuda::std::forward<F>(f), ::cuda::std::make_index_sequence<arch_seq.size()>{});
-#  elif defined(NV_TARGET_SM_INTEGER_LIST)
-  [[maybe_unused]] static constexpr auto arch_seq = ::cuda::std::integer_sequence<int, NV_TARGET_SM_INTEGER_LIST>{};
-  return dispatch_to_arch_list<10, NV_TARGET_SM_INTEGER_LIST>(
-    policy_selector, device_arch, ::cuda::std::forward<F>(f), ::cuda::std::make_index_sequence<arch_seq.size()>{});
-#  else
-  // some compilers don't tell us what arches we are compiling for, so we test all of them
-  return dispatch_all_arches_helper(
+  return dispatch_to_arch_list(
     policy_selector,
     device_arch,
     ::cuda::std::forward<F>(f),
-    ::cuda::std::make_index_sequence<::cuda::__all_arch_ids().size()>{});
-#  endif
+    ::cuda::std::make_index_sequence<::cuda::__target_compute_capabilities().size()>{});
 }
 
 #else // !defined(CUB_DEFINE_RUNTIME_POLICIES) && !_CCCL_COMPILER(NVRTC)
@@ -161,8 +132,8 @@ _CCCL_EXEC_CHECK_DISABLE
 template <typename PolicySelector, typename F>
 _CCCL_API _CCCL_FORCEINLINE cudaError_t dispatch_arch(PolicySelector policy_selector, ::cuda::arch_id device_arch, F&& f)
 {
-  return f([&] {
-    return policy_selector(device_arch);
+  return f([policy_selector, device_cc = ::cuda::compute_capability{device_arch}]() {
+    return policy_selector(device_cc);
   });
 }
 #endif // !defined(CUB_DEFINE_RUNTIME_POLICIES) && !_CCCL_COMPILER(NVRTC)

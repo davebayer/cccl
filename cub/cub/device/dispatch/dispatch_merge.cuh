@@ -127,7 +127,7 @@ template <typename PolicySelector,
           typename Offset,
           typename CompareOp>
 __launch_bounds__(
-  choose_merge_agent<policy_getter<PolicySelector, ::cuda::arch_id{CUB_PTX_ARCH / 10}>,
+  choose_merge_agent<policy_getter<PolicySelector, ::cuda::compute_capability{CUB_PTX_ARCH / 10}>,
                      KeyIt1,
                      ValueIt1,
                      KeyIt2,
@@ -155,7 +155,7 @@ __launch_bounds__(
                 "Comparison operator must be convertible to bool");
 
   using MergeAgent = typename choose_merge_agent<
-    policy_getter<PolicySelector, ::cuda::arch_id{CUB_PTX_ARCH / 10}>,
+    policy_getter<PolicySelector, ::cuda::compute_capability{CUB_PTX_ARCH / 10}>,
     KeyIt1,
     ValueIt1,
     KeyIt2,

@@ -63,7 +63,7 @@ struct policy_selector
 {
   int input_type_size;
 
-  [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::arch_id /*arch*/) const -> find_policy
+  [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::compute_capability) const -> find_policy
   {
     // FindPolicy (GTX670: 154.0 @ 48M 4B items) - single policy for all arches
     const auto scaled = scale_mem_bound(128, 16, input_type_size);
@@ -79,9 +79,9 @@ static_assert(find_policy_selector<policy_selector>);
 template <typename InputType>
 struct policy_selector_from_types
 {
-  [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::arch_id arch) const -> find_policy
+  [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::compute_capability cc) const -> find_policy
   {
-    return policy_selector{int{sizeof(InputType)}}(arch);
+    return policy_selector{int{sizeof(InputType)}}(cc);
   }
 };
 } // namespace detail::find

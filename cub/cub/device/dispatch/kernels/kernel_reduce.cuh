@@ -129,16 +129,16 @@ template <typename PolicySelector,
 #if _CCCL_HAS_CONCEPTS()
   requires reduce_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()
-CUB_DETAIL_KERNEL_ATTRIBUTES
-__launch_bounds__(int(PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).reduce.block_threads)) void DeviceReduceKernel(
-  InputIteratorT d_in,
-  AccumT* d_out,
-  OffsetT num_items,
-  GridEvenShare<OffsetT> even_share,
-  ReductionOpT reduction_op,
-  TransformOpT transform_op)
+CUB_DETAIL_KERNEL_ATTRIBUTES __launch_bounds__(int(
+  PolicySelector{}(::cuda::compute_capability{CUB_PTX_ARCH / 10})
+    .reduce.block_threads)) void DeviceReduceKernel(InputIteratorT d_in,
+                                                    AccumT* d_out,
+                                                    OffsetT num_items,
+                                                    GridEvenShare<OffsetT> even_share,
+                                                    ReductionOpT reduction_op,
+                                                    TransformOpT transform_op)
 {
-  static constexpr agent_reduce_policy policy = PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).reduce;
+  static constexpr agent_reduce_policy policy = PolicySelector{}(::cuda::compute_capability{CUB_PTX_ARCH / 10}).reduce;
   // TODO(bgruber): pass policy directly as template argument to AgentReduce in C++20
   using agent_policy_t =
     AgentReducePolicy<policy.block_threads,
@@ -223,7 +223,7 @@ template <typename PolicySelector,
   requires reduce_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()
 CUB_DETAIL_KERNEL_ATTRIBUTES __launch_bounds__(
-  int(PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).single_tile.block_threads),
+  int(PolicySelector{}(::cuda::compute_capability{CUB_PTX_ARCH / 10}).single_tile.block_threads),
   1) void DeviceReduceSingleTileKernel(InputIteratorT d_in,
                                        OutputIteratorT d_out,
                                        OffsetT num_items,
@@ -231,7 +231,8 @@ CUB_DETAIL_KERNEL_ATTRIBUTES __launch_bounds__(
                                        InitT init,
                                        TransformOpT transform_op)
 {
-  static constexpr agent_reduce_policy policy = PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).single_tile;
+  static constexpr agent_reduce_policy policy =
+    PolicySelector{}(::cuda::compute_capability{CUB_PTX_ARCH / 10}).single_tile;
   // TODO(bgruber): pass policy directly as template argument to AgentReduce in C++20
   using agent_policy_t =
     AgentReducePolicy<policy.block_threads,
@@ -286,7 +287,7 @@ template <typename PolicySelector,
   requires reduce_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()
 CUB_DETAIL_KERNEL_ATTRIBUTES __launch_bounds__(int(
-  PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10})
+  PolicySelector{}(::cuda::compute_capability{CUB_PTX_ARCH / 10})
     .reduce_nondeterministic
     .block_threads)) void NondeterministicDeviceReduceAtomicKernel(InputIteratorT d_in,
                                                                    OutputIteratorT d_out,
@@ -317,7 +318,7 @@ CUB_DETAIL_KERNEL_ATTRIBUTES __launch_bounds__(int(
 
   // Thread block type for reducing input tiles
   static constexpr agent_reduce_policy policy =
-    PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).reduce_nondeterministic;
+    PolicySelector{}(::cuda::compute_capability{CUB_PTX_ARCH / 10}).reduce_nondeterministic;
   // TODO(bgruber): pass policy directly as template argument to AgentReduce in C++20
   using agent_policy_t =
     AgentReducePolicy<policy.block_threads,

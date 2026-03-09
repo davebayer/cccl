@@ -62,7 +62,7 @@ CUB_DETAIL_KERNEL_ATTRIBUTES void DeviceAdjacentDifferenceDifferenceKernel(
   OffsetT num_items)
 {
   static_assert(::cuda::std::is_empty_v<PolicySelector>);
-  static constexpr adjacent_difference_policy policy = PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10});
+  static constexpr adjacent_difference_policy policy = PolicySelector{}(::cuda::compute_capability{CUB_PTX_ARCH / 10});
   using AdjacentDifferencePolicyT =
     AgentAdjacentDifferencePolicy<policy.block_threads,
                                   policy.items_per_thread,
@@ -99,7 +99,7 @@ template <typename PolicyHub>
 struct policy_selector_from_hub
 {
   // this is only called in device code, so we can ignore the arch parameter
-  _CCCL_DEVICE_API constexpr auto operator()(::cuda::arch_id /*arch*/) const -> adjacent_difference_policy
+  _CCCL_DEVICE_API constexpr auto operator()(::cuda::compute_capability) const -> adjacent_difference_policy
   {
     using p = typename PolicyHub::MaxPolicy::ActivePolicy::AdjacentDifferencePolicy;
     return adjacent_difference_policy{

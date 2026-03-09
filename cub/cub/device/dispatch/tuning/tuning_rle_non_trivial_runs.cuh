@@ -401,9 +401,9 @@ struct policy_selector
         delay_ctor_key_size, sizeof(int), key_is_primitive || key_is_trivially_copyable, true)};
   }
 
-  [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::arch_id arch) const -> rle_non_trivial_runs_policy
+  [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::compute_capability cc) const -> rle_non_trivial_runs_policy
   {
-    if (arch >= ::cuda::arch_id::sm_100)
+    if (cc >= ::cuda::compute_capability{100})
     {
       if (length_is_primitive && key_is_primitive && length_size == 4)
       {
@@ -460,7 +460,7 @@ struct policy_selector
       // no tuning for SM100, fall-through to SM90
     }
 
-    if (arch >= ::cuda::arch_id::sm_90)
+    if (cc >= ::cuda::compute_capability{90})
     {
       if (length_is_primitive && length_size == 4)
       {
@@ -525,13 +525,13 @@ struct policy_selector
       return make_default_policy(BLOCK_LOAD_WARP_TRANSPOSE, length_size, LOAD_DEFAULT);
     }
 
-    if (arch >= ::cuda::arch_id::sm_86)
+    if (cc >= ::cuda::compute_capability{86})
     {
       // TODO(bgruber): I think we want `LengthT` instead of `int`
       return make_default_policy(BLOCK_LOAD_DIRECT, sizeof(int), LOAD_LDG);
     }
 
-    if (arch >= ::cuda::arch_id::sm_80)
+    if (cc >= ::cuda::compute_capability{80})
     {
       if (length_is_primitive && length_size == 4)
       {
@@ -607,7 +607,7 @@ static_assert(rle_non_trivial_runs_policy_selector<policy_selector>);
 template <class LengthT, class KeyT>
 struct policy_selector_from_types
 {
-  [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::arch_id arch) const -> rle_non_trivial_runs_policy
+  [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::compute_capability cc) const -> rle_non_trivial_runs_policy
   {
     constexpr policy_selector selector{
       sizeof(LengthT),
@@ -616,7 +616,7 @@ struct policy_selector_from_types
       is_primitive_v<LengthT>,
       is_primitive_v<KeyT>,
       ::cuda::std::is_trivially_copyable_v<KeyT>};
-    return selector(arch);
+    return selector(cc);
   }
 };
 } // namespace detail::rle::non_trivial_runs

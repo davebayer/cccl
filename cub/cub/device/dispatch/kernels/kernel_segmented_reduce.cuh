@@ -105,8 +105,8 @@ template <typename PolicySelector,
 #if _CCCL_HAS_CONCEPTS()
   requires segmented_reduce_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()
-CUB_DETAIL_KERNEL_ATTRIBUTES
-__launch_bounds__(int(PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).segmented_reduce.block_threads)) //
+CUB_DETAIL_KERNEL_ATTRIBUTES __launch_bounds__(
+  int(PolicySelector{}(::cuda::compute_capability{CUB_PTX_ARCH / 10}).segmented_reduce.block_threads)) //
   void DeviceSegmentedReduceKernel(
     InputIteratorT d_in,
     OutputIteratorT d_out,
@@ -116,7 +116,7 @@ __launch_bounds__(int(PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).segme
     InitT init)
 {
   static constexpr reduce::agent_reduce_policy policy =
-    PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).segmented_reduce;
+    PolicySelector{}(::cuda::compute_capability{CUB_PTX_ARCH / 10}).segmented_reduce;
   // TODO(bgruber): pass policy directly as template argument to AgentReduce in C++20
   using agent_policy_t =
     AgentReducePolicy<policy.block_threads,

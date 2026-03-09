@@ -56,10 +56,10 @@ struct policy_selector
   int offset_size;
   int accum_size;
 
-  [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::arch_id arch) const -> segmented_reduce_policy
+  [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::compute_capability cc) const -> segmented_reduce_policy
   {
     // for now the segmented reduction uses the same tuning values as the normal reduction
-    return segmented_reduce_policy{reduce::policy_selector{accum_t, operation_t, offset_size, accum_size}(arch).reduce};
+    return segmented_reduce_policy{reduce::policy_selector{accum_t, operation_t, offset_size, accum_size}(cc).reduce};
   }
 };
 
@@ -71,11 +71,11 @@ static_assert(segmented_reduce_policy_selector<policy_selector>);
 template <typename AccumT, typename OffsetT, typename ReductionOpT>
 struct policy_selector_from_types
 {
-  [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::arch_id arch) const -> segmented_reduce_policy
+  [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::compute_capability cc) const -> segmented_reduce_policy
   {
     constexpr auto policies =
       policy_selector{classify_type<AccumT>, classify_op<ReductionOpT>, int{sizeof(OffsetT)}, int{sizeof(AccumT)}};
-    return policies(arch);
+    return policies(cc);
   }
 };
 } // namespace detail::segmented_reduce

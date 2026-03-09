@@ -46,7 +46,7 @@ target_link_libraries(
 if (NOT C2H_USE_CCCL_FROM_CTK)
   target_link_libraries(cccl.c2h PUBLIC CCCL::CCCL)
 endif()
-cccl_configure_target(cccl.c2h DIALECT 17)
+cccl_configure_target(cccl.c2h DIALECT 20)
 
 if (C2H_ENABLE_CURAND)
   target_link_libraries(cccl.c2h PRIVATE CUDA::curand)

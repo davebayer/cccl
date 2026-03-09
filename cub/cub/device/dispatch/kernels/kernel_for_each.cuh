@@ -92,7 +92,7 @@ template <class PolicySelector, class OffsetT, class OpT>
 #endif // _CCCL_HAS_CONCEPTS()
 CUB_DETAIL_KERNEL_ATTRIBUTES void dynamic_kernel(OffsetT num_items, OpT op)
 {
-  static constexpr for_policy policy = PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10});
+  static constexpr for_policy policy = PolicySelector{}(::cuda::compute_capability{CUB_PTX_ARCH / 10});
   using agent_policy_t               = policy_t<policy.block_threads, policy.items_per_thread>;
   using agent_t                      = agent_block_striped_t<agent_policy_t, OffsetT, OpT>;
 
@@ -118,10 +118,10 @@ template <class PolicySelector, class OffsetT, class OpT>
   requires for_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()
 CUB_DETAIL_KERNEL_ATTRIBUTES //
-__launch_bounds__(int(PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).block_threads)) //
+__launch_bounds__(int(PolicySelector{}(::cuda::compute_capability{CUB_PTX_ARCH / 10}).block_threads)) //
   void static_kernel(OffsetT num_items, OpT op)
 {
-  static constexpr for_policy policy = PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10});
+  static constexpr for_policy policy = PolicySelector{}(::cuda::compute_capability{CUB_PTX_ARCH / 10});
   using agent_policy_t               = policy_t<policy.block_threads, policy.items_per_thread>;
   using agent_t                      = agent_block_striped_t<agent_policy_t, OffsetT, OpT>;
 

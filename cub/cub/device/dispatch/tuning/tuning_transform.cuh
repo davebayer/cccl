@@ -240,9 +240,9 @@ _CCCL_HOST_DEVICE constexpr auto memcpy_async_dyn_smem_for_tile_size(
 
 constexpr int bulk_copy_size_multiple = 16;
 
-_CCCL_HOST_DEVICE constexpr auto bulk_copy_alignment(::cuda::arch_id arch) -> int
+_CCCL_HOST_DEVICE constexpr auto bulk_copy_alignment(::cuda::compute_capability cc) -> int
 {
-  return arch < ::cuda::arch_id::sm_100 ? 128 : 16;
+  return (cc < ::cuda::compute_capability{100}) ? 128 : 16;
 }
 
 template <int InputCount>
@@ -267,41 +267,42 @@ _CCCL_HOST_DEVICE constexpr auto bulk_copy_dyn_smem_for_tile_size(
   return smem_size;
 }
 
-[[nodiscard]] _CCCL_API constexpr int arch_to_min_bytes_in_flight(::cuda::arch_id arch)
+[[nodiscard]] _CCCL_API constexpr int cc_to_min_bytes_in_flight(::cuda::compute_capability cc)
 {
-  if (arch >= ::cuda::arch_id::sm_100)
+  if (cc >= ::cuda::compute_capability{100})
   {
     return 64 * 1024; // B200
   }
-  if (arch >= ::cuda::arch_id::sm_90)
+  if (cc >= ::cuda::compute_capability{90})
   {
     return 48 * 1024; // 32 for H100, 48 for H200
   }
-  if (arch >= ::cuda::arch_id::sm_80)
+  if (cc >= ::cuda::compute_capability{80})
   {
     return 16 * 1024; // A100
   }
   return 12 * 1024; // V100 and below
 }
 
-[[nodiscard]] _CCCL_API constexpr auto tuned_vectorized_policy(::cuda::arch_id arch, int store_size, bool filling)
+[[nodiscard]] _CCCL_API constexpr auto
+tuned_vectorized_policy(::cuda::compute_capability cc, int store_size, bool filling)
 {
   if (filling)
   {
     // manually tuned fill on RTX 5090
     // TODO(bgruber): re-enable this later! It's disabled to avoid SASS changes in PR #6914
-    // if (arch >= ::cuda::arch_id::sm_120)
+    // if (cc >= ::cuda::compute_capability{120})
     // {
     //   return vectorized_policy{256, 8, 4};
     // }
     // manually tuned fill on B200, same as H200
-    if (arch >= ::cuda::arch_id::sm_90)
+    if (cc >= ::cuda::compute_capability{90})
     {
       return vectorized_policy{
         store_size > 4 ? 128 : 256, 16, ::cuda::std::max(8 / store_size, 1) /* 64-bit instructions */};
     }
     // manually tuned fill on A100
-    if (arch >= ::cuda::arch_id::sm_80)
+    if (cc >= ::cuda::compute_capability{80})
     {
       return vectorized_policy{256, 8, ::cuda::std::max(8 / store_size, 1) /* 64-bit instructions */};
     }
@@ -309,7 +310,7 @@ _CCCL_HOST_DEVICE constexpr auto bulk_copy_dyn_smem_for_tile_size(
   else
   {
     // manually tuned triad on A100
-    if (arch == ::cuda::arch_id::sm_80)
+    if (cc == ::cuda::compute_capability{80})
     {
       return vectorized_policy{128, 16, 4};
     }
@@ -327,7 +328,7 @@ struct policy_selector
   ::cuda::std::array<iterator_info, InputCount> inputs;
   iterator_info output;
 
-  [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::arch_id arch) const -> transform_policy
+  [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::compute_capability cc) const -> transform_policy
   {
     const bool no_input_streams = InputCount == 0;
 
@@ -345,16 +346,16 @@ struct policy_selector
     }
     const bool can_memcpy_all_inputs = all_inputs_contiguous && all_input_values_trivially_reloc;
     const bool fallback_to_prefetch  = requires_stable_address || !can_memcpy_contiguous_inputs || !dense_output;
-    const int min_bytes_in_flight    = arch_to_min_bytes_in_flight(arch);
+    const int min_bytes_in_flight    = cc_to_min_bytes_in_flight(cc);
 
-    if (arch >= ::cuda::arch_id::sm_90) // handles sm_100 as well
+    if (cc >= ::cuda::compute_capability{90}) // handles sm_100 as well
     {
-      const int async_block_size = arch < ::cuda::arch_id::sm_100 ? 256 : 128;
-      const int alignment        = bulk_copy_alignment(arch);
+      const int async_block_size = (cc < ::cuda::compute_capability{100}) ? 256 : 128;
+      const int alignment        = bulk_copy_alignment(cc);
 
       const auto prefetch = prefetch_policy{256};
       const auto vectorized =
-        tuned_vectorized_policy(arch, ::cuda::std::max(1, output.value_type_size), no_input_streams);
+        tuned_vectorized_policy(cc, ::cuda::std::max(1, output.value_type_size), no_input_streams);
       const auto async = async_copy_policy{async_block_size, alignment};
 
       // We cannot use the architecture-specific amount of SMEM here instead of max_smem_per_block, because this is not
@@ -381,7 +382,8 @@ struct policy_selector
       }
 
       // on Hopper, the vectorized kernel performs better for 1 and 2 byte values, except for BabelStream mul (1 input)
-      bool vector_kernel_is_faster = arch == ::cuda::arch_id::sm_90 && output.value_type_size < 4 && InputCount > 1;
+      bool vector_kernel_is_faster =
+        cc == ::cuda::compute_capability{90} && output.value_type_size < 4 && InputCount > 1;
       for (const auto& input : inputs)
       {
         vector_kernel_is_faster &= input.value_type_size < 4;
@@ -405,12 +407,12 @@ struct policy_selector
         async,
       };
     }
-    else if (arch >= ::cuda::arch_id::sm_80)
+    else if (cc >= ::cuda::compute_capability{80})
     {
       const int block_threads = 256;
       const auto prefetch     = prefetch_policy{block_threads};
       const auto vectorized =
-        tuned_vectorized_policy(arch, ::cuda::std::max(1, output.value_type_size), no_input_streams);
+        tuned_vectorized_policy(cc, ::cuda::std::max(1, output.value_type_size), no_input_streams);
       const auto async = async_copy_policy{block_threads, ldgsts_size_and_align};
 
       // We cannot use the architecture-specific amount of SMEM here instead of max_smem_per_block, because this is not
@@ -450,7 +452,8 @@ struct policy_selector
       min_bytes_in_flight,
       (fallback_to_prefetch || !all_value_types_have_power_of_two_size) ? Algorithm::prefetch : Algorithm::vectorized,
       prefetch_policy{256},
-      tuned_vectorized_policy(::cuda::arch_id::sm_60, ::cuda::std::max(1, output.value_type_size), no_input_streams),
+      tuned_vectorized_policy(
+        ::cuda::compute_capability{60}, ::cuda::std::max(1, output.value_type_size), no_input_streams),
       async_copy_policy{}, // never used
     };
   }
@@ -479,14 +482,14 @@ struct policy_selector_from_types<RequiresStableAddress,
                                   ::cuda::std::tuple<RandomAccessIteratorsIn...>,
                                   RandomAccessIteratorOut>
 {
-  [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::arch_id arch) const -> transform_policy
+  [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::compute_capability cc) const -> transform_policy
   {
     constexpr auto policies = policy_selector<sizeof...(RandomAccessIteratorsIn)>{
       RequiresStableAddress,
       DenseOutput,
       {make_iterator_info<RandomAccessIteratorsIn>()...},
       make_iterator_info<RandomAccessIteratorOut>()};
-    return policies(arch);
+    return policies(cc);
   }
 };
 } // namespace detail::transform

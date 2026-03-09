@@ -56,7 +56,7 @@ namespace detail::reduce
  */
 template <typename PolicySelector, typename InputIteratorT, typename ReductionOpT, typename AccumT, typename TransformOpT>
 CUB_DETAIL_KERNEL_ATTRIBUTES __launch_bounds__(int(
-  PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10})
+  PolicySelector{}(::cuda::compute_capability{CUB_PTX_ARCH / 10})
     .reduce.block_threads)) void DeterministicDeviceReduceKernel(InputIteratorT d_in,
                                                                  AccumT* d_out,
                                                                  int num_items,
@@ -64,7 +64,7 @@ CUB_DETAIL_KERNEL_ATTRIBUTES __launch_bounds__(int(
                                                                  TransformOpT transform_op,
                                                                  const int reduce_grid_size)
 {
-  constexpr rfa::reduce_policy policy = PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).reduce;
+  constexpr rfa::reduce_policy policy = PolicySelector{}(::cuda::compute_capability{CUB_PTX_ARCH / 10}).reduce;
   constexpr int items_per_thread      = policy.items_per_thread;
   constexpr int block_threads         = policy.block_threads;
 
@@ -188,7 +188,7 @@ template <typename PolicySelector,
           typename AccumT,
           typename TransformOpT = ::cuda::std::identity>
 CUB_DETAIL_KERNEL_ATTRIBUTES __launch_bounds__(
-  int(PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).single_tile.block_threads),
+  int(PolicySelector{}(::cuda::compute_capability{CUB_PTX_ARCH / 10}).single_tile.block_threads),
   1) void DeterministicDeviceReduceSingleTileKernel(InputIteratorT d_in,
                                                     OutputIteratorT d_out,
                                                     int num_items,
@@ -196,8 +196,9 @@ CUB_DETAIL_KERNEL_ATTRIBUTES __launch_bounds__(
                                                     InitT init,
                                                     TransformOpT transform_op)
 {
-  constexpr rfa::single_tile_policy policy = PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).single_tile;
-  constexpr int block_threads              = policy.block_threads;
+  constexpr rfa::single_tile_policy policy =
+    PolicySelector{}(::cuda::compute_capability{CUB_PTX_ARCH / 10}).single_tile;
+  constexpr int block_threads = policy.block_threads;
 
   using block_reduce_t = BlockReduce<AccumT, block_threads, policy.block_algorithm>;
 

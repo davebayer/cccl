@@ -1000,7 +1000,7 @@ _CCCL_HOST_DEVICE auto make_aligned_base_ptr_kernel_arg(It ptr, int alignment) -
 template <typename PolicySelector>
 _CCCL_API constexpr int get_block_threads_helper()
 {
-  constexpr transform_policy policy = PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10});
+  constexpr transform_policy policy = PolicySelector{}(::cuda::compute_capability{CUB_PTX_ARCH / 10});
   if constexpr (policy.algorithm == Algorithm::prefetch)
   {
     return policy.prefetch.block_threads;
@@ -1043,7 +1043,7 @@ __launch_bounds__(get_block_threads<PolicySelector>) CUB_DETAIL_KERNEL_ATTRIBUTE
 {
   _CCCL_ASSERT(blockDim.y == 1 && blockDim.z == 1, "transform_kernel only supports 1D blocks");
 
-  static constexpr transform_policy policy = PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10});
+  static constexpr transform_policy policy = PolicySelector{}(::cuda::compute_capability{CUB_PTX_ARCH / 10});
 
   if constexpr (policy.algorithm == Algorithm::prefetch)
   {

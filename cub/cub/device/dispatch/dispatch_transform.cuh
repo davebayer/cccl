@@ -479,7 +479,7 @@ struct invoke_for_arch<::cuda::std::tuple<RandomAccessIteratorsIn...>,
         ::cuda::std::move(pred),
         ::cuda::std::move(op),
         stream,
-        bulk_copy_alignment(arch_id),
+        bulk_copy_alignment(::cuda::compute_capability{arch_id}),
         [&](int tile_size, int alignment) {
           return bulk_copy_dyn_smem_for_tile_size<sizeof...(RandomAccessIteratorsIn)>(
             kernel_source.InputIteratorInfos(), tile_size, alignment);

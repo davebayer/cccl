@@ -878,13 +878,19 @@ namespace detail
 #if _CCCL_HAS_CONCEPTS()
 // TODO(bgruber): should we either drop the Policy template argument or rename it to policy_selector_for?
 template <typename T, typename Policy>
-concept policy_selector = requires(T pol_sel, ::cuda::arch_id arch) {
-  requires ::cuda::std::regular<Policy>;
-  { pol_sel(arch) } -> _CCCL_CONCEPT_VSTD::same_as<Policy>;
-  // we cannot reliably check whether pol_sel(arch) is a constant expression, since it sometimes depends on the data
+concept policy_selector = ::cuda::std::regular<Policy> &&
+  (requires(T pol_sel, ::cuda::compute_capability cc) {
+  {
+    pol_sel(cc) } -> ::cuda::std::same_as<Policy>;
+
+} || requires(T pol_sel, ::cuda::arch_id arch) {
+  { pol_sel(arch) } -> ::cuda::std::same_as<Policy>;
+
+})
+  // we cannot reliably check whether pol_sel(x) is a constant expression, since it sometimes depends on the data
   // member values whether it can be constant evaluated (e.g., a default constructed reduce::policy_selector will lead
   // to a division by zero when evaluated)
-};
+;
 #endif // _CCCL_HAS_CONCEPTS()
 } // namespace detail
 
