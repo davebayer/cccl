@@ -16,7 +16,7 @@
 #pragma once
 
 #include <thrust/detail/config/config.h> // IWYU pragma: export
-
+aasdfasdf
 #if defined(_CCCL_IMPLICIT_SYSTEM_HEADER_GCC)
 #  pragma GCC system_header
 #elif defined(_CCCL_IMPLICIT_SYSTEM_HEADER_CLANG)
@@ -75,6 +75,6 @@
  */
 #define THRUST_PATCH_NUMBER 0
 
-static_assert(THRUST_MAJOR_VERSION == CCCL_MAJOR_VERSION, "");
+  static_assert(THRUST_MAJOR_VERSION == CCCL_MAJOR_VERSION, "");
 static_assert(THRUST_MINOR_VERSION == CCCL_MINOR_VERSION, "");
 static_assert(THRUST_SUBMINOR_VERSION == CCCL_PATCH_VERSION, "");
