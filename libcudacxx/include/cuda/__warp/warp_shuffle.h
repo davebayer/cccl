@@ -43,13 +43,13 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA_DEVICE
 
-template <typename _Tp>
+template <class _Tp>
 struct warp_shuffle_result
 {
   _Tp data;
   bool pred;
 
-  template <typename _Up = _Tp>
+  template <class _Up = _Tp>
   [[nodiscard]] _CCCL_DEVICE_API operator ::cuda::std::enable_if_t<!::cuda::std::is_array_v<_Up>, _Up>() const noexcept
   {
     return data;
@@ -58,7 +58,7 @@ struct warp_shuffle_result
 
 // warp_shuffle_idx
 
-template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t<_Tp>>
+template <int _Width = 32, class _Tp, class _Up = ::cuda::std::remove_cv_t<_Tp>>
 [[nodiscard]] _CCCL_DEVICE_API warp_shuffle_result<_Up> warp_shuffle_idx(
   const _Tp& __data,
   int __src_lane,
@@ -72,9 +72,11 @@ template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t
                 "non-void pointers are not allowed to prevent bug-prone code");
   static_assert(::cuda::is_power_of_two(_Width) && _Width >= 1 && _Width <= __warp_size,
                 "_Width must be a power of 2 and less or equal to the warp size");
+  static_assert(::cuda::std::is_trivially_default_constructible_v<_Tp>, "_Tp must be trivially default constructible");
   static_assert(::cuda::std::is_trivially_copyable_v<_Tp>, "_Tp must be trivially copyable");
 
-  _CCCL_ASSERT(__lane_mask & lane_mask::this_lane(), "__lane_mask must contain the executing thread");
+  _CCCL_ASSERT((__lane_mask & lane_mask::this_lane()) != lane_mask::none(),
+               "__lane_mask must contain the executing thread");
 
   if constexpr (_Width == 1)
   {
@@ -86,8 +88,7 @@ template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t
     auto __clamp_segmask  = (_Width - 1u) | ((__warp_size - _Width) << 8);
     bool __pred;
     uint32_t __array[__ratio]{};
-    ::cuda::std::memcpy(
-      static_cast<void*>(__array), static_cast<const void*>(::cuda::std::addressof(__data)), sizeof(_Up));
+    ::cuda::std::memcpy(__array, ::cuda::std::addressof(__data), sizeof(_Up));
 
     _CCCL_PRAGMA_UNROLL_FULL()
     for (int i = 0; i < __ratio; ++i)
@@ -96,23 +97,22 @@ template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t
     }
     warp_shuffle_result<_Up> __result;
     __result.pred = __pred;
-    ::cuda::std::memcpy(
-      static_cast<void*>(::cuda::std::addressof(__result.data)), static_cast<void*>(__array), sizeof(_Up));
+    ::cuda::std::memcpy(::cuda::std::addressof(__result.data), __array, sizeof(_Up));
     return __result;
   }
 }
 
-template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t<_Tp>>
+template <int _Width = 32, class _Tp>
 [[nodiscard]]
 CCCL_DEPRECATED_BECAUSE("Use cuda::device::warp_shuffle_idx overload with explicit cuda::device::lane_mask parameter.")
-_CCCL_DEVICE_API warp_shuffle_result<_Up> warp_shuffle_idx(
+_CCCL_DEVICE_API auto warp_shuffle_idx(
   const _Tp& __data, int __src_lane, uint32_t __lane_mask, ::cuda::std::integral_constant<int, _Width> = {}) noexcept
 {
   return ::cuda::device::warp_shuffle_idx<_Width>(__data, __src_lane, lane_mask{__lane_mask});
 }
 
-template <int _Width, typename _Tp, typename _Up = ::cuda::std::remove_cv_t<_Tp>>
-[[nodiscard]] _CCCL_DEVICE_API warp_shuffle_result<_Up>
+template <int _Width, class _Tp>
+[[nodiscard]] _CCCL_DEVICE_API auto
 warp_shuffle_idx(const _Tp& __data, int __src_lane, ::cuda::std::integral_constant<int, _Width> __width) noexcept
 {
   return ::cuda::device::warp_shuffle_idx(__data, __src_lane, lane_mask::all(), __width);
@@ -120,8 +120,8 @@ warp_shuffle_idx(const _Tp& __data, int __src_lane, ::cuda::std::integral_consta
 
 // warp_shuffle_up
 
-template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t<_Tp>>
-[[nodiscard]] _CCCL_DEVICE_API warp_shuffle_result<_Tp> warp_shuffle_up(
+template <int _Width = 32, class _Tp, class _Up = ::cuda::std::remove_cv_t<_Tp>>
+[[nodiscard]] _CCCL_DEVICE_API warp_shuffle_result<_Up> warp_shuffle_up(
   const _Tp& __data,
   int __delta,
   lane_mask __lane_mask                       = lane_mask::all(),
@@ -136,12 +136,14 @@ template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t
                 "_Width must be a power of 2 and less or equal to the warp size");
   static_assert(::cuda::std::is_trivially_copyable_v<_Tp>, "_Tp must be trivially copyable");
 
-  _CCCL_ASSERT(__lane_mask & lane_mask::this_lane(), "__lane_mask must contain the executing thread");
+  _CCCL_ASSERT((__lane_mask & lane_mask::this_lane()) != lane_mask::none(),
+               "__lane_mask must contain the executing thread");
   NV_IF_TARGET(NV_PROVIDES_SM_70, ({
                  [[maybe_unused]] int __pred1;
-                 _CCCL_ASSERT(::__match_all_sync(0xffff'ffffu, __delta, &__pred1),
-                              "all active lanes must have the same delta");
+                 _CCCL_ASSERT(::__match_all_sync(__lane_mask.value(), __delta, &__pred1),
+                              "lanes must have the same delta");
                }))
+
   if constexpr (_Width == 1)
   {
     _CCCL_ASSERT(__delta == 0, "delta must be 0 when Width == 1");
@@ -154,8 +156,7 @@ template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t
     auto __clamp_segmask  = (__warp_size - _Width) << 8;
     bool __pred;
     uint32_t __array[__ratio]{};
-    ::cuda::std::memcpy(
-      static_cast<void*>(__array), static_cast<const void*>(::cuda::std::addressof(__data)), sizeof(_Up));
+    ::cuda::std::memcpy(__array, ::cuda::std::addressof(__data), sizeof(_Up));
 
     _CCCL_PRAGMA_UNROLL_FULL()
     for (int i = 0; i < __ratio; ++i)
@@ -164,23 +165,22 @@ template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t
     }
     warp_shuffle_result<_Up> __result;
     __result.pred = __pred;
-    ::cuda::std::memcpy(
-      static_cast<void*>(::cuda::std::addressof(__result.data)), static_cast<void*>(__array), sizeof(_Up));
+    ::cuda::std::memcpy(::cuda::std::addressof(__result.data), __array, sizeof(_Up));
     return __result;
   }
 }
 
-template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t<_Tp>>
+template <int _Width = 32, class _Tp>
 [[nodiscard]]
 CCCL_DEPRECATED_BECAUSE("Use cuda::device::warp_shuffle_up overload with explicit cuda::device::lane_mask parameter.")
-_CCCL_DEVICE_API warp_shuffle_result<_Tp> warp_shuffle_up(
+_CCCL_DEVICE_API auto warp_shuffle_up(
   const _Tp& __data, int __delta, uint32_t __lane_mask, ::cuda::std::integral_constant<int, _Width> = {}) noexcept
 {
   return ::cuda::device::warp_shuffle_up<_Width>(__data, __delta, lane_mask{__lane_mask});
 }
 
-template <int _Width, typename _Tp, typename _Up = ::cuda::std::remove_cv_t<_Tp>>
-[[nodiscard]] _CCCL_DEVICE_API warp_shuffle_result<_Up>
+template <int _Width, class _Tp>
+[[nodiscard]] _CCCL_DEVICE_API auto
 warp_shuffle_up(const _Tp& __data, int __delta, ::cuda::std::integral_constant<int, _Width> __width) noexcept
 {
   return ::cuda::device::warp_shuffle_up(__data, __delta, ::cuda::device::lane_mask::all(), __width);
@@ -188,7 +188,7 @@ warp_shuffle_up(const _Tp& __data, int __delta, ::cuda::std::integral_constant<i
 
 // warp_shuffle_down
 
-template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t<_Tp>>
+template <int _Width = 32, class _Tp, class _Up = ::cuda::std::remove_cv_t<_Tp>>
 [[nodiscard]] _CCCL_DEVICE_API warp_shuffle_result<_Up> warp_shuffle_down(
   const _Tp& __data,
   int __delta,
@@ -197,17 +197,19 @@ template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t
 {
   constexpr auto __warp_size   = 32u;
   constexpr bool __is_void_ptr = ::cuda::std::is_same_v<_Up, void*> || ::cuda::std::is_same_v<_Up, const void*>;
+
   static_assert(!::cuda::std::is_pointer_v<_Up> || __is_void_ptr,
                 "non-void pointers are not allowed to prevent bug-prone code");
   static_assert(::cuda::is_power_of_two(_Width) && _Width >= 1 && _Width <= __warp_size,
                 "_Width must be a power of 2 and less or equal to the warp size");
   static_assert(::cuda::std::is_trivially_copyable_v<_Tp>, "_Tp must be trivially copyable");
 
-  _CCCL_ASSERT(__lane_mask & lane_mask::this_lane(), "__lane_mask must contain the executing thread");
+  _CCCL_ASSERT((__lane_mask & lane_mask::this_lane()) != lane_mask::none(),
+               "__lane_mask must contain the executing thread");
   NV_IF_TARGET(NV_PROVIDES_SM_70, ({
                  [[maybe_unused]] int __pred1;
-                 _CCCL_ASSERT(::__match_all_sync(0xffff'ffff, __delta, &__pred1),
-                              "all active lanes must have the same delta");
+                 _CCCL_ASSERT(::__match_all_sync(__lane_mask.value(), __delta, &__pred1),
+                              "lanes must have the same delta");
                }))
   if constexpr (_Width == 1)
   {
@@ -221,8 +223,7 @@ template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t
     auto __clamp_segmask  = (_Width - 1u) | ((__warp_size - _Width) << 8);
     bool __pred;
     uint32_t __array[__ratio]{};
-    ::cuda::std::memcpy(
-      static_cast<void*>(__array), static_cast<const void*>(::cuda::std::addressof(__data)), sizeof(_Up));
+    ::cuda::std::memcpy(__array, ::cuda::std::addressof(__data), sizeof(_Up));
 
     _CCCL_PRAGMA_UNROLL_FULL()
     for (int i = 0; i < __ratio; ++i)
@@ -231,23 +232,22 @@ template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t
     }
     warp_shuffle_result<_Up> __result;
     __result.pred = __pred;
-    ::cuda::std::memcpy(
-      static_cast<void*>(::cuda::std::addressof(__result.data)), static_cast<void*>(__array), sizeof(_Up));
+    ::cuda::std::memcpy(::cuda::std::addressof(__result.data), __array, sizeof(_Up));
     return __result;
   }
 }
 
-template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t<_Tp>>
+template <int _Width = 32, class _Tp>
 [[nodiscard]]
 CCCL_DEPRECATED_BECAUSE("Use cuda::device::warp_shuffle_up overload with explicit cuda::device::lane_mask parameter.")
-_CCCL_DEVICE_API warp_shuffle_result<_Up> warp_shuffle_down(
+_CCCL_DEVICE_API auto warp_shuffle_down(
   const _Tp& __data, int __delta, uint32_t __lane_mask, ::cuda::std::integral_constant<int, _Width> = {}) noexcept
 {
   return ::cuda::device::warp_shuffle_down<_Width>(__data, __delta, lane_mask{__lane_mask});
 }
 
-template <int _Width, typename _Tp, typename _Up = ::cuda::std::remove_cv_t<_Tp>>
-[[nodiscard]] _CCCL_DEVICE_API warp_shuffle_result<_Tp>
+template <int _Width, class _Tp>
+[[nodiscard]] _CCCL_DEVICE_API auto
 warp_shuffle_down(const _Tp& __data, int __delta, ::cuda::std::integral_constant<int, _Width> __width) noexcept
 {
   return ::cuda::device::warp_shuffle_down(__data, __delta, lane_mask::all(), __width);
@@ -255,7 +255,7 @@ warp_shuffle_down(const _Tp& __data, int __delta, ::cuda::std::integral_constant
 
 // warp_shuffle_xor
 
-template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t<_Tp>>
+template <int _Width = 32, class _Tp, class _Up = ::cuda::std::remove_cv_t<_Tp>>
 [[nodiscard]] _CCCL_DEVICE_API warp_shuffle_result<_Up> warp_shuffle_xor(
   const _Tp& __data,
   int __xor_mask,
@@ -271,15 +271,17 @@ template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t
                 "_Width must be a power of 2 and less or equal to the warp size");
   static_assert(::cuda::std::is_trivially_copyable_v<_Tp>, "_Tp must be trivially copyable");
 
-  _CCCL_ASSERT(__lane_mask & lane_mask::this_lane(), "__lane_mask must contain the executing thread");
+  _CCCL_ASSERT((__lane_mask & lane_mask::this_lane()) != lane_mask::none(),
+               "__lane_mask must contain the executing thread");
   NV_IF_TARGET(NV_PROVIDES_SM_70, ({
                  [[maybe_unused]] int __pred1;
-                 _CCCL_ASSERT(::__match_all_sync(0xffff'ffff, __xor_mask, &__pred1),
-                              "all lanes must have the same delta");
+                 _CCCL_ASSERT(::__match_all_sync(__lane_mask.value(), __xor_mask, &__pred1),
+                              "lanes must have the same delta");
                }))
+
   if constexpr (_Width == 1)
   {
-    _CCCL_ASSERT(__xor_mask == 0, "delta must be 0 when Width == 1");
+    _CCCL_ASSERT(__xor_mask == 0, "delta must be 0 when _Width == 1");
     return warp_shuffle_result<_Up>{__data, true};
   }
   else
@@ -288,9 +290,8 @@ template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t
     constexpr int __ratio = ::cuda::ceil_div(sizeof(_Up), sizeof(uint32_t));
     auto __clamp_segmask  = (_Width - 1u) | ((__warp_size - _Width) << 8);
     bool __pred;
-    uint32_t __array[__ratio];
-    ::cuda::std::memcpy(
-      static_cast<void*>(__array), static_cast<const void*>(::cuda::std::addressof(__data)), sizeof(_Up));
+    uint32_t __array[__ratio]{};
+    ::cuda::std::memcpy(__array, ::cuda::std::addressof(__data), sizeof(_Up));
 
     _CCCL_PRAGMA_UNROLL_FULL()
     for (int i = 0; i < __ratio; ++i)
@@ -299,26 +300,36 @@ template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t
     }
     warp_shuffle_result<_Up> __result;
     __result.pred = __pred;
-    ::cuda::std::memcpy(
-      static_cast<void*>(::cuda::std::addressof(__result.data)), static_cast<void*>(__array), sizeof(_Up));
+    ::cuda::std::memcpy(::cuda::std::addressof(__result.data), __array, sizeof(_Up));
     return __result;
   }
 }
 
-template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t<_Tp>>
+template <int _Width = 32, class _Tp>
 [[nodiscard]]
-CCCL_DEPRECATED_BECAUSE("Use cuda::device::warp_shuffle_xor overload with explicit cuda::device::lane_mask parameter.")
-_CCCL_DEVICE_API warp_shuffle_result<_Up> warp_shuffle_xor(
+CCCL_DEPRECATED_BECAUSE("Use cuda::device::warp_shuffle_xor overload with explicit cuda::device::lane_mask parameters.")
+_CCCL_DEVICE_API auto warp_shuffle_xor(
   const _Tp& __data, int __xor_mask, uint32_t __lane_mask, ::cuda::std::integral_constant<int, _Width> = {}) noexcept
 {
   return ::cuda::device::warp_shuffle_xor<_Width>(__data, __xor_mask, lane_mask{__lane_mask});
 }
 
-template <int _Width, typename _Tp, typename _Up = ::cuda::std::remove_cv_t<_Tp>>
-[[nodiscard]] _CCCL_DEVICE_API warp_shuffle_result<_Up>
-warp_shuffle_xor(const _Tp& __data, int __src_lane, ::cuda::std::integral_constant<int, _Width> __width) noexcept
+template <int _Width, class _Tp>
+[[nodiscard]]
+_CCCL_DEVICE_API auto
+warp_shuffle_xor(const _Tp& __data, lane_mask __xor_mask, ::cuda::std::integral_constant<int, _Width> __width) noexcept
 {
-  return ::cuda::device::warp_shuffle_xor(__data, __src_lane, 0xffff'ffff, __width);
+  return ::cuda::device::warp_shuffle_xor(__data, __xor_mask, lane_mask::all(), __width);
+}
+
+template <int _Width, class _Tp>
+[[nodiscard]]
+CCCL_DEPRECATED_BECAUSE("Use cuda::device::warp_shuffle_xor overload with explicit cuda::device::lane_mask parameters.")
+_CCCL_DEVICE_API auto
+warp_shuffle_xor(const _Tp& __data, int __xor_mask, ::cuda::std::integral_constant<int, _Width> __width) noexcept
+{
+  return ::cuda::device::warp_shuffle_xor(
+    __data, lane_mask{static_cast<unsigned>(__xor_mask)}, lane_mask::all(), __width);
 }
 
 _CCCL_END_NAMESPACE_CUDA_DEVICE
