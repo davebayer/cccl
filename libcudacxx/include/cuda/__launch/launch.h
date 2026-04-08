@@ -292,13 +292,13 @@ inline constexpr bool __invoke_kernel_functor_with_config_v =
 
 template <class _Config, class _Kernel, class... _Args>
 __global__ static void
-  _CCCL_BLOCK_SIZE((::cuda::__block_size<typename _Config::hierarchy_type, block_level>(0),
-                    ::cuda::__block_size<typename _Config::hierarchy_type, block_level>(1),
-                    ::cuda::__block_size<typename _Config::hierarchy_type, block_level>(2)),
-                   (::cuda::__block_size<typename _Config::hierarchy_type, cluster_level>(0),
-                    ::cuda::__block_size<typename _Config::hierarchy_type, cluster_level>(1),
-                    ::cuda::__block_size<typename _Config::hierarchy_type, cluster_level>(2)))
-  __kernel_launcher_with_block_size(const _CCCL_GRID_CONSTANT _Config __conf, _Kernel __kernel_fn, _Args... __args)
+// _CCCL_BLOCK_SIZE((::cuda::__block_size<typename _Config::hierarchy_type, block_level>(0),
+//                   ::cuda::__block_size<typename _Config::hierarchy_type, block_level>(1),
+//                   ::cuda::__block_size<typename _Config::hierarchy_type, block_level>(2)),
+//                  (::cuda::__block_size<typename _Config::hierarchy_type, cluster_level>(0),
+//                   ::cuda::__block_size<typename _Config::hierarchy_type, cluster_level>(1),
+//                   ::cuda::__block_size<typename _Config::hierarchy_type, cluster_level>(2)))
+__kernel_launcher_with_block_size(const _CCCL_GRID_CONSTANT _Config __conf, _Kernel __kernel_fn, _Args... __args)
 {
   ::cuda::__assume_known_info<typename _Config::hierarchy_type>();
 
