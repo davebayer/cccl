@@ -433,7 +433,7 @@ public:
    * @param[in] digit_extractor
    *   The digit extractor
    */
-  template <typename UnsignedBits, int KEYS_PER_THREAD, typename DigitExtractorT>
+  template <class UnsignedBits, int KEYS_PER_THREAD, class DigitExtractorT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   RankKeys(UnsignedBits (&keys)[KEYS_PER_THREAD], int (&ranks)[KEYS_PER_THREAD], DigitExtractorT digit_extractor)
   {
@@ -511,7 +511,7 @@ public:
    *                   ...
    *    (threadIdx.x * BINS_TRACKED_PER_THREAD) + BINS_TRACKED_PER_THREAD - 1]
    */
-  template <typename UnsignedBits, int KEYS_PER_THREAD, typename DigitExtractorT>
+  template <class UnsignedBits, int KEYS_PER_THREAD, class DigitExtractorT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   RankKeys(UnsignedBits (&keys)[KEYS_PER_THREAD],
            int (&ranks)[KEYS_PER_THREAD],
@@ -692,7 +692,7 @@ public:
    * @param[in] callback
    *   Callback to receive digit counts
    */
-  template <typename UnsignedBits, int KEYS_PER_THREAD, typename DigitExtractorT, typename CountsCallback>
+  template <class UnsignedBits, int KEYS_PER_THREAD, class DigitExtractorT, class CountsCallback>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   RankKeys(UnsignedBits (&keys)[KEYS_PER_THREAD],
            int (&ranks)[KEYS_PER_THREAD],
@@ -792,7 +792,7 @@ public:
     }
   }
 
-  template <typename UnsignedBits, int KEYS_PER_THREAD, typename DigitExtractorT>
+  template <class UnsignedBits, int KEYS_PER_THREAD, class DigitExtractorT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   RankKeys(UnsignedBits (&keys)[KEYS_PER_THREAD], int (&ranks)[KEYS_PER_THREAD], DigitExtractorT digit_extractor)
   {
@@ -821,7 +821,7 @@ public:
    * @param[in] callback
    *   Callback to receive digit counts
    */
-  template <typename UnsignedBits, int KEYS_PER_THREAD, typename DigitExtractorT, typename CountsCallback>
+  template <class UnsignedBits, int KEYS_PER_THREAD, class DigitExtractorT, class CountsCallback>
   _CCCL_DEVICE _CCCL_FORCEINLINE void RankKeys(
     UnsignedBits (&keys)[KEYS_PER_THREAD],
     int (&ranks)[KEYS_PER_THREAD],
@@ -862,7 +862,7 @@ public:
    *                   ...
    *    (threadIdx.x * BINS_TRACKED_PER_THREAD) + BINS_TRACKED_PER_THREAD - 1]
    */
-  template <typename UnsignedBits, int KEYS_PER_THREAD, typename DigitExtractorT>
+  template <class UnsignedBits, int KEYS_PER_THREAD, class DigitExtractorT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   RankKeys(UnsignedBits (&keys)[KEYS_PER_THREAD],
            int (&ranks)[KEYS_PER_THREAD],
@@ -930,7 +930,7 @@ struct BlockRadixRankMatchEarlyCounts
   TempStorage& temp_storage;
 
   // internal ranking implementation
-  template <typename UnsignedBits, int KEYS_PER_THREAD, typename DigitExtractorT, typename CountsCallback>
+  template <class UnsignedBits, int KEYS_PER_THREAD, class DigitExtractorT, class CountsCallback>
   struct BlockRadixRankMatchInternal
   {
     TempStorage& s;
@@ -1155,7 +1155,7 @@ struct BlockRadixRankMatchEarlyCounts
    * @brief Rank keys. For the lower @p RADIX_DIGITS threads, digit counts for each digit are
    *        provided for the corresponding thread.
    */
-  template <typename UnsignedBits, int KEYS_PER_THREAD, typename DigitExtractorT, typename CountsCallback>
+  template <class UnsignedBits, int KEYS_PER_THREAD, class DigitExtractorT, class CountsCallback>
   _CCCL_DEVICE _CCCL_FORCEINLINE void RankKeys(
     UnsignedBits (&keys)[KEYS_PER_THREAD],
     int (&ranks)[KEYS_PER_THREAD],
@@ -1168,7 +1168,7 @@ struct BlockRadixRankMatchEarlyCounts
     internal.RankKeys(keys, ranks, exclusive_digit_prefix);
   }
 
-  template <typename UnsignedBits, int KEYS_PER_THREAD, typename DigitExtractorT>
+  template <class UnsignedBits, int KEYS_PER_THREAD, class DigitExtractorT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   RankKeys(UnsignedBits (&keys)[KEYS_PER_THREAD],
            int (&ranks)[KEYS_PER_THREAD],
@@ -1181,7 +1181,7 @@ struct BlockRadixRankMatchEarlyCounts
     internal.RankKeys(keys, ranks, exclusive_digit_prefix);
   }
 
-  template <typename UnsignedBits, int KEYS_PER_THREAD, typename DigitExtractorT>
+  template <class UnsignedBits, int KEYS_PER_THREAD, class DigitExtractorT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   RankKeys(UnsignedBits (&keys)[KEYS_PER_THREAD], int (&ranks)[KEYS_PER_THREAD], DigitExtractorT digit_extractor)
   {

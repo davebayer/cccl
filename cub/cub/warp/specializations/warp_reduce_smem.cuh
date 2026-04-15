@@ -43,7 +43,7 @@ namespace detail
  * @tparam LOGICAL_WARP_THREADS
  *   Number of threads per logical warp
  */
-template <typename T, int LOGICAL_WARP_THREADS>
+template <class T, int LOGICAL_WARP_THREADS>
 struct WarpReduceSmem
 {
   /******************************************************************************

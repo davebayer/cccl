@@ -56,7 +56,7 @@ namespace detail
  * @tparam BlockDimZ
  *   The thread block length in threads along the Z dimension
  */
-template <typename T, int BlockDimX, int BlockDimY, int BlockDimZ>
+template <class T, int BlockDimX, int BlockDimY, int BlockDimZ>
 struct BlockReduceRaking
 {
   /// The thread block size in threads

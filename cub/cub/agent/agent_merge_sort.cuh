@@ -26,15 +26,15 @@
 CUB_NAMESPACE_BEGIN
 namespace detail::merge_sort
 {
-template <typename PolicyGetter,
-          typename KeyInputIteratorT,
-          typename ValueInputIteratorT,
-          typename KeyIteratorT,
-          typename ValueIteratorT,
-          typename OffsetT,
-          typename CompareOpT,
-          typename KeyT,
-          typename ValueT>
+template <class PolicyGetter,
+          class KeyInputIteratorT,
+          class ValueInputIteratorT,
+          class KeyIteratorT,
+          class ValueIteratorT,
+          class OffsetT,
+          class CompareOpT,
+          class KeyT,
+          class ValueT>
 struct AgentBlockSort
 {
   //---------------------------------------------------------------------
@@ -245,7 +245,7 @@ struct AgentBlockSort
  * Odeh et al, "Merge Path - Parallel Merging Made Simple"
  * doi:10.1109/IPDPSW.2012.202
  */
-template <typename KeyIteratorT, typename OffsetT, typename CompareOpT, typename KeyT>
+template <class KeyIteratorT, class OffsetT, class CompareOpT, class KeyT>
 struct AgentPartition
 {
   bool ping;
@@ -363,13 +363,13 @@ _CCCL_DEVICE _CCCL_FORCEINLINE void reg_to_shared(It output, T (&input)[ITEMS_PE
 }
 
 /// \brief The agent is responsible for merging N consecutive sorted arrays into N/2 sorted arrays.
-template <typename PolicyGetter, // TODO(bgruber): pass policy as NTTP in C++20
-          typename KeyIteratorT,
-          typename ValueIteratorT,
-          typename OffsetT,
-          typename CompareOpT,
-          typename KeyT,
-          typename ValueT>
+template <class PolicyGetter, // TODO(bgruber): pass policy as NTTP in C++20
+          class KeyIteratorT,
+          class ValueIteratorT,
+          class OffsetT,
+          class CompareOpT,
+          class KeyT,
+          class ValueT>
 struct AgentMerge
 {
   //---------------------------------------------------------------------

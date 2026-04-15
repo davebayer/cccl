@@ -610,7 +610,7 @@ public:
   //! @param[out] items Data to load
   //! @param[in] valid_items Number of valid items to load
   //! @param[in] oob_default Default value to assign out-of-bound items
-  template <typename InputIteratorT, typename DefaultT>
+  template <class InputIteratorT, class DefaultT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   Load(InputIteratorT block_itr, InputT (&items)[ITEMS_PER_THREAD], int valid_items, DefaultT oob_default)
   {

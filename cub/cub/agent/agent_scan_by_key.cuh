@@ -106,15 +106,15 @@ namespace detail::scan_by_key
  * @tparam AccumT
  *   The type of intermediate accumulator (according to P2322R6)
  */
-template <typename AgentScanByKeyPolicyT,
-          typename KeysInputIteratorT,
-          typename ValuesInputIteratorT,
-          typename ValuesOutputIteratorT,
-          typename EqualityOp,
-          typename ScanOpT,
-          typename InitValueT,
-          typename OffsetT,
-          typename AccumT>
+template <class AgentScanByKeyPolicyT,
+          class KeysInputIteratorT,
+          class ValuesInputIteratorT,
+          class ValuesOutputIteratorT,
+          class EqualityOp,
+          class ScanOpT,
+          class InitValueT,
+          class OffsetT,
+          class AccumT>
 struct AgentScanByKey
 {
   //---------------------------------------------------------------------

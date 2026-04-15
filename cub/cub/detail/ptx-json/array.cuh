@@ -7,7 +7,7 @@
 
 namespace ptx_json
 {
-template <typename T>
+template <class T>
 concept not_a_keyed_value = !is_keyed_value<T>::value;
 
 template <auto... KV>
@@ -31,7 +31,7 @@ struct array<First, NKVs...>
   }
 };
 
-template <typename T>
+template <class T>
 struct is_array : cuda::std::false_type
 {};
 

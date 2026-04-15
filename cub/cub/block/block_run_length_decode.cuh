@@ -122,13 +122,13 @@ CUB_NAMESPACE_BEGIN
 //!
 //! @tparam BlockDimZ
 //!   The thread block length in threads along the Z dimension
-template <typename ItemT,
+template <class ItemT,
           int BlockDimX,
           int RunsPerThread,
           int DecodedItemsPerThread,
-          typename DecodedOffsetT = uint32_t,
-          int BlockDimY           = 1,
-          int BlockDimZ           = 1>
+          class DecodedOffsetT = uint32_t,
+          int BlockDimY        = 1,
+          int BlockDimZ        = 1>
 class BlockRunLengthDecode
 {
   //---------------------------------------------------------------------
@@ -190,7 +190,7 @@ public:
   //! .. versionadded:: 2.2.0
   //!    First appears in CUDA Toolkit 12.3.
   //! @endrst
-  template <typename RunLengthT, typename TotalDecodedSizeT>
+  template <class RunLengthT, class TotalDecodedSizeT>
   _CCCL_DEVICE _CCCL_FORCEINLINE BlockRunLengthDecode(
     TempStorage& temp_storage,
     ItemT (&run_values)[RunsPerThread],
@@ -210,7 +210,7 @@ public:
   //! .. versionadded:: 2.2.0
   //!    First appears in CUDA Toolkit 12.3.
   //! @endrst
-  template <typename UserRunOffsetT>
+  template <class UserRunOffsetT>
   _CCCL_DEVICE _CCCL_FORCEINLINE BlockRunLengthDecode(
     TempStorage& temp_storage, ItemT (&run_values)[RunsPerThread], UserRunOffsetT (&run_offsets)[RunsPerThread])
       : temp_storage(temp_storage.Alias())
@@ -227,7 +227,7 @@ public:
    *    First appears in CUDA Toolkit 12.3.
    * @endrst
    */
-  template <typename RunLengthT, typename TotalDecodedSizeT>
+  template <class RunLengthT, class TotalDecodedSizeT>
   _CCCL_DEVICE _CCCL_FORCEINLINE BlockRunLengthDecode(
     ItemT (&run_values)[RunsPerThread], RunLengthT (&run_lengths)[RunsPerThread], TotalDecodedSizeT& total_decoded_size)
       : temp_storage(PrivateStorage())
@@ -244,7 +244,7 @@ public:
    *    First appears in CUDA Toolkit 12.3.
    * @endrst
    */
-  template <typename UserRunOffsetT>
+  template <class UserRunOffsetT>
   _CCCL_DEVICE _CCCL_FORCEINLINE
   BlockRunLengthDecode(ItemT (&run_values)[RunsPerThread], UserRunOffsetT (&run_offsets)[RunsPerThread])
       : temp_storage(PrivateStorage())
@@ -293,7 +293,7 @@ private:
     return lower_bound;
   }
 
-  template <typename RunOffsetT>
+  template <class RunOffsetT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   InitWithRunOffsets(ItemT (&run_values)[RunsPerThread], RunOffsetT (&run_offsets)[RunsPerThread])
   {
@@ -312,7 +312,7 @@ private:
     __syncthreads();
   }
 
-  template <typename RunLengthT, typename TotalDecodedSizeT>
+  template <class RunLengthT, class TotalDecodedSizeT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void InitWithRunLengths(
     ItemT (&run_values)[RunsPerThread], RunLengthT (&run_lengths)[RunsPerThread], TotalDecodedSizeT& total_decoded_size)
   {
@@ -357,7 +357,7 @@ public:
    * \param[in] from_decoded_offset If invoked with from_decoded_offset that is larger than total_decoded_size results
    * in undefined behavior.
    */
-  template <typename RelativeOffsetT>
+  template <class RelativeOffsetT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void RunLengthDecode(
     ItemT (&decoded_items)[DecodedItemsPerThread],
     RelativeOffsetT (&item_offsets)[DecodedItemsPerThread],

@@ -32,7 +32,7 @@ namespace detail
  * Generic Array-like to Array Conversion
  **********************************************************************************************************************/
 
-template <typename CastType, typename Input, ::cuda::std::size_t... i>
+template <class CastType, class Input, ::cuda::std::size_t... i>
 [[nodiscard]] _CCCL_DEVICE _CCCL_FORCEINLINE ::cuda::std::array<CastType, static_size_v<Input>>
 to_array_impl(const Input& input, ::cuda::std::index_sequence<i...>)
 {
@@ -40,7 +40,7 @@ to_array_impl(const Input& input, ::cuda::std::index_sequence<i...>)
   return ArrayType{static_cast<CastType>(input[i])...};
 }
 
-template <typename CastType = void, typename Input>
+template <class CastType = void, class Input>
 [[nodiscard]] _CCCL_DEVICE _CCCL_FORCEINLINE ::cuda::std::array<CastType, static_size_v<Input>>
 to_array(const Input& input)
 {

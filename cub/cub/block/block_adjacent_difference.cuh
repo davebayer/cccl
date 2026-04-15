@@ -97,7 +97,7 @@ CUB_NAMESPACE_BEGIN
 //! ``{ [4,-2,-1,0], [0,0,0,0], [1,1,0,0], [0,1,-3,3], ... }``.
 //!
 //! @endrst
-template <typename T, int BlockDimX, int BlockDimY = 1, int BlockDimZ = 1>
+template <class T, int BlockDimX, int BlockDimY = 1, int BlockDimZ = 1>
 class BlockAdjacentDifference
 {
 private:
@@ -119,7 +119,7 @@ private:
   }
 
   /// Specialization for when FlagOp has third index param
-  template <typename FlagOp, bool HAS_PARAM = BinaryOpHasIdxParam<T, FlagOp>::value>
+  template <class FlagOp, bool HAS_PARAM = BinaryOpHasIdxParam<T, FlagOp>::value>
   struct ApplyOp
   {
     // Apply flag operator
@@ -130,7 +130,7 @@ private:
   };
 
   /// Specialization for when FlagOp does not have a third index param
-  template <typename FlagOp>
+  template <class FlagOp>
   struct ApplyOp<FlagOp, false>
   {
     // Apply flag operator

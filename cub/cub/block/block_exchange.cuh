@@ -117,7 +117,7 @@ CUB_NAMESPACE_BEGIN
 //! @tparam BlockDimZ
 //!    **[optional]** The thread block length in threads along the Z dimension (default: 1)
 //!
-template <typename T, int BlockDimX, int ItemsPerThread, bool WarpTimeSlicing = false, int BlockDimY = 1, int BlockDimZ = 1>
+template <class T, int BlockDimX, int ItemsPerThread, bool WarpTimeSlicing = false, int BlockDimY = 1, int BlockDimZ = 1>
 class BlockExchange
 {
   static constexpr int BLOCK_THREADS = BlockDimX * BlockDimY * BlockDimZ; ///< The thread block size in threads
@@ -173,7 +173,7 @@ private:
   //!
   //! @param[out] output_items
   //!   Items to exchange, converting between **blocked** and **striped** arrangements.
-  template <typename OutputT>
+  template <class OutputT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void BlockedToStriped(
     const T (&input_items)[ItemsPerThread],
     OutputT (&output_items)[ItemsPerThread],
@@ -212,7 +212,7 @@ private:
   //!
   //! @param[out] output_items
   //!   Items to exchange, converting between **blocked** and **striped** arrangements.
-  template <typename OutputT>
+  template <class OutputT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void BlockedToStriped(
     const T (&input_items)[ItemsPerThread],
     OutputT (&output_items)[ItemsPerThread],
@@ -282,7 +282,7 @@ private:
   //!
   //! @param[out] output_items
   //!   Items to exchange, converting between **blocked** and **striped** arrangements.
-  template <typename OutputT>
+  template <class OutputT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void BlockedToWarpStriped(
     const T (&input_items)[ItemsPerThread],
     OutputT (&output_items)[ItemsPerThread],
@@ -321,7 +321,7 @@ private:
   //!
   //! @param[out] output_items
   //!   Items to exchange, converting between **blocked** and **striped** arrangements.
-  template <typename OutputT>
+  template <class OutputT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void BlockedToWarpStriped(
     const T (&input_items)[ItemsPerThread],
     OutputT (&output_items)[ItemsPerThread],
@@ -396,7 +396,7 @@ private:
   //!
   //! @param[out] output_items
   //!   Items to exchange, converting between **blocked** and **striped** arrangements.
-  template <typename OutputT>
+  template <class OutputT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void StripedToBlocked(
     const T (&input_items)[ItemsPerThread],
     OutputT (&output_items)[ItemsPerThread],
@@ -436,7 +436,7 @@ private:
   //!
   //! @param[out] output_items
   //!   Items to exchange, converting between **blocked** and **striped** arrangements.
-  template <typename OutputT>
+  template <class OutputT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void StripedToBlocked(
     const T (&input_items)[ItemsPerThread],
     OutputT (&output_items)[ItemsPerThread],
@@ -507,7 +507,7 @@ private:
   //!
   //! @param[out] output_items
   //!   Items to exchange, converting between **blocked** and **striped** arrangements.
-  template <typename OutputT>
+  template <class OutputT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void WarpStripedToBlocked(
     const T (&input_items)[ItemsPerThread],
     OutputT (&output_items)[ItemsPerThread],
@@ -546,7 +546,7 @@ private:
   //!
   //! @param[out] output_items
   //!   Items to exchange, converting between **blocked** and **striped** arrangements.
-  template <typename OutputT>
+  template <class OutputT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void WarpStripedToBlocked(
     const T (&input_items)[ItemsPerThread],
     OutputT (&output_items)[ItemsPerThread],
@@ -596,7 +596,7 @@ private:
   //!
   //! @param[in] ranks
   //!   Corresponding scatter ranks
-  template <typename OutputT, typename OffsetT>
+  template <class OutputT, class OffsetT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ScatterToBlocked(
     const T (&input_items)[ItemsPerThread],
     OutputT (&output_items)[ItemsPerThread],
@@ -638,7 +638,7 @@ private:
   //!
   //! @param[in] ranks
   //!   Corresponding scatter ranks
-  template <typename OutputT, typename OffsetT>
+  template <class OutputT, class OffsetT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ScatterToBlocked(
     const T (&input_items)[ItemsPerThread],
     OutputT (&output_items)[ItemsPerThread],
@@ -703,7 +703,7 @@ private:
   //!
   //! @param[in] ranks
   //!   Corresponding scatter ranks
-  template <typename OutputT, typename OffsetT>
+  template <class OutputT, class OffsetT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ScatterToStriped(
     const T (&input_items)[ItemsPerThread],
     OutputT (&output_items)[ItemsPerThread],
@@ -745,7 +745,7 @@ private:
   //!
   //! @param[in] ranks
   //!   Corresponding scatter ranks
-  template <typename OutputT, typename OffsetT>
+  template <class OutputT, class OffsetT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ScatterToStriped(
     const T (&input_items)[ItemsPerThread],
     OutputT (&output_items)[ItemsPerThread],
@@ -882,7 +882,7 @@ public:
   //!
   //! @param[out] output_items
   //!   Items from exchange, converting between **striped** and **blocked** arrangements.
-  template <typename OutputT>
+  template <class OutputT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   StripedToBlocked(const T (&input_items)[ItemsPerThread], OutputT (&output_items)[ItemsPerThread])
   {
@@ -937,7 +937,7 @@ public:
   //!
   //! @param[out] output_items
   //!   Items from exchange, converting between **striped** and **blocked** arrangements.
-  template <typename OutputT>
+  template <class OutputT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   BlockedToStriped(const T (&input_items)[ItemsPerThread], OutputT (&output_items)[ItemsPerThread])
   {
@@ -992,7 +992,7 @@ public:
   //!
   //! @param[out] output_items
   //!   Items from exchange, converting between **striped** and **blocked** arrangements.
-  template <typename OutputT>
+  template <class OutputT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   WarpStripedToBlocked(const T (&input_items)[ItemsPerThread], OutputT (&output_items)[ItemsPerThread])
   {
@@ -1050,7 +1050,7 @@ public:
   //!
   //! @param[out] output_items
   //!   Items from exchange, converting between **striped** and **blocked** arrangements.
-  template <typename OutputT>
+  template <class OutputT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   BlockedToWarpStriped(const T (&input_items)[ItemsPerThread], OutputT (&output_items)[ItemsPerThread])
   {
@@ -1081,7 +1081,7 @@ public:
   //!
   //! @param[in] ranks
   //!   Corresponding scatter ranks
-  template <typename OutputT, typename OffsetT>
+  template <class OutputT, class OffsetT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ScatterToBlocked(
     const T (&input_items)[ItemsPerThread], OutputT (&output_items)[ItemsPerThread], OffsetT (&ranks)[ItemsPerThread])
   {
@@ -1109,7 +1109,7 @@ public:
   //!
   //! @param[in] ranks
   //!   Corresponding scatter ranks
-  template <typename OutputT, typename OffsetT>
+  template <class OutputT, class OffsetT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ScatterToStriped(
     const T (&input_items)[ItemsPerThread], OutputT (&output_items)[ItemsPerThread], OffsetT (&ranks)[ItemsPerThread])
   {
@@ -1137,7 +1137,7 @@ public:
   //!
   //! @param[in] ranks
   //!   Corresponding scatter ranks
-  template <typename OutputT, typename OffsetT>
+  template <class OutputT, class OffsetT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ScatterToStripedGuarded(
     const T (&input_items)[ItemsPerThread], OutputT (&output_items)[ItemsPerThread], OffsetT (&ranks)[ItemsPerThread])
   {
@@ -1196,7 +1196,7 @@ public:
   //!
   //! @param[in] is_valid
   //!   Corresponding flag denoting item validity
-  template <typename OutputT, typename OffsetT, typename ValidFlag>
+  template <class OutputT, class OffsetT, class ValidFlag>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ScatterToStripedFlagged(
     const T (&input_items)[ItemsPerThread],
     OutputT (&output_items)[ItemsPerThread],
@@ -1268,7 +1268,7 @@ public:
   ///
   /// @param[in] ranks
   ///   Corresponding scatter ranks
-  template <typename OffsetT>
+  template <class OffsetT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ScatterToBlocked(T (&items)[ItemsPerThread], OffsetT (&ranks)[ItemsPerThread])
   {
     ScatterToBlocked(items, items, ranks);
@@ -1278,7 +1278,7 @@ public:
   ///   Items to exchange, converting between **striped** and **blocked** arrangements.
   /// @param[in] ranks
   ///   Corresponding scatter ranks
-  template <typename OffsetT>
+  template <class OffsetT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ScatterToStriped(T (&items)[ItemsPerThread], OffsetT (&ranks)[ItemsPerThread])
   {
     ScatterToStriped(items, items, ranks);
@@ -1288,7 +1288,7 @@ public:
   ///   Items to exchange, converting between **striped** and **blocked** arrangements.
   /// @param[in] ranks
   ///   Corresponding scatter ranks
-  template <typename OffsetT>
+  template <class OffsetT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   ScatterToStripedGuarded(T (&items)[ItemsPerThread], OffsetT (&ranks)[ItemsPerThread])
   {
@@ -1301,7 +1301,7 @@ public:
   ///   Corresponding scatter ranks
   /// @param[in] is_valid
   ///   Corresponding flag denoting item validity
-  template <typename OffsetT, typename ValidFlag>
+  template <class OffsetT, class ValidFlag>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ScatterToStripedFlagged(
     T (&items)[ItemsPerThread], OffsetT (&ranks)[ItemsPerThread], ValidFlag (&is_valid)[ItemsPerThread])
   {

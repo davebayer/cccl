@@ -156,7 +156,7 @@ enum BlockHistogramAlgorithm
 //! @tparam BlockDimZ
 //!   **[optional]** The thread block length in threads along the Z dimension (default: 1)
 //!
-template <typename T,
+template <class T,
           int BlockDimX,
           int ItemsPerThread,
           int Bins,
@@ -272,7 +272,7 @@ public:
   //!
   //! @tparam CounterT
   //!   **[inferred]** Histogram counter type
-  template <typename CounterT>
+  template <class CounterT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void InitHistogram(CounterT histogram[Bins])
   {
     // Initialize histogram bin counts to zeros
@@ -338,7 +338,7 @@ public:
   //!
   //! @param[out] histogram
   //!   Reference to shared/device-accessible memory histogram
-  template <typename CounterT>
+  template <class CounterT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void Histogram(T (&items)[ItemsPerThread], CounterT histogram[Bins])
   {
     // Initialize histogram bin counts to zeros
@@ -402,7 +402,7 @@ public:
   //!
   //! @param[out] histogram
   //!   Reference to shared/device-accessible memory histogram
-  template <typename CounterT>
+  template <class CounterT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void Composite(T (&items)[ItemsPerThread], CounterT histogram[Bins])
   {
     InternalBlockHistogram(temp_storage).Composite(items, histogram);

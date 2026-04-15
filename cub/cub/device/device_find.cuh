@@ -90,7 +90,7 @@ struct DeviceFind
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT, typename OutputIteratorT, typename ScanOpT, typename NumItemsT>
+  template <class InputIteratorT, class OutputIteratorT, class ScanOpT, class NumItemsT>
   CUB_RUNTIME_FUNCTION static cudaError_t FindIf(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -177,12 +177,12 @@ struct DeviceFind
   //! [Random Access Iterator]: https://en.cppreference.com/w/cpp/iterator/random_access_iterator
   //! [Strict Weak Ordering]: https://en.cppreference.com/w/cpp/concepts/strict_weak_order
   //! [Relation]: https://en.cppreference.com/w/cpp/concepts/relation
-  template <typename RangeIteratorT,
-            typename RangeNumItemsT,
-            typename ValuesIteratorT,
-            typename ValuesNumItemsT,
-            typename OutputIteratorT,
-            typename CompareOpT>
+  template <class RangeIteratorT,
+            class RangeNumItemsT,
+            class ValuesIteratorT,
+            class ValuesNumItemsT,
+            class OutputIteratorT,
+            class CompareOpT>
   CUB_RUNTIME_FUNCTION static cudaError_t LowerBound(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -279,12 +279,12 @@ struct DeviceFind
   //! [Random Access Iterator]: https://en.cppreference.com/w/cpp/iterator/random_access_iterator
   //! [Strict Weak Ordering]: https://en.cppreference.com/w/cpp/concepts/strict_weak_order
   //! [Relation]: https://en.cppreference.com/w/cpp/concepts/relation
-  template <typename RangeIteratorT,
-            typename RangeNumItemsT,
-            typename ValuesIteratorT,
-            typename ValuesNumItemsT,
-            typename OutputIteratorT,
-            typename CompareOpT>
+  template <class RangeIteratorT,
+            class RangeNumItemsT,
+            class ValuesIteratorT,
+            class ValuesNumItemsT,
+            class OutputIteratorT,
+            class CompareOpT>
   CUB_RUNTIME_FUNCTION static cudaError_t UpperBound(
     void* d_temp_storage,
     size_t& temp_storage_bytes,

@@ -57,7 +57,7 @@ CUB_NAMESPACE_BEGIN
 //!
 //! @param[in] items
 //!   Data to store
-template <typename T, int ItemsPerThread, typename OutputIteratorT>
+template <class T, int ItemsPerThread, class OutputIteratorT>
 _CCCL_DEVICE _CCCL_FORCEINLINE void
 StoreDirectBlocked(int linear_tid, OutputIteratorT block_itr, T (&items)[ItemsPerThread])
 {
@@ -102,7 +102,7 @@ StoreDirectBlocked(int linear_tid, OutputIteratorT block_itr, T (&items)[ItemsPe
 //!
 //! @param[in] valid_items
 //!   Number of valid items to write
-template <typename T, int ItemsPerThread, typename OutputIteratorT>
+template <class T, int ItemsPerThread, typename OutputIteratorT>
 _CCCL_DEVICE _CCCL_FORCEINLINE void
 StoreDirectBlocked(int linear_tid, OutputIteratorT block_itr, T (&items)[ItemsPerThread], int valid_items)
 {
@@ -154,7 +154,7 @@ StoreDirectBlocked(int linear_tid, OutputIteratorT block_itr, T (&items)[ItemsPe
 //!
 //! @param[in] items
 //!   Data to store
-template <typename T, int ItemsPerThread>
+template <class T, int ItemsPerThread>
 _CCCL_DEVICE _CCCL_FORCEINLINE void
 StoreDirectBlockedVectorized(int linear_tid, T* block_ptr, T (&items)[ItemsPerThread])
 {
@@ -334,7 +334,7 @@ StoreDirectStriped(int linear_tid, OutputIteratorT block_itr, T (&items)[ItemsPe
 //!
 //! @param[out] items
 //!   Data to load
-template <typename T, int ItemsPerThread, typename OutputIteratorT>
+template <class T, int ItemsPerThread, class OutputIteratorT>
 _CCCL_DEVICE _CCCL_FORCEINLINE void
 StoreDirectWarpStriped(int linear_tid, OutputIteratorT block_itr, T (&items)[ItemsPerThread])
 {
@@ -388,7 +388,7 @@ StoreDirectWarpStriped(int linear_tid, OutputIteratorT block_itr, T (&items)[Ite
 //!
 //! @param[in] valid_items
 //!   Number of valid items to write
-template <typename T, int ItemsPerThread, typename OutputIteratorT>
+template <class T, int ItemsPerThread, class OutputIteratorT>
 _CCCL_DEVICE _CCCL_FORCEINLINE void
 StoreDirectWarpStriped(int linear_tid, OutputIteratorT block_itr, T (&items)[ItemsPerThread], int valid_items)
 {
@@ -663,7 +663,7 @@ inline ::std::ostream& operator<<(::std::ostream& os, BlockStoreAlgorithm algo)
 //! @tparam BlockDimZ
 //!   **[optional]** The thread block length in threads along the Z dimension (default: 1)
 //!
-template <typename T,
+template <class T,
           int BlockDimX,
           int ItemsPerThread,
           BlockStoreAlgorithm Algorithm = BLOCK_STORE_DIRECT,
@@ -801,7 +801,7 @@ public:
   //!
   //! @param[in] items
   //!   Data to store
-  template <typename OutputIteratorT>
+  template <class OutputIteratorT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void Store(OutputIteratorT block_itr, T (&items)[ItemsPerThread])
   {
     if constexpr (Algorithm == BLOCK_STORE_DIRECT)
@@ -893,7 +893,7 @@ public:
   //!
   //! @param[in] valid_items
   //!   Number of valid items to write
-  template <typename OutputIteratorT>
+  template <class OutputIteratorT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void Store(OutputIteratorT block_itr, T (&items)[ItemsPerThread], int valid_items)
   {
     if constexpr (Algorithm == BLOCK_STORE_DIRECT)

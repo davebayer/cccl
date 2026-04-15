@@ -38,15 +38,15 @@ struct agent_batched_topk_worker_per_segment_policy
   static constexpr BlockStoreAlgorithm store_algorithm = StoreAlgorithm;
 };
 
-template <typename ActivePolicyT,
-          typename KeyInputItItT,
-          typename KeyOutputItItT,
-          typename ValueInputItItT,
-          typename ValueOutputItItT,
-          typename SegmentSizeParameterT,
-          typename KParameterT,
-          typename SelectDirectionParameterT,
-          typename NumSegmentsParameterT>
+template <class ActivePolicyT,
+          class KeyInputItItT,
+          class KeyOutputItItT,
+          class ValueInputItItT,
+          class ValueOutputItItT,
+          class SegmentSizeParameterT,
+          class KParameterT,
+          class SelectDirectionParameterT,
+          class NumSegmentsParameterT>
 struct agent_batched_topk_worker_per_segment
 {
   // -------------------------------------------------------------------------

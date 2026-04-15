@@ -86,7 +86,7 @@ namespace detail::sub_warp_merge_sort
  * @tparam OffsetT
  *   Signed integer type for global offsets
  */
-template <bool IS_DESCENDING, typename PolicyT, typename KeyT, typename ValueT, typename OffsetT>
+template <bool IS_DESCENDING, class PolicyT, class KeyT, class ValueT, class OffsetT>
 class AgentSubWarpSort
 {
   using traits           = detail::radix::traits_t<KeyT>;
@@ -94,7 +94,7 @@ class AgentSubWarpSort
 
   struct BinaryOpT
   {
-    template <typename T>
+    template <class T>
     _CCCL_DEVICE bool operator()(T lhs, T rhs) const noexcept
     {
       if constexpr (IS_DESCENDING)
@@ -159,7 +159,7 @@ class AgentSubWarpSort
   }
 #endif // _CCCL_HAS_NVBF16()
 
-  template <typename T>
+  template <class T>
   _CCCL_DEVICE static bool equal(T lhs, T rhs)
   {
     return lhs == rhs;
@@ -271,7 +271,7 @@ private:
    * This method implements a shortcut for sorting less than three items.
    * Only the first thread of a virtual warp is used for soring.
    */
-  template <typename CompareOpT>
+  template <class CompareOpT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ShortCircuit(
     unsigned int linear_tid,
     OffsetT segment_size,

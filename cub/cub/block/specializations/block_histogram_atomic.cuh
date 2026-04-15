@@ -46,7 +46,7 @@ struct BlockHistogramAtomic
    * @param[out] histogram
    *   Reference to shared/device-accessible memory histogram
    */
-  template <typename T, typename CounterT, int ITEMS_PER_THREAD>
+  template <class T, class CounterT, int ITEMS_PER_THREAD>
   _CCCL_DEVICE _CCCL_FORCEINLINE void Composite(T (&items)[ITEMS_PER_THREAD], CounterT histogram[Bins])
   {
     // Update histogram

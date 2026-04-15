@@ -109,13 +109,13 @@ namespace detail::unique_by_key
  * @tparam OffsetT
  *   Signed integer type for global offsets
  */
-template <typename AgentUniqueByKeyPolicyT,
-          typename KeyInputIteratorT,
-          typename ValueInputIteratorT,
-          typename KeyOutputIteratorT,
-          typename ValueOutputIteratorT,
-          typename EqualityOpT,
-          typename OffsetT>
+template <class AgentUniqueByKeyPolicyT,
+          class KeyInputIteratorT,
+          class ValueInputIteratorT,
+          class KeyOutputIteratorT,
+          class ValueOutputIteratorT,
+          class EqualityOpT,
+          class OffsetT>
 struct AgentUniqueByKey
 {
   //---------------------------------------------------------------------
@@ -252,7 +252,7 @@ struct AgentUniqueByKey
   //---------------------------------------------------------------------
   // Scatter utility methods
   //---------------------------------------------------------------------
-  template <typename Tag, typename OutputIt, typename T>
+  template <class Tag, class OutputIt, class T>
   _CCCL_DEVICE _CCCL_FORCEINLINE void Scatter(
     Tag tag,
     OutputIt items_out,
@@ -569,7 +569,7 @@ struct AgentUniqueByKey
    *   Output iterator type for recording number of items selection_flags
    *
    */
-  template <typename NumSelectedIteratorT>
+  template <class NumSelectedIteratorT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   ConsumeRange(int num_tiles, ScanTileStateT& tile_state, NumSelectedIteratorT d_num_selected_out)
   {

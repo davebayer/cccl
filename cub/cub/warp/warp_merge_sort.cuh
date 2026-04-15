@@ -98,7 +98,7 @@ CUB_NAMESPACE_BEGIN
 //!   <b>[optional]</b> Value type (default: cub::NullType, which indicates a
 //!   keys-only sort)
 //!
-template <typename KeyT, int ITEMS_PER_THREAD, int LOGICAL_WARP_THREADS = detail::warp_threads, typename ValueT = NullType>
+template <class KeyT, int ITEMS_PER_THREAD, int LOGICAL_WARP_THREADS = detail::warp_threads, class ValueT = NullType>
 class WarpMergeSort
     : public BlockMergeSortStrategy<KeyT,
                                     ValueT,

@@ -40,14 +40,14 @@
 CUB_NAMESPACE_BEGIN
 namespace detail
 {
-template <typename T, typename... TArgs>
+template <class T, class... TArgs>
 inline constexpr bool is_one_of_v = (::cuda::std::is_same_v<T, TArgs> || ...);
 
-template <typename T, typename V, typename = void>
+template <class T, class V, class = void>
 struct has_binary_call_operator : ::cuda::std::false_type
 {};
 
-template <typename T, typename V>
+template <class T, class V>
 struct has_binary_call_operator<
   T,
   V,
@@ -59,19 +59,19 @@ struct has_binary_call_operator<
  * Array-like type traits
  **********************************************************************************************************************/
 
-template <typename T>
+template <class T>
 inline constexpr bool is_fixed_size_random_access_range_v = false;
 
-template <typename T, size_t N>
+template <class T, size_t N>
 inline constexpr bool is_fixed_size_random_access_range_v<T[N]> = true;
 
-template <typename T, size_t N>
+template <class T, size_t N>
 inline constexpr bool is_fixed_size_random_access_range_v<::cuda::std::array<T, N>> = true;
 
-template <typename T, size_t N>
+template <class T, size_t N>
 inline constexpr bool is_fixed_size_random_access_range_v<::cuda::std::span<T, N>> = N != ::cuda::std::dynamic_extent;
 
-template <typename T, typename E, typename L, typename A>
+template <class T, class E, class L, class A>
 inline constexpr bool is_fixed_size_random_access_range_v<::cuda::std::mdspan<T, E, L, A>> =
   E::rank == 1 && E::rank_dynamic() == 0;
 
@@ -79,24 +79,24 @@ inline constexpr bool is_fixed_size_random_access_range_v<::cuda::std::mdspan<T,
  * static_size: a type trait that returns the number of elements in an Array-like type
  **********************************************************************************************************************/
 
-template <typename T>
+template <class T>
 inline constexpr int static_size_v = ::cuda::std::enable_if_t<::cuda::std::__always_false_v<T>>{};
 
-template <typename T, size_t N>
+template <class T, size_t N>
 inline constexpr int static_size_v<T[N]> = N;
 
-template <typename T, size_t N>
+template <class T, size_t N>
 inline constexpr int static_size_v<::cuda::std::array<T, N>> = N;
 
-template <typename T, size_t N>
+template <class T, size_t N>
 inline constexpr int static_size_v<::cuda::std::span<T, N>> =
   ::cuda::std::enable_if_t<N != ::cuda::std::dynamic_extent, int>{N};
 
-template <typename T, typename E, typename L, typename A>
+template <class T, class E, class L, class A>
 inline constexpr int static_size_v<::cuda::std::mdspan<T, E, L, A>> =
   ::cuda::std::enable_if_t<E::rank == 1 && E::rank_dynamic() == 0, int>{E::static_extent(0)};
 
-template <typename T>
+template <class T>
 using implicit_prom_t = decltype(+T{});
 
 /***********************************************************************************************************************
@@ -104,10 +104,10 @@ using implicit_prom_t = decltype(+T{});
  **********************************************************************************************************************/
 // half
 
-template <typename>
+template <class>
 inline constexpr bool is_half_impl_v = false;
 
-template <typename>
+template <class>
 inline constexpr bool is_half2_impl_v = false;
 
 #if _CCCL_HAS_NVFP16()
@@ -120,22 +120,22 @@ inline constexpr bool is_half2_impl_v<__half2> = true;
 
 #endif // _CCCL_HAS_NVFP16
 
-template <typename T>
+template <class T>
 inline constexpr bool is_half_v = is_half_impl_v<::cuda::std::remove_cv_t<T>>;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_half2_v = is_half2_impl_v<::cuda::std::remove_cv_t<T>>;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_any_half_v = is_half_impl_v<T> || is_half2_impl_v<T>;
 
 //----------------------------------------------------------------------------------------------------------------------
 // bfloat16
 
-template <typename>
+template <class>
 inline constexpr bool is_bfloat16_impl_v = false;
 
-template <typename>
+template <class>
 inline constexpr bool is_bfloat162_impl_v = false;
 
 #if _CCCL_HAS_NVBF16()
@@ -148,19 +148,19 @@ inline constexpr bool is_bfloat162_impl_v<__nv_bfloat162> = true;
 
 #endif // _CCCL_HAS_NVBF16
 
-template <typename T>
+template <class T>
 inline constexpr bool is_bfloat16_v = is_bfloat16_impl_v<::cuda::std::remove_cv_t<T>>;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_bfloat162_v = is_bfloat162_impl_v<::cuda::std::remove_cv_t<T>>;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_any_bfloat16_v = is_bfloat16_v<T> || is_bfloat162_v<T>;
 
 //----------------------------------------------------------------------------------------------------------------------
 // short2/ushort2
 
-template <typename T>
+template <class T>
 inline constexpr bool is_any_short2_impl_v = false;
 
 template <>
@@ -169,14 +169,14 @@ inline constexpr bool is_any_short2_impl_v<short2> = true;
 template <>
 inline constexpr bool is_any_short2_impl_v<ushort2> = true;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_any_short2_v = is_any_short2_impl_v<::cuda::std::remove_cv_t<T>>;
 
 //----------------------------------------------------------------------------------------------------------------------
 
 // - promote small integer types to their corresponding 32-bit promotion type
 // - address the incompatibility between linux/windows for int/long
-template <typename T>
+template <class T>
 using signed_promotion_t = ::cuda::std::conditional_t<
   ::cuda::std::__cccl_is_signed_integer_v<T> && sizeof(T) <= sizeof(int),
   int,

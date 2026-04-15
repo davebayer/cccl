@@ -24,7 +24,7 @@ CUB_NAMESPACE_BEGIN
 namespace detail
 {
 // makes a functor that gets the policy for ArchId from PolicySelector when called
-template <typename PolicySelector, ::cuda::arch_id ArchId>
+template <class PolicySelector, ::cuda::arch_id ArchId>
 struct policy_getter : PolicySelector
 {
   _CCCL_API _CCCL_FORCEINLINE constexpr auto operator()() const
@@ -35,7 +35,7 @@ struct policy_getter : PolicySelector
 
 #if !defined(CUB_DEFINE_RUNTIME_POLICIES) && !_CCCL_COMPILER(NVRTC)
 #  if _CCCL_STD_VER < 2020
-template <typename PolicySelector, size_t N>
+template <class PolicySelector, size_t N>
 _CCCL_API constexpr auto find_lowest_arch_with_same_policy(
   PolicySelector policy_selector, size_t i, const ::cuda::std::array<::cuda::arch_id, N>& all_arches) -> ::cuda::arch_id
 {
@@ -116,7 +116,7 @@ CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t dispatch_to_arch_list(
   return e;
 }
 
-template <typename PolicySelector, typename FunctorT, size_t... Is>
+template <class PolicySelector, class FunctorT, size_t... Is>
 CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t dispatch_all_arches_helper(
   PolicySelector policy_selector, ::cuda::arch_id device_arch, FunctorT&& f, ::cuda::std::index_sequence<Is...> seq)
 {
@@ -128,7 +128,7 @@ CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t dispatch_all_arches_helper(
 //! at compile-time (if possible), and then calls the appropriate instantiation based on a runtime GPU architecture.
 //! Depending on the used compiler, C++ standard, and available macros, a different number of instantiations may be
 //! produced.
-template <typename PolicySelector, typename F>
+template <class PolicySelector, class F>
 CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t
 dispatch_arch(PolicySelector policy_selector, ::cuda::arch_id device_arch, F&& f)
 {
@@ -158,7 +158,7 @@ dispatch_arch(PolicySelector policy_selector, ::cuda::arch_id device_arch, F&& f
 
 // if we are compiling CCCL.C with runtime policies, we cannot query the policy hub at compile time
 _CCCL_EXEC_CHECK_DISABLE
-template <typename PolicySelector, typename F>
+template <class PolicySelector, class F>
 _CCCL_API _CCCL_FORCEINLINE cudaError_t dispatch_arch(PolicySelector policy_selector, ::cuda::arch_id device_arch, F&& f)
 {
   return f([&] {

@@ -32,7 +32,7 @@ struct CudaDriverLauncher
   ::CUstream stream;
   bool dependent_launch;
 
-  template <typename... Args>
+  template <class... Args>
   _CCCL_HIDE_FROM_ABI ::cudaError_t doit(::CUkernel kernel, Args const&... args) const
   {
     void* kernel_args[] = {const_cast<void*>(static_cast<void const*>(&args))...};

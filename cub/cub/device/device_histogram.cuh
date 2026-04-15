@@ -158,7 +158,7 @@ struct DeviceHistogram
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename SampleIteratorT, typename CounterT, typename LevelT, typename OffsetT>
+  template <class SampleIteratorT, class CounterT, class LevelT, class OffsetT>
   CUB_RUNTIME_FUNCTION static cudaError_t HistogramEven(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -312,7 +312,7 @@ struct DeviceHistogram
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename SampleIteratorT, typename CounterT, typename LevelT, typename OffsetT>
+  template <class SampleIteratorT, class CounterT, class LevelT, class OffsetT>
   CUB_RUNTIME_FUNCTION static cudaError_t HistogramEven(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -914,7 +914,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename SampleIteratorT, typename CounterT, typename LevelT, typename OffsetT>
+  template <class SampleIteratorT, class CounterT, class LevelT, class OffsetT>
   CUB_RUNTIME_FUNCTION static cudaError_t HistogramRange(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1055,7 +1055,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename SampleIteratorT, typename CounterT, typename LevelT, typename OffsetT>
+  template <class SampleIteratorT, class CounterT, class LevelT, class OffsetT>
   CUB_RUNTIME_FUNCTION static cudaError_t HistogramRange(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1595,11 +1595,7 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename SampleIteratorT,
-            typename CounterT,
-            typename LevelT,
-            typename OffsetT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class SampleIteratorT, class CounterT, class LevelT, class OffsetT, class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t HistogramEven(
     SampleIteratorT d_samples,
     CounterT* d_histogram,
@@ -1710,11 +1706,7 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename SampleIteratorT,
-            typename CounterT,
-            typename LevelT,
-            typename OffsetT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class SampleIteratorT, class CounterT, class LevelT, class OffsetT, class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t HistogramEven(
     SampleIteratorT d_samples,
     CounterT* d_histogram,
@@ -2097,11 +2089,7 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename SampleIteratorT,
-            typename CounterT,
-            typename LevelT,
-            typename OffsetT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class SampleIteratorT, class CounterT, class LevelT, class OffsetT, class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t HistogramRange(
     SampleIteratorT d_samples,
     CounterT* d_histogram,
@@ -2198,11 +2186,7 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename SampleIteratorT,
-            typename CounterT,
-            typename LevelT,
-            typename OffsetT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class SampleIteratorT, class CounterT, class LevelT, class OffsetT, class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t HistogramRange(
     SampleIteratorT d_samples,
     CounterT* d_histogram,

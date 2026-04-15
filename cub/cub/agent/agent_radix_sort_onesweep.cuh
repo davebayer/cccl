@@ -119,13 +119,13 @@ CUB_DETAIL_POLICY_WRAPPER_DEFINE(
 
 namespace detail::radix_sort
 {
-template <typename AgentRadixSortOnesweepPolicy,
+template <class AgentRadixSortOnesweepPolicy,
           bool IS_DESCENDING,
-          typename KeyT,
-          typename ValueT,
-          typename OffsetT,
-          typename PortionOffsetT,
-          typename DecomposerT = identity_decomposer_t>
+          class KeyT,
+          class ValueT,
+          class OffsetT,
+          class PortionOffsetT,
+          class DecomposerT = identity_decomposer_t>
 struct AgentRadixSortOnesweep
 {
   // constants

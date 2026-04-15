@@ -144,7 +144,7 @@ struct DeviceMemcpy
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputBufferIt, typename OutputBufferIt, typename BufferSizeIteratorT>
+  template <class InputBufferIt, class OutputBufferIt, class BufferSizeIteratorT>
   CUB_RUNTIME_FUNCTION static cudaError_t Batched(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -232,10 +232,10 @@ struct DeviceMemcpy
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename InputBufferIt,
-            typename OutputBufferIt,
-            typename BufferSizeIteratorT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class InputBufferIt,
+            class OutputBufferIt,
+            class BufferSizeIteratorT,
+            class EnvT = ::cuda::std::execution::env<>,
             ::cuda::std::enable_if_t<!::cuda::std::is_same_v<InputBufferIt, void*>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t
   Batched(InputBufferIt input_buffer_it,

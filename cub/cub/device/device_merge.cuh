@@ -72,10 +72,7 @@ struct DeviceMerge
   //! @param[in] stream **[optional]** CUDA stream to launch kernels into. Default is stream<sub>0</sub>.
   //!
   //! [strict weak ordering]: https://en.cppreference.com/w/cpp/concepts/strict_weak_order
-  template <typename KeyIteratorIn1,
-            typename KeyIteratorIn2,
-            typename KeyIteratorOut,
-            typename CompareOp = ::cuda::std::less<>>
+  template <class KeyIteratorIn1, class KeyIteratorIn2, class KeyIteratorOut, class CompareOp = ::cuda::std::less<>>
   CUB_RUNTIME_FUNCTION static cudaError_t MergeKeys(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -261,13 +258,13 @@ struct DeviceMerge
   //! @param[in] stream **[optional]** CUDA stream to launch kernels into. Default is stream<sub>0</sub>.
   //!
   //! [strict weak ordering]: https://en.cppreference.com/w/cpp/concepts/strict_weak_order
-  template <typename KeyIteratorIn1,
-            typename ValueIteratorIn1,
-            typename KeyIteratorIn2,
-            typename ValueIteratorIn2,
-            typename KeyIteratorOut,
-            typename ValueIteratorOut,
-            typename CompareOp = ::cuda::std::less<>>
+  template <class KeyIteratorIn1,
+            class ValueIteratorIn1,
+            class KeyIteratorIn2,
+            class ValueIteratorIn2,
+            class KeyIteratorOut,
+            class ValueIteratorOut,
+            class CompareOp = ::cuda::std::less<>>
   CUB_RUNTIME_FUNCTION static cudaError_t MergePairs(
     void* d_temp_storage,
     size_t& temp_storage_bytes,

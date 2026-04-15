@@ -143,13 +143,13 @@ namespace detail::scan
  * @tparam AccumT
  *   The type of intermediate accumulator (according to P2322R6)
  */
-template <typename AgentScanPolicyT,
-          typename InputIteratorT,
-          typename OutputIteratorT,
-          typename ScanOpT,
-          typename InitValueT,
-          typename OffsetT,
-          typename AccumT,
+template <class AgentScanPolicyT,
+          class InputIteratorT,
+          class OutputIteratorT,
+          class ScanOpT,
+          class InitValueT,
+          class OffsetT,
+          class AccumT,
           bool ForceInclusive = false,
           bool UsePDL         = false>
 struct AgentScan
@@ -267,7 +267,7 @@ struct AgentScan
     }
   }
 
-  template <typename PrefixCallback, bool Inclusive = IS_INCLUSIVE>
+  template <class PrefixCallback, bool Inclusive = IS_INCLUSIVE>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   ScanSubsequentTile(AccumT (&items)[ITEMS_PER_THREAD], ScanOpT scan_op, PrefixCallback& prefix_op)
   {

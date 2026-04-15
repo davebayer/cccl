@@ -218,10 +218,10 @@ CUB_NAMESPACE_BEGIN
 //! @tparam BlockDimZ
 //!   **[optional]** The thread block length in threads along the Z dimension (default: 1)
 //!
-template <typename KeyT,
+template <class KeyT,
           int BlockDimX,
           int ItemsPerThread,
-          typename ValueT                       = NullType,
+          class ValueT                          = NullType,
           int RadixBits                         = 4,
           bool MemoizeOuterScan                 = true,
           BlockScanAlgorithm InnerScanAlgorithm = BLOCK_SCAN_WARP_SCANS,

@@ -34,7 +34,7 @@ CUB_NAMESPACE_BEGIN
 //!   https://arxiv.org/abs/1406.2628
 //! \returns The number of elements merged from the first sequence at the intersection of the diagonal with the merge
 //! path. The number of elements merged from the second sequence is \c diag minus the returned value.
-template <typename KeyIt1, typename KeyIt2, typename OffsetT, typename BinaryPred>
+template <class KeyIt1, class KeyIt2, class OffsetT, class BinaryPred>
 _CCCL_DEVICE _CCCL_FORCEINLINE OffsetT
 MergePath(KeyIt1 keys1, KeyIt2 keys2, OffsetT keys1_count, OffsetT keys2_count, OffsetT diag, BinaryPred binary_pred)
 {
@@ -70,7 +70,7 @@ MergePath(KeyIt1 keys1, KeyIt2 keys2, OffsetT keys1_count, OffsetT keys2_count, 
 //! used.
 //! \param output The output array
 //! \param indices The shared memory indices relative to \c keys_shared of the elements written to \c output
-template <typename KeyIt, typename KeyT, typename CompareOp, int ItemsPerThread>
+template <class KeyIt, class KeyT, class CompareOp, int ItemsPerThread>
 _CCCL_DEVICE _CCCL_FORCEINLINE void SerialMerge(
   KeyIt keys_shared,
   int keys1_beg,
@@ -105,7 +105,7 @@ _CCCL_DEVICE _CCCL_FORCEINLINE void SerialMerge(
   }
 }
 
-template <typename KeyIt, typename KeyT, typename CompareOp, int ItemsPerThread>
+template <class KeyIt, class KeyT, class CompareOp, int ItemsPerThread>
 _CCCL_DEVICE _CCCL_FORCEINLINE void SerialMerge(
   KeyIt keys_shared,
   int keys1_beg,
@@ -171,7 +171,7 @@ _CCCL_DEVICE _CCCL_FORCEINLINE void SerialMerge(
  *   Provides a way of synchronizing threads. Should be derived from
  *   `BlockMergeSortStrategy`.
  */
-template <typename KeyT, typename ValueT, int NumThreads, int ItemsPerThread, typename SynchronizationPolicy>
+template <class KeyT, class ValueT, int NumThreads, int ItemsPerThread, class SynchronizationPolicy>
 class BlockMergeSortStrategy
 {
   static_assert(::cuda::is_power_of_two(NumThreads), "NumThreads must be a power of two");
@@ -251,7 +251,7 @@ public:
    *
    * [Strict Weak Ordering]: https://en.cppreference.com/w/cpp/concepts/strict_weak_order
    */
-  template <typename CompareOp>
+  template <class CompareOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void Sort(KeyT (&keys)[ItemsPerThread], CompareOp compare_op)
   {
     ValueT items[ItemsPerThread];
@@ -297,7 +297,7 @@ public:
    *
    * [Strict Weak Ordering]: https://en.cppreference.com/w/cpp/concepts/strict_weak_order
    */
-  template <typename CompareOp>
+  template <class CompareOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   Sort(KeyT (&keys)[ItemsPerThread], CompareOp compare_op, int valid_items, KeyT oob_default)
   {
@@ -334,7 +334,7 @@ public:
    *
    * [Strict Weak Ordering]: https://en.cppreference.com/w/cpp/concepts/strict_weak_order
    */
-  template <typename CompareOp>
+  template <class CompareOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   Sort(KeyT (&keys)[ItemsPerThread], ValueT (&items)[ItemsPerThread], CompareOp compare_op)
   {
@@ -386,7 +386,7 @@ public:
    *
    * [Strict Weak Ordering]: https://en.cppreference.com/w/cpp/concepts/strict_weak_order
    */
-  template <typename CompareOp, bool IS_LAST_TILE = true>
+  template <class CompareOp, bool IS_LAST_TILE = true>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   Sort(KeyT (&keys)[ItemsPerThread],
        ValueT (&items)[ItemsPerThread],
@@ -541,7 +541,7 @@ public:
    *
    * [Strict Weak Ordering]: https://en.cppreference.com/w/cpp/concepts/strict_weak_order
    */
-  template <typename CompareOp>
+  template <class CompareOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void StableSort(KeyT (&keys)[ItemsPerThread], CompareOp compare_op)
   {
     Sort(keys, compare_op);
@@ -578,7 +578,7 @@ public:
    *
    * [Strict Weak Ordering]: https://en.cppreference.com/w/cpp/concepts/strict_weak_order
    */
-  template <typename CompareOp>
+  template <class CompareOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   StableSort(KeyT (&keys)[ItemsPerThread], ValueT (&items)[ItemsPerThread], CompareOp compare_op)
   {
@@ -626,7 +626,7 @@ public:
    *
    * [Strict Weak Ordering]: https://en.cppreference.com/w/cpp/concepts/strict_weak_order
    */
-  template <typename CompareOp>
+  template <class CompareOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   StableSort(KeyT (&keys)[ItemsPerThread], CompareOp compare_op, int valid_items, KeyT oob_default)
   {
@@ -679,7 +679,7 @@ public:
    *
    * [Strict Weak Ordering]: https://en.cppreference.com/w/cpp/concepts/strict_weak_order
    */
-  template <typename CompareOp, bool IS_LAST_TILE = true>
+  template <class CompareOp, bool IS_LAST_TILE = true>
   _CCCL_DEVICE _CCCL_FORCEINLINE void StableSort(
     KeyT (&keys)[ItemsPerThread],
     ValueT (&items)[ItemsPerThread],
@@ -775,7 +775,7 @@ private:
  *
  * This example can be easily adapted to the storage required by BlockMergeSort.
  */
-template <typename KeyT, int BlockDimX, int ItemsPerThread, typename ValueT = NullType, int BlockDimY = 1, int BlockDimZ = 1>
+template <class KeyT, int BlockDimX, int ItemsPerThread, class ValueT = NullType, int BlockDimY = 1, int BlockDimZ = 1>
 class BlockMergeSort
     : public BlockMergeSortStrategy<KeyT,
                                     ValueT,

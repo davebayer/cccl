@@ -58,10 +58,10 @@ struct AgentTopKPolicy
   static constexpr BlockScanAlgorithm SCAN_ALGORITHM = ScanAlgorithm;
 };
 
-template <typename KeyT, bool CanTwiddle = detail::radix::can_twiddle<KeyT>>
+template <class KeyT, bool CanTwiddle = detail::radix::can_twiddle<KeyT>>
 struct key_prefix_storage_t;
 
-template <typename KeyT>
+template <class KeyT>
 struct key_prefix_storage_t<KeyT, true>
 {
   using bits_t = typename Traits<KeyT>::UnsignedBits;
@@ -69,7 +69,7 @@ struct key_prefix_storage_t<KeyT, true>
 };
 
 // Calculates the number of passes needed for a type T with BitsPerPass bits processed per pass.
-template <typename T>
+template <class T>
 [[nodiscard]] _CCCL_HOST_DEVICE _CCCL_FORCEINLINE constexpr int calc_num_passes(int bits_per_pass)
 {
   return ::cuda::ceil_div<int>(sizeof(T) * 8, bits_per_pass);
@@ -83,7 +83,7 @@ template <int BitsPerPass>
 
 // Calculates the starting bit for a given pass (bit 0 is the least significant (rightmost) bit).
 // We process the input from the most to the least significant bit. This way, we can skip some passes in the end.
-template <typename T, int BitsPerPass>
+template <class T, int BitsPerPass>
 [[nodiscard]] _CCCL_HOST_DEVICE _CCCL_FORCEINLINE constexpr int calc_start_bit(const int pass)
 {
   int start_bit = int{sizeof(T)} * 8 - (pass + 1) * BitsPerPass;
@@ -108,7 +108,7 @@ template <int BitsPerPass>
 // Bit-vector for accumulating prefix digits via funnel shift. Each pass shifts the existing
 // contents left by BitsPerPass and ORs the new bucket at the bottom. Sized to hold all
 // decomposed bits of KeyT plus headroom for the shift padding of the last pass.
-template <typename KeyT>
+template <class KeyT>
 struct key_prefix_storage_t<KeyT, false>
 {
   static constexpr int num_words = ::cuda::ceil_div<int>(sizeof(KeyT) * 8 + 31, 32);
@@ -129,7 +129,7 @@ struct key_prefix_storage_t<KeyT, false>
   }
 };
 
-template <typename KeyT, int BitsPerPass>
+template <class KeyT, int BitsPerPass>
 _CCCL_DEVICE _CCCL_FORCEINLINE void
 set_kth_key_bits(key_prefix_storage_t<KeyT>& prefix, const int pass, const int bin_index)
 {
@@ -146,7 +146,7 @@ set_kth_key_bits(key_prefix_storage_t<KeyT>& prefix, const int pass, const int b
   }
 }
 
-template <typename KeyInT, typename OffsetT, typename OutOffsetT>
+template <class KeyInT, class OffsetT, class OutOffsetT>
 struct alignas(128) Counter
 {
   // We are processing the items in multiple passes, from most-significant to least-significant bits. In each pass, we
@@ -226,15 +226,15 @@ enum class candidate_class
 //! @tparam OutOffsetT
 //!   Type of variable k
 //!
-template <typename AgentTopKPolicyT,
-          typename KeyInputIteratorT,
-          typename KeyOutputIteratorT,
-          typename ValueInputIteratorT,
-          typename ValueOutputIteratorT,
-          typename ExtractBinOpT,
-          typename IdentifyCandidatesOpT,
-          typename OffsetT,
-          typename OutOffsetT>
+template <class AgentTopKPolicyT,
+          class KeyInputIteratorT,
+          class KeyOutputIteratorT,
+          class ValueInputIteratorT,
+          class ValueOutputIteratorT,
+          class ExtractBinOpT,
+          class IdentifyCandidatesOpT,
+          class OffsetT,
+          class OutOffsetT>
 struct AgentTopK
 {
   //---------------------------------------------------------------------
@@ -355,7 +355,7 @@ struct AgentTopK
   //---------------------------------------------------------------------
 
   // Process a range of input data in tiles, calling f(key, index) for each element
-  template <typename InputItT, typename FuncT>
+  template <class InputItT, class FuncT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void process_range(InputItT in, const OffsetT num_items, FuncT f)
   {
     key_in_t thread_data[items_per_thread];
@@ -636,7 +636,7 @@ struct AgentTopK
   // detects the last finishing block, runs the prefix sum, identifies the k-th bucket, and resets
   // the histogram for the next pass. The caller-supplied counter_update_fn runs on thread 0 of the
   // last block to update pass-specific counter state.
-  template <typename CounterUpdateFn>
+  template <class CounterUpdateFn>
   _CCCL_DEVICE _CCCL_FORCEINLINE void finalize_pass(
     Counter<key_in_t, OffsetT, OutOffsetT>* counter,
     OffsetT* histogram,

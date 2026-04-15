@@ -14,7 +14,7 @@ namespace ptx_json
 template <auto V>
 struct value;
 
-template <typename T>
+template <class T>
 struct is_value : cuda::std::false_type
 {};
 
@@ -22,7 +22,7 @@ template <auto V>
 struct is_value<value<V>> : cuda::std::true_type
 {};
 
-template <typename T>
+template <class T>
 concept a_value = is_value<T>::value;
 
 // NVRTC < 12.5 does not support concept-constrained non-type template parameters

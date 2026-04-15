@@ -224,7 +224,7 @@ inline ::std::ostream& operator<<(::std::ostream& os, WarpStoreAlgorithm algorit
 //!   targeted CUDA compute-capability (e.g., 32 threads for SM86). Must be a
 //!   power of two.
 //!
-template <typename T,
+template <class T,
           int ITEMS_PER_THREAD,
           WarpStoreAlgorithm ALGORITHM = WARP_STORE_DIRECT,
           int LOGICAL_WARP_THREADS     = detail::warp_threads>
@@ -250,13 +250,13 @@ private:
         : linear_tid(linear_tid)
     {}
 
-    template <typename OutputIteratorT>
+    template <class OutputIteratorT>
     _CCCL_DEVICE _CCCL_FORCEINLINE void Store(OutputIteratorT block_itr, T (&items)[ITEMS_PER_THREAD])
     {
       StoreDirectBlocked(linear_tid, block_itr, items);
     }
 
-    template <typename OutputIteratorT>
+    template <class OutputIteratorT>
     _CCCL_DEVICE _CCCL_FORCEINLINE void Store(OutputIteratorT block_itr, T (&items)[ITEMS_PER_THREAD], int valid_items)
     {
       StoreDirectBlocked(linear_tid, block_itr, items, valid_items);
@@ -274,13 +274,13 @@ private:
         : linear_tid(linear_tid)
     {}
 
-    template <typename OutputIteratorT>
+    template <class OutputIteratorT>
     _CCCL_DEVICE _CCCL_FORCEINLINE void Store(OutputIteratorT block_itr, T (&items)[ITEMS_PER_THREAD])
     {
       StoreDirectStriped<LOGICAL_WARP_THREADS>(linear_tid, block_itr, items);
     }
 
-    template <typename OutputIteratorT>
+    template <class OutputIteratorT>
     _CCCL_DEVICE _CCCL_FORCEINLINE void Store(OutputIteratorT block_itr, T (&items)[ITEMS_PER_THREAD], int valid_items)
     {
       StoreDirectStriped<LOGICAL_WARP_THREADS>(linear_tid, block_itr, items, valid_items);
@@ -303,13 +303,13 @@ private:
       StoreDirectBlockedVectorized(linear_tid, block_ptr, items);
     }
 
-    template <typename OutputIteratorT>
+    template <class OutputIteratorT>
     _CCCL_DEVICE _CCCL_FORCEINLINE void Store(OutputIteratorT block_itr, T (&items)[ITEMS_PER_THREAD])
     {
       StoreDirectBlocked(linear_tid, block_itr, items);
     }
 
-    template <typename OutputIteratorT>
+    template <class OutputIteratorT>
     _CCCL_DEVICE _CCCL_FORCEINLINE void Store(OutputIteratorT block_itr, T (&items)[ITEMS_PER_THREAD], int valid_items)
     {
       StoreDirectBlocked(linear_tid, block_itr, items, valid_items);
@@ -336,14 +336,14 @@ private:
         , linear_tid(linear_tid)
     {}
 
-    template <typename OutputIteratorT>
+    template <class OutputIteratorT>
     _CCCL_DEVICE _CCCL_FORCEINLINE void Store(OutputIteratorT block_itr, T (&items)[ITEMS_PER_THREAD])
     {
       WarpExchangeT(temp_storage).BlockedToStriped(items, items);
       StoreDirectStriped<LOGICAL_WARP_THREADS>(linear_tid, block_itr, items);
     }
 
-    template <typename OutputIteratorT>
+    template <class OutputIteratorT>
     _CCCL_DEVICE _CCCL_FORCEINLINE void Store(OutputIteratorT block_itr, T (&items)[ITEMS_PER_THREAD], int valid_items)
     {
       WarpExchangeT(temp_storage).BlockedToStriped(items, items);
@@ -449,7 +449,7 @@ public:
   //!
   //! @param[out] block_itr The thread block's base output iterator for storing to
   //! @param[in] items Data to store
-  template <typename OutputIteratorT>
+  template <class OutputIteratorT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void Store(OutputIteratorT block_itr, T (&items)[ITEMS_PER_THREAD])
   {
     InternalStore(temp_storage, linear_tid).Store(block_itr, items);
@@ -515,7 +515,7 @@ public:
   //! @param[in] items Data to store
   //! @param[in] valid_items Number of valid items to write
   //!
-  template <typename OutputIteratorT>
+  template <class OutputIteratorT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void Store(OutputIteratorT block_itr, T (&items)[ITEMS_PER_THREAD], int valid_items)
   {
     InternalStore(temp_storage, linear_tid).Store(block_itr, items, valid_items);

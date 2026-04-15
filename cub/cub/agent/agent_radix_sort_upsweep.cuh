@@ -115,10 +115,7 @@ namespace detail::radix_sort
  * @tparam DecomposerT = identity_decomposer_t
  *   Signed integer type for global offsets
  */
-template <typename AgentRadixSortUpsweepPolicy,
-          typename KeyT,
-          typename OffsetT,
-          typename DecomposerT = identity_decomposer_t>
+template <class AgentRadixSortUpsweepPolicy, class KeyT, class OffsetT, class DecomposerT = identity_decomposer_t>
 struct AgentRadixSortUpsweep
 {
   //---------------------------------------------------------------------

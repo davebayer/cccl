@@ -307,7 +307,7 @@ public:
   //! @param[in] stream
   //!   **[optional]** CUDA stream to launch kernels within.
   //!   Default is stream<sub>0</sub>.
-  template <typename KeyT, typename ValueT, typename NumItemsT>
+  template <class KeyT, class ValueT, class NumItemsT>
   CUB_RUNTIME_FUNCTION static cudaError_t SortPairs(
     void* d_temp_storage,
     size_t& temp_storage_bytes,

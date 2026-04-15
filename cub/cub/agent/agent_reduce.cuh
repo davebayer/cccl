@@ -185,13 +185,13 @@ namespace detail::reduce
  * @tparam IsWarpReduction
  *   Whether or not this is a warp reduction
  */
-template <typename AgentReducePolicy,
-          typename InputIteratorT,
-          typename OffsetT,
-          typename ReductionOp,
-          typename AccumT,
-          typename TransformOp,
-          typename CollectiveReduceT,
+template <class AgentReducePolicy,
+          class InputIteratorT,
+          class OffsetT,
+          class ReductionOp,
+          class AccumT,
+          class TransformOp,
+          class CollectiveReduceT,
           int NumThreads,
           bool IsWarpReduction = false>
 struct AgentReduceImpl
@@ -256,7 +256,7 @@ struct AgentReduceImpl
   //---------------------------------------------------------------------
 
   // Whether the input is aligned with the vector type
-  template <typename Iterator, bool AttemptVectorization = ATTEMPT_VECTORIZATION>
+  template <class Iterator, bool AttemptVectorization = ATTEMPT_VECTORIZATION>
   [[nodiscard]] _CCCL_DEVICE_API static bool IsAligned(Iterator d_in) noexcept
   {
     if constexpr (AttemptVectorization)
@@ -506,12 +506,12 @@ private:
  * @tparam TransformOp
  *    Unary operator type having member `auto operator()(T &&a)`
  */
-template <typename AgentReducePolicy,
-          typename InputIteratorT,
-          typename OffsetT,
-          typename ReductionOp,
-          typename AccumT,
-          typename TransformOp = ::cuda::std::identity>
+template <class AgentReducePolicy,
+          class InputIteratorT,
+          class OffsetT,
+          class ReductionOp,
+          class AccumT,
+          class TransformOp = ::cuda::std::identity>
 struct AgentReduce
     : AgentReduceImpl<AgentReducePolicy,
                       InputIteratorT,
@@ -568,12 +568,12 @@ struct AgentReduce
  * @tparam TransformOp
  *    Unary operator type having member `auto operator()(T &&a)`
  */
-template <typename AgentReducePolicy,
-          typename InputIteratorT,
-          typename OffsetT,
-          typename ReductionOp,
-          typename AccumT,
-          typename TransformOp = ::cuda::std::identity>
+template <class AgentReducePolicy,
+          class InputIteratorT,
+          class OffsetT,
+          class ReductionOp,
+          class AccumT,
+          class TransformOp = ::cuda::std::identity>
 struct AgentWarpReduce
     : AgentReduceImpl<AgentReducePolicy,
                       InputIteratorT,

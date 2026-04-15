@@ -264,7 +264,7 @@ inline ::std::ostream& operator<<(::std::ostream& os, const BlockReduceAlgorithm
 //! @tparam BlockDimZ
 //!   **[optional]** The thread block length in threads along the Z dimension (default: 1)
 //!
-template <typename T,
+template <class T,
           int BlockDimX,
           BlockReduceAlgorithm Algorithm = BLOCK_REDUCE_WARP_REDUCTIONS,
           int BlockDimY                  = 1,
@@ -393,7 +393,7 @@ public:
   //!
   //! @param[in] reduction_op
   //!   Binary reduction functor
-  template <typename ReductionOp>
+  template <class ReductionOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE T Reduce(T input, ReductionOp reduction_op)
   {
     return InternalBlockReduce(temp_storage).template Reduce<true>(input, BLOCK_THREADS, reduction_op);
@@ -508,7 +508,7 @@ public:
   //!
   //! @param[in] num_valid
   //!   Number of threads containing valid elements (may be less than BLOCK_THREADS)
-  template <typename ReductionOp>
+  template <class ReductionOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE T Reduce(T input, ReductionOp reduction_op, int num_valid)
   {
     // Determine if we skip bounds checking

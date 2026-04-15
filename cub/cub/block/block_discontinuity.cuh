@@ -99,7 +99,7 @@ CUB_NAMESPACE_BEGIN
 //! @tparam BlockDimZ
 //!   **[optional]** The thread block length in threads along the Z dimension (default: 1)
 //!
-template <typename T, int BlockDimX, int BlockDimY = 1, int BlockDimZ = 1>
+template <class T, int BlockDimX, int BlockDimY = 1, int BlockDimZ = 1>
 class BlockDiscontinuity
 {
 private:
@@ -121,7 +121,7 @@ private:
   }
 
   /// Specialization for when FlagOp has third index param
-  template <typename FlagOp, bool HAS_PARAM = BinaryOpHasIdxParam<T, FlagOp>::value>
+  template <class FlagOp, bool HAS_PARAM = BinaryOpHasIdxParam<T, FlagOp>::value>
   struct ApplyOp
   {
     // Apply flag operator
@@ -132,7 +132,7 @@ private:
   };
 
   /// Specialization for when FlagOp does not have a third index param
-  template <typename FlagOp>
+  template <class FlagOp>
   struct ApplyOp<FlagOp, false>
   {
     // Apply flag operator

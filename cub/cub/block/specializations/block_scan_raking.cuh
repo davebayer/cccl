@@ -50,7 +50,7 @@ namespace detail
  *   Whether or not to buffer outer raking scan partials to incur fewer shared memory reads at the
  * expense of higher register pressure
  */
-template <typename T, int BlockDimX, int BlockDimY, int BlockDimZ, bool Memoize>
+template <class T, int BlockDimX, int BlockDimY, int BlockDimZ, bool Memoize>
 struct BlockScanRaking
 {
   //---------------------------------------------------------------------
@@ -143,7 +143,7 @@ struct BlockScanRaking
    * @param[in] raking_partial
    *   Prefix to seed reduction with
    */
-  template <typename ScanOp>
+  template <class ScanOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE T
   GuardedReduce(T* /*raking_ptr*/, ScanOp /*scan_op*/, T raking_partial, constant_t<SEGMENT_LENGTH> /*iteration*/)
   {
@@ -178,7 +178,7 @@ struct BlockScanRaking
   _CCCL_DEVICE _CCCL_FORCEINLINE void CopySegment(T* /*out*/, T* /*in*/, constant_t<SEGMENT_LENGTH> /*iteration*/) {}
 
   /// Performs upsweep raking reduction, returning the aggregate
-  template <typename ScanOp>
+  template <class ScanOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE T Upsweep(ScanOp scan_op)
   {
     T* smem_raking_ptr = BlockRakingLayout::RakingPtr(temp_storage.raking_grid, linear_tid);
@@ -192,7 +192,7 @@ struct BlockScanRaking
   }
 
   /// Performs exclusive downsweep raking scan
-  template <typename ScanOp>
+  template <class ScanOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ExclusiveDownsweep(ScanOp scan_op, T raking_partial, bool apply_prefix = true)
   {
     T* smem_raking_ptr = BlockRakingLayout::RakingPtr(temp_storage.raking_grid, linear_tid);
@@ -210,7 +210,7 @@ struct BlockScanRaking
   }
 
   /// Performs inclusive downsweep raking scan
-  template <typename ScanOp>
+  template <class ScanOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void InclusiveDownsweep(ScanOp scan_op, T raking_partial, bool apply_prefix = true)
   {
     T* smem_raking_ptr = BlockRakingLayout::RakingPtr(temp_storage.raking_grid, linear_tid);
@@ -255,7 +255,7 @@ struct BlockScanRaking
    * @param[in] scan_op
    *   Binary scan operator
    */
-  template <typename ScanOp>
+  template <class ScanOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ExclusiveScan(T input, T& exclusive_output, ScanOp scan_op)
   {
     if (WARP_SYNCHRONOUS)
@@ -308,7 +308,7 @@ struct BlockScanRaking
    * @param[in] scan_op
    *   Binary scan operator
    */
-  template <typename ScanOp>
+  template <class ScanOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ExclusiveScan(T input, T& output, const T& initial_value, ScanOp scan_op)
   {
     if (WARP_SYNCHRONOUS)
@@ -363,7 +363,7 @@ struct BlockScanRaking
    * @param[out] block_aggregate
    *   Threadblock-wide aggregate reduction of input items
    */
-  template <typename ScanOp>
+  template <class ScanOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ExclusiveScan(T input, T& output, ScanOp scan_op, T& block_aggregate)
   {
     if (WARP_SYNCHRONOUS)
@@ -430,7 +430,7 @@ struct BlockScanRaking
    * @param[out] block_aggregate
    *   Threadblock-wide aggregate reduction of input items
    */
-  template <typename ScanOp>
+  template <class ScanOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   ExclusiveScan(T input, T& output, const T& initial_value, ScanOp scan_op, T& block_aggregate)
   {
@@ -499,7 +499,7 @@ struct BlockScanRaking
    *   <b>[<em>warp</em><sub>0</sub> only]</b> Call-back functor for specifying a thread
    *   block-wide prefix to be applied to all inputs.
    */
-  template <typename ScanOp, typename BlockPrefixCallbackOp>
+  template <class ScanOp, class BlockPrefixCallbackOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   ExclusiveScan(T input, T& output, ScanOp scan_op, BlockPrefixCallbackOp& block_prefix_callback_op)
   {
@@ -579,7 +579,7 @@ struct BlockScanRaking
    * @param[in] scan_op
    *   Binary scan operator
    */
-  template <typename ScanOp>
+  template <class ScanOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void InclusiveScan(T input, T& output, ScanOp scan_op)
   {
     if (WARP_SYNCHRONOUS)
@@ -633,7 +633,7 @@ struct BlockScanRaking
    * @param[out] block_aggregate
    *   Threadblock-wide aggregate reduction of input items
    */
-  template <typename ScanOp>
+  template <class ScanOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void InclusiveScan(T input, T& output, ScanOp scan_op, T& block_aggregate)
   {
     if (WARP_SYNCHRONOUS)
@@ -701,7 +701,7 @@ struct BlockScanRaking
    *   <b>[<em>warp</em><sub>0</sub> only]</b> Call-back functor for specifying a thread
    *   block-wide prefix to be applied to all inputs.
    */
-  template <typename ScanOp, typename BlockPrefixCallbackOp>
+  template <class ScanOp, class BlockPrefixCallbackOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   InclusiveScan(T input, T& output, ScanOp scan_op, BlockPrefixCallbackOp& block_prefix_callback_op)
   {

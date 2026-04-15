@@ -61,7 +61,7 @@ struct agent_t
   OffsetT* found_pos_ptr;
   OffsetT num_items;
 
-  template <typename Iterator = InputIteratorT, bool CanVectorize = attempt_vectorization>
+  template <class Iterator = InputIteratorT, bool CanVectorize = attempt_vectorization>
   _CCCL_DEVICE _CCCL_FORCEINLINE bool is_aligned_and_full_tile(OffsetT tile_offset)
   {
     if constexpr (CanVectorize)

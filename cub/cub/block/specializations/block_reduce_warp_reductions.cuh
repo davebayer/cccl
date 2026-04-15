@@ -51,7 +51,7 @@ namespace detail
 //!
 //! @tparam IsDeterministic
 //!   Whether the reduction is deterministic
-template <typename T, int BlockDimX, int BlockDimY, int BlockDimZ, bool IsDeterministic = true>
+template <class T, int BlockDimX, int BlockDimY, int BlockDimZ, bool IsDeterministic = true>
 struct BlockReduceWarpReductions
 {
   /// The thread block size in threads
@@ -108,7 +108,7 @@ struct BlockReduceWarpReductions
   //!
   //! @param[in] warp_aggregate
   //!   **[**\ *lane*\ :sub:`0` **only]** Warp-wide aggregate reduction of input items
-  template <typename ReductionOp>
+  template <class ReductionOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE T ApplyWarpAggregatesNonDeterministic(ReductionOp reduction_op, T warp_aggregate)
   {
     if (linear_tid == 0)

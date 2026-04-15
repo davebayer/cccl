@@ -98,7 +98,7 @@ private:
   }
 
   // Internal version without NVTX range
-  template <typename KeyIteratorT, typename ValueIteratorT, typename OffsetT, typename CompareOpT>
+  template <class KeyIteratorT, class ValueIteratorT, class OffsetT, class CompareOpT>
   CUB_RUNTIME_FUNCTION static cudaError_t SortPairsNoNVTX(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -220,7 +220,7 @@ public:
    *    First appears in CUDA Toolkit 12.3.
    * @endrst
    */
-  template <typename KeyIteratorT, typename ValueIteratorT, typename OffsetT, typename CompareOpT>
+  template <class KeyIteratorT, class ValueIteratorT, class OffsetT, class CompareOpT>
   CUB_RUNTIME_FUNCTION static cudaError_t SortPairs(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -289,11 +289,11 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename KeyIteratorT,
-            typename ValueIteratorT,
-            typename OffsetT,
-            typename CompareOpT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class KeyIteratorT,
+            class ValueIteratorT,
+            class OffsetT,
+            class CompareOpT,
+            class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t
   SortPairs(KeyIteratorT d_keys, ValueIteratorT d_items, OffsetT num_items, CompareOpT compare_op, EnvT env = {})
   {
@@ -423,12 +423,12 @@ public:
    *    First appears in CUDA Toolkit 12.3.
    * @endrst
    */
-  template <typename KeyInputIteratorT,
-            typename ValueInputIteratorT,
-            typename KeyIteratorT,
-            typename ValueIteratorT,
-            typename OffsetT,
-            typename CompareOpT>
+  template <class KeyInputIteratorT,
+            class ValueInputIteratorT,
+            class KeyIteratorT,
+            class ValueIteratorT,
+            class OffsetT,
+            class CompareOpT>
   CUB_RUNTIME_FUNCTION static cudaError_t SortPairsCopy(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -524,13 +524,13 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename KeyInputIteratorT,
-            typename ValueInputIteratorT,
-            typename KeyIteratorT,
-            typename ValueIteratorT,
-            typename OffsetT,
-            typename CompareOpT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class KeyInputIteratorT,
+            class ValueInputIteratorT,
+            class KeyIteratorT,
+            class ValueIteratorT,
+            class OffsetT,
+            class CompareOpT,
+            class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t SortPairsCopy(
     KeyInputIteratorT d_input_keys,
     ValueInputIteratorT d_input_items,
@@ -560,7 +560,7 @@ public:
 
 private:
   // Internal version without NVTX range
-  template <typename KeyIteratorT, typename OffsetT, typename CompareOpT>
+  template <class KeyIteratorT, class OffsetT, class CompareOpT>
   CUB_RUNTIME_FUNCTION static cudaError_t SortKeysNoNVTX(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -672,7 +672,7 @@ public:
    *    First appears in CUDA Toolkit 12.3.
    * @endrst
    */
-  template <typename KeyIteratorT, typename OffsetT, typename CompareOpT>
+  template <class KeyIteratorT, class OffsetT, class CompareOpT>
   CUB_RUNTIME_FUNCTION static cudaError_t SortKeys(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -734,7 +734,7 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename KeyIteratorT, typename OffsetT, typename CompareOpT, typename EnvT = ::cuda::std::execution::env<>>
+  template <class KeyIteratorT, class OffsetT, class CompareOpT, class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t
   SortKeys(KeyIteratorT d_keys, OffsetT num_items, CompareOpT compare_op, EnvT env = {})
   {
@@ -758,7 +758,7 @@ public:
 
 private:
   // Internal version without NVTX range
-  template <typename KeyInputIteratorT, typename KeyIteratorT, typename OffsetT, typename CompareOpT>
+  template <class KeyInputIteratorT, class KeyIteratorT, class OffsetT, class CompareOpT>
   CUB_RUNTIME_FUNCTION static cudaError_t SortKeysCopyNoNVTX(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -885,7 +885,7 @@ public:
    *    First appears in CUDA Toolkit 12.3.
    * @endrst
    */
-  template <typename KeyInputIteratorT, typename KeyIteratorT, typename OffsetT, typename CompareOpT>
+  template <class KeyInputIteratorT, class KeyIteratorT, class OffsetT, class CompareOpT>
   CUB_RUNTIME_FUNCTION static cudaError_t SortKeysCopy(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -957,11 +957,11 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename KeyInputIteratorT,
-            typename KeyIteratorT,
-            typename OffsetT,
-            typename CompareOpT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class KeyInputIteratorT,
+            class KeyIteratorT,
+            class OffsetT,
+            class CompareOpT,
+            class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t SortKeysCopy(
     KeyInputIteratorT d_input_keys, KeyIteratorT d_output_keys, OffsetT num_items, CompareOpT compare_op, EnvT env = {})
   {
@@ -1080,7 +1080,7 @@ public:
    *    First appears in CUDA Toolkit 12.3.
    * @endrst
    */
-  template <typename KeyIteratorT, typename ValueIteratorT, typename OffsetT, typename CompareOpT>
+  template <class KeyIteratorT, class ValueIteratorT, class OffsetT, class CompareOpT>
   CUB_RUNTIME_FUNCTION static cudaError_t StableSortPairs(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1151,11 +1151,11 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename KeyIteratorT,
-            typename ValueIteratorT,
-            typename OffsetT,
-            typename CompareOpT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class KeyIteratorT,
+            class ValueIteratorT,
+            class OffsetT,
+            class CompareOpT,
+            class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t
   StableSortPairs(KeyIteratorT d_keys, ValueIteratorT d_items, OffsetT num_items, CompareOpT compare_op, EnvT env = {})
   {
@@ -1258,7 +1258,7 @@ public:
    *    First appears in CUDA Toolkit 12.3.
    * @endrst
    */
-  template <typename KeyIteratorT, typename OffsetT, typename CompareOpT>
+  template <class KeyIteratorT, class OffsetT, class CompareOpT>
   CUB_RUNTIME_FUNCTION static cudaError_t StableSortKeys(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1322,7 +1322,7 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename KeyIteratorT, typename OffsetT, typename CompareOpT, typename EnvT = ::cuda::std::execution::env<>>
+  template <class KeyIteratorT, class OffsetT, class CompareOpT, class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t
   StableSortKeys(KeyIteratorT d_keys, OffsetT num_items, CompareOpT compare_op, EnvT env = {})
   {
@@ -1446,7 +1446,7 @@ public:
    *    First appears in CUDA Toolkit 12.3.
    * @endrst
    */
-  template <typename KeyInputIteratorT, typename KeyIteratorT, typename OffsetT, typename CompareOpT>
+  template <class KeyInputIteratorT, class KeyIteratorT, class OffsetT, class CompareOpT>
   CUB_RUNTIME_FUNCTION static cudaError_t StableSortKeysCopy(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1518,11 +1518,11 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename KeyInputIteratorT,
-            typename KeyIteratorT,
-            typename OffsetT,
-            typename CompareOpT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class KeyInputIteratorT,
+            class KeyIteratorT,
+            class OffsetT,
+            class CompareOpT,
+            class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t StableSortKeysCopy(
     KeyInputIteratorT d_input_keys, KeyIteratorT d_output_keys, OffsetT num_items, CompareOpT compare_op, EnvT env = {})
   {

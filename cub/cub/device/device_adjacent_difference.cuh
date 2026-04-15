@@ -198,10 +198,10 @@ struct DeviceAdjacentDifference
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename DifferenceOpT = ::cuda::std::minus<>,
-            typename NumItemsT     = uint32_t>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class DifferenceOpT = ::cuda::std::minus<>,
+            class NumItemsT     = uint32_t>
   static CUB_RUNTIME_FUNCTION cudaError_t SubtractLeftCopy(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -313,7 +313,7 @@ struct DeviceAdjacentDifference
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename RandomAccessIteratorT, typename DifferenceOpT = ::cuda::std::minus<>, typename NumItemsT = uint32_t>
+  template <class RandomAccessIteratorT, class DifferenceOpT = ::cuda::std::minus<>, class NumItemsT = uint32_t>
   static CUB_RUNTIME_FUNCTION cudaError_t SubtractLeft(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -439,10 +439,10 @@ struct DeviceAdjacentDifference
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename DifferenceOpT = ::cuda::std::minus<>,
-            typename NumItemsT     = uint32_t>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class DifferenceOpT = ::cuda::std::minus<>,
+            class NumItemsT     = uint32_t>
   static CUB_RUNTIME_FUNCTION cudaError_t SubtractRightCopy(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -543,7 +543,7 @@ struct DeviceAdjacentDifference
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename RandomAccessIteratorT, typename DifferenceOpT = ::cuda::std::minus<>, typename NumItemsT = uint32_t>
+  template <class RandomAccessIteratorT, class DifferenceOpT = ::cuda::std::minus<>, class NumItemsT = uint32_t>
   static CUB_RUNTIME_FUNCTION cudaError_t SubtractRight(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -624,11 +624,11 @@ struct DeviceAdjacentDifference
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename DifferenceOpT,
-            typename NumItemsT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class DifferenceOpT,
+            class NumItemsT,
+            class EnvT = ::cuda::std::execution::env<>,
             ::cuda::std::enable_if_t<!::cuda::std::is_same_v<InputIteratorT, void*>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t SubtractLeftCopy(
     InputIteratorT d_input, OutputIteratorT d_output, NumItemsT num_items, DifferenceOpT difference_op, EnvT env = {})
@@ -702,10 +702,10 @@ struct DeviceAdjacentDifference
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename RandomAccessIteratorT,
-            typename DifferenceOpT,
-            typename NumItemsT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class RandomAccessIteratorT,
+            class DifferenceOpT,
+            class NumItemsT,
+            class EnvT = ::cuda::std::execution::env<>,
             ::cuda::std::enable_if_t<!::cuda::std::is_same_v<RandomAccessIteratorT, void*>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t
   SubtractLeft(RandomAccessIteratorT d_input, NumItemsT num_items, DifferenceOpT difference_op, EnvT env = {})
@@ -789,11 +789,11 @@ struct DeviceAdjacentDifference
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename DifferenceOpT,
-            typename NumItemsT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class DifferenceOpT,
+            class NumItemsT,
+            class EnvT = ::cuda::std::execution::env<>,
             ::cuda::std::enable_if_t<!::cuda::std::is_same_v<InputIteratorT, void*>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t SubtractRightCopy(
     InputIteratorT d_input, OutputIteratorT d_output, NumItemsT num_items, DifferenceOpT difference_op, EnvT env = {})
@@ -867,10 +867,10 @@ struct DeviceAdjacentDifference
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename RandomAccessIteratorT,
-            typename DifferenceOpT,
-            typename NumItemsT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class RandomAccessIteratorT,
+            class DifferenceOpT,
+            class NumItemsT,
+            class EnvT = ::cuda::std::execution::env<>,
             ::cuda::std::enable_if_t<!::cuda::std::is_same_v<RandomAccessIteratorT, void*>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t
   SubtractRight(RandomAccessIteratorT d_input, NumItemsT num_items, DifferenceOpT difference_op, EnvT env = {})

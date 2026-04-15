@@ -56,46 +56,46 @@ namespace detail
 // value_type, difference_type and reference aliases, which the new C+20 traits do not consider (they only consider
 // specializations of iterator_traits). Also, a value_type of void remains supported (needed by some output iterators).
 
-template <typename It>
+template <class It>
 using it_value_t = typename ::cuda::std::iterator_traits<It>::value_type;
 
-template <typename It>
+template <class It>
 using it_reference_t = typename ::cuda::std::iterator_traits<It>::reference;
 
-template <typename It>
+template <class It>
 using it_difference_t = typename ::cuda::std::iterator_traits<It>::difference_type;
 
-template <typename It>
+template <class It>
 using it_pointer_t = typename ::cuda::std::iterator_traits<It>::pointer;
 
 // Like sizeof(T) but works for void (yields 0)
-template <typename T>
+template <class T>
 inline constexpr size_t size_of = sizeof(T);
 
 template <>
 inline constexpr size_t size_of<void> = 0;
 
 // Like alignof(T) but works for void (yields 0)
-template <typename T>
+template <class T>
 inline constexpr size_t align_of = alignof(T);
 
 template <>
 inline constexpr size_t align_of<void> = 0;
 
 // use this whenever you need to lazily evaluate a trait. E.g., as an alternative in replace_if_use_default.
-template <template <typename...> typename Trait, typename... Args>
+template <template <class...> class Trait, class... Args>
 struct lazy_trait
 {
   using type = Trait<Args...>;
 };
 
-template <typename It, typename FallbackT, bool = ::cuda::std::is_void_v<::cuda::std::remove_pointer_t<It>>>
+template <class It, class FallbackT, bool = ::cuda::std::is_void_v<::cuda::std::remove_pointer_t<It>>>
 struct non_void_value_impl
 {
   using type = FallbackT;
 };
 
-template <typename It, typename FallbackT>
+template <class It, class FallbackT>
 struct non_void_value_impl<It, FallbackT, false>
 {
   // we consider thrust::discard_iterator's value_type (`any_assign`) as `void` as well, so users can switch from
@@ -112,7 +112,7 @@ struct non_void_value_impl<It, FallbackT, false>
  * ... then the FallbackT,
  * ... else the IteratorT's value type
  */
-template <typename It, typename FallbackT>
+template <class It, class FallbackT>
 using non_void_value_t = typename non_void_value_impl<It, FallbackT>::type;
 } // namespace detail
 
@@ -171,11 +171,11 @@ struct NullType
 
   NullType() = default;
 
-  template <typename T>
+  template <class T>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE explicit NullType(const T&)
   {}
 
-  template <typename T>
+  template <class T>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE NullType& operator=(const T&)
   {
     return *this;
@@ -229,7 +229,7 @@ inline constexpr auto constant_v = constant_t<Value>{};
  * allocator.DeviceFree(d_intermediate_result);
  * \endcode
  */
-template <typename T, typename IterT = T*>
+template <class T, class IterT = T*>
 struct FutureValue
 {
   using value_type    = T;
@@ -248,7 +248,7 @@ private:
   IterT m_iter;
 };
 
-template <typename IterT>
+template <class IterT>
 FutureValue(IterT) -> FutureValue<detail::it_value_t<IterT>, IterT>;
 
 namespace detail
@@ -256,7 +256,7 @@ namespace detail
 /**
  * \brief Allows algorithms to instantiate a single kernel to support both immediate value and future value.
  */
-template <typename T, typename IterT = T*>
+template <class T, class IterT = T*>
 struct InputValue
 {
   using value_type    = T;
@@ -307,7 +307,7 @@ private:
 namespace detail
 {
 /// Structure alignment
-template <typename T>
+template <class T>
 struct AlignBytes
 {
   /// The "true CUDA" alignment of T in bytes
@@ -377,22 +377,22 @@ __CUB_ALIGN_BYTES(double4_32a, 32)
 #  endif // _CCCL_CTK_AT_LEAST(13, 0)
 
 // clang-format off
-template <typename T> struct AlignBytes<volatile T> : AlignBytes<T> {};
-template <typename T> struct AlignBytes<const T> : AlignBytes<T> {};
-template <typename T> struct AlignBytes<const volatile T> : AlignBytes<T> {};
+template <class T> struct AlignBytes<volatile T> : AlignBytes<T> {};
+template <class T> struct AlignBytes<const T> : AlignBytes<T> {};
+template <class T> struct AlignBytes<const volatile T> : AlignBytes<T> {};
 // clang-format on
 } // namespace detail
 
-template <typename T>
+template <class T>
 using AlignBytes CCCL_DEPRECATED_BECAUSE("Use alignof(T) directly") = detail::AlignBytes<T>;
 
 /// Unit-words of data movement
-template <typename T>
+template <class T>
 struct UnitWord
 {
   CCCL_DEPRECATED static constexpr auto ALIGN_BYTES = alignof(T);
 
-  template <typename Unit>
+  template <class Unit>
   struct CCCL_DEPRECATED IsMultiple
   {
     static constexpr auto UNIT_ALIGN_BYTES = alignof(Unit);
@@ -402,7 +402,7 @@ struct UnitWord
 
   // MSVC < 19.39 gets an internal compile error on the __is_multiple variable template below, so use a struct instead
 #  if _CCCL_COMPILER(MSVC, <, 19, 39)
-  template <typename Unit>
+  template <class Unit>
   using __is_multiple =
     ::cuda::std::bool_constant<(sizeof(T) % sizeof(Unit) == 0) && (alignof(T) % alignof(Unit) == 0)>;
 
@@ -422,7 +422,7 @@ struct UnitWord
   using TextureWord =
     ::cuda::std::_If<__is_multiple<int4>::value, uint4, ::cuda::std::_If<__is_multiple<int2>::value, uint2, ShuffleWord>>;
 #  else // _CCCL_COMPILER(MSVC, <, 19, 39)
-  template <typename Unit>
+  template <class Unit>
   static constexpr bool __is_multiple = (sizeof(T) % sizeof(Unit) == 0) && (alignof(T) % alignof(Unit) == 0);
 
   /// Largest shuffle word evenly dividing T and not increasing the alignment
@@ -472,9 +472,9 @@ struct UnitWord<char2>
 };
 
 // clang-format off
-template <typename T> struct UnitWord<volatile T> : UnitWord<T> {};
-template <typename T> struct UnitWord<const T> : UnitWord<T> {};
-template <typename T> struct UnitWord<const volatile T> : UnitWord<T> {};
+template <class T> struct UnitWord<volatile T> : UnitWord<T> {};
+template <class T> struct UnitWord<const T> : UnitWord<T> {};
+template <class T> struct UnitWord<const volatile T> : UnitWord<T> {};
 // clang-format on
 
 /******************************************************************************
@@ -485,7 +485,7 @@ template <typename T> struct UnitWord<const volatile T> : UnitWord<T> {};
  * \brief Exposes a member alias \p Type that names the corresponding CUDA vector type if one exists.  Otherwise \p
  * Type refers to the CubVector structure itself, which will wrap the corresponding \p x, \p y, etc. vector fields.
  */
-template <typename T, int vec_elements>
+template <class T, int vec_elements>
 struct CubVector
 {
   static_assert(!sizeof(T), "CubVector can only have 1-4 elements");
@@ -497,7 +497,7 @@ inline constexpr int MAX_VEC_ELEMENTS = 4;
 /**
  * Generic vector-1 type
  */
-template <typename T>
+template <class T>
 struct CubVector<T, 1>
 {
   T x;
@@ -509,7 +509,7 @@ struct CubVector<T, 1>
 /**
  * Generic vector-2 type
  */
-template <typename T>
+template <class T>
 struct CubVector<T, 2>
 {
   T x;
@@ -522,7 +522,7 @@ struct CubVector<T, 2>
 /**
  * Generic vector-3 type
  */
-template <typename T>
+template <class T>
 struct CubVector<T, 3>
 {
   T x;
@@ -536,7 +536,7 @@ struct CubVector<T, 3>
 /**
  * Generic vector-4 type
  */
-template <typename T>
+template <class T>
 struct CubVector<T, 4>
 {
   T x;
@@ -674,7 +674,7 @@ CUB_DEFINE_VECTOR_TYPE(bool,               uchar)
 
 //! \brief A storage-backing wrapper that allows types with non-trivial constructors to be aliased in unions. Has the
 //! same size as T.
-template <typename T>
+template <class T>
 struct Uninitialized
 {
   /// Largest memory-access word evenly dividing T and not increasing the alignment
@@ -698,7 +698,7 @@ struct Uninitialized
 /**
  * \brief A key identifier paired with a corresponding value
  */
-template <typename _Key, typename _Value>
+template <class _Key, class _Value>
 struct KeyValuePair
 {
   using Key   = _Key; ///< Key data type
@@ -745,7 +745,7 @@ struct KeyValuePair
  * vice-versa for the subsequent pass).  This structure wraps a set of device
  * buffers and a "selector" member to track which is "current".
  */
-template <typename T>
+template <class T>
 struct DoubleBuffer
 {
   /// Pair of device buffer pointers
@@ -786,10 +786,10 @@ struct DoubleBuffer
  * constant member \p value indicating whether or not parameter \p T exposes a nested type \p nested_type_name
  */
 #  define CUB_DEFINE_DETECT_NESTED_TYPE(detector_name, nested_type_name)                                \
-    template <typename T, typename = void>                                                              \
+    template <class T, class = void>                                                                    \
     struct detector_name : ::cuda::std::false_type                                                      \
     {};                                                                                                 \
-    template <typename T>                                                                               \
+    template <class T>                                                                                  \
     struct detector_name<T, ::cuda::std::void_t<typename T::nested_type_name>> : ::cuda::std::true_type \
     {};
 
@@ -801,11 +801,11 @@ struct DoubleBuffer
  * \brief Determine whether or not BinaryOp's functor is of the form <tt>bool operator()(const T& a, const T&b)</tt> or
  * <tt>bool operator()(const T& a, const T&b, unsigned int idx)</tt>
  */
-template <typename T, typename BinaryOp, typename = void>
+template <class T, class BinaryOp, class = void>
 struct BinaryOpHasIdxParam : ::cuda::std::false_type
 {};
 
-template <typename T, typename BinaryOp>
+template <class T, class BinaryOp>
 struct BinaryOpHasIdxParam<T,
                            BinaryOp,
                            ::cuda::std::void_t<decltype(::cuda::std::declval<BinaryOp>()(
@@ -832,7 +832,7 @@ namespace detail
 struct is_primitive_impl;
 
 // case for _CATEGORY = NOT_A_NUMBER, or _PRIMITIVE = false
-template <Category _CATEGORY, bool _PRIMITIVE, typename _UnsignedBits, typename T>
+template <Category _CATEGORY, bool _PRIMITIVE, class _UnsignedBits, class T>
 struct BaseTraits
 {
 private:
@@ -841,7 +841,7 @@ private:
   static constexpr bool is_primitive = _PRIMITIVE;
 };
 
-template <typename _UnsignedBits, typename T>
+template <class _UnsignedBits, class T>
 struct BaseTraits<UNSIGNED_INTEGER, true, _UnsignedBits, T>
 {
   static_assert(sizeof(_UnsignedBits) == sizeof(T),
@@ -888,7 +888,7 @@ private:
   static constexpr bool is_primitive = true;
 };
 
-template <typename _UnsignedBits, typename T>
+template <class _UnsignedBits, class T>
 struct BaseTraits<SIGNED_INTEGER, true, _UnsignedBits, T>
 {
   static_assert(sizeof(_UnsignedBits) == sizeof(T),
@@ -933,7 +933,7 @@ private:
   static constexpr bool is_primitive = true;
 };
 
-template <typename _UnsignedBits, typename T>
+template <class _UnsignedBits, class T>
 struct BaseTraits<FLOATING_POINT, true, _UnsignedBits, T>
 {
   static_assert(sizeof(_UnsignedBits) == sizeof(T),
@@ -983,7 +983,7 @@ private:
 
 //! Use this class as base when specializing \ref NumericTraits for primitive signed/unsigned integers or floating-point
 //! types.
-template <Category _CATEGORY, bool _PRIMITIVE, typename _UnsignedBits, typename T>
+template <Category _CATEGORY, bool _PRIMITIVE, class _UnsignedBits, class T>
 using BaseTraits = detail::BaseTraits<_CATEGORY, _PRIMITIVE, _UnsignedBits, T>;
 
 //! Numeric type traits for radix sort key operations, decoupled lookback and tuning. You can specialize this template
@@ -993,7 +993,7 @@ using BaseTraits = detail::BaseTraits<_CATEGORY, _PRIMITIVE, _UnsignedBits, T>;
 //! * The arithmetic throughput of the type is similar to other built-in types of the same size
 //! For other types, if you want to use them with radix sort, please use the decomposer interface of the radix sort.
 // clang-format off
-template <typename T> struct NumericTraits :            BaseTraits<NOT_A_NUMBER, false, T, T> {};
+template <class T> struct NumericTraits :            BaseTraits<NOT_A_NUMBER, false, T, T> {};
 
 template <> struct NumericTraits<NullType> :            BaseTraits<NOT_A_NUMBER, false, NullType, NullType> {};
 
@@ -1112,14 +1112,14 @@ template <> struct NumericTraits<bool> :                BaseTraits<UNSIGNED_INTE
 
 namespace detail
 {
-template <typename T>
+template <class T>
 struct Traits : NumericTraits<::cuda::std::remove_cv_t<T>>
 {};
 } // namespace detail
 
 //! \brief Query type traits for radix sort key operations, decoupled lookback and tunings. To add support for your own
 //! primitive types please specialize \ref NumericTraits.
-template <typename T>
+template <class T>
 using Traits = detail::Traits<T>;
 
 namespace detail
@@ -1128,7 +1128,7 @@ namespace detail
 struct is_primitive_impl
 {
   // must be a struct instead of an alias, so the access of Traits<T>::is_primitive happens in the context of this class
-  template <typename T>
+  template <class T>
   struct is_primitive : ::cuda::std::bool_constant<Traits<T>::is_primitive>
   {};
 };
@@ -1139,11 +1139,11 @@ struct is_primitive_impl
 // loaded/stored with a single instruction.
 // TODO(bgruber): for 2. we should probably just check whether sizeof(T) * 2 <= sizeof(int128) (or 256-bit on SM100)
 // Users must be able to hook into both scenarios with their custom types, so this trait must depend on cub::Traits
-template <typename T>
+template <class T>
 struct is_primitive : is_primitive_impl::is_primitive<T>
 {};
 
-template <typename T>
+template <class T>
 inline constexpr bool is_primitive_v = is_primitive<T>::value;
 } // namespace detail
 

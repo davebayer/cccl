@@ -28,7 +28,7 @@ namespace detail::params
 // -----------------------------------------------------------------------------
 
 // Allows providing constrains on parameter values at compile time
-template <typename T, T Min = ::cuda::std::numeric_limits<T>::lowest(), T Max = ::cuda::std::numeric_limits<T>::max()>
+template <class T, T Min = ::cuda::std::numeric_limits<T>::lowest(), T Max = ::cuda::std::numeric_limits<T>::max()>
 struct static_bounds_mixin
 {
   static_assert(Min <= Max, "Min must be <= Max");
@@ -43,7 +43,7 @@ struct static_bounds_mixin
 
 // Allows specifying a list of supported options for a parameter. E.g., the orders (ascending, descending) that are
 // supported by a sorting algorithm.
-template <typename T, T... Options>
+template <class T, T... Options>
 struct supported_options
 {
   static constexpr size_t count = sizeof...(Options);
@@ -54,12 +54,12 @@ struct supported_options
 // -----------------------------------------------------------------------------
 
 // A compile-time constant
-template <typename T, T Value>
+template <class T, T Value>
 struct static_constant_param : public static_bounds_mixin<T, Value, Value>
 {
   using value_type = T;
 
-  template <typename SegmentIndexT>
+  template <class SegmentIndexT>
   _CCCL_HOST_DEVICE constexpr auto get_param([[maybe_unused]] SegmentIndexT segment_id) const
   {
     static_assert(static_bounds_mixin<T, Value, Value>::is_exact, "Static parameter must have exact value");
@@ -70,7 +70,7 @@ struct static_constant_param : public static_bounds_mixin<T, Value, Value>
 // 1. Uniform Param
 // -----------------------------------------------------------------------------
 // Added default template args so CTAD can deduce T and default Min/Max
-template <typename T, T Min = ::cuda::std::numeric_limits<T>::lowest(), T Max = ::cuda::std::numeric_limits<T>::max()>
+template <class T, T Min = ::cuda::std::numeric_limits<T>::lowest(), T Max = ::cuda::std::numeric_limits<T>::max()>
 struct uniform_param : public static_bounds_mixin<T, Min, Max>
 {
   using value_type = T;
@@ -83,24 +83,24 @@ struct uniform_param : public static_bounds_mixin<T, Min, Max>
 
   uniform_param() = default;
 
-  template <typename SegmentIndexT>
+  template <class SegmentIndexT>
   _CCCL_HOST_DEVICE constexpr auto get_param([[maybe_unused]] SegmentIndexT segment_id) const
   {
     return value;
   }
 };
 
-template <typename T>
+template <class T>
 uniform_param(T) -> uniform_param<T>;
 
 // -----------------------------------------------------------------------------
 // 2. Per-Segment Param
 // -----------------------------------------------------------------------------
 // Added defaults for T, Min, and Max based on the Iterator's value_type
-template <typename IteratorT,
-          typename T = typename ::cuda::std::iterator_traits<IteratorT>::value_type,
-          T Min      = ::cuda::std::numeric_limits<T>::lowest(),
-          T Max      = ::cuda::std::numeric_limits<T>::max()>
+template <class IteratorT,
+          class T = typename ::cuda::std::iterator_traits<IteratorT>::value_type,
+          T Min   = ::cuda::std::numeric_limits<T>::lowest(),
+          T Max   = ::cuda::std::numeric_limits<T>::max()>
 struct per_segment_param : public static_bounds_mixin<T, Min, Max>
 {
   using iterator_type = IteratorT;
@@ -118,7 +118,7 @@ struct per_segment_param : public static_bounds_mixin<T, Min, Max>
 
   per_segment_param() = default;
 
-  template <typename SegmentIndexT>
+  template <class SegmentIndexT>
   _CCCL_HOST_DEVICE constexpr auto get_param(SegmentIndexT segment_id) const
   {
     return iterator[segment_id];
@@ -128,13 +128,13 @@ struct per_segment_param : public static_bounds_mixin<T, Min, Max>
 // Deduction Guide:
 // Allows: per_segment_param{iter} -> per_segment_param<IteratorT, ValueT, Min,
 // Max>
-template <typename IteratorT>
+template <class IteratorT>
 per_segment_param(IteratorT) -> per_segment_param<IteratorT>;
 
 // -----------------------------------------------------------------------------
 // 3. Uniform Discrete Param
 // -----------------------------------------------------------------------------
-template <typename T, T... Options>
+template <class T, T... Options>
 struct uniform_discrete_param
 {
   using value_type          = T;
@@ -148,7 +148,7 @@ struct uniform_discrete_param
 
   uniform_discrete_param() = default;
 
-  template <typename SegmentIndexT>
+  template <class SegmentIndexT>
   _CCCL_HOST_DEVICE constexpr auto get_param([[maybe_unused]] SegmentIndexT segment_id) const
   {
     return value;
@@ -158,7 +158,7 @@ struct uniform_discrete_param
 // -----------------------------------------------------------------------------
 // 4. Per-Segment Discrete Param
 // -----------------------------------------------------------------------------
-template <typename IteratorT, typename T, T... Options>
+template <class IteratorT, class T, T... Options>
 struct per_segment_discrete_param
 {
   using iterator_type       = IteratorT;
@@ -173,7 +173,7 @@ struct per_segment_discrete_param
 
   per_segment_discrete_param() = default;
 
-  template <typename SegmentIndexT>
+  template <class SegmentIndexT>
   _CCCL_HOST_DEVICE constexpr auto get_param(SegmentIndexT segment_id) const
   {
     return iterator[segment_id];
@@ -183,45 +183,45 @@ struct per_segment_discrete_param
 // -----------------------------------------------------------------------------
 // Parameter Type Helpers
 // -----------------------------------------------------------------------------
-template <typename T>
+template <class T>
 inline constexpr bool is_static_param_v = false;
 
-template <typename T, T Value>
+template <class T, T Value>
 inline constexpr bool is_static_param_v<static_constant_param<T, Value>> = true;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_uniform_param_v = false;
 
-template <typename T, T Min, T Max>
+template <class T, T Min, T Max>
 inline constexpr bool is_uniform_param_v<uniform_param<T, Min, Max>> = true;
 
-template <typename T, T... Options>
+template <class T, T... Options>
 inline constexpr bool is_uniform_param_v<uniform_discrete_param<T, Options...>> = true;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_per_segment_param_v = false;
 
-template <typename IteratorT, typename T, T Min, T Max>
+template <class IteratorT, class T, T Min, T Max>
 inline constexpr bool is_per_segment_param_v<per_segment_param<IteratorT, T, Min, Max>> = true;
 
-template <typename IteratorT, typename T, T... Options>
+template <class IteratorT, class T, T... Options>
 inline constexpr bool is_per_segment_param_v<per_segment_discrete_param<IteratorT, T, Options...>> = true;
 
 // Get max value (works for all types inheriting bounds_mixin)
-template <typename T>
+template <class T>
 inline constexpr auto static_max_value_v = T::static_max_value;
 
 // Get min value (works for all types inheriting bounds_mixin)
-template <typename T>
+template <class T>
 inline constexpr auto static_min_value_v = T::static_min_value;
 
 // Whether a given parameter allows only for a single static value
-template <typename T>
+template <class T>
 inline constexpr bool has_single_static_value_v = (static_max_value_v<T> == static_min_value_v<T>);
 
 // Helper that translates a runtime parameter value into a compile-time constant by matching against a list of supported
 // options.
-template <typename T, T... Opts, typename Functor>
+template <class T, T... Opts, class Functor>
 _CCCL_HOST_DEVICE bool dispatch_impl(T val, supported_options<T, Opts...>, Functor&& f)
 {
   // Fold expression over the supported options.
@@ -239,7 +239,7 @@ _CCCL_HOST_DEVICE bool dispatch_impl(T val, supported_options<T, Opts...>, Funct
 
 // Dispatcher that matches a runtime parameter value against a list of supported options and invokes a functor with the
 // matched option as a compile-time constant.
-template <typename ParamT, typename SegmentIndexT, typename Functor>
+template <class ParamT, class SegmentIndexT, class Functor>
 _CCCL_HOST_DEVICE bool dispatch_discrete(ParamT param, SegmentIndexT segment_id, Functor&& f)
 {
   using supported_list = typename ParamT::supported_options_t;

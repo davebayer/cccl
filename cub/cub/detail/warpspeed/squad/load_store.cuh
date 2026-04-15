@@ -31,7 +31,7 @@ namespace detail::warpspeed
 {
 #if __cccl_ptx_isa >= 860
 
-template <typename Tp>
+template <class Tp>
 struct CpAsyncOobInfo
 {
   // The aligned up and down pointers below must be ::cuda::std::byte*, since the nearest aligned up/down ptr may not
@@ -53,7 +53,7 @@ struct CpAsyncOobInfo
                                                       // still contains valid (partial) elements
 };
 
-template <typename Tp>
+template <class Tp>
 _CCCL_DEVICE_API _CCCL_FORCEINLINE CpAsyncOobInfo<Tp> prepareCpAsyncOob(Tp* ptrGmem, ::cuda::std::uint32_t sizeElem)
 {
   auto ptrGmemBytes = reinterpret_cast<::cuda::std::byte*>(ptrGmem);
@@ -95,7 +95,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE CpAsyncOobInfo<Tp> prepareCpAsyncOob(Tp* ptrG
   };
 }
 
-template <typename ResourceTp, typename Tp>
+template <class ResourceTp, class Tp>
 _CCCL_DEVICE_API void squadLoadBulk(Squad squad, SmemRef<ResourceTp>& refDestSmem, CpAsyncOobInfo<Tp> cpAsyncOobInfo)
 {
   ::cuda::std::byte* ptrSmem = refDestSmem.data().inout;
@@ -203,7 +203,7 @@ _CCCL_DEVICE_API void squadLoadBulk(Squad squad, SmemRef<ResourceTp>& refDestSme
   }
 }
 
-template <typename OutputT>
+template <class OutputT>
 _CCCL_DEVICE_API void
 squadStoreBulkSync(Squad squad, CpAsyncOobInfo<OutputT> cpAsyncOobInfo, const ::cuda::std::byte* srcSmem)
 {
@@ -325,7 +325,7 @@ squadStoreBulkSync(Squad squad, CpAsyncOobInfo<OutputT> cpAsyncOobInfo, const ::
 
 #endif // __cccl_ptx_isa >= 860
 
-template <typename InputT, typename AccumT, int ElemPerThread>
+template <class InputT, class AccumT, int ElemPerThread>
 _CCCL_DEVICE_API void squadLoadSmem(Squad squad, AccumT (&outReg)[ElemPerThread], const InputT* smemBuf)
 {
   for (int i = 0; i < ElemPerThread; ++i)
@@ -335,7 +335,7 @@ _CCCL_DEVICE_API void squadLoadSmem(Squad squad, AccumT (&outReg)[ElemPerThread]
   }
 }
 
-template <typename OutputT, typename AccumT, int ElemPerThread>
+template <class OutputT, class AccumT, int ElemPerThread>
 _CCCL_DEVICE_API void squadStoreSmem(Squad squad, OutputT* smemBuf, const AccumT (&inReg)[ElemPerThread])
 {
   for (int i = 0; i < ElemPerThread; ++i)
@@ -345,7 +345,7 @@ _CCCL_DEVICE_API void squadStoreSmem(Squad squad, OutputT* smemBuf, const AccumT
   }
 }
 
-template <typename OutputT, typename AccumT, int ElemPerThread>
+template <class OutputT, class AccumT, int ElemPerThread>
 _CCCL_DEVICE_API void
 squadStoreSmemPartial(Squad squad, OutputT* smemBuf, const AccumT (&inReg)[ElemPerThread], int beginIndex, int endIndex)
 {

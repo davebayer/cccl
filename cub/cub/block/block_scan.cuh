@@ -206,7 +206,7 @@ inline ::std::ostream& operator<<(::std::ostream& os, BlockScanAlgorithm algo)
 //! @tparam BlockDimZ
 //!   **[optional]** The thread block length in threads along the Z dimension (default: 1)
 //!
-template <typename T, int BlockDimX, BlockScanAlgorithm Algorithm = BLOCK_SCAN_RAKING, int BlockDimY = 1, int BlockDimZ = 1>
+template <class T, int BlockDimX, BlockScanAlgorithm Algorithm = BLOCK_SCAN_RAKING, int BlockDimY = 1, int BlockDimZ = 1>
 class BlockScan
 {
 private:
@@ -430,7 +430,7 @@ public:
   //!   *warp*\ :sub:`0` only call-back functor for specifying a block-wide prefix to be applied to
   //!   the logical input sequence.
   //!   @endrst
-  template <typename BlockPrefixCallbackOp>
+  template <class BlockPrefixCallbackOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ExclusiveSum(T input, T& output, BlockPrefixCallbackOp& block_prefix_callback_op)
   {
     ExclusiveScan(input, output, ::cuda::std::plus<>{}, block_prefix_callback_op);
@@ -664,7 +664,7 @@ public:
   //!
   //! @param[in] scan_op
   //!   Binary scan functor
-  template <typename ScanOp>
+  template <class ScanOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ExclusiveScan(T input, T& output, T initial_value, ScanOp scan_op)
   {
     InternalBlockScan(temp_storage).ExclusiveScan(input, output, initial_value, scan_op);
@@ -725,7 +725,7 @@ public:
   //!
   //! @param[out] block_aggregate
   //!   block-wide aggregate reduction of input items
-  template <typename ScanOp>
+  template <class ScanOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   ExclusiveScan(T input, T& output, T initial_value, ScanOp scan_op, T& block_aggregate)
   {
@@ -833,7 +833,7 @@ public:
   //!   *warp*\ :sub:`0` only call-back functor for specifying a block-wide prefix to be applied to
   //!   the logical input sequence.
   //!   @endrst
-  template <typename ScanOp, typename BlockPrefixCallbackOp>
+  template <class ScanOp, class BlockPrefixCallbackOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   ExclusiveScan(T input, T& output, ScanOp scan_op, BlockPrefixCallbackOp& block_prefix_callback_op)
   {
@@ -1115,7 +1115,7 @@ public:
   //!
   //! @param[in] scan_op
   //!   Binary scan functor
-  template <typename ScanOp>
+  template <class ScanOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ExclusiveScan(T input, T& output, ScanOp scan_op)
   {
     InternalBlockScan(temp_storage).ExclusiveScan(input, output, scan_op);
@@ -1147,7 +1147,7 @@ public:
   //!
   //! @param[out] block_aggregate
   //!   block-wide aggregate reduction of input items
-  template <typename ScanOp>
+  template <class ScanOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ExclusiveScan(T input, T& output, ScanOp scan_op, T& block_aggregate)
   {
     InternalBlockScan(temp_storage).ExclusiveScan(input, output, scan_op, block_aggregate);
@@ -1420,7 +1420,7 @@ public:
   //!   *warp*\ :sub:`0` only call-back functor for specifying a block-wide prefix to be applied
   //!   to the logical input sequence.
   //!   @endrst
-  template <typename BlockPrefixCallbackOp>
+  template <class BlockPrefixCallbackOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void InclusiveSum(T input, T& output, BlockPrefixCallbackOp& block_prefix_callback_op)
   {
     InclusiveScan(input, output, ::cuda::std::plus<>{}, block_prefix_callback_op);
@@ -1683,7 +1683,7 @@ public:
   //!
   //! @param[in] scan_op
   //!   Binary scan functor
-  template <typename ScanOp>
+  template <class ScanOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void InclusiveScan(T input, T& output, ScanOp scan_op)
   {
     InternalBlockScan(temp_storage).InclusiveScan(input, output, scan_op);
@@ -1748,7 +1748,7 @@ public:
   //!
   //! @param[out] block_aggregate
   //!   Block-wide aggregate reduction of input items
-  template <typename ScanOp>
+  template <class ScanOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void InclusiveScan(T input, T& output, ScanOp scan_op, T& block_aggregate)
   {
     InternalBlockScan(temp_storage).InclusiveScan(input, output, scan_op, block_aggregate);
@@ -1819,7 +1819,7 @@ public:
   //!   *warp*\ :sub:`0` only call-back functor for specifying a block-wide prefix to be applied to
   //!   the logical input sequence.
   //!   @endrst
-  template <typename ScanOp, typename BlockPrefixCallbackOp>
+  template <class ScanOp, class BlockPrefixCallbackOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   InclusiveScan(T input, T& output, ScanOp scan_op, BlockPrefixCallbackOp& block_prefix_callback_op)
   {

@@ -29,7 +29,7 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail
 {
-template <typename InputT, int ITEMS_PER_THREAD, int LOGICAL_WARP_THREADS = warp_threads>
+template <class InputT, int ITEMS_PER_THREAD, int LOGICAL_WARP_THREADS = warp_threads>
 class WarpExchangeSmem
 {
   static_assert(::cuda::is_power_of_two(LOGICAL_WARP_THREADS), "LOGICAL_WARP_THREADS must be a power of two");
@@ -71,7 +71,7 @@ public:
       , member_mask(WarpMask<LOGICAL_WARP_THREADS>(warp_id))
   {}
 
-  template <typename OutputT>
+  template <class OutputT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   BlockedToStriped(const InputT (&input_items)[ITEMS_PER_THREAD], OutputT (&output_items)[ITEMS_PER_THREAD])
   {
@@ -89,7 +89,7 @@ public:
     }
   }
 
-  template <typename OutputT>
+  template <class OutputT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   StripedToBlocked(const InputT (&input_items)[ITEMS_PER_THREAD], OutputT (&output_items)[ITEMS_PER_THREAD])
   {
@@ -107,14 +107,14 @@ public:
     }
   }
 
-  template <typename OffsetT>
+  template <class OffsetT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   ScatterToStriped(InputT (&items)[ITEMS_PER_THREAD], OffsetT (&ranks)[ITEMS_PER_THREAD])
   {
     ScatterToStriped(items, items, ranks);
   }
 
-  template <typename OutputT, typename OffsetT>
+  template <class OutputT, class OffsetT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ScatterToStriped(
     const InputT (&input_items)[ITEMS_PER_THREAD],
     OutputT (&output_items)[ITEMS_PER_THREAD],

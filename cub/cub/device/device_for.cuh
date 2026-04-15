@@ -1102,7 +1102,7 @@ public:
   //!
   //! @return cudaError_t
   //!   error status
-  template <typename IndexType, size_t... Extents, typename OpType>
+  template <class IndexType, size_t... Extents, class OpType>
   CUB_RUNTIME_FUNCTION static cudaError_t ForEachInExtents(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1186,10 +1186,10 @@ public:
   //!
   //! @return cudaError_t
   //!   error status
-  template <typename IndexType,
+  template <class IndexType,
             size_t... Extents,
-            typename OpType,
-            typename EnvT = ::cuda::std::execution::env<>,
+            class OpType,
+            class EnvT = ::cuda::std::execution::env<>,
             ::cuda::std::enable_if_t<!::cuda::std::is_convertible_v<EnvT, cudaStream_t>, int> = 0>
   CUB_RUNTIME_FUNCTION static cudaError_t
   ForEachInExtents(const ::cuda::std::extents<IndexType, Extents...>& extents, OpType op, EnvT env = {})
@@ -1199,7 +1199,7 @@ public:
   }
 
   // We keep this overload around to support types that are convertible to `cudaStream_t` but not copyable
-  template <typename IndexType, size_t... Extents, typename OpType>
+  template <class IndexType, size_t... Extents, class OpType>
   CUB_RUNTIME_FUNCTION static cudaError_t
   ForEachInExtents(const ::cuda::std::extents<IndexType, Extents...>& extents, OpType op, cudaStream_t stream)
   {

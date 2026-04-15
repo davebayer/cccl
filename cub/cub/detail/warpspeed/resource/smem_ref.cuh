@@ -21,7 +21,7 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail::warpspeed
 {
-template <typename _Tp>
+template <class _Tp>
 struct SmemRef
 {
   SmemResourceRaw& mSmemResourceRaw;

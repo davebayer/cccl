@@ -301,7 +301,7 @@ public:
   //!   Note: This range is aliasing the `smem_dst` buffer. So `smem_dst` should not be written to/reused while this
   //!   range is still in use!
   // TODO Allow spans with static sizes?
-  template <typename T, ::cuda::std::size_t GmemAlign = alignof(T)>
+  template <class T, ::cuda::std::size_t GmemAlign = alignof(T)>
   [[nodiscard]] _CCCL_DEVICE_API _CCCL_FORCEINLINE ::cuda::std::span<T>
   CopyAsync(::cuda::std::span<char> smem_dst, ::cuda::std::span<const T> gmem_src)
   {
@@ -363,7 +363,7 @@ public:
 
   // Avoid need to explicitly specify `T` for non-const src.
   //! @brief Convenience overload, see `CopyAsync(span<char>, span<const T>)`.
-  template <typename T, ::cuda::std::size_t GmemAlign = alignof(T)>
+  template <class T, ::cuda::std::size_t GmemAlign = alignof(T)>
   [[nodiscard]] _CCCL_DEVICE_API _CCCL_FORCEINLINE ::cuda::std::span<T>
   CopyAsync(::cuda::std::span<char> smem_dst, ::cuda::std::span<T> gmem_src)
   {
