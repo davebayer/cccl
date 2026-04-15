@@ -31,14 +31,14 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
-template <typename _Tp>
+template <class _Tp>
 struct __atomic_traits
 {
   static constexpr bool __atomic_requires_lock  = !__atomic_is_always_lock_free<_Tp>::__value;
   static constexpr bool __atomic_requires_small = sizeof(_Tp) < 4;
 };
 
-template <typename _Tp>
+template <class _Tp>
 using __atomic_storage_t =
   _If<__atomic_traits<_Tp>::__atomic_requires_small,
       __atomic_small_storage<_Tp>,

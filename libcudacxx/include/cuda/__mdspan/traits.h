@@ -28,20 +28,20 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA
 
-template <typename _LayoutPolicy>
+template <class _LayoutPolicy>
 inline constexpr bool __is_layout_right_v = ::cuda::std::is_same_v<_LayoutPolicy, ::cuda::std::layout_right>;
 
-template <typename _LayoutPolicy>
+template <class _LayoutPolicy>
 inline constexpr bool __is_layout_left_v = ::cuda::std::is_same_v<_LayoutPolicy, ::cuda::std::layout_left>;
 
-template <typename _LayoutPolicy>
+template <class _LayoutPolicy>
 inline constexpr bool __is_layout_stride_v = ::cuda::std::is_same_v<_LayoutPolicy, ::cuda::std::layout_stride>;
 
-template <typename _LayoutPolicy>
+template <class _LayoutPolicy>
 inline constexpr bool __is_layout_stride_relaxed_v =
   ::cuda::std::is_same_v<_LayoutPolicy, ::cuda::layout_stride_relaxed>;
 
-template <typename _LayoutPolicy>
+template <class _LayoutPolicy>
 inline constexpr bool __is_cuda_mdspan_layout_v =
   __is_layout_right_v<_LayoutPolicy> || __is_layout_left_v<_LayoutPolicy> || __is_layout_stride_v<_LayoutPolicy>
   || __is_layout_stride_relaxed_v<_LayoutPolicy>;

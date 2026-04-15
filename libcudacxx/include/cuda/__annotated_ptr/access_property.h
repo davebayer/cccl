@@ -29,7 +29,7 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA
 
-template <typename>
+template <class>
 class __annotated_ptr_base; // forward declaration
 
 class access_property

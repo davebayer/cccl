@@ -344,58 +344,58 @@ inline constexpr bool is_commutative_v = __is_commutative_v<_Op, ::cuda::std::re
  * Internal helpers
  **********************************************************************************************************************/
 
-template <typename>
+template <class>
 inline constexpr bool __is_cuda_std_plus_v = false;
 
-template <typename... _Tp>
+template <class... _Tp>
 inline constexpr bool __is_cuda_std_plus_v<::cuda::std::plus<_Tp...>> = true;
 
-template <typename>
+template <class>
 inline constexpr bool __is_cuda_std_multiplies_v = false;
 
-template <typename... _Tp>
+template <class... _Tp>
 inline constexpr bool __is_cuda_std_multiplies_v<::cuda::std::multiplies<_Tp...>> = true;
 
-template <typename>
+template <class>
 inline constexpr bool __is_cuda_std_bit_and_v = false;
 
-template <typename... _Tp>
+template <class... _Tp>
 inline constexpr bool __is_cuda_std_bit_and_v<::cuda::std::bit_and<_Tp...>> = true;
 
-template <typename>
+template <class>
 inline constexpr bool __is_cuda_std_bit_or_v = false;
 
-template <typename... _Tp>
+template <class... _Tp>
 inline constexpr bool __is_cuda_std_bit_or_v<::cuda::std::bit_or<_Tp...>> = true;
 
-template <typename>
+template <class>
 inline constexpr bool __is_cuda_std_bit_xor_v = false;
 
-template <typename... _Tp>
+template <class... _Tp>
 inline constexpr bool __is_cuda_std_bit_xor_v<::cuda::std::bit_xor<_Tp...>> = true;
 
-template <typename>
+template <class>
 inline constexpr bool __is_cuda_std_logical_and_v = false;
 
-template <typename... _Tp>
+template <class... _Tp>
 inline constexpr bool __is_cuda_std_logical_and_v<::cuda::std::logical_and<_Tp...>> = true;
 
-template <typename>
+template <class>
 inline constexpr bool __is_cuda_std_logical_or_v = false;
 
-template <typename... _Tp>
+template <class... _Tp>
 inline constexpr bool __is_cuda_std_logical_or_v<::cuda::std::logical_or<_Tp...>> = true;
 
-template <typename>
+template <class>
 inline constexpr bool __is_cuda_minimum_v = false;
 
-template <typename... _Tp>
+template <class... _Tp>
 inline constexpr bool __is_cuda_minimum_v<::cuda::minimum<_Tp...>> = true;
 
-template <typename>
+template <class>
 inline constexpr bool __is_cuda_maximum_v = false;
 
-template <typename... _Tp>
+template <class... _Tp>
 inline constexpr bool __is_cuda_maximum_v<::cuda::maximum<_Tp...>> = true;
 
 /***********************************************************************************************************************

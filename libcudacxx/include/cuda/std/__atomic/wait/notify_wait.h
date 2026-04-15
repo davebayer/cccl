@@ -32,7 +32,7 @@ _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
 extern "C" _CCCL_DEVICE void __atomic_try_wait_unsupported_before_SM_70__();
 
-template <typename _Tp, typename _Sco>
+template <class _Tp, class _Sco>
 _CCCL_API inline void
 __atomic_try_wait_slow(_Tp const volatile* __a, __atomic_underlying_remove_cv_t<_Tp> __val, memory_order __order, _Sco)
 {
@@ -41,19 +41,19 @@ __atomic_try_wait_slow(_Tp const volatile* __a, __atomic_underlying_remove_cv_t<
                      , NV_ANY_TARGET, __atomic_try_wait_unsupported_before_SM_70__(););
 }
 
-template <typename _Tp, typename _Sco>
+template <class _Tp, class _Sco>
 _CCCL_API inline void __atomic_notify_one(_Tp const volatile*, _Sco)
 {
   NV_DISPATCH_TARGET(NV_PROVIDES_SM_70, , NV_IS_HOST, , NV_ANY_TARGET, __atomic_try_wait_unsupported_before_SM_70__(););
 }
 
-template <typename _Tp, typename _Sco>
+template <class _Tp, class _Sco>
 _CCCL_API inline void __atomic_notify_all(_Tp const volatile*, _Sco)
 {
   NV_DISPATCH_TARGET(NV_PROVIDES_SM_70, , NV_IS_HOST, , NV_ANY_TARGET, __atomic_try_wait_unsupported_before_SM_70__(););
 }
 
-template <typename _Tp>
+template <class _Tp>
 _CCCL_API inline bool __nonatomic_compare_equal(_Tp const& __lhs, _Tp const& __rhs)
 {
 #if _CCCL_CUDA_COMPILATION()
@@ -63,7 +63,7 @@ _CCCL_API inline bool __nonatomic_compare_equal(_Tp const& __lhs, _Tp const& __r
 #endif // ^^^ !_CCCL_CUDA_COMPILATION() ^^^
 }
 
-template <typename _Tp, typename _Sco>
+template <class _Tp, class _Sco>
 _CCCL_API inline void __atomic_wait(
   _Tp const volatile* __a, __atomic_underlying_remove_cv_t<_Tp> const __val, memory_order __order, _Sco = {})
 {

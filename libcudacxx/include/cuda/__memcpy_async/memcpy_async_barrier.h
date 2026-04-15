@@ -54,7 +54,7 @@ struct __single_thread_group
   };
 };
 
-template <typename _Group, class _Tp, typename _Size, thread_scope _Sco, typename _CompF>
+template <class _Group, class _Tp, class _Size, thread_scope _Sco, class _CompF>
 _CCCL_API inline async_contract_fulfillment __memcpy_async_barrier(
   _Group const& __group, _Tp* __destination, _Tp const* __source, _Size __size, barrier<_Sco, _CompF>& __barrier)
 {

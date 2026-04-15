@@ -43,7 +43,7 @@ _CCCL_BEGIN_NAMESPACE_CUDA
 namespace __detail
 {
 // This function turns rvalues into prvalues and leaves lvalues as is.
-template <typename _Tp>
+template <class _Tp>
 _CCCL_API constexpr auto __ixnay_xvalue(_Tp&& __value) noexcept(::cuda::std::is_nothrow_move_constructible_v<_Tp>)
   -> _Tp
 {
@@ -51,7 +51,7 @@ _CCCL_API constexpr auto __ixnay_xvalue(_Tp&& __value) noexcept(::cuda::std::is_
 }
 } // namespace __detail
 
-template <typename _Tp>
+template <class _Tp>
 using __remove_rvalue_reference_t = decltype(__detail::__ixnay_xvalue(::cuda::std::declval<_Tp>()));
 
 namespace __tfx
@@ -78,11 +78,11 @@ struct _CCCL_TYPE_VISIBILITY_DEFAULT __launch_transform_t
 {
   // Types that want to customize `launch_transform` should define overloads of
   // transform_launch_argument that are find-able by ADL.
-  template <typename _Arg>
+  template <class _Arg>
   using __transform_result_t = __remove_rvalue_reference_t<decltype(transform_launch_argument(
     ::cuda::stream_ref{::cudaStream_t{}}, ::cuda::std::declval<_Arg>()))>;
 
-  template <typename _Arg>
+  template <class _Arg>
   using __transformed_argument_t =
     __remove_rvalue_reference_t<decltype(::cuda::std::declval<_Arg>().transformed_argument())>;
 
@@ -102,14 +102,14 @@ struct _CCCL_TYPE_VISIBILITY_DEFAULT __launch_transform_t
   //
   // What I really wanted to do was:
   //
-  //   template <typename Arg>
+  //   template <class Arg>
   //   auto operator()(::cuda::stream_ref stream, Arg&& arg, auto&& action = transform_launch_argument(arg))
   //
   // but sadly that is not valid C++.
   // TODO move to use __variant type once cuda/experimental/execution/__variant is moved to libcudacxx
   // NOTE: The above seems to only apply if the type is not trivially destructible. To use the optional here I had to
   // add a destructor.
-  template <typename _Tp>
+  template <class _Tp>
   struct __optional_with_a_destructor : ::cuda::std::optional<_Tp>
   {
     using ::cuda::std::optional<_Tp>::optional;
@@ -125,7 +125,7 @@ struct _CCCL_TYPE_VISIBILITY_DEFAULT __launch_transform_t
     }
   };
 
-  _CCCL_TEMPLATE(typename _Stream, typename _Arg)
+  _CCCL_TEMPLATE(class _Stream, class _Arg)
   _CCCL_REQUIRES(::cuda::std::convertible_to<_Stream, ::cuda::stream_ref> _CCCL_AND(
     !::cuda::std::is_reference_v<__transform_result_t<_Arg>>))
   [[nodiscard]] _CCCL_HOST_API auto operator()(
@@ -152,7 +152,7 @@ struct _CCCL_TYPE_VISIBILITY_DEFAULT __launch_transform_t
   // If transform_launch_argument returns a reference type, then there are no pre- and
   // post-launch actions. (References types don't have ctors/dtors.) There is no need to
   // store the result of transform_launch_argument.
-  _CCCL_TEMPLATE(typename _Stream, typename _Arg)
+  _CCCL_TEMPLATE(class _Stream, class _Arg)
   _CCCL_REQUIRES(::cuda::std::convertible_to<_Stream, ::cuda::stream_ref>
                    _CCCL_AND ::cuda::std::is_reference_v<__transform_result_t<_Arg>>)
   [[nodiscard]] _CCCL_HOST_API auto operator()(_Stream&& __stream, _Arg&& __arg) const -> decltype(auto)
@@ -168,7 +168,7 @@ struct _CCCL_TYPE_VISIBILITY_DEFAULT __launch_transform_t
     }
   }
 
-  template <typename _Arg>
+  template <class _Arg>
   [[nodiscard]] _CCCL_HOST_API auto operator()(::cuda::std::__ignore_t, _Arg&& __arg) const -> decltype(auto)
   {
     if constexpr (__is_instantiable_with<__transformed_argument_t, _Arg>)
@@ -186,7 +186,7 @@ struct _CCCL_TYPE_VISIBILITY_DEFAULT __launch_transform_t
 _CCCL_GLOBAL_CONSTANT auto launch_transform = __tfx::__launch_transform_t{};
 
 #  ifndef _CCCL_DOXYGEN_INVOKED // Doxygen chokes here
-template <typename _Arg>
+template <class _Arg>
 using transformed_device_argument_t _CCCL_NODEBUG_ALIAS =
   __remove_rvalue_reference_t<::cuda::std::__call_result_t<__tfx::__launch_transform_t, ::cuda::stream_ref, _Arg>>;
 #  endif // ^^^ _CCCL_DOXYGEN_INVOKED ^^^

@@ -176,7 +176,7 @@ inline constexpr bool is_vector_type_v<::double4> = true;
 template <>
 inline constexpr bool is_vector_type_v<::dim3> = true;
 
-template <typename _Tp>
+template <class _Tp>
 inline constexpr bool is_extended_fp_vector_type_v = false;
 
 #  if _CCCL_HAS_NVFP16()

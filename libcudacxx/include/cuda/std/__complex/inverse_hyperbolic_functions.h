@@ -67,7 +67,7 @@ struct _CCCL_ALIGNAS(2 * sizeof(_Tp)) __cccl_asinh_sqrt_return_hilo
 };
 
 // An unsafe sqrt(_Tp + _Tp) extended precision sqrt.
-template <typename _Tp>
+template <class _Tp>
 [[nodiscard]] _CCCL_API _CCCL_FORCEINLINE __cccl_asinh_sqrt_return_hilo<_Tp>
 __internal_double_Tp_sqrt_unsafe(_Tp __hi, _Tp __lo) noexcept
 {

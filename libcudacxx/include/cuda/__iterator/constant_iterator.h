@@ -119,7 +119,7 @@ public:
   //! @param __value The value to store in the @c constant_iterator
   //! @param __index The index in the sequence represented by this @c constant_iterator
   _CCCL_EXEC_CHECK_DISABLE
-  _CCCL_TEMPLATE(typename _Index2)
+  _CCCL_TEMPLATE(class _Index2)
   _CCCL_REQUIRES(::cuda::std::__integer_like<_Index2>)
   _CCCL_API constexpr explicit constant_iterator(_Tp __value, _Index2 __index) noexcept(
     ::cuda::std::is_nothrow_move_constructible_v<_Tp>)
@@ -312,7 +312,7 @@ public:
 template <class _Tp>
 _CCCL_HOST_DEVICE constant_iterator(_Tp) -> constant_iterator<_Tp, ::cuda::std::ptrdiff_t>;
 
-_CCCL_TEMPLATE(class _Tp, typename _Index)
+_CCCL_TEMPLATE(class _Tp, class _Index)
 _CCCL_REQUIRES(::cuda::std::__integer_like<_Index>)
 _CCCL_HOST_DEVICE constant_iterator(_Tp, _Index) -> constant_iterator<_Tp, _Index>;
 #endif // _CCCL_DOXYGEN_INVOKED

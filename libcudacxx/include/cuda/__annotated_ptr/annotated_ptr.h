@@ -32,7 +32,7 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA
 
-template <typename _Tp, typename _Property>
+template <class _Tp, class _Property>
 class annotated_ptr : private ::cuda::__annotated_ptr_base<_Property>
 {
 public:
@@ -92,7 +92,7 @@ public:
     }
   }
 
-  template <typename _RuntimeProperty>
+  template <class _RuntimeProperty>
   _CCCL_API inline annotated_ptr(pointer __p, _RuntimeProperty __prop) noexcept
       : ::cuda::__annotated_ptr_base<_Property>{access_property{__prop}}
       , __repr{__p}
@@ -108,7 +108,7 @@ public:
   }
 
   // cannot be constexpr because of get()
-  template <typename _OtherType, class _OtherProperty>
+  template <class _OtherType, class _OtherProperty>
   _CCCL_API inline annotated_ptr(const annotated_ptr<_OtherType, _OtherProperty>& __other) noexcept
       : ::cuda::__annotated_ptr_base<_Property>{__other.__property()}
       , __repr{__other.get()}
@@ -168,14 +168,14 @@ public:
 //----------------------------------------------------------------------------------------------------------------------
 // memcpy_async
 
-template <typename _Dst, typename _Src, typename _SrcProperty, typename _Shape, typename _Sync>
+template <class _Dst, class _Src, class _SrcProperty, class _Shape, class _Sync>
 _CCCL_API inline void
 memcpy_async(_Dst* __dst, annotated_ptr<_Src, _SrcProperty> __src, _Shape __shape, _Sync& __sync) noexcept
 {
   ::cuda::memcpy_async(__dst, __src.operator->(), __shape, __sync);
 }
 
-template <typename _Dst, typename _DstProperty, typename _Src, typename _SrcProperty, typename _Shape, typename _Sync>
+template <class _Dst, class _DstProperty, class _Src, class _SrcProperty, class _Shape, class _Sync>
 _CCCL_API inline void memcpy_async(
   annotated_ptr<_Dst, _DstProperty> __dst,
   annotated_ptr<_Src, _SrcProperty> __src,
@@ -185,20 +185,14 @@ _CCCL_API inline void memcpy_async(
   ::cuda::memcpy_async(__dst.operator->(), __src.operator->(), __shape, __sync);
 }
 
-template <typename _Group, typename _Dst, typename _Src, typename _SrcProperty, typename _Shape, typename _Sync>
+template <class _Group, class _Dst, class _Src, class _SrcProperty, class _Shape, class _Sync>
 _CCCL_API inline void memcpy_async(
   const _Group& __group, _Dst* __dst, annotated_ptr<_Src, _SrcProperty> __src, _Shape __shape, _Sync& __sync) noexcept
 {
   ::cuda::memcpy_async(__group, __dst, __src.operator->(), __shape, __sync);
 }
 
-template <typename _Group,
-          typename _Dst,
-          typename _DstProperty,
-          typename _Src,
-          typename _SrcProperty,
-          typename _Shape,
-          typename _Sync>
+template <class _Group, class _Dst, class _DstProperty, class _Src, class _SrcProperty, class _Shape, class _Sync>
 _CCCL_API inline void memcpy_async(
   const _Group& __group,
   annotated_ptr<_Dst, _DstProperty> __dst,

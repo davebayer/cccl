@@ -30,7 +30,7 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
-template <typename _Fp>
+template <class _Fp>
 [[nodiscard]] _CCCL_API constexpr _Fp __lerp(_Fp __a, _Fp __b, _Fp __t) noexcept
 {
   if ((__a <= 0 && __b >= 0) || (__a >= 0 && __b <= 0))

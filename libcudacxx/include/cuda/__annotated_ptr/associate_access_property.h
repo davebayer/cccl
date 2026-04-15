@@ -35,7 +35,7 @@ _CCCL_BEGIN_NAMESPACE_CUDA
 //----------------------------------------------------------------------------------------------------------------------
 // Private access property methods
 
-template <typename _Property>
+template <class _Property>
 inline constexpr bool __is_access_property_v =
   ::cuda::std::__is_one_of_v<_Property,
                              access_property::shared,
@@ -45,7 +45,7 @@ inline constexpr bool __is_access_property_v =
                              access_property::streaming,
                              access_property>;
 
-template <typename _Property>
+template <class _Property>
 inline constexpr bool __is_global_access_property_v =
   ::cuda::std::__is_one_of_v<_Property,
                              access_property::global,
@@ -56,7 +56,7 @@ inline constexpr bool __is_global_access_property_v =
 
 #if _CCCL_CUDA_COMPILATION()
 
-template <typename _Property>
+template <class _Property>
 [[nodiscard]] _CCCL_DEVICE_API void* __associate_address_space(void* __ptr, [[maybe_unused]] _Property __prop)
 {
   if constexpr (::cuda::std::is_same_v<_Property, access_property::shared>)
@@ -84,7 +84,7 @@ _CCCL_DEVICE_API inline void* __associate_raw_descriptor(void* __ptr, [[maybe_un
   return __ptr;
 }
 
-template <typename _Property>
+template <class _Property>
 [[nodiscard]] _CCCL_DEVICE_API void* __associate_descriptor(void* __ptr, _Property __prop)
 {
   static_assert(__is_access_property_v<_Property>, "invalid cuda::access_property");
@@ -98,7 +98,7 @@ template <typename _Property>
 
 #endif // _CCCL_CUDA_COMPILATION()
 
-template <typename _Type, typename _Property>
+template <class _Type, class _Property>
 [[nodiscard]] _CCCL_API inline _Type* __associate(_Type* __ptr, [[maybe_unused]] _Property __prop) noexcept
 {
   static_assert(__is_access_property_v<_Property>, "invalid cuda::access_property");
@@ -113,7 +113,7 @@ template <typename _Type, typename _Property>
 //----------------------------------------------------------------------------------------------------------------------
 // Public access property methods
 
-template <typename _Tp, typename _Property>
+template <class _Tp, class _Property>
 [[nodiscard]] _CCCL_API inline _Tp* associate_access_property(_Tp* __ptr, _Property __prop) noexcept
 {
   static_assert(__is_access_property_v<_Property>, "invalid cuda::access_property");

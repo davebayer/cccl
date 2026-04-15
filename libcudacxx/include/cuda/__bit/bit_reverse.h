@@ -54,7 +54,7 @@ _CCCL_BEGIN_NAMESPACE_CUDA
 
 #if defined(_CCCL_BUILTIN_BITREVERSE32)
 
-template <typename _Tp>
+template <class _Tp>
 [[nodiscard]] _CCCL_API constexpr _Tp __bit_reverse_builtin(_Tp __value) noexcept
 {
 #  if _CCCL_HAS_INT128()
@@ -89,7 +89,7 @@ template <typename _Tp>
 
 #if _CCCL_CUDA_COMPILATION()
 
-template <typename _Tp>
+template <class _Tp>
 [[nodiscard]] _CCCL_DEVICE_API constexpr _Tp __bit_reverse_device(_Tp __value) noexcept
 {
 #  if _CCCL_HAS_INT128()
@@ -123,7 +123,7 @@ template <typename _Tp>
 
 #endif // _CCCL_CUDA_COMPILATION()
 
-template <typename _Tp>
+template <class _Tp>
 [[nodiscard]] _CCCL_API constexpr _Tp __bit_reverse_generic(_Tp __value) noexcept
 {
 #if _CCCL_HAS_INT128()
@@ -176,7 +176,7 @@ template <typename _Tp>
   }
 }
 
-template <typename _Tp>
+template <class _Tp>
 [[nodiscard]] _CCCL_API constexpr _Tp bit_reverse(_Tp __value) noexcept
 {
   static_assert(::cuda::std::__cccl_is_cv_unsigned_integer_v<_Tp>, "bit_reverse() requires unsigned integer types");

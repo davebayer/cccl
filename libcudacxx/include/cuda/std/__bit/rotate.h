@@ -76,7 +76,7 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
-template <typename _Tp>
+template <class _Tp>
 [[nodiscard]] _CCCL_API constexpr _Tp __cccl_rotr_impl(_Tp __v, int __cnt) noexcept
 {
   if constexpr (sizeof(_Tp) == sizeof(uint32_t))
@@ -115,7 +115,7 @@ template <typename _Tp>
   return __cnt_mod == 0 ? __v : (__v >> __cnt_mod) | (__v << (__digits - __cnt_mod));
 }
 
-template <typename _Tp>
+template <class _Tp>
 [[nodiscard]] _CCCL_API constexpr _Tp __cccl_rotl_impl(_Tp __v, int __cnt) noexcept
 {
   if constexpr (sizeof(_Tp) == sizeof(uint32_t))

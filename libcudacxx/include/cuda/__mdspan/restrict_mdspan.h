@@ -39,10 +39,10 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA
 
-template <typename _ElementType,
-          typename _Extents,
-          typename _LayoutPolicy   = ::cuda::std::layout_right,
-          typename _AccessorPolicy = ::cuda::std::default_accessor<_ElementType>>
+template <class _ElementType,
+          class _Extents,
+          class _LayoutPolicy   = ::cuda::std::layout_right,
+          class _AccessorPolicy = ::cuda::std::default_accessor<_ElementType>>
 class restrict_mdspan
     : public ::cuda::std::mdspan<_ElementType, _Extents, _LayoutPolicy, restrict_accessor<_AccessorPolicy>>
 {
@@ -105,10 +105,10 @@ restrict_mdspan(const typename _AccessorType::data_handle_type, const _MappingTy
  * Accessibility Traits
  **********************************************************************************************************************/
 
-template <typename>
+template <class>
 inline constexpr bool is_restrict_mdspan_v = false;
 
-template <typename _Tp, typename _Ep, typename _Lp, typename _Ap>
+template <class _Tp, class _Ep, class _Lp, class _Ap>
 inline constexpr bool is_restrict_mdspan_v<::cuda::std::mdspan<_Tp, _Ep, _Lp, _Ap>> = is_restrict_accessor_v<_Ap>;
 
 _CCCL_END_NAMESPACE_CUDA

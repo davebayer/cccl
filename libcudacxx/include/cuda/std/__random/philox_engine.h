@@ -85,7 +85,7 @@ _CCCL_BEGIN_NAMESPACE_CUDA_STD
 //!
 //! @see cuda::std::philox4x32
 //! @see cuda::std::philox4x64
-template <typename _UIntType, size_t _WordSize, size_t _WordCount, size_t _NumRounds, _UIntType... _Constants>
+template <class _UIntType, size_t _WordSize, size_t _WordCount, size_t _NumRounds, _UIntType... _Constants>
 class philox_engine
 {
   static_assert(__cccl_is_unsigned_integer_v<_UIntType>, "philox_engine: _UIntType must be an unsigned integer type");
@@ -328,7 +328,7 @@ public:
   //! @param os The basic_ostream to stream out to.
   //! @param e The philox_engine to stream out.
   //! @return os
-  template <typename _CharT, typename _Traits>
+  template <class _CharT, class _Traits>
   _CCCL_API friend ::std::basic_ostream<_CharT, _Traits>&
   operator<<(::std::basic_ostream<_CharT, _Traits>& __os, const philox_engine& __e)
   {
@@ -389,7 +389,7 @@ public:
   //! @param is The basic_istream to stream from.
   //! @param e The philox_engine to stream in.
   //! @return is
-  template <typename _CharT, typename _Traits>
+  template <class _CharT, class _Traits>
   _CCCL_API friend ::std::basic_istream<_CharT, _Traits>&
   operator>>(::std::basic_istream<_CharT, _Traits>& __is, philox_engine& __e)
   {

@@ -570,7 +570,7 @@ public:
     return __f_->target_type();
   }
 
-  template <typename _Tp>
+  template <class _Tp>
   _CCCL_API inline const _Tp* target() const noexcept
   {
     if (__f_ == nullptr)
@@ -591,7 +591,7 @@ union __policy_storage
 };
 
 // True if _Fun can safely be held in __policy_storage.__small.
-template <typename _Fun>
+template <class _Fun>
 struct __use_small_storage
     : public integral_constant<bool,
                                sizeof(_Fun) <= sizeof(__policy_storage) && alignof(_Fun) <= alignof(__policy_storage)
@@ -614,7 +614,7 @@ struct __policy
 
   // Returns a pointer to a static policy object suitable for the functor
   // type.
-  template <typename _Fun>
+  template <class _Fun>
   _CCCL_API inline static const __policy* __create()
   {
     return __choose_policy<_Fun>(__use_small_storage<_Fun>());
@@ -636,20 +636,20 @@ struct __policy
   }
 
 private:
-  template <typename _Fun>
+  template <class _Fun>
   static void* __large_clone(const void* __s)
   {
     const _Fun* __f = static_cast<const _Fun*>(__s);
     return __f->__clone();
   }
 
-  template <typename _Fun>
+  template <class _Fun>
   static void __large_destroy(void* __s)
   {
     _Fun::__destroy_and_delete(static_cast<_Fun*>(__s));
   }
 
-  template <typename _Fun>
+  template <class _Fun>
   _CCCL_API inline static const __policy* __choose_policy(/* is_small = */ false_type)
   {
     static const constexpr __policy __policy_ = {
@@ -665,7 +665,7 @@ private:
     return &__policy_;
   }
 
-  template <typename _Fun>
+  template <class _Fun>
   _CCCL_API inline static const __policy* __choose_policy(/* is_small = */ true_type)
   {
     static const constexpr __policy __policy_ = {
@@ -684,7 +684,7 @@ private:
 
 // Used to choose between perfect forwarding or pass-by-value. Pass-by-value is
 // faster for types that can be passed in registers.
-template <typename _Tp>
+template <class _Tp>
 using __fast_forward = conditional_t<is_scalar_v<_Tp>, _Tp, _Tp&&>;
 
 // __policy_invoker calls an instance of __alloc_func held in __policy_storage.
@@ -705,7 +705,7 @@ struct __policy_invoker<_Rp(_ArgTypes...)>
   {}
 
   // Creates an invoker that calls the given instance of __func.
-  template <typename _Fun>
+  template <class _Fun>
   _CCCL_API inline static __policy_invoker __create()
   {
     return __policy_invoker(&__call_impl<_Fun>);
@@ -721,7 +721,7 @@ private:
     __throw_bad_function_call();
   }
 
-  template <typename _Fun>
+  template <class _Fun>
   static _Rp __call_impl(const __policy_storage* __buf, __fast_forward<_ArgTypes>... __args)
   {
     _Fun* __f = reinterpret_cast<_Fun*>(__use_small_storage<_Fun>::value ? &__buf->__small : __buf->__large);
@@ -884,7 +884,7 @@ public:
     return *__policy_->__type_info;
   }
 
-  template <typename _Tp>
+  template <class _Tp>
   _CCCL_API inline const _Tp* target() const noexcept
   {
     if (__policy_->__is_null || typeid(_Tp) != *__policy_->__type_info)
@@ -1047,9 +1047,9 @@ public:
 #  ifndef _CCCL_NO_RTTI
   // function target access:
   const type_info& target_type() const noexcept;
-  template <typename _Tp>
+  template <class _Tp>
   _Tp* target() noexcept;
-  template <typename _Tp>
+  template <class _Tp>
   const _Tp* target() const noexcept;
 #  endif // _CCCL_NO_RTTI
 };
@@ -1217,14 +1217,14 @@ const type_info& function<_Rp(_ArgTypes...)>::target_type() const noexcept
 }
 
 template <class _Rp, class... _ArgTypes>
-template <typename _Tp>
+template <class _Tp>
 _Tp* function<_Rp(_ArgTypes...)>::target() noexcept
 {
   return (_Tp*) (__f_.template target<_Tp>());
 }
 
 template <class _Rp, class... _ArgTypes>
-template <typename _Tp>
+template <class _Tp>
 const _Tp* function<_Rp(_ArgTypes...)>::target() const noexcept
 {
   return __f_.template target<_Tp>();

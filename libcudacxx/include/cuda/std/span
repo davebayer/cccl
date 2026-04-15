@@ -99,7 +99,7 @@ inline constexpr size_t __maybe_static_ext = dynamic_extent;
 template <class _Tp>
 inline constexpr size_t __maybe_static_ext<_Tp, true> = {_Tp::value};
 
-template <typename _Tp, size_t _Extent>
+template <class _Tp, size_t _Extent>
 class _CCCL_TYPE_VISIBILITY_DEFAULT span
 {
 public:
@@ -333,7 +333,7 @@ private:
   pointer __data_;
 };
 
-template <typename _Tp>
+template <class _Tp>
 class _CCCL_TYPE_VISIBILITY_DEFAULT span<_Tp, dynamic_extent>
 {
 public:

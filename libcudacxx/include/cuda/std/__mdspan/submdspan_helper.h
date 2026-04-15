@@ -72,7 +72,7 @@ template <class _OffsetType, class _ExtentType, class _StrideType>
 _CCCL_HOST_DEVICE strided_slice(_OffsetType, _ExtentType, _StrideType)
   -> strided_slice<_OffsetType, _ExtentType, _StrideType>;
 
-template <typename>
+template <class>
 inline constexpr bool __is_strided_slice = false;
 
 template <class _OffsetType, class _ExtentType, class _StrideType>

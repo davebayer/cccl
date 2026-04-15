@@ -57,9 +57,9 @@ using __make_indices_imp _CCCL_NODEBUG_ALIAS =
 
 namespace __detail
 {
-template <typename _Tp, size_t... _Extra>
+template <class _Tp, size_t... _Extra>
 struct __repeat;
-template <typename _Tp, _Tp... _Np, size_t... _Extra>
+template <class _Tp, _Tp... _Np, size_t... _Extra>
 struct __repeat<__integer_sequence<_Tp, _Np...>, _Extra...>
 {
   using type _CCCL_NODEBUG_ALIAS = __integer_sequence<
@@ -214,7 +214,7 @@ using __make_integer_sequence _CCCL_NODEBUG_ALIAS = integer_sequence<_Tp, __inte
 
 #else // ^^^ _CCCL_BUILTIN_INTEGER_PACK ^^^ / vvv !_CCCL_BUILTIN_INTEGER_PACK vvv
 
-template <typename _Tp, _Tp _Np>
+template <class _Tp, _Tp _Np>
 using __make_integer_sequence_unchecked _CCCL_NODEBUG_ALIAS =
   typename __detail::__make<_Np>::type::template __convert<integer_sequence, _Tp>;
 

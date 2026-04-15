@@ -34,7 +34,7 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA
 
-template <typename _Tp>
+template <class _Tp>
 [[nodiscard]] _CCCL_API constexpr _Tp __shl(const _Tp __value, int __shift) noexcept
 {
   _CCCL_IF_NOT_CONSTEVAL_DEFAULT
@@ -49,7 +49,7 @@ template <typename _Tp>
   return (__shift >= ::cuda::std::numeric_limits<_Tp>::digits) ? _Tp{0} : __value << __shift;
 }
 
-template <typename _Tp>
+template <class _Tp>
 [[nodiscard]] _CCCL_API constexpr _Tp __shr(const _Tp __value, int __shift) noexcept
 {
   _CCCL_IF_NOT_CONSTEVAL_DEFAULT
@@ -64,7 +64,7 @@ template <typename _Tp>
   return (__shift >= ::cuda::std::numeric_limits<_Tp>::digits) ? _Tp{0} : __value >> __shift;
 }
 
-template <typename _Tp = uint32_t>
+template <class _Tp = uint32_t>
 [[nodiscard]] _CCCL_API constexpr _Tp bitmask(int __start, int __width) noexcept
 {
   static_assert(::cuda::std::__cccl_is_unsigned_integer_v<_Tp>, "bitmask() requires unsigned integer types");

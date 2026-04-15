@@ -55,14 +55,14 @@ struct __is_destructible_apply
   using type = int;
 };
 
-template <typename _Tp>
+template <class _Tp>
 struct __is_destructor_wellformed
 {
-  template <typename _Tp1>
+  template <class _Tp1>
   _CCCL_API inline static true_type
     __test(typename __is_destructible_apply<decltype(::cuda::std::declval<_Tp1&>().~_Tp1())>::type);
 
-  template <typename _Tp1>
+  template <class _Tp1>
   _CCCL_API inline static false_type __test(...);
 
   static const bool value = decltype(__test<_Tp>(12))::value;

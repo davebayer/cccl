@@ -33,7 +33,7 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
-template <typename _Tp, typename _Sco>
+template <class _Tp, class _Sco>
 struct __atomic_common
 {
   _CCCL_API constexpr __atomic_common(_Tp __v)
@@ -52,7 +52,7 @@ struct __atomic_common
   _LIBCUDACXX_ATOMIC_COMMON_IMPL(, volatile)
 };
 
-template <typename _Tp, typename _Sco>
+template <class _Tp, class _Sco>
 struct __atomic_arithmetic
 {
   _CCCL_API constexpr __atomic_arithmetic(_Tp __v)
@@ -74,7 +74,7 @@ struct __atomic_arithmetic
   _LIBCUDACXX_ATOMIC_ARITHMETIC_IMPL(, volatile)
 };
 
-template <typename _Tp, typename _Sco>
+template <class _Tp, class _Sco>
 struct __atomic_bitwise
 {
   _CCCL_API constexpr __atomic_bitwise(_Tp __v)
@@ -99,7 +99,7 @@ struct __atomic_bitwise
   _LIBCUDACXX_ATOMIC_BITWISE_IMPL(, volatile)
 };
 
-template <typename _Tp, typename _Sco>
+template <class _Tp, class _Sco>
 struct __atomic_pointer
 {
   _CCCL_API constexpr __atomic_pointer(_Tp __v)
@@ -121,7 +121,7 @@ struct __atomic_pointer
   _LIBCUDACXX_ATOMIC_POINTER_IMPL(, volatile)
 };
 
-template <typename _Tp, thread_scope _Sco = thread_scope_system>
+template <class _Tp, thread_scope _Sco = thread_scope_system>
 using __atomic_impl = _If<
   is_pointer_v<_Tp>,
   __atomic_pointer<_Tp, __scope_to_tag<_Sco>>,

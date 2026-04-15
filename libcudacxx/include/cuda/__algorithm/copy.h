@@ -64,7 +64,7 @@ struct copy_configuration
 
 namespace __detail
 {
-template <typename _SrcTy, typename _DstTy>
+template <class _SrcTy, class _DstTy>
 _CCCL_HOST_API void __copy_bytes_impl(
   stream_ref __stream,
   ::cuda::std::span<_SrcTy> __src,
@@ -99,14 +99,14 @@ _CCCL_HOST_API void __copy_bytes_impl(
 #  endif // _CCCL_CTK_BELOW(13, 0)
 }
 
-template <typename _SrcElem,
-          typename _SrcExtents,
-          typename _SrcLayout,
-          typename _SrcAccessor,
-          typename _DstElem,
-          typename _DstExtents,
-          typename _DstLayout,
-          typename _DstAccessor>
+template <class _SrcElem,
+          class _SrcExtents,
+          class _SrcLayout,
+          class _SrcAccessor,
+          class _DstElem,
+          class _DstExtents,
+          class _DstLayout,
+          class _DstAccessor>
 _CCCL_HOST_API void __copy_bytes_impl(
   stream_ref __stream,
   ::cuda::std::mdspan<_SrcElem, _SrcExtents, _SrcLayout, _SrcAccessor> __src,
@@ -151,7 +151,7 @@ _CCCL_HOST_API void __copy_bytes_impl(
 //! @param __src Source to copy from
 //! @param __dst Destination to copy into
 //! @param __config Configuration for the copy
-_CCCL_TEMPLATE(typename _SrcTy, typename _DstTy)
+_CCCL_TEMPLATE(class _SrcTy, class _DstTy)
 _CCCL_REQUIRES(
   __spannable<transformed_device_argument_t<_SrcTy>> _CCCL_AND __spannable<transformed_device_argument_t<_DstTy>>)
 _CCCL_HOST_API void copy_bytes(stream_ref __stream, _SrcTy&& __src, _DstTy&& __dst, copy_configuration __config = {})
@@ -165,7 +165,7 @@ _CCCL_HOST_API void copy_bytes(stream_ref __stream, _SrcTy&& __src, _DstTy&& __d
 
 //! @overload
 //! @note This overload accepts mdspan-compatible types.
-_CCCL_TEMPLATE(typename _SrcTy, typename _DstTy)
+_CCCL_TEMPLATE(class _SrcTy, class _DstTy)
 _CCCL_REQUIRES(
   __mdspannable<transformed_device_argument_t<_SrcTy>> _CCCL_AND __mdspannable<transformed_device_argument_t<_DstTy>>)
 _CCCL_HOST_API void copy_bytes(stream_ref __stream, _SrcTy&& __src, _DstTy&& __dst, copy_configuration __config = {})

@@ -30,7 +30,7 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA
 
-template <typename _Up, typename _Tp>
+template <class _Up, class _Tp>
 [[nodiscard]] _CCCL_API inline _Up* ptr_rebind(_Tp* __ptr) noexcept
 {
   if constexpr (::cuda::std::is_same_v<_Up, _Tp>) // also handle _Tp == _Up == void
@@ -50,19 +50,19 @@ template <typename _Up, typename _Tp>
   }
 }
 
-template <typename _Up, typename _Tp>
+template <class _Up, class _Tp>
 [[nodiscard]] _CCCL_API inline const _Up* ptr_rebind(const _Tp* __ptr) noexcept
 {
   return ::cuda::ptr_rebind<const _Up>(const_cast<_Tp*>(__ptr));
 }
 
-template <typename _Up, typename _Tp>
+template <class _Up, class _Tp>
 [[nodiscard]] _CCCL_API inline volatile _Up* ptr_rebind(volatile _Tp* __ptr) noexcept
 {
   return ::cuda::ptr_rebind<volatile _Up>(const_cast<_Tp*>(__ptr));
 }
 
-template <typename _Up, typename _Tp>
+template <class _Up, class _Tp>
 [[nodiscard]] _CCCL_API inline const volatile _Up* ptr_rebind(const volatile _Tp* __ptr) noexcept
 {
   return ::cuda::ptr_rebind<const volatile _Up>(const_cast<_Tp*>(__ptr));

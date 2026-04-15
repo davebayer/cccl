@@ -52,7 +52,7 @@ _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
 #if !defined(_CCCL_BUILTIN_POPCOUNTG)
 
-template <typename _Tp>
+template <class _Tp>
 [[nodiscard]] _CCCL_API constexpr int __cccl_popcount_impl_constexpr(_Tp __v) noexcept
 {
   if constexpr (is_same_v<_Tp, uint32_t>)
@@ -77,7 +77,7 @@ template <typename _Tp>
 }
 
 #  if !_CCCL_COMPILER(NVRTC)
-template <typename _Tp>
+template <class _Tp>
 [[nodiscard]] _CCCL_HOST_API int __cccl_popcount_impl_host(_Tp __v) noexcept
 {
 #    if _CCCL_COMPILER(MSVC) && _CCCL_ARCH(X86_64)
@@ -106,7 +106,7 @@ template <typename _Tp>
 #  endif // !_CCCL_COMPILER(NVRTC)
 
 #  if _CCCL_CUDA_COMPILATION()
-template <typename _Tp>
+template <class _Tp>
 [[nodiscard]] _CCCL_DEVICE_API int __cccl_popcount_impl_device(_Tp __v) noexcept
 {
   if constexpr (sizeof(_Tp) == sizeof(uint32_t))
@@ -120,7 +120,7 @@ template <typename _Tp>
 }
 #  endif // _CCCL_CUDA_COMPILATION()
 
-template <typename _Tp>
+template <class _Tp>
 [[nodiscard]] _CCCL_API constexpr int __cccl_popcount_impl(_Tp __v) noexcept
 {
   static_assert(is_same_v<_Tp, uint32_t> || is_same_v<_Tp, uint64_t>);

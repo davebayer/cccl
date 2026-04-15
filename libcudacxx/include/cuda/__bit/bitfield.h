@@ -64,7 +64,7 @@ __bfi(uint64_t __dest, uint64_t __source, int __start, int __width) noexcept
 
 #endif // __cccl_ptx_isa >= 200
 
-template <typename _Tp>
+template <class _Tp>
 [[nodiscard]] _CCCL_API constexpr _Tp
 bitfield_insert(const _Tp __dest, const _Tp __source, int __start, int __width) noexcept
 {
@@ -90,7 +90,7 @@ bitfield_insert(const _Tp __dest, const _Tp __source, int __start, int __width) 
   return (::cuda::__shl(__source, __start) & __mask) | (__dest & ~__mask);
 }
 
-template <typename _Tp>
+template <class _Tp>
 [[nodiscard]] _CCCL_API constexpr _Tp bitfield_extract(const _Tp __value, int __start, int __width) noexcept
 {
   static_assert(::cuda::std::__cccl_is_cv_unsigned_integer_v<_Tp>,

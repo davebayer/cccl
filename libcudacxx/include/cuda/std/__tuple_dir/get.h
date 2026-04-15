@@ -87,7 +87,7 @@ struct __find_exactly_one_checked<_T1>
 };
 } // namespace __find_detail
 
-template <typename _T1, typename... _Args>
+template <class _T1, class... _Args>
 struct __find_exactly_one_t : public __find_detail::__find_exactly_one_checked<_T1, _Args...>
 {};
 

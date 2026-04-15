@@ -488,7 +488,7 @@ _CCCL_API inline void pipeline_producer_commit([[maybe_unused]] pipeline<thread_
                   __completion_mechanism::__async_group, __single_thread_group{}, 0, __barrier);));
 }
 
-template <typename _Group, class _Tp, typename _Size, thread_scope _Scope>
+template <class _Group, class _Tp, class _Size, thread_scope _Scope>
 _CCCL_API inline async_contract_fulfillment __memcpy_async_pipeline(
   _Group const& __group, _Tp* __destination, _Tp const* __source, _Size __size, pipeline<_Scope>& __pipeline)
 {
@@ -519,7 +519,7 @@ _CCCL_API inline async_contract_fulfillment __memcpy_async_pipeline(
   return __memcpy_completion_impl::__defer(__cm, __group, __size, __pipeline);
 }
 
-template <typename _Group, class _Type, thread_scope _Scope>
+template <class _Group, class _Type, thread_scope _Scope>
 _CCCL_API inline async_contract_fulfillment memcpy_async(
   _Group const& __group, _Type* __destination, _Type const* __source, std::size_t __size, pipeline<_Scope>& __pipeline)
 {
@@ -527,7 +527,7 @@ _CCCL_API inline async_contract_fulfillment memcpy_async(
   return ::cuda::__memcpy_async_pipeline(__group, __destination, __source, __size, __pipeline);
 }
 
-template <typename _Group, class _Type, std::size_t _Alignment, thread_scope _Scope>
+template <class _Group, class _Type, std::size_t _Alignment, thread_scope _Scope>
 _CCCL_API inline async_contract_fulfillment memcpy_async(
   _Group const& __group,
   _Type* __destination,
@@ -540,7 +540,7 @@ _CCCL_API inline async_contract_fulfillment memcpy_async(
   return ::cuda::__memcpy_async_pipeline(__group, __destination, __source, __size, __pipeline);
 }
 
-template <class _Type, typename _Size, thread_scope _Scope>
+template <class _Type, class _Size, thread_scope _Scope>
 _CCCL_API inline async_contract_fulfillment
 memcpy_async(_Type* __destination, _Type const* __source, _Size __size, pipeline<_Scope>& __pipeline)
 {
@@ -548,7 +548,7 @@ memcpy_async(_Type* __destination, _Type const* __source, _Size __size, pipeline
   return ::cuda::__memcpy_async_pipeline(__single_thread_group{}, __destination, __source, __size, __pipeline);
 }
 
-template <typename _Group, thread_scope _Scope>
+template <class _Group, thread_scope _Scope>
 _CCCL_API inline async_contract_fulfillment memcpy_async(
   _Group const& __group, void* __destination, void const* __source, std::size_t __size, pipeline<_Scope>& __pipeline)
 {
@@ -557,7 +557,7 @@ _CCCL_API inline async_contract_fulfillment memcpy_async(
     __group, reinterpret_cast<char*>(__destination), reinterpret_cast<char const*>(__source), __size, __pipeline);
 }
 
-template <typename _Group, std::size_t _Alignment, thread_scope _Scope>
+template <class _Group, std::size_t _Alignment, thread_scope _Scope>
 _CCCL_API inline async_contract_fulfillment memcpy_async(
   _Group const& __group,
   void* __destination,
@@ -570,7 +570,7 @@ _CCCL_API inline async_contract_fulfillment memcpy_async(
     __group, reinterpret_cast<char*>(__destination), reinterpret_cast<char const*>(__source), __size, __pipeline);
 }
 
-template <typename _Size, thread_scope _Scope>
+template <class _Size, thread_scope _Scope>
 _CCCL_API inline async_contract_fulfillment
 memcpy_async(void* __destination, void const* __source, _Size __size, pipeline<_Scope>& __pipeline)
 {

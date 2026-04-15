@@ -39,10 +39,10 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA
 
-template <typename _ElementType,
-          typename _Extents,
-          typename _LayoutPolicy   = ::cuda::std::layout_right,
-          typename _AccessorPolicy = ::cuda::std::default_accessor<_ElementType>>
+template <class _ElementType,
+          class _Extents,
+          class _LayoutPolicy   = ::cuda::std::layout_right,
+          class _AccessorPolicy = ::cuda::std::default_accessor<_ElementType>>
 class host_mdspan : public ::cuda::std::mdspan<_ElementType, _Extents, _LayoutPolicy, host_accessor<_AccessorPolicy>>
 {
 public:
@@ -98,10 +98,10 @@ _CCCL_HOST_DEVICE host_mdspan(const typename _AccessorType::data_handle_type, co
                  typename _MappingType::layout_type,
                  _AccessorType>;
 
-template <typename _ElementType,
-          typename _Extents,
-          typename _LayoutPolicy   = ::cuda::std::layout_right,
-          typename _AccessorPolicy = ::cuda::std::default_accessor<_ElementType>>
+template <class _ElementType,
+          class _Extents,
+          class _LayoutPolicy   = ::cuda::std::layout_right,
+          class _AccessorPolicy = ::cuda::std::default_accessor<_ElementType>>
 class device_mdspan
     : public ::cuda::std::mdspan<_ElementType, _Extents, _LayoutPolicy, device_accessor<_AccessorPolicy>>
 {
@@ -160,10 +160,10 @@ device_mdspan(const typename _AccessorType::data_handle_type, const _MappingType
                    typename _MappingType::layout_type,
                    _AccessorType>;
 
-template <typename _ElementType,
-          typename _Extents,
-          typename _LayoutPolicy   = ::cuda::std::layout_right,
-          typename _AccessorPolicy = ::cuda::std::default_accessor<_ElementType>>
+template <class _ElementType,
+          class _Extents,
+          class _LayoutPolicy   = ::cuda::std::layout_right,
+          class _AccessorPolicy = ::cuda::std::default_accessor<_ElementType>>
 class managed_mdspan
     : public ::cuda::std::mdspan<_ElementType, _Extents, _LayoutPolicy, managed_accessor<_AccessorPolicy>>
 {
@@ -226,10 +226,10 @@ managed_mdspan(const typename _AccessorType::data_handle_type, const _MappingTyp
  * Accessibility Traits
  **********************************************************************************************************************/
 
-template <typename _Tp, typename _Ep, typename _Lp, typename _Ap>
+template <class _Tp, class _Ep, class _Lp, class _Ap>
 inline constexpr bool is_host_accessible_v<::cuda::std::mdspan<_Tp, _Ep, _Lp, _Ap>> = is_host_accessible_v<_Ap>;
 
-template <typename _Tp, typename _Ep, typename _Lp, typename _Ap>
+template <class _Tp, class _Ep, class _Lp, class _Ap>
 inline constexpr bool is_device_accessible_v<::cuda::std::mdspan<_Tp, _Ep, _Lp, _Ap>> = is_device_accessible_v<_Ap>;
 
 _CCCL_END_NAMESPACE_CUDA

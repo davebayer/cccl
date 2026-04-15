@@ -388,7 +388,7 @@ public:
 };
 
 #ifndef _CCCL_DOXYGEN_INVOKED
-template <class _Iter, typename _Stride>
+template <class _Iter, class _Stride>
 _CCCL_HOST_DEVICE strided_iterator(_Iter, _Stride) -> strided_iterator<_Iter, _Stride>;
 #endif // _CCCL_DOXYGEN_INVOKED
 

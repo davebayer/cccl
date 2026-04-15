@@ -34,9 +34,10 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
-template <typename _Tp, typename _RawTp = remove_cvref_t<_Tp>>
+template <class _Tp>
 [[nodiscard]] _CCCL_API constexpr int __num_bits_impl() noexcept
 {
+  using _RawTp = remove_cvref_t<_Tp>;
   if constexpr (is_arithmetic_v<_RawTp> || is_pointer_v<_RawTp>)
   {
     return sizeof(_RawTp) * CHAR_BIT;
@@ -106,13 +107,13 @@ template <typename _Tp, typename _RawTp = remove_cvref_t<_Tp>>
   }
 }
 
-template <typename _Tp>
+template <class _Tp>
 inline constexpr int __num_bits_helper_v = __num_bits_impl<_Tp>();
 
-template <typename _Tp>
+template <class _Tp>
 inline constexpr int __num_bits_helper_v<complex<_Tp>> = __num_bits_impl<_Tp>() * 2;
 
-template <typename _Tp>
+template <class _Tp>
 inline constexpr int __num_bits_v = __num_bits_helper_v<remove_cvref_t<_Tp>>;
 
 _CCCL_END_NAMESPACE_CUDA_STD

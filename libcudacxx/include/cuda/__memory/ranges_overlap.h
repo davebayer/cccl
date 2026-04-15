@@ -50,7 +50,7 @@ _CCCL_BEGIN_NAMESPACE_CUDA
 #endif // _CCCL_CUDA_COMPILATION()
 
 #if !_CCCL_COMPILER(NVRTC)
-template <typename _Tp>
+template <class _Tp>
 [[nodiscard]] _CCCL_HOST_API bool
 __ptr_ranges_overlap_host(_Tp* __lhs_begin, _Tp* __lhs_end, _Tp* __rhs_begin, _Tp* __rhs_end) noexcept
 {
@@ -60,7 +60,7 @@ __ptr_ranges_overlap_host(_Tp* __lhs_begin, _Tp* __lhs_end, _Tp* __rhs_begin, _T
 }
 #endif // !_CCCL_COMPILER(NVRTC)
 
-_CCCL_TEMPLATE(typename _Tp)
+_CCCL_TEMPLATE(class _Tp)
 _CCCL_REQUIRES(::cuda::std::forward_iterator<_Tp>)
 [[nodiscard]] _CCCL_API constexpr bool
 ranges_overlap(_Tp __lhs_begin, _Tp __lhs_end, _Tp __rhs_begin, _Tp __rhs_end) noexcept

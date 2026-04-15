@@ -31,7 +31,7 @@ _CCCL_BEGIN_NAMESPACE_CUDA
 
 //! @brief `equal_to_value` is a function object that checks if a value is equal to a stored value.
 //! @tparam _Tp The type of the value to be compared.
-template <typename _Tp>
+template <class _Tp>
 struct equal_to_value
 {
   _Tp __value_;

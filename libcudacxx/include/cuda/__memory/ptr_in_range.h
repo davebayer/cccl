@@ -45,7 +45,7 @@ _CCCL_BEGIN_NAMESPACE_CUDA
 
 #if _CCCL_HOST_COMPILATION()
 
-template <typename _Tp>
+template <class _Tp>
 [[nodiscard]] _CCCL_API bool __ptr_in_range_host(_Tp* __ptr, _Tp* __start, _Tp* __end) noexcept
 {
   _CCCL_ASSERT(::std::greater_equal<>{}(__end, __start), "__ptr_in_range_host: __end must be greater than __start");
@@ -56,7 +56,7 @@ template <typename _Tp>
 
 #if _CCCL_DEVICE_COMPILATION()
 
-template <typename _Tp>
+template <class _Tp>
 [[nodiscard]] _CCCL_API bool __ptr_in_range_device(_Tp* __ptr, _Tp* __start, _Tp* __end) noexcept
 {
   using uintptr_t  = ::cuda::std::uintptr_t;
@@ -69,7 +69,7 @@ template <typename _Tp>
 
 #endif // _CCCL_DEVICE_COMPILATION()
 
-template <typename _Tp>
+template <class _Tp>
 [[nodiscard]] _CCCL_API constexpr bool ptr_in_range(_Tp* __ptr, _Tp* __start, _Tp* __end) noexcept
 {
   _CCCL_IF_CONSTEVAL_DEFAULT

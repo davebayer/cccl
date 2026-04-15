@@ -41,20 +41,20 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA
 
-template <typename _Accessor>
+template <class _Accessor>
 class __shared_memory_accessor;
 
-template <typename _Accessor>
+template <class _Accessor>
 using shared_memory_accessor = __shared_memory_accessor<_Accessor>;
 
 /***********************************************************************************************************************
  * Accessor Traits
  **********************************************************************************************************************/
 
-template <typename>
+template <class>
 inline constexpr bool is_shared_memory_accessor_v = false;
 
-template <typename _Accessor>
+template <class _Accessor>
 inline constexpr bool is_shared_memory_accessor_v<__shared_memory_accessor<_Accessor>> = true;
 
 #define _CCCL_VERIFY_DEVICE_ONLY_USAGE() \
@@ -77,7 +77,7 @@ inline constexpr bool is_shared_memory_accessor_v<__shared_memory_accessor<_Acce
 }
 #endif // _CCCL_CUDA_COMPILATION()
 
-template <typename _Accessor>
+template <class _Accessor>
 class __shared_memory_accessor : public _Accessor
 {
   static_assert(::cuda::std::is_pointer_v<typename _Accessor::data_handle_type>, "Accessor must be pointer based");
@@ -119,7 +119,7 @@ public:
     _CCCL_VERIFY_DEVICE_ONLY_USAGE();
   }
 
-  _CCCL_TEMPLATE(typename _OtherAccessor)
+  _CCCL_TEMPLATE(class _OtherAccessor)
   _CCCL_REQUIRES(::cuda::std::is_constructible_v<_Accessor, const _OtherAccessor&> _CCCL_AND(
     ::cuda::std::is_convertible_v<const _OtherAccessor&, _Accessor>))
   _CCCL_API constexpr __shared_memory_accessor(const __shared_memory_accessor<_OtherAccessor>& __acc) noexcept(
@@ -129,7 +129,7 @@ public:
     _CCCL_VERIFY_DEVICE_ONLY_USAGE();
   }
 
-  _CCCL_TEMPLATE(typename _OtherAccessor)
+  _CCCL_TEMPLATE(class _OtherAccessor)
   _CCCL_REQUIRES(::cuda::std::is_constructible_v<_Accessor, const _OtherAccessor&> _CCCL_AND(
     !::cuda::std::is_convertible_v<const _OtherAccessor&, _Accessor>))
   _CCCL_API constexpr explicit __shared_memory_accessor(const __shared_memory_accessor<_OtherAccessor>& __acc) noexcept(
@@ -139,7 +139,7 @@ public:
     _CCCL_VERIFY_DEVICE_ONLY_USAGE();
   }
 
-  _CCCL_TEMPLATE(typename _OtherAccessor)
+  _CCCL_TEMPLATE(class _OtherAccessor)
   _CCCL_REQUIRES(::cuda::std::is_constructible_v<_Accessor, _OtherAccessor> _CCCL_AND(
     ::cuda::std::is_convertible_v<_OtherAccessor, _Accessor>))
   _CCCL_API constexpr __shared_memory_accessor(__shared_memory_accessor<_OtherAccessor>&& __acc) noexcept(
@@ -149,7 +149,7 @@ public:
     _CCCL_VERIFY_DEVICE_ONLY_USAGE();
   }
 
-  _CCCL_TEMPLATE(typename _OtherAccessor)
+  _CCCL_TEMPLATE(class _OtherAccessor)
   _CCCL_REQUIRES(::cuda::std::is_constructible_v<_Accessor, _OtherAccessor> _CCCL_AND(
     !::cuda::std::is_convertible_v<_OtherAccessor, _Accessor>))
   _CCCL_API constexpr explicit __shared_memory_accessor(__shared_memory_accessor<_OtherAccessor>&& __acc) noexcept(

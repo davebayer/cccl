@@ -106,7 +106,7 @@ __rotate_forward(_ForwardIterator __first, _ForwardIterator __middle, _ForwardIt
 }
 
 _CCCL_EXEC_CHECK_DISABLE
-template <typename _Integral>
+template <class _Integral>
 _CCCL_API constexpr _Integral __algo_gcd(_Integral __x, _Integral __y)
 {
   do
@@ -119,7 +119,7 @@ _CCCL_API constexpr _Integral __algo_gcd(_Integral __x, _Integral __y)
 }
 
 _CCCL_EXEC_CHECK_DISABLE
-template <class _AlgPolicy, typename _RandomAccessIterator>
+template <class _AlgPolicy, class _RandomAccessIterator>
 _CCCL_API constexpr _RandomAccessIterator
 __rotate_gcd(_RandomAccessIterator __first, _RandomAccessIterator __middle, _RandomAccessIterator __last)
 {

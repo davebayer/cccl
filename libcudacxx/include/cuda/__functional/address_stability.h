@@ -38,21 +38,21 @@ _CCCL_BEGIN_NAMESPACE_CUDA
 //! value is true when the addresses of the arguments do not matter and arguments can be provided from arbitrary copies
 //! of the respective sources. This trait can be specialized for custom function objects types.
 //! @see proclaim_copyable_arguments
-template <typename F, typename SFINAE = void>
+template <class F, class SFINAE = void>
 struct proclaims_copyable_arguments : ::cuda::std::false_type
 {};
 
-template <typename F, typename... Args>
+template <class F, class... Args>
 inline constexpr bool proclaims_copyable_arguments_v = proclaims_copyable_arguments<F, Args...>::value;
 
 // Wrapper for a callable to mark it as permitting copied arguments
-template <typename F>
+template <class F>
 struct __callable_permitting_copied_arguments : F
 {
   using F::operator();
 };
 
-template <typename F>
+template <class F>
 struct proclaims_copyable_arguments<__callable_permitting_copied_arguments<F>> : ::cuda::std::true_type
 {};
 
@@ -61,7 +61,7 @@ struct proclaims_copyable_arguments<__callable_permitting_copied_arguments<F>> :
 //! object. Some algorithms, like thrust::transform, can benefit from this information and choose a more efficient
 //! implementation.
 //! @see proclaims_copyable_arguments
-template <typename F>
+template <class F>
 [[nodiscard]] _CCCL_API constexpr auto proclaim_copyable_arguments(F&& f)
 {
   if constexpr (proclaims_copyable_arguments<F>::value)
@@ -76,15 +76,15 @@ template <typename F>
 
 // Specializations for libcu++ function objects are provided here to not pull this include into `<cuda/std/...>` headers
 
-template <typename _Fn>
+template <class _Fn>
 struct proclaims_copyable_arguments<::cuda::std::__not_fn_t<_Fn>> : proclaims_copyable_arguments<_Fn>
 {};
 
-template <typename _Fn>
+template <class _Fn>
 struct proclaims_copyable_arguments<zip_function<_Fn>> : proclaims_copyable_arguments<_Fn>
 {};
 
-template <typename _Tp>
+template <class _Tp>
 struct __has_builtin_operators
     : ::cuda::std::bool_constant<!::cuda::std::is_class_v<_Tp> && !::cuda::std::is_enum_v<_Tp>
                                  && !::cuda::std::is_void_v<_Tp>>
@@ -92,7 +92,7 @@ struct __has_builtin_operators
 
 #define _LIBCUDACXX_MARK_CAN_COPY_ARGUMENTS(functor)                                         \
   /*we know what plus<T> etc. does if T is not a type that could have a weird operatorX() */ \
-  template <typename _Tp>                                                                    \
+  template <class _Tp>                                                                       \
   struct proclaims_copyable_arguments<functor<_Tp>> : ::cuda::__has_builtin_operators<_Tp>   \
   {};                                                                                        \
   /*we do not know what plus<void> etc. does, which depends on the types it is invoked on */ \

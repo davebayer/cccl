@@ -963,7 +963,7 @@ _CCCL_API void __introsort(
   }
 }
 
-template <typename _Number>
+template <class _Number>
 _CCCL_API _Number __log2i(_Number __n)
 {
   if (__n == 0)

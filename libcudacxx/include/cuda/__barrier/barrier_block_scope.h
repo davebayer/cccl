@@ -79,9 +79,9 @@ class barrier<thread_scope_block, ::cuda::std::__empty_completion> : public __bl
     return ::cuda::device::barrier_native_handle(const_cast<barrier&>(*this));
   }
 
-  template <typename _Barrier>
+  template <class _Barrier>
   friend class ::cuda::std::__barrier_poll_tester_phase;
-  template <typename _Barrier>
+  template <class _Barrier>
   friend class ::cuda::std::__barrier_poll_tester_parity;
 
 public:

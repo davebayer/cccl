@@ -29,7 +29,7 @@
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
 // Reference is compatible with __atomic_base_tag and uses the default dispatch
-template <typename _Tp>
+template <class _Tp>
 struct __atomic_ref_storage
 {
   using __underlying_t                = _Tp;

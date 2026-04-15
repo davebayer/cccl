@@ -122,7 +122,7 @@ _CCCL_API constexpr void __throw_if_valueless(_Vs&&... __vs)
 
 template <class _Visitor,
           class... _Vs,
-          typename = void_t<decltype(::cuda::std::__as_variant(::cuda::std::declval<_Vs>()))...>>
+          class = void_t<decltype(::cuda::std::__as_variant(::cuda::std::declval<_Vs>()))...>>
 _CCCL_API constexpr decltype(auto) visit(_Visitor&& __visitor, _Vs&&... __vs)
 {
   using __variant_detail::__visitation::__variant;
@@ -133,7 +133,7 @@ _CCCL_API constexpr decltype(auto) visit(_Visitor&& __visitor, _Vs&&... __vs)
 template <class _Rp,
           class _Visitor,
           class... _Vs,
-          typename = void_t<decltype(::cuda::std::__as_variant(::cuda::std::declval<_Vs>()))...>>
+          class = void_t<decltype(::cuda::std::__as_variant(::cuda::std::declval<_Vs>()))...>>
 _CCCL_API constexpr _Rp visit(_Visitor&& __visitor, _Vs&&... __vs)
 {
   using __variant_detail::__visitation::__variant;

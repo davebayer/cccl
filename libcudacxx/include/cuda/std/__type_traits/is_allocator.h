@@ -29,11 +29,11 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
-template <typename _Alloc, typename = void, typename = void>
+template <class _Alloc, class = void, class = void>
 struct __is_allocator : false_type
 {};
 
-template <typename _Alloc>
+template <class _Alloc>
 struct __is_allocator<_Alloc,
                       void_t<typename _Alloc::value_type>,
                       void_t<decltype(::cuda::std::declval<_Alloc&>().allocate(size_t(0)))>> : true_type

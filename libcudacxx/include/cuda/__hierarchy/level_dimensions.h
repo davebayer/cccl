@@ -39,11 +39,11 @@ _CCCL_BEGIN_NAMESPACE_CUDA
 namespace __detail
 {
 /* Keeping it around in case issues like
-https://github.com/NVIDIA/cccl/issues/522 template <typename T, size_t...
+https://github.com/NVIDIA/cccl/issues/522 template <class T, size_t...
 Extents> struct extents_corrected : public ::cuda::std::extents<T, Extents...> {
     using ::cuda::std::extents<T, Extents...>::extents;
 
-    template <typename ::cuda::std::extents<T, Extents...>::rank_type Id>
+    template <class ::cuda::std::extents<T, Extents...>::rank_type Id>
     _CCCL_API constexpr auto extent_corrected() const {
         if constexpr (::cuda::std::extents<T, Extents...>::static_extent(Id) !=
 ::cuda::std::dynamic_extent) { return this->static_extent(Id);

@@ -42,7 +42,7 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA
 
-template <typename _Tp>
+template <class _Tp>
 [[nodiscard]] _CCCL_API inline _Tp* align_up(_Tp* __ptr, ::cuda::std::size_t __alignment) noexcept
 {
   using ::cuda::std::uintptr_t;

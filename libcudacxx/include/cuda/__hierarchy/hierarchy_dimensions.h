@@ -39,13 +39,13 @@ _CCCL_BEGIN_NAMESPACE_CUDA
 
 namespace __detail
 {
-template <typename _Level>
+template <class _Level>
 [[nodiscard]] _CCCL_API constexpr auto __as_level(_Level __lvl) noexcept -> _Level
 {
   return __lvl;
 }
 
-template <typename _LevelFn>
+template <class _LevelFn>
 [[nodiscard]] _CCCL_API constexpr auto __as_level(_LevelFn* __fn) noexcept -> decltype(__fn())
 {
   return {};
@@ -312,7 +312,7 @@ public:
    *   Type indicating what should be the top most level of the resulting
    * fragment
    */
-  template <typename _Unit, typename _Level>
+  template <class _Unit, class _Level>
   _CCCL_API constexpr auto fragment(const _Unit& = _Unit(), const _Level& = _Level()) const noexcept
   {
     auto __selected = __levels_range<_Unit, _Level>();
@@ -346,7 +346,7 @@ public:
    * @tparam Level
    *  Specifies the requested level
    */
-  template <typename _Level>
+  template <class _Level>
   [[nodiscard]] _CCCL_API constexpr const level_desc_type<_Level>& level(const _Level&) const noexcept
   {
     static_assert(hierarchy::has_level<_Level>());

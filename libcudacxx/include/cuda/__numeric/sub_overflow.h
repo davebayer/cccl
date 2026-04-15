@@ -55,7 +55,7 @@
 _CCCL_BEGIN_NAMESPACE_CUDA
 
 // Subtracts using unsigned intermediates to avoid signed overflow (UB) before casting to the requested result type.
-template <typename _Result, typename _Lhs, typename _Rhs>
+template <class _Result, class _Lhs, class _Rhs>
 [[nodiscard]] _CCCL_API constexpr _Result __sub_as_unsigned(_Lhs __lhs, _Rhs __rhs) noexcept
 {
   using _UnsignedResult = ::cuda::std::make_unsigned_t<_Result>;
@@ -65,7 +65,7 @@ template <typename _Result, typename _Lhs, typename _Rhs>
 }
 
 // addition with unsigned types to avoid UB, return an unsigned type
-template <typename _Result, typename _Lhs, typename _Rhs>
+template <class _Result, class _Lhs, class _Rhs>
 [[nodiscard]] _CCCL_API constexpr _Result __add_as_unsigned(_Lhs __lhs, _Rhs __rhs) noexcept
 {
   using _UnsignedResult = ::cuda::std::make_unsigned_t<_Result>;
@@ -74,7 +74,7 @@ template <typename _Result, typename _Lhs, typename _Rhs>
   return static_cast<_Result>(__lhs1 + __rhs1);
 }
 
-template <typename _Tp>
+template <class _Tp>
 [[nodiscard]] _CCCL_API constexpr overflow_result<_Tp> __sub_overflow_generic_impl(_Tp __lhs, _Tp __rhs) noexcept
 {
   const auto __sub = ::cuda::__sub_as_unsigned<_Tp>(__lhs, __rhs);
@@ -241,7 +241,7 @@ template <class _Tp>
 
 #endif // _CCCL_HOST_COMPILATION()
 
-template <typename _Tp>
+template <class _Tp>
 [[nodiscard]] _CCCL_API constexpr overflow_result<_Tp> __sub_overflow_uniform_type(_Tp __lhs, _Tp __rhs) noexcept
 {
   _CCCL_IF_NOT_CONSTEVAL_DEFAULT
@@ -253,7 +253,7 @@ template <typename _Tp>
   return ::cuda::__sub_overflow_generic_impl(__lhs, __rhs);
 }
 
-template <typename _Result, typename _Lhs, typename _Rhs>
+template <class _Result, class _Lhs, class _Rhs>
 inline constexpr bool __is_sub_representable_v = sizeof(_Result) > sizeof(_Lhs) && sizeof(_Result) > sizeof(_Rhs)
                                               && ::cuda::std::is_signed_v<_Result>;
 
@@ -261,11 +261,11 @@ inline constexpr bool __is_sub_representable_v = sizeof(_Result) > sizeof(_Lhs) 
  * Public interface
  **********************************************************************************************************************/
 
-_CCCL_TEMPLATE(typename _Result = void,
-               typename _Lhs,
-               typename _Rhs,
-               typename _Common       = ::cuda::std::common_type_t<_Lhs, _Rhs>,
-               typename _ActualResult = ::cuda::std::conditional_t<::cuda::std::is_void_v<_Result>, _Common, _Result>)
+_CCCL_TEMPLATE(class _Result = void,
+               class _Lhs,
+               class _Rhs,
+               class _Common       = ::cuda::std::common_type_t<_Lhs, _Rhs>,
+               class _ActualResult = ::cuda::std::conditional_t<::cuda::std::is_void_v<_Result>, _Common, _Result>)
 _CCCL_REQUIRES((::cuda::std::is_void_v<_Result> || ::cuda::std::__cccl_is_integer_v<_Result>)
                  _CCCL_AND ::cuda::std::__cccl_is_integer_v<_Lhs> _CCCL_AND ::cuda::std::__cccl_is_integer_v<_Rhs>)
 [[nodiscard]]
@@ -403,7 +403,7 @@ _CCCL_API constexpr overflow_result<_ActualResult> sub_overflow(const _Lhs __lhs
 }
 
 //! @brief Subtracts two numbers \p __lhs and \p __rhs with overflow detection
-_CCCL_TEMPLATE(typename _Result, typename _Lhs, typename _Rhs)
+_CCCL_TEMPLATE(class _Result, class _Lhs, class _Rhs)
 _CCCL_REQUIRES(::cuda::std::__cccl_is_integer_v<_Result> _CCCL_AND ::cuda::std::__cccl_is_integer_v<_Lhs>
                  _CCCL_AND ::cuda::std::__cccl_is_integer_v<_Rhs>)
 [[nodiscard]] _CCCL_API constexpr bool sub_overflow(_Result& __result, const _Lhs __lhs, const _Rhs __rhs) noexcept

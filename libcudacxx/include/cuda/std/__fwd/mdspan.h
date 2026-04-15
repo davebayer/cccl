@@ -84,19 +84,19 @@ inline constexpr bool __is_cuda_std_mdspan_v = false;
 template <class _ElementType, class _Extents, class _LayoutPolicy, class _AccessorPolicy>
 inline constexpr bool __is_cuda_std_mdspan_v<mdspan<_ElementType, _Extents, _LayoutPolicy, _AccessorPolicy>> = true;
 
-template <typename _Layout>
+template <class _Layout>
 inline constexpr bool __is_cuda_std_layout_left_mapping_v = false;
 
-template <typename _Extents>
+template <class _Extents>
 inline constexpr bool __is_cuda_std_layout_left_mapping_v<layout_left::mapping<_Extents>> = true;
 
-template <typename _Layout>
+template <class _Layout>
 inline constexpr bool __is_cuda_std_layout_right_mapping_v = false;
 
-template <typename _Extents>
+template <class _Extents>
 inline constexpr bool __is_cuda_std_layout_right_mapping_v<layout_right::mapping<_Extents>> = true;
 
-template <typename _Layout>
+template <class _Layout>
 inline constexpr bool __is_cuda_std_layout_left_or_right_mapping_v =
   __is_cuda_std_layout_left_mapping_v<_Layout> || __is_cuda_std_layout_right_mapping_v<_Layout>;
 

@@ -311,7 +311,7 @@ public:
   }
 
 #if !_CCCL_COMPILER(NVRTC)
-  template <typename _CharT, typename _Traits>
+  template <class _CharT, class _Traits>
   _CCCL_API friend ::std::basic_ostream<_CharT, _Traits>&
   operator<<(::std::basic_ostream<_CharT, _Traits>& __os, const linear_congruential_engine& __e)
   {
@@ -322,7 +322,7 @@ public:
     __os.flags(__flags);
     return __os << __e.__x_;
   }
-  template <typename _CharT, typename _Traits>
+  template <class _CharT, class _Traits>
   _CCCL_API friend ::std::basic_istream<_CharT, _Traits>&
   operator>>(::std::basic_istream<_CharT, _Traits>& __is, linear_congruential_engine& __e)
   {

@@ -31,7 +31,7 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA
 
-_CCCL_TEMPLATE(typename _Tp)
+_CCCL_TEMPLATE(class _Tp)
 _CCCL_REQUIRES(::cuda::std::__cccl_is_integer_v<_Tp>)
 [[nodiscard]] _CCCL_API constexpr bool is_power_of_two(_Tp __t) noexcept
 {
@@ -43,7 +43,7 @@ _CCCL_REQUIRES(::cuda::std::__cccl_is_integer_v<_Tp>)
   return ::cuda::std::has_single_bit(static_cast<_Up>(__t));
 }
 
-_CCCL_TEMPLATE(typename _Tp)
+_CCCL_TEMPLATE(class _Tp)
 _CCCL_REQUIRES(::cuda::std::__cccl_is_integer_v<_Tp>)
 [[nodiscard]] _CCCL_API constexpr _Tp next_power_of_two(_Tp __t) noexcept
 {
@@ -55,7 +55,7 @@ _CCCL_REQUIRES(::cuda::std::__cccl_is_integer_v<_Tp>)
   return ::cuda::std::bit_ceil(static_cast<_Up>(__t));
 }
 
-_CCCL_TEMPLATE(typename _Tp)
+_CCCL_TEMPLATE(class _Tp)
 _CCCL_REQUIRES(::cuda::std::__cccl_is_integer_v<_Tp>)
 [[nodiscard]] _CCCL_API constexpr _Tp prev_power_of_two(_Tp __t) noexcept
 {

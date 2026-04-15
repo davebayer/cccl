@@ -46,7 +46,7 @@ public:
       , __pred_(__p)
   {}
 
-  template <typename _ForwardIterator2>
+  template <class _ForwardIterator2>
   _CCCL_API inline _CCCL_CONSTEXPR_CXX20 pair<_ForwardIterator2, _ForwardIterator2>
   operator()(_ForwardIterator2 __f, _ForwardIterator2 __l) const
   {

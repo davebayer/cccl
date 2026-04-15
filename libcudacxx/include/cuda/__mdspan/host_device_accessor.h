@@ -41,47 +41,47 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA
 
-template <typename _Accessor>
+template <class _Accessor>
 class __host_accessor;
 
-template <typename _Accessor>
+template <class _Accessor>
 class __device_accessor;
 
-template <typename _Accessor>
+template <class _Accessor>
 class __managed_accessor;
 
-template <typename _Accessor>
+template <class _Accessor>
 using host_accessor = __host_accessor<_Accessor>;
 
-template <typename _Accessor>
+template <class _Accessor>
 using device_accessor = __device_accessor<_Accessor>;
 
-template <typename _Accessor>
+template <class _Accessor>
 using managed_accessor = __managed_accessor<_Accessor>;
 
 /***********************************************************************************************************************
  * Host/Device/Managed Accessor Traits
  **********************************************************************************************************************/
 
-template <typename>
+template <class>
 inline constexpr bool is_host_accessor_v = false;
 
-template <typename>
+template <class>
 inline constexpr bool is_device_accessor_v = false;
 
-template <typename>
+template <class>
 inline constexpr bool is_managed_accessor_v = false;
 
-template <typename _Accessor>
+template <class _Accessor>
 inline constexpr bool is_host_accessor_v<__host_accessor<_Accessor>> = true;
 
-template <typename _Accessor>
+template <class _Accessor>
 inline constexpr bool is_device_accessor_v<__device_accessor<_Accessor>> = true;
 
-template <typename _Accessor>
+template <class _Accessor>
 inline constexpr bool is_managed_accessor_v<__managed_accessor<_Accessor>> = true;
 
-template <typename _Tp>
+template <class _Tp>
 inline constexpr bool is_host_device_managed_accessor_v =
   is_host_accessor_v<_Tp> || is_device_accessor_v<_Tp> || is_managed_accessor_v<_Tp>;
 
@@ -89,7 +89,7 @@ inline constexpr bool is_host_device_managed_accessor_v =
  * Host Accessor
  **********************************************************************************************************************/
 
-template <typename _Accessor>
+template <class _Accessor>
 class __host_accessor : public _Accessor
 {
   static_assert(!is_host_device_managed_accessor_v<_Accessor>,
@@ -142,10 +142,10 @@ public:
       : _Accessor{__acc}
   {}
 
-  template <typename _OtherAccessor>
+  template <class _OtherAccessor>
   __host_accessor(const __device_accessor<_OtherAccessor>&) = delete;
 
-  _CCCL_TEMPLATE(typename _OtherAccessor)
+  _CCCL_TEMPLATE(class _OtherAccessor)
   _CCCL_REQUIRES(::cuda::std::is_constructible_v<_Accessor, const _OtherAccessor&> _CCCL_AND(
     ::cuda::std::is_convertible_v<const _OtherAccessor&, _Accessor>))
   _CCCL_API constexpr __host_accessor(const __host_accessor<_OtherAccessor>& __acc) noexcept(
@@ -153,7 +153,7 @@ public:
       : _Accessor{__acc}
   {}
 
-  _CCCL_TEMPLATE(typename _OtherAccessor)
+  _CCCL_TEMPLATE(class _OtherAccessor)
   _CCCL_REQUIRES(::cuda::std::is_constructible_v<_Accessor, const _OtherAccessor&> _CCCL_AND(
     !::cuda::std::is_convertible_v<const _OtherAccessor&, _Accessor>))
   _CCCL_API constexpr explicit __host_accessor(const __host_accessor<_OtherAccessor>& __acc) noexcept(
@@ -161,7 +161,7 @@ public:
       : _Accessor{__acc}
   {}
 
-  _CCCL_TEMPLATE(typename _OtherAccessor)
+  _CCCL_TEMPLATE(class _OtherAccessor)
   _CCCL_REQUIRES(::cuda::std::is_constructible_v<_Accessor, _OtherAccessor> _CCCL_AND(
     ::cuda::std::is_convertible_v<_OtherAccessor, _Accessor>))
   _CCCL_API constexpr __host_accessor(__host_accessor<_OtherAccessor>&& __acc) noexcept(
@@ -169,7 +169,7 @@ public:
       : _Accessor{::cuda::std::move(__acc)}
   {}
 
-  _CCCL_TEMPLATE(typename _OtherAccessor)
+  _CCCL_TEMPLATE(class _OtherAccessor)
   _CCCL_REQUIRES(::cuda::std::is_constructible_v<_Accessor, const _OtherAccessor&> _CCCL_AND(
     !::cuda::std::is_convertible_v<_OtherAccessor, _Accessor>))
   _CCCL_API constexpr explicit __host_accessor(__host_accessor<_OtherAccessor>&& __acc) noexcept(
@@ -177,7 +177,7 @@ public:
       : _Accessor{::cuda::std::move(__acc)}
   {}
 
-  _CCCL_TEMPLATE(typename _OtherAccessor)
+  _CCCL_TEMPLATE(class _OtherAccessor)
   _CCCL_REQUIRES(::cuda::std::is_constructible_v<_Accessor, const _OtherAccessor&> _CCCL_AND(
     ::cuda::std::is_convertible_v<const _OtherAccessor&, _Accessor>))
   _CCCL_API constexpr __host_accessor(const __managed_accessor<_OtherAccessor>& __acc) noexcept(
@@ -185,7 +185,7 @@ public:
       : _Accessor{__acc}
   {}
 
-  _CCCL_TEMPLATE(typename _OtherAccessor)
+  _CCCL_TEMPLATE(class _OtherAccessor)
   _CCCL_REQUIRES(::cuda::std::is_constructible_v<_Accessor, const _OtherAccessor&> _CCCL_AND(
     !::cuda::std::is_convertible_v<const _OtherAccessor&, _Accessor>))
   _CCCL_API constexpr explicit __host_accessor(const __managed_accessor<_OtherAccessor>& __acc) noexcept(
@@ -226,7 +226,7 @@ public:
  * Device Accessor
  **********************************************************************************************************************/
 
-template <typename _Accessor>
+template <class _Accessor>
 class __device_accessor : public _Accessor
 {
   static_assert(!is_host_device_managed_accessor_v<_Accessor>,
@@ -277,10 +277,10 @@ public:
       : _Accessor{__acc}
   {}
 
-  template <typename _OtherAccessor>
+  template <class _OtherAccessor>
   __device_accessor(const __host_accessor<_OtherAccessor>&) = delete;
 
-  _CCCL_TEMPLATE(typename _OtherAccessor)
+  _CCCL_TEMPLATE(class _OtherAccessor)
   _CCCL_REQUIRES(::cuda::std::is_constructible_v<_Accessor, const _OtherAccessor&> _CCCL_AND(
     ::cuda::std::is_convertible_v<const _OtherAccessor&, _Accessor>))
   _CCCL_API constexpr __device_accessor(const __device_accessor<_OtherAccessor>& __acc) noexcept(
@@ -288,7 +288,7 @@ public:
       : _Accessor{__acc}
   {}
 
-  _CCCL_TEMPLATE(typename _OtherAccessor)
+  _CCCL_TEMPLATE(class _OtherAccessor)
   _CCCL_REQUIRES(::cuda::std::is_constructible_v<_Accessor, const _OtherAccessor&> _CCCL_AND(
     !::cuda::std::is_convertible_v<const _OtherAccessor&, _Accessor>))
   _CCCL_API constexpr explicit __device_accessor(const __device_accessor<_OtherAccessor>& __acc) noexcept(
@@ -296,7 +296,7 @@ public:
       : _Accessor{__acc}
   {}
 
-  _CCCL_TEMPLATE(typename _OtherAccessor)
+  _CCCL_TEMPLATE(class _OtherAccessor)
   _CCCL_REQUIRES(::cuda::std::is_constructible_v<_Accessor, _OtherAccessor> _CCCL_AND(
     ::cuda::std::is_convertible_v<_OtherAccessor, _Accessor>))
   _CCCL_API constexpr __device_accessor(__device_accessor<_OtherAccessor>&& __acc) noexcept(
@@ -304,7 +304,7 @@ public:
       : _Accessor{::cuda::std::move(__acc)}
   {}
 
-  _CCCL_TEMPLATE(typename _OtherAccessor)
+  _CCCL_TEMPLATE(class _OtherAccessor)
   _CCCL_REQUIRES(::cuda::std::is_constructible_v<_Accessor, _OtherAccessor> _CCCL_AND(
     !::cuda::std::is_convertible_v<_OtherAccessor, _Accessor>))
   _CCCL_API constexpr explicit __device_accessor(__device_accessor<_OtherAccessor>&& __acc) noexcept(
@@ -312,7 +312,7 @@ public:
       : _Accessor{::cuda::std::move(__acc)}
   {}
 
-  _CCCL_TEMPLATE(typename _OtherAccessor)
+  _CCCL_TEMPLATE(class _OtherAccessor)
   _CCCL_REQUIRES(::cuda::std::is_constructible_v<_Accessor, const _OtherAccessor&> _CCCL_AND(
     ::cuda::std::is_convertible_v<const _OtherAccessor&, _Accessor>))
   _CCCL_API constexpr __device_accessor(const __managed_accessor<_OtherAccessor>& __acc) noexcept(
@@ -320,7 +320,7 @@ public:
       : _Accessor{__acc}
   {}
 
-  _CCCL_TEMPLATE(typename _OtherAccessor)
+  _CCCL_TEMPLATE(class _OtherAccessor)
   _CCCL_REQUIRES(::cuda::std::is_constructible_v<_Accessor, const _OtherAccessor&> _CCCL_AND(
     !::cuda::std::is_convertible_v<const _OtherAccessor&, _Accessor>))
   _CCCL_API constexpr explicit __device_accessor(const __managed_accessor<_OtherAccessor>& __acc) noexcept(
@@ -361,7 +361,7 @@ public:
  * Managed Accessor
  **********************************************************************************************************************/
 
-template <typename _Accessor>
+template <class _Accessor>
 class __managed_accessor : public _Accessor
 {
   static_assert(!is_host_device_managed_accessor_v<_Accessor>,
@@ -411,13 +411,13 @@ public:
       : _Accessor{__acc}
   {}
 
-  template <typename _OtherAccessor>
+  template <class _OtherAccessor>
   __managed_accessor(const __host_accessor<_OtherAccessor>&) = delete;
 
-  template <typename _OtherAccessor>
+  template <class _OtherAccessor>
   __managed_accessor(const __device_accessor<_OtherAccessor>&) = delete;
 
-  _CCCL_TEMPLATE(typename _OtherAccessor)
+  _CCCL_TEMPLATE(class _OtherAccessor)
   _CCCL_REQUIRES(::cuda::std::is_constructible_v<_Accessor, const _OtherAccessor&> _CCCL_AND(
     ::cuda::std::is_convertible_v<const _OtherAccessor&, _Accessor>))
   _CCCL_API constexpr __managed_accessor(const __managed_accessor<_OtherAccessor>& __acc) noexcept(
@@ -425,7 +425,7 @@ public:
       : _Accessor{__acc}
   {}
 
-  _CCCL_TEMPLATE(typename _OtherAccessor)
+  _CCCL_TEMPLATE(class _OtherAccessor)
   _CCCL_REQUIRES(::cuda::std::is_constructible_v<_Accessor, const _OtherAccessor&> _CCCL_AND(
     !::cuda::std::is_convertible_v<const _OtherAccessor&, _Accessor>))
   _CCCL_API constexpr explicit __managed_accessor(const __managed_accessor<_OtherAccessor>& __acc) noexcept(
@@ -433,7 +433,7 @@ public:
       : _Accessor{__acc}
   {}
 
-  _CCCL_TEMPLATE(typename _OtherAccessor)
+  _CCCL_TEMPLATE(class _OtherAccessor)
   _CCCL_REQUIRES(::cuda::std::is_constructible_v<_Accessor, _OtherAccessor> _CCCL_AND(
     ::cuda::std::is_convertible_v<_OtherAccessor, _Accessor>))
   _CCCL_API constexpr __managed_accessor(__managed_accessor<_OtherAccessor>&& __acc) noexcept(
@@ -441,7 +441,7 @@ public:
       : _Accessor{::cuda::std::move(__acc)}
   {}
 
-  _CCCL_TEMPLATE(typename _OtherAccessor)
+  _CCCL_TEMPLATE(class _OtherAccessor)
   _CCCL_REQUIRES(::cuda::std::is_constructible_v<_Accessor, _OtherAccessor> _CCCL_AND(
     !::cuda::std::is_convertible_v<_OtherAccessor, _Accessor>))
   _CCCL_API constexpr explicit __managed_accessor(__managed_accessor<_OtherAccessor>&& __acc) noexcept(
@@ -481,28 +481,28 @@ public:
  * Accessibility Traits
  **********************************************************************************************************************/
 
-template <typename>
+template <class>
 inline constexpr bool is_host_accessible_v = false;
 
-template <typename>
+template <class>
 inline constexpr bool is_device_accessible_v = false;
 
-template <typename _Accessor>
+template <class _Accessor>
 inline constexpr bool is_host_accessible_v<__host_accessor<_Accessor>> = true;
 
-template <typename _Accessor>
+template <class _Accessor>
 inline constexpr bool is_host_accessible_v<__managed_accessor<_Accessor>> = true;
 
-template <template <typename> class _TClass, typename _Accessor>
+template <template <class> class _TClass, class _Accessor>
 inline constexpr bool is_host_accessible_v<_TClass<_Accessor>> = is_host_accessible_v<_Accessor>;
 
-template <typename _Accessor>
+template <class _Accessor>
 inline constexpr bool is_device_accessible_v<__device_accessor<_Accessor>> = true;
 
-template <typename _Accessor>
+template <class _Accessor>
 inline constexpr bool is_device_accessible_v<__managed_accessor<_Accessor>> = true;
 
-template <template <typename> class _TClass, typename _Accessor>
+template <template <class> class _TClass, class _Accessor>
 inline constexpr bool is_device_accessible_v<_TClass<_Accessor>> = is_device_accessible_v<_Accessor>;
 
 _CCCL_END_NAMESPACE_CUDA

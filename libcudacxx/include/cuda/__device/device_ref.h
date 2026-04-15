@@ -104,7 +104,7 @@ public:
   //! @throws cuda_error if the attribute query fails
   //!
   //! @sa device::attrs
-  template <typename _Attr>
+  template <class _Attr>
   [[nodiscard]] _CCCL_HOST_API auto attribute(_Attr __attr) const
   {
     return __attr(*this);

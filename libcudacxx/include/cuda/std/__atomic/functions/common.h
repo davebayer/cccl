@@ -27,13 +27,13 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
-template <typename _Tp>
+template <class _Tp>
 struct __atomic_ptr_skip
 {
   static constexpr auto __skip = 1;
 };
 
-template <typename _Tp>
+template <class _Tp>
 struct __atomic_ptr_skip<_Tp*>
 {
   static constexpr auto __skip = sizeof(_Tp);
@@ -41,14 +41,14 @@ struct __atomic_ptr_skip<_Tp*>
 
 // FIXME: Haven't figured out what the spec says about using arrays with
 // atomic_fetch_add. Force a failure rather than creating bad behavior.
-template <typename _Tp>
+template <class _Tp>
 struct __atomic_ptr_skip<_Tp[]>
 {};
-template <typename _Tp, int n>
+template <class _Tp, int n>
 struct __atomic_ptr_skip<_Tp[n]>
 {};
 
-template <typename _Tp>
+template <class _Tp>
 using __atomic_ptr_skip_t = __atomic_ptr_skip<remove_cvref_t<_Tp>>;
 
 _CCCL_END_NAMESPACE_CUDA_STD

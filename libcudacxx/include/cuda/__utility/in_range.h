@@ -33,7 +33,7 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA
 
-_CCCL_TEMPLATE(typename _Tp)
+_CCCL_TEMPLATE(class _Tp)
 _CCCL_REQUIRES(::cuda::std::__cccl_is_integer_v<_Tp> || ::cuda::std::is_floating_point_v<_Tp>
                || ::cuda::std::__is_extended_floating_point_v<_Tp>)
 [[nodiscard]] _CCCL_API constexpr bool in_range(_Tp __v, _Tp __start, _Tp __end) noexcept

@@ -48,7 +48,7 @@ _CCCL_BEGIN_NAMESPACE_CUDA_DEVICE
     (return threadIdx.x == 0;));
 }
 
-template <typename _Group>
+template <class _Group>
 [[nodiscard]] _CCCL_DEVICE_API _CCCL_FORCEINLINE bool __group_elect_one(const _Group& __g) noexcept
 {
   NV_IF_TARGET(NV_PROVIDES_SM_90,

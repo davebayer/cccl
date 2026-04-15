@@ -28,7 +28,7 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA
 
-template <typename _Shape>
+template <class _Shape>
 _CCCL_API inline void apply_access_property(
   [[maybe_unused]] const volatile void* __ptr,
   [[maybe_unused]] _Shape __shape,
@@ -52,7 +52,7 @@ _CCCL_API inline void apply_access_property(
   // clang-format on
 }
 
-template <typename _Shape>
+template <class _Shape>
 _CCCL_API inline void apply_access_property(
   [[maybe_unused]] const volatile void* __ptr,
   [[maybe_unused]] _Shape __shape,

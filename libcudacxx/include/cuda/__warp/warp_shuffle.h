@@ -39,20 +39,20 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA_DEVICE
 
-template <typename _Tp>
+template <class _Tp>
 struct warp_shuffle_result
 {
   _Tp data;
   bool pred;
 
-  template <typename _Up = _Tp>
+  template <class _Up = _Tp>
   [[nodiscard]] _CCCL_DEVICE_API operator ::cuda::std::enable_if_t<!::cuda::std::is_array_v<_Up>, _Up>() const
   {
     return data;
   }
 };
 
-template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t<_Tp>>
+template <int _Width = 32, class _Tp, class _Up = ::cuda::std::remove_cv_t<_Tp>>
 [[nodiscard]] _CCCL_DEVICE_API warp_shuffle_result<_Up> warp_shuffle_idx(
   const _Tp& __data, int __src_lane, uint32_t __lane_mask = 0xFFFFFFFF, ::cuda::std::integral_constant<int, _Width> = {})
 {
@@ -90,14 +90,14 @@ template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t
   }
 }
 
-template <int _Width, typename _Tp, typename _Up = ::cuda::std::remove_cv_t<_Tp>>
+template <int _Width, class _Tp, class _Up = ::cuda::std::remove_cv_t<_Tp>>
 [[nodiscard]] _CCCL_DEVICE_API warp_shuffle_result<_Up>
 warp_shuffle_idx(const _Tp& __data, int __src_lane, ::cuda::std::integral_constant<int, _Width> __width)
 {
   return ::cuda::device::warp_shuffle_idx(__data, __src_lane, 0xFFFFFFFF, __width);
 }
 
-template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t<_Tp>>
+template <int _Width = 32, class _Tp, class _Up = ::cuda::std::remove_cv_t<_Tp>>
 [[nodiscard]] _CCCL_DEVICE_API warp_shuffle_result<_Tp> warp_shuffle_up(
   const _Tp& __data, int __delta, uint32_t __lane_mask = 0xFFFFFFFF, ::cuda::std::integral_constant<int, _Width> = {})
 {
@@ -139,14 +139,14 @@ template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t
   }
 }
 
-template <int _Width, typename _Tp, typename _Up = ::cuda::std::remove_cv_t<_Tp>>
+template <int _Width, class _Tp, class _Up = ::cuda::std::remove_cv_t<_Tp>>
 [[nodiscard]] _CCCL_DEVICE_API warp_shuffle_result<_Up>
 warp_shuffle_up(const _Tp& __data, int __src_lane, ::cuda::std::integral_constant<int, _Width> __width)
 {
   return ::cuda::device::warp_shuffle_up(__data, __src_lane, 0xFFFFFFFF, __width);
 }
 
-template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t<_Tp>>
+template <int _Width = 32, class _Tp, class _Up = ::cuda::std::remove_cv_t<_Tp>>
 [[nodiscard]] _CCCL_DEVICE_API warp_shuffle_result<_Up> warp_shuffle_down(
   const _Tp& __data, int __delta, uint32_t __lane_mask = 0xFFFFFFFF, ::cuda::std::integral_constant<int, _Width> = {})
 {
@@ -188,14 +188,14 @@ template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t
   }
 }
 
-template <int _Width, typename _Tp, typename _Up = ::cuda::std::remove_cv_t<_Tp>>
+template <int _Width, class _Tp, class _Up = ::cuda::std::remove_cv_t<_Tp>>
 [[nodiscard]] _CCCL_DEVICE_API warp_shuffle_result<_Tp>
 warp_shuffle_down(const _Tp& __data, int __src_lane, ::cuda::std::integral_constant<int, _Width> __width)
 {
   return ::cuda::device::warp_shuffle_down(__data, __src_lane, 0xFFFFFFFF, __width);
 }
 
-template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t<_Tp>>
+template <int _Width = 32, class _Tp, class _Up = ::cuda::std::remove_cv_t<_Tp>>
 [[nodiscard]] _CCCL_DEVICE_API warp_shuffle_result<_Up> warp_shuffle_xor(
   const _Tp& __data, int __xor_mask, uint32_t __lane_mask = 0xFFFFFFFF, ::cuda::std::integral_constant<int, _Width> = {})
 {
@@ -237,7 +237,7 @@ template <int _Width = 32, typename _Tp, typename _Up = ::cuda::std::remove_cv_t
   }
 }
 
-template <int _Width, typename _Tp, typename _Up = ::cuda::std::remove_cv_t<_Tp>>
+template <int _Width, class _Tp, class _Up = ::cuda::std::remove_cv_t<_Tp>>
 [[nodiscard]] _CCCL_DEVICE_API warp_shuffle_result<_Up>
 warp_shuffle_xor(const _Tp& __data, int __src_lane, ::cuda::std::integral_constant<int, _Width> __width)
 {

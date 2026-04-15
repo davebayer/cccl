@@ -27,7 +27,7 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
-template <typename _Tp, typename... _Args>
+template <class _Tp, class... _Args>
 inline constexpr bool __is_one_of_v = (is_same_v<_Tp, _Args> || ...);
 
 _CCCL_END_NAMESPACE_CUDA_STD

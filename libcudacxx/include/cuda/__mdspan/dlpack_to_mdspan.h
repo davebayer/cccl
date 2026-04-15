@@ -46,7 +46,7 @@ _CCCL_BEGIN_NAMESPACE_CUDA
 template <::cuda::std::size_t _Rank>
 using __dlpack_extents_type = ::cuda::std::dims<_Rank, ::cuda::std::int64_t>;
 
-template <typename _ElementType>
+template <class _ElementType>
 [[nodiscard]] _CCCL_HOST_API inline bool __validate_dlpack_data_type(const ::DLDataType& __dtype) noexcept
 {
   const auto __expected = ::cuda::__data_type_to_dlpack<_ElementType>();
@@ -83,7 +83,7 @@ __get_layout_left_stride(const ::cuda::std::int64_t* __shapes, ::cuda::std::size
   return __stride;
 }
 
-template <typename _LayoutPolicy>
+template <class _LayoutPolicy>
 _CCCL_HOST_API void __validate_dlpack_strides(const ::DLTensor& __tensor, [[maybe_unused]] ::cuda::std::size_t __rank)
 {
   const auto __strides_ptr = __tensor.strides;
@@ -130,7 +130,7 @@ _CCCL_HOST_API void __validate_dlpack_strides(const ::DLTensor& __tensor, [[mayb
   }
 }
 
-template <typename _LayoutPolicy, ::cuda::std::size_t _Rank>
+template <class _LayoutPolicy, ::cuda::std::size_t _Rank>
 [[nodiscard]]
 _CCCL_HOST_API constexpr auto __get_layout_mapping_type() noexcept
 {
@@ -145,7 +145,7 @@ _CCCL_HOST_API constexpr auto __get_layout_mapping_type() noexcept
   }
 }
 
-template <typename _ElementType, ::cuda::std::size_t _Rank, typename _LayoutPolicy>
+template <class _ElementType, ::cuda::std::size_t _Rank, class _LayoutPolicy>
 [[nodiscard]]
 _CCCL_HOST_API ::cuda::std::mdspan<_ElementType, __dlpack_extents_type<_Rank>, _LayoutPolicy>
 __to_mdspan(const ::DLTensor& __tensor)
@@ -253,7 +253,7 @@ __to_mdspan(const ::DLTensor& __tensor)
 //! @brief Converts a DLTensor on host memory to a \c host_mdspan
 //! @param __tensor The DLTensor to convert. Must have device type \c kDLCPU
 //! @return A \c host_mdspan viewing the tensor data with the specified element type, rank, and layout
-template <typename _ElementType, ::cuda::std::size_t _Rank, typename _LayoutPolicy = ::cuda::layout_stride_relaxed>
+template <class _ElementType, ::cuda::std::size_t _Rank, class _LayoutPolicy = ::cuda::layout_stride_relaxed>
 [[nodiscard]]
 _CCCL_HOST_API ::cuda::host_mdspan<_ElementType, __dlpack_extents_type<_Rank>, _LayoutPolicy>
 to_host_mdspan(const ::DLTensor& __tensor)
@@ -269,7 +269,7 @@ to_host_mdspan(const ::DLTensor& __tensor)
 //! @brief Converts a DLTensor on device memory to a \c device_mdspan
 //! @param __tensor The DLTensor to convert. Must have device type \c kDLCUDA
 //! @return A \c device_mdspan viewing the tensor data with the specified element type, rank, and layout
-template <typename _ElementType, ::cuda::std::size_t _Rank, typename _LayoutPolicy = ::cuda::layout_stride_relaxed>
+template <class _ElementType, ::cuda::std::size_t _Rank, class _LayoutPolicy = ::cuda::layout_stride_relaxed>
 [[nodiscard]]
 _CCCL_HOST_API ::cuda::device_mdspan<_ElementType, __dlpack_extents_type<_Rank>, _LayoutPolicy>
 to_device_mdspan(const ::DLTensor& __tensor)
@@ -285,7 +285,7 @@ to_device_mdspan(const ::DLTensor& __tensor)
 //! @brief Converts a DLTensor on managed memory to a \c managed_mdspan
 //! @param __tensor The DLTensor to convert. Must have device type \c kDLCUDAManaged
 //! @return A \c managed_mdspan viewing the tensor data with the specified element type, rank, and layout
-template <typename _ElementType, ::cuda::std::size_t _Rank, typename _LayoutPolicy = ::cuda::layout_stride_relaxed>
+template <class _ElementType, ::cuda::std::size_t _Rank, class _LayoutPolicy = ::cuda::layout_stride_relaxed>
 [[nodiscard]]
 _CCCL_HOST_API ::cuda::managed_mdspan<_ElementType, __dlpack_extents_type<_Rank>, _LayoutPolicy>
 to_managed_mdspan(const ::DLTensor& __tensor)

@@ -36,7 +36,7 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA
 
-_CCCL_TEMPLATE(typename _Tp)
+_CCCL_TEMPLATE(class _Tp)
 _CCCL_REQUIRES(::cuda::std::__cccl_is_cv_integer_v<_Tp>)
 _CCCL_API constexpr int ilog2(_Tp __t) noexcept
 {
@@ -47,7 +47,7 @@ _CCCL_API constexpr int ilog2(_Tp __t) noexcept
   return __log2_approx;
 }
 
-_CCCL_TEMPLATE(typename _Tp)
+_CCCL_TEMPLATE(class _Tp)
 _CCCL_REQUIRES(::cuda::std::__cccl_is_cv_integer_v<_Tp>)
 _CCCL_API constexpr int ceil_ilog2(_Tp __t) noexcept
 {
@@ -141,7 +141,7 @@ _CCCL_API constexpr int ceil_ilog2(_Tp __t) noexcept
 }
 #endif // _CCCL_HAS_INT128()
 
-_CCCL_TEMPLATE(typename _Tp)
+_CCCL_TEMPLATE(class _Tp)
 _CCCL_REQUIRES(::cuda::std::__cccl_is_cv_integer_v<_Tp>)
 _CCCL_API constexpr int ilog10(_Tp __t) noexcept
 {

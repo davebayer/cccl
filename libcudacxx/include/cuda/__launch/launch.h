@@ -404,7 +404,7 @@ _CCCL_HOST_API void inline __do_launch(
 #  endif // ^^^ !_CUDAX_LAUNCH_CONFIG_TEST ^^^
 }
 
-template <typename... _ExpTypes, typename _Dst, typename _Config>
+template <class... _ExpTypes, class _Dst, class _Config>
 _CCCL_HOST_API auto __launch_impl(_Dst&& __dst, _Config __conf, ::CUfunction __kernel, _ExpTypes... __args)
 {
   static_assert(!::cuda::std::is_same_v<decltype(__conf.hierarchy()), no_init_t>,
@@ -453,13 +453,13 @@ _CCCL_HOST_API ::cuda::stream_ref inline __stream_or_invalid(::cuda::stream_ref 
 
 // cast to stream_ref to avoid instantiating launch_impl for every type
 // convertible to stream_ref
-template <typename _Dummy>
+template <class _Dummy>
 _CCCL_HOST_API ::cuda::stream_ref __forward_or_cast_to_stream_ref(::cuda::stream_ref __stream)
 {
   return __stream;
 }
 
-template <typename _Submitter>
+template <class _Submitter>
 _CCCL_CONCEPT work_submitter = ::cuda::std::is_convertible_v<_Submitter, ::cuda::stream_ref>;
 
 #  if _CCCL_CUDA_COMPILATION()
@@ -476,7 +476,7 @@ _CCCL_CONCEPT work_submitter = ::cuda::std::is_convertible_v<_Submitter, ::cuda:
 //! #include <cuda/launch>
 //!
 //! struct kernel {
-//!     template <typename Configuration>
+//!     template <class Configuration>
 //!     __device__ void operator()(Configuration conf, unsigned int
 //!     thread_to_print) {
 //!         if (conf.dims.rank(cuda::thread, cuda::grid) == thread_to_print) {
@@ -505,7 +505,7 @@ _CCCL_CONCEPT work_submitter = ::cuda::std::is_convertible_v<_Submitter, ::cuda:
 //!
 //! @param __args
 //! arguments to be passed into the kernel functor
-_CCCL_TEMPLATE(typename... _Args, typename... _Config, typename _Submitter, typename _Dimensions, typename _Kernel)
+_CCCL_TEMPLATE(class... _Args, class... _Config, class _Submitter, class _Dimensions, class _Kernel)
 _CCCL_REQUIRES(work_submitter<_Submitter> _CCCL_AND(!::cuda::std::is_pointer_v<_Kernel>)
                  _CCCL_AND(!::cuda::std::is_function_v<_Kernel>))
 _CCCL_HOST_API auto launch(_Submitter&& __submitter,
@@ -540,7 +540,7 @@ _CCCL_HOST_API auto launch(_Submitter&& __submitter,
 //! #include <cstdio>
 //! #include <cuda/launch>
 //!
-//! template <typename Configuration>
+//! template <class Configuration>
 //! __global__ void kernel(Configuration conf, unsigned int thread_to_print) {
 //!     if (conf.dims.rank(cuda::thread, cuda::grid) == thread_to_print) {
 //!         printf("Hello from the GPU\n");
@@ -568,8 +568,7 @@ _CCCL_HOST_API auto launch(_Submitter&& __submitter,
 //! @param __args
 //! arguments to be passed into the kernel function
 //!
-_CCCL_TEMPLATE(
-  typename... _ExpArgs, typename... _ActArgs, typename _Submitter, typename... _Config, typename _Dimensions)
+_CCCL_TEMPLATE(class... _ExpArgs, class... _ActArgs, class _Submitter, class... _Config, class _Dimensions)
 _CCCL_REQUIRES(work_submitter<_Submitter> _CCCL_AND(sizeof...(_ExpArgs) == sizeof...(_ActArgs)))
 _CCCL_HOST_API auto launch(_Submitter&& __submitter,
                            const kernel_config<_Dimensions, _Config...>& __conf,
@@ -597,7 +596,7 @@ _CCCL_HOST_API auto launch(_Submitter&& __submitter,
 //! #include <cstdio>
 //! #include <cuda/launch>
 //!
-//! template <typename Configuration>
+//! template <class Configuration>
 //! __global__ void kernel(Configuration conf, unsigned int thread_to_print) {
 //!     if (conf.dims.rank(cuda::thread, cuda::grid) == thread_to_print) {
 //!         printf("Hello from the GPU\n");
@@ -624,8 +623,7 @@ _CCCL_HOST_API auto launch(_Submitter&& __submitter,
 //!
 //! @param __args
 //! arguments to be passed into the kernel function
-_CCCL_TEMPLATE(
-  typename... _ExpArgs, typename... _ActArgs, typename _Submitter, typename... _Config, typename _Dimensions)
+_CCCL_TEMPLATE(class... _ExpArgs, class... _ActArgs, class _Submitter, class... _Config, class _Dimensions)
 _CCCL_REQUIRES(work_submitter<_Submitter> _CCCL_AND(sizeof...(_ExpArgs) == sizeof...(_ActArgs)))
 _CCCL_HOST_API auto launch(_Submitter&& __submitter,
                            const kernel_config<_Dimensions, _Config...>& __conf,

@@ -49,7 +49,7 @@ enum class __pool_attr_settable : bool
 {
 };
 
-template <::cudaMemPoolAttr _Attr, typename _Type, __pool_attr_settable _Settable>
+template <::cudaMemPoolAttr _Attr, class _Type, __pool_attr_settable _Settable>
 struct __pool_attr_impl
 {
   using type = _Type;
@@ -519,7 +519,7 @@ public:
   //! @brief Gets the value of an attribute of the pool.
   //! @param __attr the attribute to get.
   //! @return The value of the attribute.
-  template <typename _Attr>
+  template <class _Attr>
   [[nodiscard]] _CCCL_HOST_API auto attribute(_Attr __attr) const
   {
     return __attr(__pool_);
@@ -537,7 +537,7 @@ public:
   //! @brief Sets an attribute of the pool to a given value.
   //! @param __attribute the attribute to be set.
   //! @param __value the new value of that attribute.
-  template <typename _Attr>
+  template <class _Attr>
   _CCCL_HOST_API void set_attribute(_Attr __attr, typename _Attr::type __value)
   {
     __attr.set(__pool_, __value);

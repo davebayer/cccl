@@ -33,7 +33,7 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA
 
-template <::cudaDeviceAttr _Attr, typename _Type>
+template <::cudaDeviceAttr _Attr, class _Type>
 struct __dev_attr_impl
 {
   using type = _Type;

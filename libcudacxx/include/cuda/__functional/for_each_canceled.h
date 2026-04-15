@@ -99,7 +99,7 @@ template <int _Index>
 //! Preconditions:
 //! - All thread block threads shall call this API exactly once.
 //! - Exactly one thread block thread shall call this API with `__is_leader` equals `true`.
-template <int __ThreadBlockRank = 3, typename __UnaryFunction = void>
+template <int __ThreadBlockRank = 3, class __UnaryFunction = void>
 _CCCL_DEVICE_API void __for_each_canceled_block_sm100(::dim3 __block_idx, bool __is_leader, __UnaryFunction __uf)
 {
   __shared__ ::cuda::std::uint64_t __barrier; // TODO: use 2 barriers and 2 results to avoid last sync threads
@@ -213,7 +213,7 @@ _CCCL_DEVICE_API void __for_each_canceled_block_sm100(::dim3 __block_idx, bool _
 }
 
 #  else // ^^^ __cccl_ptx_isa >= 870 ^^^ / vvv __cccl_ptx_isa < 870 vvv
-template <int __ThreadBlockRank = 3, typename __UnaryFunction = void>
+template <int __ThreadBlockRank = 3, class __UnaryFunction = void>
 _CCCL_DEVICE_API void __for_each_canceled_block_sm100(::dim3 __block_idx, bool __is_leader, __UnaryFunction __uf)
 {
   // We are compiling for SM100 but PTX 8.7 is not supported, so fall back to just calling the function
@@ -232,7 +232,7 @@ _CCCL_DEVICE_API void __for_each_canceled_block_sm100(::dim3 __block_idx, bool _
 //! Preconditions:
 //! - All thread block threads shall call this API exactly once.
 //! - Exactly one thread block thread shall call this API with `__is_leader` equals `true`.
-template <int __ThreadBlockRank = 3, typename __UnaryFunction = void>
+template <int __ThreadBlockRank = 3, class __UnaryFunction = void>
 _CCCL_DEVICE_API void __for_each_canceled_block(bool __is_leader, __UnaryFunction __uf)
 {
   static_assert(__ThreadBlockRank >= 1 && __ThreadBlockRank <= 3, "ThreadBlockRank out-of-range [1, 3].");
@@ -266,7 +266,7 @@ _CCCL_DEVICE_API void __for_each_canceled_block(bool __is_leader, __UnaryFunctio
 //!
 //! @pre All thread block threads shall call this API exactly once.
 //! @pre Exactly one thread block thread shall call this API with `__is_leader` equals `true`.
-template <int __ThreadBlockRank = 3, typename __UnaryFunction = void>
+template <int __ThreadBlockRank = 3, class __UnaryFunction = void>
 _CCCL_DEVICE_API void for_each_canceled_block(__UnaryFunction __uf)
 {
   static_assert(__ThreadBlockRank >= 1 && __ThreadBlockRank <= 3,
@@ -305,7 +305,7 @@ _CCCL_BEGIN_NAMESPACE_CUDA
 //! @pre Exactly one thread block thread shall call this API with `__is_leader` equals `true`.
 //!
 //! @deprecated This function was moved to cuda::device:: namespace.
-template <int __ThreadBlockRank = 3, typename __UnaryFunction = void>
+template <int __ThreadBlockRank = 3, class __UnaryFunction = void>
 CCCL_DEPRECATED_BECAUSE("Use cuda::device::for_each_canceled_block instead.") _CCCL_DEVICE_API void
 for_each_canceled_block(__UnaryFunction __uf)
 {

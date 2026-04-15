@@ -47,7 +47,7 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA
 
-template <typename _ElementType>
+template <class _ElementType>
 [[nodiscard]] _CCCL_HOST_API inline ::DLDataType __data_type_to_dlpack() noexcept
 {
   if constexpr (::cuda::std::is_same_v<_ElementType, bool>)
@@ -169,7 +169,7 @@ struct __dlpack_tensor
   ::DLTensor get() const&& = delete;
 };
 
-template <typename _ElementType, typename _Extents, typename _Layout, typename _Accessor>
+template <class _ElementType, class _Extents, class _Layout, class _Accessor>
 [[nodiscard]] _CCCL_HOST_API __dlpack_tensor<_Extents::rank()>
 __to_dlpack(const ::cuda::std::mdspan<_ElementType, _Extents, _Layout, _Accessor>& __mdspan,
             ::DLDeviceType __device_type,
@@ -208,7 +208,7 @@ __to_dlpack(const ::cuda::std::mdspan<_ElementType, _Extents, _Layout, _Accessor
  * Public API
  **********************************************************************************************************************/
 
-template <typename _ElementType, typename _Extents, typename _Layout, typename _Accessor>
+template <class _ElementType, class _Extents, class _Layout, class _Accessor>
 [[nodiscard]] _CCCL_HOST_API __dlpack_tensor<_Extents::rank()>
 to_dlpack_tensor(const ::cuda::host_mdspan<_ElementType, _Extents, _Layout, _Accessor>& __mdspan)
 {
@@ -216,7 +216,7 @@ to_dlpack_tensor(const ::cuda::host_mdspan<_ElementType, _Extents, _Layout, _Acc
   return ::cuda::__to_dlpack(__mdspan_type{__mdspan}, ::kDLCPU, 0);
 }
 
-template <typename _ElementType, typename _Extents, typename _Layout, typename _Accessor>
+template <class _ElementType, class _Extents, class _Layout, class _Accessor>
 [[nodiscard]] _CCCL_HOST_API __dlpack_tensor<_Extents::rank()>
 to_dlpack_tensor(const ::cuda::device_mdspan<_ElementType, _Extents, _Layout, _Accessor>& __mdspan)
 {
@@ -232,7 +232,7 @@ to_dlpack_tensor(const ::cuda::device_mdspan<_ElementType, _Extents, _Layout, _A
   return ::cuda::__to_dlpack(__mdspan_type{__mdspan}, ::kDLCUDA, __ptr_dev_id);
 }
 
-template <typename _ElementType, typename _Extents, typename _Layout, typename _Accessor>
+template <class _ElementType, class _Extents, class _Layout, class _Accessor>
 [[nodiscard]] _CCCL_HOST_API __dlpack_tensor<_Extents::rank()>
 to_dlpack_tensor(const ::cuda::managed_mdspan<_ElementType, _Extents, _Layout, _Accessor>& __mdspan)
 {

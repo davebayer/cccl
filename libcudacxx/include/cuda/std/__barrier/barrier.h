@@ -46,13 +46,13 @@ public:
   using arrival_token = bool;
 
 private:
-  template <typename _Barrier>
+  template <class _Barrier>
   friend class __barrier_poll_tester_phase;
-  template <typename _Barrier>
+  template <class _Barrier>
   friend class __barrier_poll_tester_parity;
-  template <typename _Barrier>
+  template <class _Barrier>
   _CCCL_API friend bool __call_try_wait(const _Barrier& __b, typename _Barrier::arrival_token&& __phase);
-  template <typename _Barrier>
+  template <class _Barrier>
   _CCCL_API friend bool __call_try_wait_parity(const _Barrier& __b, bool __parity);
 
   [[nodiscard]] _CCCL_API bool __try_wait(arrival_token __old) const
@@ -133,13 +133,13 @@ public:
   using arrival_token = uint64_t;
 
 private:
-  template <typename _Barrier>
+  template <class _Barrier>
   friend class __barrier_poll_tester_phase;
-  template <typename _Barrier>
+  template <class _Barrier>
   friend class __barrier_poll_tester_parity;
-  template <typename _Barrier>
+  template <class _Barrier>
   _CCCL_API friend bool __call_try_wait(const _Barrier& __b, typename _Barrier::arrival_token&& __phase);
-  template <typename _Barrier>
+  template <class _Barrier>
   _CCCL_API friend bool __call_try_wait_parity(const _Barrier& __b, bool __parity);
 
   static _CCCL_API constexpr uint64_t __init(ptrdiff_t __count) noexcept

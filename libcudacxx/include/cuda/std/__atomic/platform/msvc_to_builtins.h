@@ -79,7 +79,7 @@ static inline void __atomic_thread_fence(int __memorder)
   }
 }
 
-template <typename _Type, size_t _Size>
+template <class _Type, size_t _Size>
 using __enable_if_sized_as = enable_if_t<sizeof(_Type) == _Size, int>;
 
 template <class _Type, __enable_if_sized_as<_Type, 1> = 0>

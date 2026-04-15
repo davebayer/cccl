@@ -41,7 +41,7 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA
 
-template <typename Dimensions, typename... Options>
+template <class Dimensions, class... Options>
 struct kernel_config;
 
 namespace __detail
@@ -66,7 +66,7 @@ struct option_not_found
 template <__detail::launch_option_kind Kind>
 struct find_option_in_tuple_impl
 {
-  template <typename Option, typename... Options>
+  template <class Option, class... Options>
   _CCCL_DEVICE_API auto& operator()(const Option& opt, const Options&... rest)
   {
     if constexpr (Option::kind == Kind)
@@ -85,19 +85,19 @@ struct find_option_in_tuple_impl
   }
 };
 
-template <__detail::launch_option_kind Kind, typename... Options>
+template <__detail::launch_option_kind Kind, class... Options>
 _CCCL_DEVICE_API auto& find_option_in_tuple(const ::cuda::std::tuple<Options...>& tuple)
 {
   return ::cuda::std::apply(find_option_in_tuple_impl<Kind>(), tuple);
 }
 
-template <typename _Option, typename... _OptionsList>
+template <class _Option, class... _OptionsList>
 inline constexpr bool __option_present_in_list = ((_Option::kind == _OptionsList::kind) || ...);
 
-template <typename...>
+template <class...>
 inline constexpr bool no_duplicate_options = true;
 
-template <typename Option, typename... Rest>
+template <class Option, class... Rest>
 inline constexpr bool no_duplicate_options<Option, Rest...> =
   !__option_present_in_list<Option, Rest...> && no_duplicate_options<Rest...>;
 } // namespace __detail
@@ -470,10 +470,10 @@ __apply_launch_option(const launch_priority& __opt, CUlaunchConfig& config, CUfu
   return cudaSuccess;
 }
 
-template <typename... _OptionsToFilter>
+template <class... _OptionsToFilter>
 struct __filter_options
 {
-  template <bool _Pred, typename _Option>
+  template <bool _Pred, class _Option>
   [[nodiscard]] auto __option_or_empty(const _Option& __option)
   {
     if constexpr (_Pred)
@@ -486,7 +486,7 @@ struct __filter_options
     }
   }
 
-  template <typename... _Options>
+  template <class... _Options>
   [[nodiscard]] auto operator()(const _Options&... __options)
   {
     return ::cuda::std::tuple_cat(
@@ -494,16 +494,16 @@ struct __filter_options
   }
 };
 
-template <typename _Dimensions, typename... _Options>
+template <class _Dimensions, class... _Options>
 auto __make_config_from_tuple(const _Dimensions& __dims, const ::cuda::std::tuple<_Options...>& __opts);
 
-template <typename _Tp>
+template <class _Tp>
 inline constexpr bool __is_kernel_config = false;
 
-template <typename _Dimensions, typename... _Options>
+template <class _Dimensions, class... _Options>
 inline constexpr bool __is_kernel_config<kernel_config<_Dimensions, _Options...>> = true;
 
-template <typename _Tp>
+template <class _Tp>
 _CCCL_CONCEPT __kernel_has_default_config =
   _CCCL_REQUIRES_EXPR((_Tp), _Tp& __t)(requires(__is_kernel_config<decltype(__t.default_config())>));
 
@@ -520,7 +520,7 @@ _CCCL_CONCEPT __kernel_has_default_config =
  * @tparam Options
  * Types of options that were added to this configuration object
  */
-template <typename Hierarchy, typename... Options>
+template <class Hierarchy, class... Options>
 struct kernel_config
 {
   using hierarchy_type = Hierarchy;
@@ -555,7 +555,7 @@ struct kernel_config
    * @param new_options
    * Options to be added to the configuration
    */
-  template <typename... NewOptions>
+  template <class... NewOptions>
   [[nodiscard]] auto add(const NewOptions&... new_options) const
   {
     return kernel_config<Hierarchy, Options..., NewOptions...>(
@@ -580,7 +580,7 @@ struct kernel_config
    * @param __other_config
    * Other configuration to combine with this configuration
    */
-  template <typename _OtherDimensions, typename... _OtherOptions>
+  template <class _OtherDimensions, class... _OtherOptions>
   [[nodiscard]] auto combine(const kernel_config<_OtherDimensions, _OtherOptions...>& __other_config) const
   {
     // can't use fully qualified kernel_config name here because of nvcc bug,
@@ -605,7 +605,7 @@ struct kernel_config
    * @param __kernel
    * Kernel functor to search for the default configuration
    */
-  template <typename _Kernel>
+  template <class _Kernel>
   [[nodiscard]] auto combine_with_default(const _Kernel& __kernel) const
   {
     if constexpr (__kernel_has_default_config<_Kernel>)
@@ -625,46 +625,46 @@ private:
 
 // We can consider removing the operator&, but its convenient for in-line
 // construction
-template <typename Dimensions, typename... Options, typename NewLevel>
+template <class Dimensions, class... Options, class NewLevel>
 _CCCL_HOST_API constexpr auto
 operator&(const kernel_config<Dimensions, Options...>& config, const NewLevel& new_level) noexcept
 {
   return kernel_config(hierarchy_add_level(config.hierarchy(), new_level), config.options());
 }
 
-template <typename NewLevel, typename Dimensions, typename... Options>
+template <class NewLevel, class Dimensions, class... Options>
 _CCCL_HOST_API constexpr auto
 operator&(const NewLevel& new_level, const kernel_config<Dimensions, Options...>& config) noexcept
 {
   return kernel_config(hierarchy_add_level(config.hierarchy(), new_level), config.options());
 }
 
-template <typename L1, typename Dims1, typename L2, typename Dims2>
+template <class L1, class Dims1, class L2, class Dims2>
 _CCCL_HOST_API constexpr auto
 operator&(const hierarchy_level_desc<L1, Dims1>& l1, const hierarchy_level_desc<L2, Dims2>& l2) noexcept
 {
   return kernel_config(::cuda::make_hierarchy(l1, l2));
 }
 
-template <typename _Dimensions, typename... _Options>
+template <class _Dimensions, class... _Options>
 auto __make_config_from_tuple(const _Dimensions& __dims, const ::cuda::std::tuple<_Options...>& __opts)
 {
   return kernel_config(__dims, __opts);
 }
 
-template <typename Dimensions,
-          typename... Options,
-          typename Option,
-          typename = ::cuda::std::enable_if_t<::cuda::std::is_base_of_v<__detail::launch_option, Option>>>
+template <class Dimensions,
+          class... Options,
+          class Option,
+          class = ::cuda::std::enable_if_t<::cuda::std::is_base_of_v<__detail::launch_option, Option>>>
 [[nodiscard]] constexpr auto
 operator&(const kernel_config<Dimensions, Options...>& config, const Option& option) noexcept
 {
   return config.add(option);
 }
 
-template <typename... Levels,
-          typename Option,
-          typename = ::cuda::std::enable_if_t<::cuda::std::is_base_of_v<__detail::launch_option, Option>>>
+template <class... Levels,
+          class Option,
+          class = ::cuda::std::enable_if_t<::cuda::std::is_base_of_v<__detail::launch_option, Option>>>
 [[nodiscard]] constexpr auto operator&(const hierarchy<Levels...>& dims, const Option& option) noexcept
 {
   return kernel_config(dims, option);
@@ -686,7 +686,7 @@ template <typename... Levels,
  * Variadic number of launch configuration options to be included in the
  * resulting kernel configuration object
  */
-template <typename BottomUnit, typename... Levels, typename... Opts>
+template <class BottomUnit, class... Levels, class... Opts>
 [[nodiscard]] constexpr auto make_config(const hierarchy<BottomUnit, Levels...>& dims, const Opts&... opts) noexcept
 {
   return kernel_config<hierarchy<BottomUnit, Levels...>, Opts...>(dims, opts...);
@@ -718,7 +718,7 @@ constexpr auto distribute(int numElements) noexcept
   return make_config(make_hierarchy(grid_dims(blocksPerGrid), block_dims<_ThreadsPerBlock>()));
 }
 
-template <typename... Prev>
+template <class... Prev>
 [[nodiscard]] constexpr auto __process_config_args(const ::cuda::std::tuple<Prev...>& previous)
 {
   if constexpr (sizeof...(Prev) == 0)
@@ -732,7 +732,7 @@ template <typename... Prev>
   }
 }
 
-template <typename... Prev, typename Arg, typename... Rest>
+template <class... Prev, class Arg, class... Rest>
 [[nodiscard]] constexpr auto
 __process_config_args(const ::cuda::std::tuple<Prev...>& previous, const Arg& arg, const Rest&... rest)
 {
@@ -756,7 +756,7 @@ __process_config_args(const ::cuda::std::tuple<Prev...>& previous, const Arg& ar
   }
 }
 
-template <typename... Args>
+template <class... Args>
 [[nodiscard]] constexpr auto make_config(const Args&... args)
 {
   return __process_config_args(::cuda::std::make_tuple(), args...);
@@ -764,13 +764,13 @@ template <typename... Args>
 
 namespace __detail
 {
-template <typename Dimensions, typename... Options>
+template <class Dimensions, class... Options>
 inline unsigned int constexpr kernel_config_count_attr_space(const kernel_config<Dimensions, Options...>&) noexcept
 {
   return (0 + ... + Options::needs_attribute_space);
 }
 
-template <typename Dimensions, typename... Options>
+template <class Dimensions, class... Options>
 [[nodiscard]] cudaError_t apply_kernel_config(
   const kernel_config<Dimensions, Options...>& config, CUlaunchConfig& cuda_config, CUfunction kernel) noexcept
 {

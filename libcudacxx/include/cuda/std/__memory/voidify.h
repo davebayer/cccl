@@ -27,7 +27,7 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
-template <typename _Tp>
+template <class _Tp>
 _CCCL_API inline _CCCL_CONSTEXPR_CXX20 void* __voidify(_Tp& __from)
 {
   // Cast away cv-qualifiers to allow modifying elements of a range through const iterators.

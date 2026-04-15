@@ -315,7 +315,7 @@ public:
 
 #if !_CCCL_COMPILER(NVRTC)
 
-  template <typename _CharT, typename _Traits>
+  template <class _CharT, class _Traits>
   _CCCL_API friend ::std::basic_ostream<_CharT, _Traits>&
   operator<<(::std::basic_ostream<_CharT, _Traits>& __os, const pcg64_engine& __e)
   {
@@ -342,7 +342,7 @@ public:
     return __os;
   }
 
-  template <typename _CharT, typename _Traits>
+  template <class _CharT, class _Traits>
   _CCCL_API friend ::std::basic_istream<_CharT, _Traits>&
   operator>>(::std::basic_istream<_CharT, _Traits>& __is, pcg64_engine& __e)
   {

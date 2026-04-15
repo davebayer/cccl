@@ -28,7 +28,7 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
-template <typename, typename _Tp>
+template <class, class _Tp>
 struct __select_2nd
 {
   using type _CCCL_NODEBUG_ALIAS = _Tp;

@@ -40,7 +40,7 @@ _CCCL_BEGIN_NAMESPACE_CUDA
  * Extract higher bits after multiplication
  **********************************************************************************************************************/
 
-template <typename _Tp>
+template <class _Tp>
 [[nodiscard]] _CCCL_API constexpr _Tp __mul_hi_fallback(_Tp __lhs, _Tp __rhs) noexcept
 {
   static_assert(::cuda::std::is_unsigned_v<_Tp>, "__mul_hi_fallback: T is required to be a unsigned integer type");
@@ -60,7 +60,7 @@ template <typename _Tp>
   return __p3 + (__p1 >> __half_bits) + (__p2 >> __half_bits) + __carry;
 }
 
-_CCCL_TEMPLATE(typename _Tp)
+_CCCL_TEMPLATE(class _Tp)
 _CCCL_REQUIRES(::cuda::std::__cccl_is_integer_v<_Tp>)
 [[nodiscard]]
 _CCCL_API constexpr _Tp mul_hi(_Tp __lhs, _Tp __rhs) noexcept

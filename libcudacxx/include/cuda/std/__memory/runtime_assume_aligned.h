@@ -29,7 +29,7 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
-template <typename _Tp>
+template <class _Tp>
 [[nodiscard]] _CCCL_API _Tp* __runtime_assume_aligned(_Tp* __ptr, ::cuda::std::size_t __alignment) noexcept
 {
 #if defined(_CCCL_BUILTIN_ASSUME_ALIGNED)

@@ -62,13 +62,13 @@ template <class _Tp, enable_if_t<is_object_v<_Tp> && !is_void_v<_Tp> && (sizeof(
   return __a + ::cuda::std::midpoint(ptrdiff_t(0), __b - __a);
 }
 
-template <typename _Tp>
+template <class _Tp>
 [[nodiscard]] _CCCL_API constexpr int __sign(_Tp __val)
 {
   return (_Tp(0) < __val) - (__val < _Tp(0));
 }
 
-template <typename _Fp>
+template <class _Fp>
 [[nodiscard]] _CCCL_API constexpr _Fp __fp_abs(_Fp __f)
 {
   return __f >= 0 ? __f : -__f;

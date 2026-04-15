@@ -526,7 +526,7 @@ _CCCL_HOST_DEVICE zip_iterator(_Iterators...) -> zip_iterator<_Iterators...>;
 //! @brief Creates a @c zip_iterator from a tuple of iterators.
 //! @param __t The tuple of iterators to wrap
 //! @relates zip_iterator
-template <typename... Iterators>
+template <class... Iterators>
 _CCCL_API constexpr zip_iterator<Iterators...> make_zip_iterator(::cuda::std::tuple<Iterators...> __t)
 {
   return zip_iterator<Iterators...>{::cuda::std::move(__t)};
@@ -535,7 +535,7 @@ _CCCL_API constexpr zip_iterator<Iterators...> make_zip_iterator(::cuda::std::tu
 //! @brief Creates a @c zip_iterator from a variadic number of iterators.
 //! @param __iters The iterators to wrap
 //! @relates zip_iterator
-template <typename... Iterators>
+template <class... Iterators>
 _CCCL_API constexpr zip_iterator<Iterators...> make_zip_iterator(Iterators... __iters)
 {
   return zip_iterator<Iterators...>{::cuda::std::move(__iters)...};

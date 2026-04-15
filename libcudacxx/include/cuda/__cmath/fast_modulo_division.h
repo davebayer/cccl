@@ -51,7 +51,7 @@ _CCCL_BEGIN_NAMESPACE_CUDA
 //! @brief Fast modulo and division by precomputation
 //! @tparam _Tp The integer type of the divisor
 //! @tparam _DivisorIsNeverOne If \c true, the divisor is guaranteed to never be one, enabling optimizations
-template <typename _Tp, bool _DivisorIsNeverOne = false>
+template <class _Tp, bool _DivisorIsNeverOne = false>
 class fast_mod_div
 {
   static_assert(::cuda::std::__cccl_is_integer_v<_Tp>, "cuda::fast_mod_div: T is required to be an integer type");
@@ -105,7 +105,7 @@ public:
   //! @param[in] __dividend The dividend value, must be non-negative
   //! @param[in] __divisor1 The precomputed divisor
   //! @return The quotient of the division
-  template <typename _Lhs>
+  template <class _Lhs>
   [[nodiscard]] _CCCL_API friend ::cuda::std::common_type_t<_Tp, _Lhs>
   operator/(_Lhs __dividend, fast_mod_div __divisor1) noexcept
   {
@@ -153,7 +153,7 @@ public:
   //! @param[in] __dividend The dividend value
   //! @param[in] __divisor1 The precomputed divisor
   //! @return The remainder of the division
-  template <typename _Lhs>
+  template <class _Lhs>
   [[nodiscard]] _CCCL_API friend ::cuda::std::common_type_t<_Tp, _Lhs>
   operator%(_Lhs __dividend, fast_mod_div __divisor1) noexcept
   {
@@ -221,7 +221,7 @@ private:
 //! @param[in] __dividend The dividend value
 //! @param[in] __divisor The precomputed divisor
 //! @return A pair of (quotient, remainder)
-template <typename _Tp, typename _Lhs, bool _DivisorIsNeverOne>
+template <class _Tp, class _Lhs, bool _DivisorIsNeverOne>
 [[nodiscard]] _CCCL_API ::cuda::std::pair<_Tp, _Lhs>
 div(_Tp __dividend, fast_mod_div<_Lhs, _DivisorIsNeverOne> __divisor) noexcept
 {

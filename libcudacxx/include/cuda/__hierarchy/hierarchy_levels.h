@@ -35,7 +35,7 @@ _CCCL_BEGIN_NAMESPACE_CUDA
 
 // Struct to represent levels allowed below or above a certain level,
 //  used for hierarchy sorting, validation and for hierarchy traversal
-template <typename... _Levels>
+template <class... _Levels>
 struct __allowed_levels
 {
   using __default_unit = ::cuda::std::__type_index_c<0, _Levels..., void>;
@@ -43,7 +43,7 @@ struct __allowed_levels
 
 namespace __detail
 {
-template <typename LevelType>
+template <class LevelType>
 using __default_unit_below = typename LevelType::__allowed_below::__default_unit;
 
 template <class _QueryLevel, class _AllowedLevels>

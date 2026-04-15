@@ -39,20 +39,20 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA
 
-template <typename _Accessor>
+template <class _Accessor>
 class __restrict_accessor;
 
-template <typename _Accessor>
+template <class _Accessor>
 using restrict_accessor = __restrict_accessor<_Accessor>;
 
 /***********************************************************************************************************************
  * Accessor Traits
  **********************************************************************************************************************/
 
-template <typename>
+template <class>
 inline constexpr bool is_restrict_accessor_v = false;
 
-template <typename _Accessor>
+template <class _Accessor>
 inline constexpr bool is_restrict_accessor_v<__restrict_accessor<_Accessor>> = true;
 
 /***********************************************************************************************************************
@@ -62,7 +62,7 @@ inline constexpr bool is_restrict_accessor_v<__restrict_accessor<_Accessor>> = t
 _CCCL_DIAG_PUSH
 _CCCL_DIAG_SUPPRESS_GCC("-Wignored-qualifiers")
 
-template <typename _Accessor>
+template <class _Accessor>
 class __restrict_accessor : public _Accessor
 {
   static_assert(::cuda::std::is_pointer_v<typename _Accessor::data_handle_type>, "Accessor must be pointer based");
@@ -98,7 +98,7 @@ public:
       : _Accessor{::cuda::std::move(__acc)}
   {}
 
-  _CCCL_TEMPLATE(typename _OtherAccessor)
+  _CCCL_TEMPLATE(class _OtherAccessor)
   _CCCL_REQUIRES(::cuda::std::is_constructible_v<_Accessor, const _OtherAccessor&> _CCCL_AND(
     ::cuda::std::is_convertible_v<const _OtherAccessor&, _Accessor>))
   _CCCL_API constexpr __restrict_accessor(const __restrict_accessor<_OtherAccessor>& __acc) noexcept(
@@ -106,7 +106,7 @@ public:
       : _Accessor{__acc}
   {}
 
-  _CCCL_TEMPLATE(typename _OtherAccessor)
+  _CCCL_TEMPLATE(class _OtherAccessor)
   _CCCL_REQUIRES(::cuda::std::is_constructible_v<_Accessor, const _OtherAccessor&> _CCCL_AND(
     !::cuda::std::is_convertible_v<const _OtherAccessor&, _Accessor>))
   _CCCL_API constexpr explicit __restrict_accessor(const __restrict_accessor<_OtherAccessor>& __acc) noexcept(
@@ -114,7 +114,7 @@ public:
       : _Accessor{__acc}
   {}
 
-  _CCCL_TEMPLATE(typename _OtherAccessor)
+  _CCCL_TEMPLATE(class _OtherAccessor)
   _CCCL_REQUIRES(::cuda::std::is_constructible_v<_Accessor, _OtherAccessor> _CCCL_AND(
     ::cuda::std::is_convertible_v<_OtherAccessor, _Accessor>))
   _CCCL_API constexpr __restrict_accessor(__restrict_accessor<_OtherAccessor>&& __acc) noexcept(
@@ -122,7 +122,7 @@ public:
       : _Accessor{::cuda::std::move(__acc)}
   {}
 
-  _CCCL_TEMPLATE(typename _OtherAccessor)
+  _CCCL_TEMPLATE(class _OtherAccessor)
   _CCCL_REQUIRES(::cuda::std::is_constructible_v<_Accessor, _OtherAccessor> _CCCL_AND(
     !::cuda::std::is_convertible_v<_OtherAccessor, _Accessor>))
   _CCCL_API constexpr explicit __restrict_accessor(__restrict_accessor<_OtherAccessor>&& __acc) noexcept(

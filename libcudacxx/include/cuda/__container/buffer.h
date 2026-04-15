@@ -652,7 +652,7 @@ using host_buffer = buffer<_Tp, ::cuda::mr::host_accessible>;
 template <class _Tp, class _PropsList>
 using __buffer_type_for_props = typename ::cuda::std::remove_reference_t<_PropsList>::template rebind<buffer, _Tp>;
 
-template <typename _BufferTo, typename _BufferFrom>
+template <class _BufferTo, class _BufferFrom>
 void __copy_cross_buffers(stream_ref __stream, _BufferTo& __to, const _BufferFrom& __from)
 {
   __stream.wait(__from.stream());
@@ -668,7 +668,7 @@ _CCCL_BEGIN_NAMESPACE_ARCH_DEPENDENT
 //! @brief Copy-constructs elements in the range `[__first, __first + __count)`.
 //! @param __first Pointer to the first element to be initialized.
 //! @param __count The number of elements to be initialized.
-template <typename _Tp, mr::__memory_accessibility _Accessability>
+template <class _Tp, mr::__memory_accessibility _Accessability>
 _CCCL_HOST_API void __fill_n(cuda::stream_ref __stream, _Tp* __first, ::cuda::std::size_t __count, const _Tp& __value)
 {
   if (__count == 0)

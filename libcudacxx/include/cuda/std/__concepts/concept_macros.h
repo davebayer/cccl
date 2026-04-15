@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // _CCCL_TEMPLATE
 // Usage:
-//   _CCCL_TEMPLATE(typename A, typename _Bp)
+//   _CCCL_TEMPLATE(class A, class _Bp)
 //     _CCCL_REQUIRES( Concept1<A> _CCCL_AND Concept2<_Bp>)
 //   void foo(A a, _Bp b)
 //   {}
@@ -94,7 +94,7 @@ extern _Tp __cccl_make_dependent;
 template <class _Impl, class... _Args>
 using __cccl_requires_expr_impl = decltype(__cccl_make_dependent<_Impl, _Args...>);
 
-template <typename _Tp>
+template <class _Tp>
 _CCCL_API constexpr void __cccl_unused(_Tp&&) noexcept
 {}
 
@@ -293,7 +293,7 @@ namespace __cccl_unqualified_cuda_std = ::cuda::std; // NOLINT(misc-unused-alias
 ////////////////////////////////////////////////////////////////////////////////
 // _CCCL_REQUIRES_EXPR
 // Usage:
-//   template <typename T>
+//   template <class T>
 //   _CCCL_CONCEPT equality_comparable =
 //     _CCCL_REQUIRES_EXPR((T), T const& lhs, T const& rhs) (
 //       lhs == rhs,

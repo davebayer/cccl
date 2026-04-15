@@ -35,7 +35,7 @@
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
 // manipulated by PTX without any performance overhead
-template <typename _Tp>
+template <class _Tp>
 using __atomic_small_proxy_t = _If<is_signed_v<_Tp>, int32_t, uint32_t>;
 
 // Arithmetic conversions to/from proxy types
@@ -76,7 +76,7 @@ _CCCL_API _Tp __atomic_small_from_32(__atomic_small_proxy_t<_Tp> __val)
 
 _CCCL_DIAG_POP
 
-template <typename _Tp>
+template <class _Tp>
 struct __atomic_small_storage
 {
   using __underlying_t                = _Tp;
@@ -94,26 +94,26 @@ struct __atomic_small_storage
   __atomic_storage<__proxy_t> __a_value;
 };
 
-template <typename _Sto, typename _Up, __atomic_storage_is_small<_Sto> = 0>
+template <class _Sto, class _Up, __atomic_storage_is_small<_Sto> = 0>
 _CCCL_API void __atomic_init_dispatch(_Sto* __a, _Up __val)
 {
   __atomic_init_dispatch(&__a->__a_value, __atomic_small_to_32(__val));
 }
 
-template <typename _Sto, typename _Up, typename _Sco, __atomic_storage_is_small<_Sto> = 0>
+template <class _Sto, class _Up, class _Sco, __atomic_storage_is_small<_Sto> = 0>
 _CCCL_API void __atomic_store_dispatch(_Sto* __a, _Up __val, memory_order __order, _Sco = {})
 {
   __atomic_store_dispatch(&__a->__a_value, __atomic_small_to_32(__val), __order, _Sco{});
 }
 
-template <typename _Sto, typename _Sco, __atomic_storage_is_small<_Sto> = 0>
+template <class _Sto, class _Sco, __atomic_storage_is_small<_Sto> = 0>
 _CCCL_API auto __atomic_load_dispatch(const _Sto* __a, memory_order __order, _Sco = {}) -> __atomic_underlying_t<_Sto>
 {
   using _Tp = __atomic_underlying_t<_Sto>;
   return __atomic_small_from_32<_Tp>(__atomic_load_dispatch(&__a->__a_value, __order, _Sco{}));
 }
 
-template <typename _Sto, typename _Up, typename _Sco, __atomic_storage_is_small<_Sto> = 0>
+template <class _Sto, class _Up, class _Sco, __atomic_storage_is_small<_Sto> = 0>
 _CCCL_API auto __atomic_exchange_dispatch(_Sto* __a, _Up __value, memory_order __order, _Sco = {})
   -> __atomic_underlying_t<_Sto>
 {
@@ -122,7 +122,7 @@ _CCCL_API auto __atomic_exchange_dispatch(_Sto* __a, _Up __value, memory_order _
     __atomic_exchange_dispatch(&__a->__a_value, __atomic_small_to_32(__value), __order, _Sco{}));
 }
 
-template <typename _Sto, typename _Up, typename _Sco, __atomic_storage_is_small<_Sto> = 0>
+template <class _Sto, class _Up, class _Sco, __atomic_storage_is_small<_Sto> = 0>
 _CCCL_API bool __atomic_compare_exchange_weak_dispatch(
   _Sto* __a, _Up* __expected, _Up __value, memory_order __success, memory_order __failure, _Sco = {})
 {
@@ -146,7 +146,7 @@ _CCCL_API bool __atomic_compare_exchange_weak_dispatch(
   return __ret;
 }
 
-template <typename _Sto, typename _Up, typename _Sco, __atomic_storage_is_small<_Sto> = 0>
+template <class _Sto, class _Up, class _Sco, __atomic_storage_is_small<_Sto> = 0>
 _CCCL_API bool __atomic_compare_exchange_strong_dispatch(
   _Sto* __a, _Up* __expected, _Up __value, memory_order __success, memory_order __failure, _Sco = {})
 {
@@ -165,7 +165,7 @@ _CCCL_API bool __atomic_compare_exchange_strong_dispatch(
   }
 }
 
-template <typename _Sto, typename _Up, typename _Sco, __atomic_storage_is_small<_Sto> = 0>
+template <class _Sto, class _Up, class _Sco, __atomic_storage_is_small<_Sto> = 0>
 _CCCL_API auto __atomic_fetch_add_dispatch(_Sto* __a, _Up __delta, memory_order __order, _Sco = {})
   -> __atomic_underlying_t<_Sto>
 {
@@ -174,7 +174,7 @@ _CCCL_API auto __atomic_fetch_add_dispatch(_Sto* __a, _Up __delta, memory_order 
     __atomic_fetch_add_dispatch(&__a->__a_value, __atomic_small_to_32(__delta), __order, _Sco{}));
 }
 
-template <typename _Sto, typename _Up, typename _Sco, __atomic_storage_is_small<_Sto> = 0>
+template <class _Sto, class _Up, class _Sco, __atomic_storage_is_small<_Sto> = 0>
 _CCCL_API auto __atomic_fetch_sub_dispatch(_Sto* __a, _Up __delta, memory_order __order, _Sco = {})
   -> __atomic_underlying_t<_Sto>
 {
@@ -183,7 +183,7 @@ _CCCL_API auto __atomic_fetch_sub_dispatch(_Sto* __a, _Up __delta, memory_order 
     __atomic_fetch_sub_dispatch(&__a->__a_value, __atomic_small_to_32(__delta), __order, _Sco{}));
 }
 
-template <typename _Sto, typename _Up, typename _Sco, __atomic_storage_is_small<_Sto> = 0>
+template <class _Sto, class _Up, class _Sco, __atomic_storage_is_small<_Sto> = 0>
 _CCCL_API auto __atomic_fetch_and_dispatch(_Sto* __a, _Up __pattern, memory_order __order, _Sco = {})
   -> __atomic_underlying_t<_Sto>
 {
@@ -192,7 +192,7 @@ _CCCL_API auto __atomic_fetch_and_dispatch(_Sto* __a, _Up __pattern, memory_orde
     __atomic_fetch_and_dispatch(&__a->__a_value, __atomic_small_to_32(__pattern), __order, _Sco{}));
 }
 
-template <typename _Sto, typename _Up, typename _Sco, __atomic_storage_is_small<_Sto> = 0>
+template <class _Sto, class _Up, class _Sco, __atomic_storage_is_small<_Sto> = 0>
 _CCCL_API auto __atomic_fetch_or_dispatch(_Sto* __a, _Up __pattern, memory_order __order, _Sco = {})
   -> __atomic_underlying_t<_Sto>
 {
@@ -201,7 +201,7 @@ _CCCL_API auto __atomic_fetch_or_dispatch(_Sto* __a, _Up __pattern, memory_order
     __atomic_fetch_or_dispatch(&__a->__a_value, __atomic_small_to_32(__pattern), __order, _Sco{}));
 }
 
-template <typename _Sto, typename _Up, typename _Sco, __atomic_storage_is_small<_Sto> = 0>
+template <class _Sto, class _Up, class _Sco, __atomic_storage_is_small<_Sto> = 0>
 _CCCL_API auto __atomic_fetch_xor_dispatch(_Sto* __a, _Up __pattern, memory_order __order, _Sco = {})
   -> __atomic_underlying_t<_Sto>
 {
@@ -210,7 +210,7 @@ _CCCL_API auto __atomic_fetch_xor_dispatch(_Sto* __a, _Up __pattern, memory_orde
     __atomic_fetch_xor_dispatch(&__a->__a_value, __atomic_small_to_32(__pattern), __order, _Sco{}));
 }
 
-template <typename _Sto, typename _Up, typename _Sco, __atomic_storage_is_small<_Sto> = 0>
+template <class _Sto, class _Up, class _Sco, __atomic_storage_is_small<_Sto> = 0>
 _CCCL_API auto __atomic_fetch_max_dispatch(_Sto* __a, _Up __val, memory_order __order, _Sco = {})
   -> __atomic_underlying_t<_Sto>
 {
@@ -220,7 +220,7 @@ _CCCL_API auto __atomic_fetch_max_dispatch(_Sto* __a, _Up __val, memory_order __
     __atomic_fetch_max_dispatch(&__a->__a_value, __atomic_small_to_32(__val), __order, _Sco{}));
 }
 
-template <typename _Sto, typename _Up, typename _Sco, __atomic_storage_is_small<_Sto> = 0>
+template <class _Sto, class _Up, class _Sco, __atomic_storage_is_small<_Sto> = 0>
 _CCCL_API auto __atomic_fetch_min_dispatch(_Sto* __a, _Up __val, memory_order __order, _Sco = {})
   -> __atomic_underlying_t<_Sto>
 {

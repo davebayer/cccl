@@ -481,21 +481,21 @@ template <size_t _Ip, class _Tp, size_t _Size>
   return ::cuda::std::move(__a.__elems_[_Ip]);
 }
 
-template <typename _Tp, size_t _Size, size_t... _Index>
+template <class _Tp, size_t _Size, size_t... _Index>
 [[nodiscard]] _CCCL_API constexpr array<remove_cv_t<_Tp>, _Size>
 __to_array_lvalue_impl(_Tp (&__arr)[_Size], index_sequence<_Index...>)
 {
   return {{__arr[_Index]...}};
 }
 
-template <typename _Tp, size_t _Size, size_t... _Index>
+template <class _Tp, size_t _Size, size_t... _Index>
 [[nodiscard]] _CCCL_API constexpr array<remove_cv_t<_Tp>, _Size>
 __to_array_rvalue_impl(_Tp (&&__arr)[_Size], index_sequence<_Index...>)
 {
   return {{::cuda::std::move(__arr[_Index])...}};
 }
 
-template <typename _Tp, size_t _Size>
+template <class _Tp, size_t _Size>
 [[nodiscard]] _CCCL_API constexpr array<remove_cv_t<_Tp>, _Size>
 to_array(_Tp (&__arr)[_Size]) noexcept(is_nothrow_constructible_v<_Tp, _Tp&>)
 {
@@ -504,7 +504,7 @@ to_array(_Tp (&__arr)[_Size]) noexcept(is_nothrow_constructible_v<_Tp, _Tp&>)
   return ::cuda::std::__to_array_lvalue_impl(__arr, make_index_sequence<_Size>());
 }
 
-template <typename _Tp, size_t _Size>
+template <class _Tp, size_t _Size>
 [[nodiscard]] _CCCL_API constexpr array<remove_cv_t<_Tp>, _Size>
 to_array(_Tp (&&__arr)[_Size]) noexcept(is_nothrow_move_constructible_v<_Tp>)
 {

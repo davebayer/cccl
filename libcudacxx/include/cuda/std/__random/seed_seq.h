@@ -87,7 +87,7 @@ public:
   /// @brief Construct from an initializer list of seed values.
   /// @tparam _InitT Element type convertible to `result_type`.
   /// @param __il The list of seed values.
-  _CCCL_TEMPLATE(typename _InitT)
+  _CCCL_TEMPLATE(class _InitT)
   _CCCL_REQUIRES(__cccl_is_integer_v<_InitT>)
   _CCCL_API _CCCL_CONSTEXPR_CXX20 seed_seq(initializer_list<_InitT> __il)
       : seed_seq(__il.begin(), __il.end())

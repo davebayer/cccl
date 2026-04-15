@@ -49,7 +49,7 @@ _CCCL_BEGIN_NAMESPACE_CUDA
  *
  ***********************************************************************/
 
-template <::cuda::std::size_t _Align, typename _Group>
+template <::cuda::std::size_t _Align, class _Group>
 [[nodiscard]] _CCCL_DEVICE_API __completion_mechanism __dispatch_memcpy_async_any_to_any(
   _Group const& __group,
   char* __dest_char,
@@ -62,7 +62,7 @@ template <::cuda::std::size_t _Align, typename _Group>
   return __completion_mechanism::__sync;
 }
 
-template <::cuda::std::size_t _Align, typename _Group>
+template <::cuda::std::size_t _Align, class _Group>
 [[nodiscard]] _CCCL_DEVICE_API __completion_mechanism __dispatch_memcpy_async_global_to_shared(
   _Group const& __group,
   char* __dest_char,
@@ -108,7 +108,7 @@ template <::cuda::std::size_t _Align, typename _Group>
 }
 
 // __dispatch_memcpy_async is the internal entry point for dispatching to the correct memcpy_async implementation.
-template <::cuda::std::size_t _Align, typename _Group>
+template <::cuda::std::size_t _Align, class _Group>
 [[nodiscard]] _CCCL_API __completion_mechanism __dispatch_memcpy_async(
   _Group const& __group,
   char* __dest_char,
@@ -144,7 +144,7 @@ template <::cuda::std::size_t _Align, typename _Group>
       } return __completion_mechanism::__sync;));
 }
 
-template <::cuda::std::size_t _Align, typename _Group>
+template <::cuda::std::size_t _Align, class _Group>
 [[nodiscard]] _CCCL_API __completion_mechanism __dispatch_memcpy_async(
   _Group const& __group,
   char* __dest_char,

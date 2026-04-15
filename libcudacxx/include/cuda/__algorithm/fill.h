@@ -36,7 +36,7 @@ _CCCL_BEGIN_NAMESPACE_CUDA
 
 namespace __detail
 {
-template <typename _DstTy, ::cuda::std::size_t _DstSize>
+template <class _DstTy, ::cuda::std::size_t _DstSize>
 _CCCL_HOST_API void
 __fill_bytes_impl(stream_ref __stream, ::cuda::std::span<_DstTy, _DstSize> __dst, ::cuda::std::uint8_t __value)
 {
@@ -47,7 +47,7 @@ __fill_bytes_impl(stream_ref __stream, ::cuda::std::span<_DstTy, _DstSize> __dst
   ::cuda::__driver::__memsetAsync(__dst.data(), __value, __dst.size_bytes(), __stream.get());
 }
 
-template <typename _DstElem, typename _DstExtents, typename _DstLayout, typename _DstAccessor>
+template <class _DstElem, class _DstExtents, class _DstLayout, class _DstAccessor>
 _CCCL_HOST_API void __fill_bytes_impl(stream_ref __stream,
                                       ::cuda::std::mdspan<_DstElem, _DstExtents, _DstLayout, _DstAccessor> __dst,
                                       ::cuda::std::uint8_t __value)
@@ -73,7 +73,7 @@ _CCCL_HOST_API void __fill_bytes_impl(stream_ref __stream,
 //! @param __stream Stream that the copy should be inserted into
 //! @param __dst Destination memory to fill
 //! @param __value Value to fill into every byte in the destination
-_CCCL_TEMPLATE(typename _DstTy)
+_CCCL_TEMPLATE(class _DstTy)
 _CCCL_REQUIRES(__spannable<transformed_device_argument_t<_DstTy>>)
 _CCCL_HOST_API void fill_bytes(stream_ref __stream, _DstTy&& __dst, ::cuda::std::uint8_t __value)
 {
@@ -83,7 +83,7 @@ _CCCL_HOST_API void fill_bytes(stream_ref __stream, _DstTy&& __dst, ::cuda::std:
 
 //! @overload
 //! @note This overload accepts mdspan-compatible types.
-_CCCL_TEMPLATE(typename _DstTy)
+_CCCL_TEMPLATE(class _DstTy)
 _CCCL_REQUIRES(__mdspannable<transformed_device_argument_t<_DstTy>>)
 _CCCL_HOST_API void fill_bytes(stream_ref __stream, _DstTy&& __dst, ::cuda::std::uint8_t __value)
 {

@@ -118,7 +118,7 @@ _CCCL_DEVICE_API inline void __cp_async_shared_global<16>(char* __dest, const ch
 }
 #  endif // _CCCL_CUDA_COMPILER(NVCC, >=, 12, 1)
 
-template <size_t _Alignment, typename _Group>
+template <size_t _Alignment, class _Group>
 _CCCL_DEVICE_API void
 __cp_async_shared_global_mechanism(_Group __g, char* __dest, const char* __src, ::cuda::std::size_t __size)
 {

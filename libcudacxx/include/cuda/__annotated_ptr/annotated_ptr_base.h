@@ -30,7 +30,7 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA
 
-template <typename _AccessProperty>
+template <class _AccessProperty>
 class __annotated_ptr_base
 {
 protected:

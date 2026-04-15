@@ -31,7 +31,7 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA
 
-template <typename _From, typename _To>
+template <class _From, class _To>
 inline constexpr bool __is_integer_representable_v =
   ::cuda::std::cmp_less_equal(::cuda::std::numeric_limits<_From>::max(), ::cuda::std::numeric_limits<_To>::max())
   && ::cuda::std::cmp_greater_equal(::cuda::std::numeric_limits<_From>::min(), ::cuda::std::numeric_limits<_To>::min());

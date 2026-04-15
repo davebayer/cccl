@@ -112,7 +112,7 @@ enum class _Trait
   _Unavailable
 };
 
-template <typename... _Types>
+template <class... _Types>
 struct __traits
 {
   [[nodiscard]] _CCCL_API static _CCCL_CONSTEVAL _Trait __common_trait(initializer_list<_Trait> __traits) noexcept

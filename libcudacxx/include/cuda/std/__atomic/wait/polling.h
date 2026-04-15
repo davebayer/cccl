@@ -30,7 +30,7 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
-template <typename _Tp, typename _Sco>
+template <class _Tp, class _Sco>
 struct __atomic_poll_tester
 {
   using __underlying_t = __atomic_underlying_remove_cv_t<_Tp>;
@@ -51,7 +51,7 @@ struct __atomic_poll_tester
   }
 };
 
-template <typename _Tp, typename _Sco>
+template <class _Tp, class _Sco>
 _CCCL_API void __atomic_try_wait_slow_fallback(
   _Tp const volatile* __a, __atomic_underlying_remove_cv_t<_Tp> __val, memory_order __order, _Sco)
 {

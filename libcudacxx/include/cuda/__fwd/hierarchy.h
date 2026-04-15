@@ -61,7 +61,7 @@ inline constexpr bool __is_hierarchy_v = false;
 template <class _BottomUnit, class... _Levels>
 inline constexpr bool __is_hierarchy_v<hierarchy<_BottomUnit, _Levels...>> = true;
 
-template <typename... _Levels>
+template <class... _Levels>
 struct __allowed_levels;
 
 struct __hierarchy_level_desc_base

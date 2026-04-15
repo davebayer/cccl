@@ -143,7 +143,7 @@ _CCCL_SUPPRESS_DEPRECATED_POP
 //! @param __args The arguments to the @c __fn call.
 //!
 //! @throws @c cuda::cuda_error if the function call doesn't return CUDA_SUCCESS.
-template <typename Fn, typename... Args>
+template <class Fn, class... Args>
 _CCCL_HOST_API inline void __call_driver_fn(Fn __fn, const char* __err_msg, Args... __args)
 {
   ::CUresult __status = __fn(__args...);
@@ -370,7 +370,7 @@ _CCCL_HOST_API inline void __memcpyBatchAsync(
 
 #  endif // _CCCL_CTK_AT_LEAST(13, 0)
 
-template <typename _Tp>
+template <class _Tp>
 _CCCL_HOST_API void __memsetAsync(void* __dst, _Tp __value, ::cuda::std::size_t __count, ::CUstream __stream)
 {
   if constexpr (sizeof(_Tp) == 1)

@@ -31,7 +31,7 @@ namespace __v1
 {
 class thread_block;
 
-template <unsigned int Size, typename ParentT>
+template <unsigned int Size, class ParentT>
 class thread_block_tile;
 } // namespace __v1
 using namespace __v1;
@@ -40,7 +40,7 @@ using namespace __v1;
 _CCCL_BEGIN_NAMESPACE_CUDA
 
 //! Trait to detect whether a group represents a CUDA thread block, for example: ``cooperative_groups::thread_block``.
-template <typename _Group>
+template <class _Group>
 inline constexpr bool is_thread_block_group_v = false;
 
 template <>
@@ -48,10 +48,10 @@ inline constexpr bool is_thread_block_group_v<::cooperative_groups::thread_block
 
 //! Trait to detect whether a group represents a CUDA warp, for example:
 //! ``cooperative_groups::thread_block_tile<32, ...>``.
-template <typename _Group>
+template <class _Group>
 inline constexpr bool is_warp_group_v = false;
 
-template <typename _Parent>
+template <class _Parent>
 inline constexpr bool is_warp_group_v<::cooperative_groups::thread_block_tile<32, _Parent>> = true;
 
 _CCCL_END_NAMESPACE_CUDA

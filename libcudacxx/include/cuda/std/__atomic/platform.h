@@ -67,7 +67,7 @@
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
 #if defined(_CCCL_ATOMIC_ALWAYS_LOCK_FREE)
-template <typename _Tp>
+template <class _Tp>
 struct __atomic_is_always_lock_free
 {
   enum
@@ -76,7 +76,7 @@ struct __atomic_is_always_lock_free
   };
 };
 #else
-template <typename _Tp>
+template <class _Tp>
 struct __atomic_is_always_lock_free
 {
   enum

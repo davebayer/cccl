@@ -36,7 +36,7 @@ struct __copy_chunk
   _CCCL_ALIGNAS(_Copy_size) char data[_Copy_size];
 };
 
-template <::cuda::std::size_t _Alignment, typename _Group>
+template <::cuda::std::size_t _Alignment, class _Group>
 _CCCL_API void __cp_async_fallback_mechanism(_Group __g, char* __dest, const char* __src, ::cuda::std::size_t __size)
 {
   // Maximal copy size is 16 bytes
