@@ -12,7 +12,7 @@
 #endif
 
 #if !TUNE_BASE
-template <typename AccumT>
+template <class AccumT>
 struct policy_hub_t
 {
   struct policy_t : cub::ChainedPolicy<300, policy_t, policy_t>
@@ -57,7 +57,7 @@ struct policy_hub_t
 };
 #endif // !TUNE_BASE
 
-template <typename T>
+template <class T>
 void fixed_size_segmented_reduce(nvbench::state& state, nvbench::type_list<T>)
 {
   static constexpr bool is_argmin = std::is_same_v<op_t, cub::detail::arg_min>;

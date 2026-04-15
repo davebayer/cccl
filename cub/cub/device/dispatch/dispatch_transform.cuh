@@ -59,7 +59,7 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail::transform
 {
-template <typename T>
+template <class T>
 using cuda_expected = ::cuda::std::expected<T, cudaError_t>;
 
 struct async_config
@@ -75,20 +75,20 @@ struct prefetch_config
   int sm_count;
 };
 
-template <typename PolicySelector,
-          typename Offset,
-          typename RandomAccessIteratorsIn,
-          typename RandomAccessIteratorOut,
-          typename Predicate,
-          typename TransformOp>
+template <class PolicySelector,
+          class Offset,
+          class RandomAccessIteratorsIn,
+          class RandomAccessIteratorOut,
+          class Predicate,
+          class TransformOp>
 struct TransformKernelSource;
 
-template <typename PolicySelector,
-          typename Offset,
-          typename... RandomAccessIteratorsIn,
-          typename RandomAccessIteratorOut,
-          typename Predicate,
-          typename TransformOp>
+template <class PolicySelector,
+          class Offset,
+          class... RandomAccessIteratorsIn,
+          class RandomAccessIteratorOut,
+          class Predicate,
+          class TransformOp>
 struct TransformKernelSource<PolicySelector,
                              Offset,
                              ::cuda::std::tuple<RandomAccessIteratorsIn...>,
@@ -131,20 +131,20 @@ struct TransformKernelSource<PolicySelector,
       make_iterator_info<RandomAccessIteratorsIn>()...};
   }
 
-  template <typename It>
+  template <class It>
   CUB_RUNTIME_FUNCTION static constexpr kernel_arg<It> MakeIteratorKernelArg(It it)
   {
     return detail::transform::make_iterator_kernel_arg(it);
   }
 
-  template <typename It>
+  template <class It>
   CUB_RUNTIME_FUNCTION static constexpr kernel_arg<It> MakeAlignedBasePtrKernelArg(It it, int align)
   {
     return detail::transform::make_aligned_base_ptr_kernel_arg(it, align);
   }
 
 private:
-  template <typename T>
+  template <class T>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static auto is_pointer_aligned(T it, [[maybe_unused]] int alignment)
   {
     if constexpr (THRUST_NS_QUALIFIER::is_contiguous_iterator_v<decltype(it)>)
@@ -173,7 +173,7 @@ enum class requires_stable_address
 };
 
 // Reduces the items_per_thread when necessary to generate enough blocks to reach the maximum occupancy.
-template <typename Offset, typename Policy>
+template <class Offset, class Policy>
 CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE int
 spread_out_items_per_thread(Offset num_items, Policy policy, int items_per_thread, int sm_count, int max_occupancy)
 {
@@ -185,12 +185,7 @@ spread_out_items_per_thread(Offset num_items, Policy policy, int items_per_threa
   return items_per_thread_clamped;
 }
 
-template <bool NoInputs,
-          typename Offset,
-          typename SMemFunc,
-          typename PolicyGetter,
-          typename KernelSource,
-          typename KernelLauncherFactory>
+template <bool NoInputs, class Offset, class SMemFunc, class PolicyGetter, class KernelSource, class KernelLauncherFactory>
 CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE auto configure_async_kernel(
   Offset num_items,
   int alignment,
@@ -279,16 +274,16 @@ CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE auto configure_as
     launcher_factory(grid_dim, block_threads, dyn_smem_size, stream, true), kernel_source.TransformKernel(), ipt);
 }
 
-template <typename Offset,
-          typename... RandomAccessIteratorsIn,
-          typename RandomAccessIteratorOut,
-          typename Predicate,
-          typename TransformOp,
-          typename SMemFunc,
+template <class Offset,
+          class... RandomAccessIteratorsIn,
+          class RandomAccessIteratorOut,
+          class Predicate,
+          class TransformOp,
+          class SMemFunc,
           std::size_t... Is,
-          typename PolicyGetter,
-          typename KernelSource,
-          typename KernelLauncherFactory>
+          class PolicyGetter,
+          class KernelSource,
+          class KernelLauncherFactory>
 CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t invoke_async_algorithm(
   ::cuda::std::tuple<RandomAccessIteratorsIn...> in,
   RandomAccessIteratorOut out,
@@ -323,15 +318,15 @@ CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t invoke_async_algorithm(
       THRUST_NS_QUALIFIER::try_unwrap_contiguous_iterator(::cuda::std::get<Is>(in)), alignment)...);
 }
 
-template <typename... RandomAccessIteratorsIn,
-          typename RandomAccessIteratorOut,
-          typename Offset,
-          typename Predicate,
-          typename TransformOp,
+template <class... RandomAccessIteratorsIn,
+          class RandomAccessIteratorOut,
+          class Offset,
+          class Predicate,
+          class TransformOp,
           size_t... Is,
-          typename PolicyGetter,
-          typename KernelSource,
-          typename KernelLauncherFactory>
+          class PolicyGetter,
+          class KernelSource,
+          class KernelLauncherFactory>
 CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t invoke_prefetch_or_vectorized_algorithm(
   [[maybe_unused]] ::cuda::std::tuple<RandomAccessIteratorsIn...> in,
   RandomAccessIteratorOut out,
@@ -424,22 +419,22 @@ CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t invoke_prefetch_or_vectorized
 }
 
 // This should ideally have been a lambda, but MSVC < 14.44 ICEs if we put a `(static) constexpr` variable inside
-template <typename RandomAccessIteratorTupleIn,
-          typename RandomAccessIteratorOut,
-          typename Offset,
-          typename Predicate,
-          typename TransformOp,
-          typename KernelSource,
-          typename KernelLauncherFactory>
+template <class RandomAccessIteratorTupleIn,
+          class RandomAccessIteratorOut,
+          class Offset,
+          class Predicate,
+          class TransformOp,
+          class KernelSource,
+          class KernelLauncherFactory>
 struct invoke_for_arch;
 
-template <typename... RandomAccessIteratorsIn,
-          typename RandomAccessIteratorOut,
-          typename Offset,
-          typename Predicate,
-          typename TransformOp,
-          typename KernelSource,
-          typename KernelLauncherFactory>
+template <class... RandomAccessIteratorsIn,
+          class RandomAccessIteratorOut,
+          class Offset,
+          class Predicate,
+          class TransformOp,
+          class KernelSource,
+          class KernelLauncherFactory>
 struct invoke_for_arch<::cuda::std::tuple<RandomAccessIteratorsIn...>,
                        RandomAccessIteratorOut,
                        Offset,
@@ -458,7 +453,7 @@ struct invoke_for_arch<::cuda::std::tuple<RandomAccessIteratorsIn...>,
   KernelLauncherFactory launcher_factory;
   ::cuda::arch_id arch_id;
 
-  template <typename PolicyGetter>
+  template <class PolicyGetter>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t operator()(PolicyGetter policy_getter) const
   {
     CUB_DETAIL_CONSTEXPR_ISH transform_policy active_policy = policy_getter();
@@ -527,19 +522,19 @@ struct invoke_for_arch<::cuda::std::tuple<RandomAccessIteratorsIn...>,
 };
 
 template <requires_stable_address StableAddress,
-          typename... RandomAccessIteratorsIn,
-          typename RandomAccessIteratorOut,
-          typename Offset,
-          typename Predicate,
-          typename TransformOp,
-          typename PolicySelector,
-          typename KernelSource          = TransformKernelSource<PolicySelector,
-                                                                 Offset,
-                                                                 ::cuda::std::tuple<RandomAccessIteratorsIn...>,
-                                                                 RandomAccessIteratorOut,
-                                                                 Predicate,
-                                                                 TransformOp>,
-          typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+          class... RandomAccessIteratorsIn,
+          class RandomAccessIteratorOut,
+          class Offset,
+          class Predicate,
+          class TransformOp,
+          class PolicySelector,
+          class KernelSource          = TransformKernelSource<PolicySelector,
+                                                              Offset,
+                                                              ::cuda::std::tuple<RandomAccessIteratorsIn...>,
+                                                              RandomAccessIteratorOut,
+                                                              Predicate,
+                                                              TransformOp>,
+          class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
 #if _CCCL_HAS_CONCEPTS()
   requires transform_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()

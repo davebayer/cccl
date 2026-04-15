@@ -64,10 +64,10 @@ CUB_NAMESPACE_BEGIN
  */
 template <int NominalBlockThreads4B,
           int NominalItemsPerThread4B,
-          typename ComputeT,
+          class ComputeT,
           CacheLoadModifier LoadModifier,
           int RadixBits,
-          typename ScalingType = detail::RegBoundScaling<NominalBlockThreads4B, NominalItemsPerThread4B, ComputeT>>
+          class ScalingType = detail::RegBoundScaling<NominalBlockThreads4B, NominalItemsPerThread4B, ComputeT>>
 struct AgentRadixSortUpsweepPolicy : ScalingType
 {
   /// The number of radix bits, i.e., log2(bins)
@@ -115,10 +115,7 @@ namespace detail::radix_sort
  * @tparam DecomposerT = identity_decomposer_t
  *   Signed integer type for global offsets
  */
-template <typename AgentRadixSortUpsweepPolicy,
-          typename KeyT,
-          typename OffsetT,
-          typename DecomposerT = identity_decomposer_t>
+template <class AgentRadixSortUpsweepPolicy, class KeyT, class OffsetT, class DecomposerT = identity_decomposer_t>
 struct AgentRadixSortUpsweep
 {
   //---------------------------------------------------------------------

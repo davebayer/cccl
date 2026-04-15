@@ -56,7 +56,7 @@ namespace detail::select
 // Offset type used to instantiate the stream compaction-kernel and agent to index the items within one partition
 using per_partition_offset_t = ::cuda::std::int32_t;
 
-template <typename TotalNumItemsT, bool IsStreamingInvocation>
+template <class TotalNumItemsT, bool IsStreamingInvocation>
 class streaming_context_t
 {
 private:
@@ -112,13 +112,13 @@ public:
     return first_partition ? TotalNumItemsT{0} : (total_previous_num_items - num_previously_selected());
   };
 
-  template <typename OffsetT>
+  template <class OffsetT>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE TotalNumItemsT num_total_items(OffsetT) const
   {
     return total_num_items;
   }
 
-  template <typename NumSelectedIteratorT, typename OffsetT>
+  template <class NumSelectedIteratorT, class OffsetT>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE void
   update_num_selected(NumSelectedIteratorT user_num_selected_out_it, OffsetT num_selections) const
   {
@@ -133,7 +133,7 @@ public:
   }
 };
 
-template <typename TotalNumItemsT>
+template <class TotalNumItemsT>
 class streaming_context_t<TotalNumItemsT, false>
 {
 public:
@@ -163,13 +163,13 @@ public:
     return TotalNumItemsT{0};
   };
 
-  template <typename OffsetT>
+  template <class OffsetT>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE TotalNumItemsT num_total_items(OffsetT num_partition_items) const
   {
     return num_partition_items;
   }
 
-  template <typename NumSelectedIteratorT, typename OffsetT>
+  template <class NumSelectedIteratorT, class OffsetT>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE void
   update_num_selected(NumSelectedIteratorT user_num_selected_out_it, OffsetT num_selections) const
   {
@@ -185,14 +185,14 @@ struct bind_selection_opt
 {
   // Using an explicit list of template parameters forwarded to AgentSelectIf, since MSVC complains about a template
   // argument following a parameter pack expansion like `AgentSelectIf<Ts..., KeepRejects, MayAlias>`
-  template <typename AgentSelectIfPolicyT,
-            typename InputIteratorT,
-            typename FlagsInputIteratorT,
-            typename SelectedOutputIteratorT,
-            typename SelectOpT,
-            typename EqualityOpT,
-            typename OffsetT,
-            typename StreamingContextT>
+  template <class AgentSelectIfPolicyT,
+            class InputIteratorT,
+            class FlagsInputIteratorT,
+            class SelectedOutputIteratorT,
+            class SelectOpT,
+            class EqualityOpT,
+            class OffsetT,
+            class StreamingContextT>
   using agent_t =
     AgentSelectIf<AgentSelectIfPolicyT,
                   InputIteratorT,
@@ -205,15 +205,15 @@ struct bind_selection_opt
                   SelectionOpt>;
 };
 
-template <typename DefaultPolicyGetter,
+template <class DefaultPolicyGetter,
           SelectImpl SelectionOpt,
-          typename InputIteratorT,
-          typename FlagsInputIteratorT,
-          typename SelectedOutputIteratorT,
-          typename SelectOpT,
-          typename EqualityOpT,
-          typename OffsetT,
-          typename StreamingContextT>
+          class InputIteratorT,
+          class FlagsInputIteratorT,
+          class SelectedOutputIteratorT,
+          class SelectOpT,
+          class EqualityOpT,
+          class OffsetT,
+          class StreamingContextT>
 struct make_vsmem_helper
 {
   static constexpr select_if_policy active_policy = DefaultPolicyGetter{}();
@@ -323,16 +323,16 @@ struct make_vsmem_helper
  * @param[in] vsmem
  *   Memory to support virtual shared memory
  */
-template <typename PolicySelectorT,
-          typename InputIteratorT,
-          typename FlagsInputIteratorT,
-          typename SelectedOutputIteratorT,
-          typename NumSelectedIteratorT,
-          typename ScanTileStateT,
-          typename SelectOpT,
-          typename EqualityOpT,
-          typename OffsetT,
-          typename StreamingContextT,
+template <class PolicySelectorT,
+          class InputIteratorT,
+          class FlagsInputIteratorT,
+          class SelectedOutputIteratorT,
+          class NumSelectedIteratorT,
+          class ScanTileStateT,
+          class SelectOpT,
+          class EqualityOpT,
+          class OffsetT,
+          class StreamingContextT,
           SelectImpl SelectionOpt>
 #if _CCCL_HAS_CONCEPTS()
   requires select_if_policy_selector<PolicySelectorT>
@@ -389,7 +389,7 @@ __launch_bounds__(int(
 }
 
 // TODO(bgruber): remove in CCCL 4.0
-template <typename PolicyHub>
+template <class PolicyHub>
 struct policy_selector_from_hub
 {
   // this is only called in device code
@@ -441,15 +441,15 @@ struct policy_selector_from_hub
  *   output may alias each other.
  */
 template <
-  typename InputIteratorT,
-  typename FlagsInputIteratorT,
-  typename SelectedOutputIteratorT,
-  typename NumSelectedIteratorT,
-  typename SelectOpT,
-  typename EqualityOpT,
-  typename OffsetT,
+  class InputIteratorT,
+  class FlagsInputIteratorT,
+  class SelectedOutputIteratorT,
+  class NumSelectedIteratorT,
+  class SelectOpT,
+  class EqualityOpT,
+  class OffsetT,
   SelectImpl SelectionOpt,
-  typename PolicyHub = detail::select::policy_hub<
+  class PolicyHub = detail::select::policy_hub<
     detail::it_value_t<InputIteratorT>,
     detail::it_value_t<FlagsInputIteratorT>,
     // if/flagged/unique only have a single code path for different offset types, partition has different code paths
@@ -585,7 +585,7 @@ struct DispatchSelectIf
    * Internal dispatch routine for computing a device-wide selection using the
    * specified kernel functions.
    */
-  template <typename ActivePolicyT, typename ScanInitKernelPtrT, typename SelectIfKernelPtrT>
+  template <class ActivePolicyT, class ScanInitKernelPtrT, class SelectIfKernelPtrT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t
   Invoke(ScanInitKernelPtrT scan_init_kernel, SelectIfKernelPtrT select_if_kernel)
   {
@@ -779,7 +779,7 @@ struct DispatchSelectIf
     return error;
   }
 
-  template <typename ActivePolicyT>
+  template <class ActivePolicyT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t Invoke()
   {
     return Invoke<ActivePolicyT>(
@@ -871,16 +871,16 @@ struct DispatchSelectIf
 namespace detail::select
 {
 template <SelectImpl SelectionOpt,
-          typename PolicyGetter,
-          typename InputIteratorT,
-          typename FlagsInputIteratorT,
-          typename SelectedOutputIteratorT,
-          typename NumSelectedIteratorT,
-          typename SelectOpT,
-          typename EqualityOpT,
-          typename OffsetT,
-          typename PolicySelector,
-          typename KernelLauncherFactory>
+          class PolicyGetter,
+          class InputIteratorT,
+          class FlagsInputIteratorT,
+          class SelectedOutputIteratorT,
+          class NumSelectedIteratorT,
+          class SelectOpT,
+          class EqualityOpT,
+          class OffsetT,
+          class PolicySelector,
+          class KernelLauncherFactory>
 CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t dispatch_policy(
   [[maybe_unused]] PolicyGetter policy_getter,
   void* d_temp_storage,
@@ -1076,16 +1076,16 @@ CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t dispatch_policy(
 
 template <
   SelectImpl SelectionOpt,
-  typename InputIteratorT,
-  typename FlagsInputIteratorT,
-  typename SelectedOutputIteratorT,
-  typename NumSelectedIteratorT,
-  typename SelectOpT,
-  typename EqualityOpT,
-  typename OffsetT,
-  typename PolicySelector =
+  class InputIteratorT,
+  class FlagsInputIteratorT,
+  class SelectedOutputIteratorT,
+  class NumSelectedIteratorT,
+  class SelectOpT,
+  class EqualityOpT,
+  class OffsetT,
+  class PolicySelector =
     policy_selector_from_types<InputIteratorT, FlagsInputIteratorT, SelectedOutputIteratorT, OffsetT, SelectionOpt>,
-  typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+  class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
 #if _CCCL_HAS_CONCEPTS()
   requires select_if_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()

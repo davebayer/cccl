@@ -94,7 +94,7 @@ LoadVectorAndFunnelShiftR(uint32_t const* aligned_ptr, uint32_t bit_shift, uint3
  * @param ptr The pointer from which the data is supposed to be loaded
  * @param data_out The vector type that stores the data loaded from \p ptr
  */
-template <typename VectorT>
+template <class VectorT>
 _CCCL_FORCEINLINE _CCCL_DEVICE void LoadVector(const char* ptr, VectorT& data_out)
 {
   const uint32_t offset            = reinterpret_cast<uintptr_t>(ptr) % 4U;
@@ -120,7 +120,7 @@ _CCCL_FORCEINLINE _CCCL_DEVICE void LoadVector(const char* ptr, VectorT& data_ou
  *
  * @tparam VectorT The vector type used for vectorized stores (i.e., one of uint4, uint2, uint32_t)
  */
-template <typename VectorT>
+template <class VectorT>
 struct PointerRange
 {
   VectorT* out_begin;
@@ -144,7 +144,7 @@ struct PointerRange
  * @param num_bytes Number of bytes that shall be copied
  * @return The byte range that can safely be copied using vectorized stores of type VectorT
  */
-template <typename VectorT, typename ByteOffsetT>
+template <class VectorT, class ByteOffsetT>
 _CCCL_DEVICE _CCCL_FORCEINLINE PointerRange<VectorT>
 GetAlignedPtrs(const void* in_begin, void* out_begin, ByteOffsetT num_bytes)
 {
@@ -218,7 +218,7 @@ GetAlignedPtrs(const void* in_begin, void* out_begin, ByteOffsetT num_bytes)
  * @param num_bytes Number of bytes to copy
  * @param src Pointer to the memory location to copy from
  */
-template <int LOGICAL_WARP_SIZE, typename VectorT, typename ByteOffsetT>
+template <int LOGICAL_WARP_SIZE, class VectorT, class ByteOffsetT>
 _CCCL_DEVICE _CCCL_FORCEINLINE void
 vectorized_copy(int32_t thread_rank, void* dest, ByteOffsetT num_bytes, const void* src)
 {
@@ -274,9 +274,9 @@ vectorized_copy(int32_t thread_rank, void* dest, ByteOffsetT num_bytes, const vo
 
 template <bool IsMemcpy,
           uint32_t LOGICAL_WARP_SIZE,
-          typename InputBufferT,
-          typename OutputBufferT,
-          typename OffsetT,
+          class InputBufferT,
+          class OutputBufferT,
+          class OffsetT,
           ::cuda::std::enable_if_t<IsMemcpy, int> = 0>
 _CCCL_DEVICE _CCCL_FORCEINLINE void
 copy_items(InputBufferT input_buffer, OutputBufferT output_buffer, OffsetT num_bytes, OffsetT offset = 0)
@@ -290,9 +290,9 @@ copy_items(InputBufferT input_buffer, OutputBufferT output_buffer, OffsetT num_b
 
 template <bool IsMemcpy,
           uint32_t LOGICAL_WARP_SIZE,
-          typename InputBufferT,
-          typename OutputBufferT,
-          typename OffsetT,
+          class InputBufferT,
+          class OutputBufferT,
+          class OffsetT,
           ::cuda::std::enable_if_t<!IsMemcpy, int> = 0>
 _CCCL_DEVICE _CCCL_FORCEINLINE void
 copy_items(InputBufferT input_buffer, OutputBufferT output_buffer, OffsetT num_items, OffsetT offset = 0)
@@ -305,25 +305,25 @@ copy_items(InputBufferT input_buffer, OutputBufferT output_buffer, OffsetT num_i
   }
 }
 
-template <bool IsMemcpy, typename AliasT, typename InputIt, typename OffsetT, ::cuda::std::enable_if_t<IsMemcpy, int> = 0>
+template <bool IsMemcpy, class AliasT, class InputIt, class OffsetT, ::cuda::std::enable_if_t<IsMemcpy, int> = 0>
 _CCCL_DEVICE _CCCL_FORCEINLINE AliasT read_item(InputIt buffer_src, OffsetT offset)
 {
   return *(reinterpret_cast<const AliasT*>(buffer_src) + offset);
 }
 
-template <bool IsMemcpy, typename AliasT, typename InputIt, typename OffsetT, ::cuda::std::enable_if_t<!IsMemcpy, int> = 0>
+template <bool IsMemcpy, class AliasT, class InputIt, class OffsetT, ::cuda::std::enable_if_t<!IsMemcpy, int> = 0>
 _CCCL_DEVICE _CCCL_FORCEINLINE AliasT read_item(InputIt buffer_src, OffsetT offset)
 {
   return *(buffer_src + offset);
 }
 
-template <bool IsMemcpy, typename AliasT, typename OutputIt, typename OffsetT, ::cuda::std::enable_if_t<IsMemcpy, int> = 0>
+template <bool IsMemcpy, class AliasT, class OutputIt, class OffsetT, ::cuda::std::enable_if_t<IsMemcpy, int> = 0>
 _CCCL_DEVICE _CCCL_FORCEINLINE void write_item(OutputIt buffer_dst, OffsetT offset, AliasT value)
 {
   *(reinterpret_cast<AliasT*>(buffer_dst) + offset) = value;
 }
 
-template <bool IsMemcpy, typename AliasT, typename OutputIt, typename OffsetT, ::cuda::std::enable_if_t<!IsMemcpy, int> = 0>
+template <bool IsMemcpy, class AliasT, class OutputIt, class OffsetT, ::cuda::std::enable_if_t<!IsMemcpy, int> = 0>
 _CCCL_DEVICE _CCCL_FORCEINLINE void write_item(OutputIt buffer_dst, OffsetT offset, AliasT value)
 {
   *(buffer_dst + offset) = value;
@@ -350,7 +350,7 @@ enum class prefer_power_of_two_bits_option
 template <uint32_t NumItems,
           uint32_t MaxItemValue,
           prefer_power_of_two_bits_option PreferPowerOfTwoBits,
-          typename BackingUnitT = uint32_t>
+          class BackingUnitT = uint32_t>
 class bit_packed_counter
 {
 private:
@@ -480,18 +480,18 @@ struct AgentBatchMemcpyPolicy
   using block_delay_constructor = BlockDelayConstructor;
 };
 
-template <typename AgentMemcpySmallBuffersPolicyT,
-          typename InputBufferIt,
-          typename OutputBufferIt,
-          typename BufferSizeIteratorT,
-          typename BufferOffsetT,
-          typename BlevBufferSrcsOutItT,
-          typename BlevBufferDstsOutItT,
-          typename BlevBufferSizesOutItT,
-          typename BlevBufferTileOffsetsOutItT,
-          typename BlockOffsetT,
-          typename BLevBufferOffsetTileState,
-          typename BLevBlockOffsetTileState,
+template <class AgentMemcpySmallBuffersPolicyT,
+          class InputBufferIt,
+          class OutputBufferIt,
+          class BufferSizeIteratorT,
+          class BufferOffsetT,
+          class BlevBufferSrcsOutItT,
+          class BlevBufferDstsOutItT,
+          class BlevBufferSizesOutItT,
+          class BlevBufferTileOffsetsOutItT,
+          class BlockOffsetT,
+          class BLevBufferOffsetTileState,
+          class BLevBlockOffsetTileState,
           bool IsMemcpy>
 class AgentBatchMemcpy
 {

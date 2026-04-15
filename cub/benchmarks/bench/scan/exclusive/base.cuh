@@ -17,7 +17,7 @@
 
 #include "../policy_selector.h"
 
-template <typename T, typename OffsetT>
+template <class T, class OffsetT>
 static void basic(nvbench::state& state, nvbench::type_list<T, OffsetT>)
 try
 {

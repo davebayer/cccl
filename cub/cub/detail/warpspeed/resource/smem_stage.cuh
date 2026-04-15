@@ -23,7 +23,7 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail::warpspeed
 {
-template <typename _Tp>
+template <class _Tp>
 struct SmemStage
 {
   SmemResourceRaw& mSmemResourceRaw;
@@ -48,7 +48,7 @@ struct SmemStage
 };
 
 // Helper: Container to expose SmemPhase for structured binding
-template <typename _Tp, ::cuda::std::size_t numPhases>
+template <class _Tp, ::cuda::std::size_t numPhases>
 struct SmemPhaseStructuredBinding
 {
   SmemResourceRaw& mSmemResourceRaw;
@@ -61,7 +61,7 @@ struct SmemPhaseStructuredBinding
 };
 
 // The binding function
-template <::cuda::std::size_t numPhases, typename _Tp>
+template <::cuda::std::size_t numPhases, class _Tp>
 [[nodiscard]] _CCCL_DEVICE_API SmemPhaseStructuredBinding<_Tp, numPhases> bindPhases(SmemStage<_Tp>& smemStage)
 {
   _WS_CONSTANT_ASSERT(smemStage.mSmemResourceRaw.mNumPhases == numPhases,
@@ -76,13 +76,13 @@ CUB_NAMESPACE_END
 // Tuple protocol specializations
 namespace std
 {
-template <typename _Tp, size_t numPhases>
+template <class _Tp, size_t numPhases>
 struct tuple_size<CUB_NS_QUALIFIER::detail::warpspeed::SmemPhaseStructuredBinding<_Tp, numPhases>>
 {
   static constexpr size_t value = numPhases;
 };
 
-template <typename _Tp, size_t _Index, ::cuda::std::size_t numPhases>
+template <class _Tp, size_t _Index, ::cuda::std::size_t numPhases>
 struct tuple_element<_Index, CUB_NS_QUALIFIER::detail::warpspeed::SmemPhaseStructuredBinding<_Tp, numPhases>>
 {
   using type = CUB_NS_QUALIFIER::detail::warpspeed::SmemPhase<_Tp>;

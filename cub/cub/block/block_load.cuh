@@ -61,7 +61,7 @@ CUB_NAMESPACE_BEGIN
 //!
 //! @param[out] dst_items
 //!   Destination to load data into
-template <typename T, int ItemsPerThread, typename RandomAccessIterator>
+template <class T, int ItemsPerThread, class RandomAccessIterator>
 _CCCL_DEVICE _CCCL_FORCEINLINE void
 LoadDirectBlocked(int linear_tid, RandomAccessIterator block_src_it, T (&dst_items)[ItemsPerThread])
 {
@@ -104,7 +104,7 @@ LoadDirectBlocked(int linear_tid, RandomAccessIterator block_src_it, T (&dst_ite
 //!
 //! @param[in] block_items_end
 //!   First out-of-bounds index when loading from block_src_it
-template <typename T, int ItemsPerThread, typename RandomAccessIterator>
+template <class T, int ItemsPerThread, class RandomAccessIterator>
 _CCCL_DEVICE _CCCL_FORCEINLINE void LoadDirectBlocked(
   int linear_tid, RandomAccessIterator block_src_it, T (&dst_items)[ItemsPerThread], int block_items_end)
 {
@@ -154,7 +154,7 @@ _CCCL_DEVICE _CCCL_FORCEINLINE void LoadDirectBlocked(
 //!
 //! @param[in] oob_default
 //!   Default value to assign out-of-bound items
-template <typename T, typename DefaultT, int ItemsPerThread, typename RandomAccessIterator>
+template <class T, class DefaultT, int ItemsPerThread, class RandomAccessIterator>
 _CCCL_DEVICE _CCCL_FORCEINLINE void LoadDirectBlocked(
   int linear_tid,
   RandomAccessIterator block_src_it,
@@ -184,7 +184,7 @@ _CCCL_DEVICE _CCCL_FORCEINLINE void LoadDirectBlocked(
 //!
 //! @param[out] dst_items
 //!   Destination to load data into
-template <CacheLoadModifier MODIFIER, typename T, int ItemsPerThread>
+template <CacheLoadModifier MODIFIER, class T, int ItemsPerThread>
 _CCCL_DEVICE _CCCL_FORCEINLINE void
 InternalLoadDirectBlockedVectorized(int linear_tid, const T* block_src_ptr, T (&dst_items)[ItemsPerThread])
 {
@@ -263,7 +263,7 @@ InternalLoadDirectBlockedVectorized(int linear_tid, const T* block_src_ptr, T (&
 //!
 //! @param[out] dst_items
 //!  destination to load data into
-template <typename T, int ItemsPerThread>
+template <class T, int ItemsPerThread>
 _CCCL_DEVICE _CCCL_FORCEINLINE void
 LoadDirectBlockedVectorized(int linear_tid, T* block_src_ptr, T (&dst_items)[ItemsPerThread])
 {
@@ -305,7 +305,7 @@ LoadDirectBlockedVectorized(int linear_tid, T* block_src_ptr, T (&dst_items)[Ite
 //!
 //! @param[out] dst_items
 //!   Destination to load data into
-template <int BlockThreads, typename T, int ItemsPerThread, typename RandomAccessIterator>
+template <int BlockThreads, class T, int ItemsPerThread, class RandomAccessIterator>
 _CCCL_DEVICE _CCCL_FORCEINLINE void
 LoadDirectStriped(int linear_tid, RandomAccessIterator block_src_it, T (&dst_items)[ItemsPerThread])
 {
@@ -318,7 +318,7 @@ LoadDirectStriped(int linear_tid, RandomAccessIterator block_src_it, T (&dst_ite
 
 namespace detail
 {
-template <int BlockThreads, typename T, int ItemsPerThread, typename RandomAccessIterator, typename TransformOpT>
+template <int BlockThreads, class T, int ItemsPerThread, class RandomAccessIterator, class TransformOpT>
 _CCCL_DEVICE _CCCL_FORCEINLINE void load_transform_direct_striped(
   int linear_tid, RandomAccessIterator block_src_it, T (&dst_items)[ItemsPerThread], TransformOpT transform_op)
 {
@@ -364,7 +364,7 @@ _CCCL_DEVICE _CCCL_FORCEINLINE void load_transform_direct_striped(
 //!
 //! @param[in] block_items_end
 //!   Number of valid items to load
-template <int BlockThreads, typename T, int ItemsPerThread, typename RandomAccessIterator>
+template <int BlockThreads, class T, int ItemsPerThread, class RandomAccessIterator>
 _CCCL_DEVICE _CCCL_FORCEINLINE void LoadDirectStriped(
   int linear_tid, RandomAccessIterator block_src_it, T (&dst_items)[ItemsPerThread], int block_items_end)
 {
@@ -417,7 +417,7 @@ _CCCL_DEVICE _CCCL_FORCEINLINE void LoadDirectStriped(
 //!
 //! @param[in] oob_default
 //!   Default value to assign out-of-bound items
-template <int BlockThreads, typename T, typename DefaultT, int ItemsPerThread, typename RandomAccessIterator>
+template <int BlockThreads, class T, class DefaultT, int ItemsPerThread, class RandomAccessIterator>
 _CCCL_DEVICE _CCCL_FORCEINLINE void LoadDirectStriped(
   int linear_tid,
   RandomAccessIterator block_src_it,
@@ -471,7 +471,7 @@ _CCCL_DEVICE _CCCL_FORCEINLINE void LoadDirectStriped(
 //!
 //! @param[out] dst_items
 //!   Destination to load data into
-template <typename T, int ItemsPerThread, typename RandomAccessIterator>
+template <class T, int ItemsPerThread, class RandomAccessIterator>
 _CCCL_DEVICE _CCCL_FORCEINLINE void
 LoadDirectWarpStriped(int linear_tid, RandomAccessIterator block_src_it, T (&dst_items)[ItemsPerThread])
 {
@@ -523,7 +523,7 @@ LoadDirectWarpStriped(int linear_tid, RandomAccessIterator block_src_it, T (&dst
 //!
 //! @param[in] block_items_end
 //!   Number of valid items to load
-template <typename T, int ItemsPerThread, typename RandomAccessIterator>
+template <class T, int ItemsPerThread, class RandomAccessIterator>
 _CCCL_DEVICE _CCCL_FORCEINLINE void LoadDirectWarpStriped(
   int linear_tid, RandomAccessIterator block_src_it, T (&dst_items)[ItemsPerThread], int block_items_end)
 {
@@ -583,7 +583,7 @@ _CCCL_DEVICE _CCCL_FORCEINLINE void LoadDirectWarpStriped(
 //!
 //! @param[in] oob_default
 //!   Default value to assign out-of-bound items
-template <typename T, typename DefaultT, int ItemsPerThread, typename RandomAccessIterator>
+template <class T, class DefaultT, int ItemsPerThread, class RandomAccessIterator>
 _CCCL_DEVICE _CCCL_FORCEINLINE void LoadDirectWarpStriped(
   int linear_tid,
   RandomAccessIterator block_src_it,
@@ -838,7 +838,7 @@ inline ::std::ostream& operator<<(::std::ostream& os, BlockLoadAlgorithm algo)
 //! @tparam BlockDimZ
 //!   **[optional]** The thread block length in threads along the Z dimension (default: 1)
 //!
-template <typename T,
+template <class T,
           int BlockDimX,
           int ItemsPerThread,
           BlockLoadAlgorithm Algorithm = BLOCK_LOAD_DIRECT,
@@ -966,7 +966,7 @@ public:
   //!
   //! @param[out] dst_items
   //!   Destination to load data into
-  template <typename RandomAccessIterator>
+  template <class RandomAccessIterator>
   _CCCL_DEVICE _CCCL_FORCEINLINE void Load(RandomAccessIterator block_src_it, T (&dst_items)[ItemsPerThread])
   {
     if constexpr (Algorithm == BLOCK_LOAD_DIRECT)
@@ -1054,7 +1054,7 @@ public:
   //!
   //! @param[in] block_items_end
   //!   Number of valid items to load
-  template <typename RandomAccessIterator>
+  template <class RandomAccessIterator>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   Load(RandomAccessIterator block_src_it, T (&dst_items)[ItemsPerThread], int block_items_end)
   {
@@ -1130,7 +1130,7 @@ public:
   //!
   //! @param[in] oob_default
   //!   Default value to assign out-of-bound items
-  template <typename RandomAccessIterator, typename DefaultT>
+  template <class RandomAccessIterator, class DefaultT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   Load(RandomAccessIterator block_src_it, T (&dst_items)[ItemsPerThread], int block_items_end, DefaultT oob_default)
   {

@@ -883,7 +883,7 @@ struct sm100_tuning<KeyT, ValueT, primitive_op::yes, key_size::_8, val_size::_8,
   static constexpr CacheLoadModifier load_modifier     = LOAD_DEFAULT;
 };
 
-template <typename KeysInputIteratorT, typename AccumT, typename ValueT, typename ScanOpT>
+template <class KeysInputIteratorT, class AccumT, class ValueT, class ScanOpT>
 struct policy_hub
 {
   using key_t                               = it_value_t<KeysInputIteratorT>;
@@ -906,7 +906,7 @@ struct policy_hub
                            default_reduce_by_key_delay_constructor_t<AccumT, int>>;
   };
 
-  template <CacheLoadModifier LoadModifier, typename DelayConstructurValueT>
+  template <CacheLoadModifier LoadModifier, class DelayConstructurValueT>
   struct DefaultPolicy
   {
     static constexpr int nominal_4b_items_per_thread = 9;
@@ -932,7 +932,7 @@ struct policy_hub
   {};
 
   // Use values from tuning if a specialization exists, otherwise pick the default
-  template <typename Tuning>
+  template <class Tuning>
   static auto select_agent_policy(int)
     -> AgentScanByKeyPolicy<Tuning::threads,
                             Tuning::items,
@@ -942,7 +942,7 @@ struct policy_hub
                             Tuning::store_algorithm,
                             typename Tuning::delay_constructor>;
 
-  template <typename Tuning>
+  template <class Tuning>
   // FIXME(bgruber): should we rather use `AccumT` instead of `ValueT` like the other default policies?
   static auto select_agent_policy(long) -> typename DefaultPolicy<LOAD_DEFAULT, ValueT>::ScanByKeyPolicyT;
 
@@ -967,7 +967,7 @@ struct policy_hub
   struct Policy1000 : ChainedPolicy<1000, Policy1000, Policy900>
   {
     // Use values from tuning if a specialization exists, otherwise pick Policy900
-    template <typename Tuning>
+    template <class Tuning>
     static auto select_agent_policy100(int)
       -> AgentScanByKeyPolicy<Tuning::threads,
                               Tuning::items,
@@ -977,7 +977,7 @@ struct policy_hub
                               Tuning::store_algorithm,
                               typename Tuning::delay_constructor>;
 
-    template <typename Tuning>
+    template <class Tuning>
     // FIXME(bgruber): should we rather use `AccumT` instead of `ValueT` like the other default policies?
     static auto select_agent_policy100(long) -> typename Policy900::ScanByKeyPolicyT;
 

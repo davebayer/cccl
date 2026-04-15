@@ -54,7 +54,7 @@ struct TripleChevronFactory
     return ::cudaDeviceGetAttribute(&sm_count, ::cudaDevAttrMultiProcessorCount, device_ordinal);
   }
 
-  template <typename Kernel>
+  template <class Kernel>
   _CCCL_HIDE_FROM_ABI CUB_RUNTIME_FUNCTION ::cudaError_t
   MaxSmOccupancy(int& sm_occupancy, Kernel kernel_ptr, int block_size, int dynamic_smem_bytes = 0)
   {
@@ -100,7 +100,7 @@ struct TripleChevronFactory
     return cudaDeviceGetAttribute(&max_shared_memory, cudaDevAttrMaxSharedMemoryPerBlock, device);
   }
 
-  template <typename Kernel>
+  template <class Kernel>
   _CCCL_HIDE_FROM_ABI CUB_RUNTIME_FUNCTION ::cudaError_t
   max_dynamic_smem_size_for(int& max_dynamic_smem_size, [[maybe_unused]] Kernel kernel_ptr)
   {
@@ -117,7 +117,7 @@ struct TripleChevronFactory
                       }))
   }
 
-  template <typename Kernel>
+  template <class Kernel>
   _CCCL_HIDE_FROM_ABI CUB_RUNTIME_FUNCTION ::cudaError_t set_max_dynamic_smem_size_for(Kernel kernel_ptr, int smem_size)
   {
     return CubDebug(::cudaFuncSetAttribute(kernel_ptr, cudaFuncAttributeMaxDynamicSharedMemorySize, smem_size));

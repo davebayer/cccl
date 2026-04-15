@@ -264,7 +264,7 @@ struct policy_hub
   {};
 
   // Use values from tuning if a specialization exists, otherwise pick the default
-  template <typename Tuning>
+  template <class Tuning>
   static auto select_agent_policy(int)
     -> AgentReduceByKeyPolicy<Tuning::threads,
                               Tuning::items,
@@ -272,7 +272,7 @@ struct policy_hub
                               LOAD_DEFAULT,
                               BLOCK_SCAN_WARP_SCANS,
                               typename Tuning::delay_constructor>;
-  template <typename Tuning>
+  template <class Tuning>
   static auto select_agent_policy(long) -> typename DefaultPolicy<LOAD_DEFAULT>::ReduceByKeyPolicyT;
 
   struct Policy800 : ChainedPolicy<800, Policy800, Policy500>
@@ -296,7 +296,7 @@ struct policy_hub
   struct Policy1000 : ChainedPolicy<1000, Policy1000, Policy900>
   {
     // Use values from tuning if a specialization exists, otherwise pick Policy900
-    template <typename Tuning>
+    template <class Tuning>
     static auto select_agent_policy100(int)
       -> AgentReduceByKeyPolicy<Tuning::threads,
                                 Tuning::items,
@@ -304,7 +304,7 @@ struct policy_hub
                                 Tuning::load_modifier,
                                 BLOCK_SCAN_WARP_SCANS,
                                 typename Tuning::delay_constructor>;
-    template <typename Tuning>
+    template <class Tuning>
     static auto select_agent_policy100(long) -> typename Policy900::ReduceByKeyPolicyT;
 
     using ReduceByKeyPolicyT = decltype(select_agent_policy100<sm100_tuning<LengthT, KeyT>>(0));
@@ -317,7 +317,7 @@ struct policy_hub
 using rle_encode_policy = reduce_by_key::reduce_by_key_policy;
 
 #if _CCCL_HAS_CONCEPTS()
-template <typename T>
+template <class T>
 concept rle_encode_policy_selector = reduce_by_key::reduce_by_key_policy_selector<T>;
 #endif // _CCCL_HAS_CONCEPTS()
 

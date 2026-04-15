@@ -74,7 +74,7 @@ template <int BlockThreads,
           CacheLoadModifier LoadModifier,
           bool StoreWarpTimeSlicing,
           BlockScanAlgorithm ScanAlgorithm,
-          typename DelayConstructorT = detail::fixed_delay_constructor_t<350, 450>>
+          class DelayConstructorT = detail::fixed_delay_constructor_t<350, 450>>
 struct AgentRlePolicy
 {
   /// Threads per thread block
@@ -134,14 +134,14 @@ namespace detail::rle
  * @tparam StreamingContextT
  *   Type providing information about the partition for streaming invocations. NullType if not a streaming invocation.
  */
-template <typename AgentRlePolicyT,
-          typename InputIteratorT,
-          typename OffsetsOutputIteratorT,
-          typename LengthsOutputIteratorT,
-          typename EqualityOpT,
-          typename OffsetT,
-          typename GlobalOffsetT,
-          typename StreamingContextT>
+template <class AgentRlePolicyT,
+          class InputIteratorT,
+          class OffsetsOutputIteratorT,
+          class LengthsOutputIteratorT,
+          class EqualityOpT,
+          class OffsetT,
+          class GlobalOffsetT,
+          class StreamingContextT>
 struct AgentRle
 {
   // Whether or not this is a streaming invocation (i.e., multiple kernel invocations over partitions of the input)
@@ -196,7 +196,7 @@ struct AgentRle
         , equality_op(equality_op)
     {}
 
-    template <typename Index>
+    template <class Index>
     _CCCL_HOST_DEVICE _CCCL_FORCEINLINE bool operator()(T first, T second, Index idx)
     {
       if (!LAST_TILE || (idx < num_remaining))
@@ -332,7 +332,7 @@ struct AgentRle
    * @param streaming_context
    *   Streaming context providing context about this partition for streaming invocations
    */
-  template <typename StreamingContext>
+  template <class StreamingContext>
   _CCCL_DEVICE _CCCL_FORCEINLINE AgentRle(
     TempStorage& temp_storage,
     InputIteratorT d_in,
@@ -1027,7 +1027,7 @@ struct AgentRle
    * @tparam NumRunsIteratorT
    *   Output iterator type for recording number of items selected
    */
-  template <typename NumRunsIteratorT>
+  template <class NumRunsIteratorT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   ConsumeRange(int num_tiles, ScanTileStateT& tile_status, NumRunsIteratorT d_num_runs_out)
   {

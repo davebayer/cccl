@@ -11,7 +11,7 @@ namespace ptx_json
 template <int N>
 struct string;
 
-template <typename T>
+template <class T>
 struct string_part_len_impl;
 
 template <int N>
@@ -26,7 +26,7 @@ struct string_part_len_impl<char[N]>
   static const constexpr auto value = N - 1;
 };
 
-template <typename T>
+template <class T>
 constexpr int string_part_len = string_part_len_impl<T>::value;
 
 template <int N>
@@ -46,7 +46,7 @@ struct string
 {
   static const constexpr auto Length = N;
 
-  template <typename... Ts>
+  template <class... Ts>
   __device__ constexpr string(Ts&&... strings)
   {
     static_assert(N == (0 + ... + string_part_len<cuda::std::remove_cvref_t<Ts>>) +1);
@@ -68,7 +68,7 @@ struct string
   char str[N];
 };
 
-template <typename... Ts>
+template <class... Ts>
 string(Ts&&...) -> string<(0 + ... + string_part_len<cuda::std::remove_cvref_t<Ts>>) +1>;
 #pragma nv_diag_default 177
 

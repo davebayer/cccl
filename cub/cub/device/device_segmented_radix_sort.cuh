@@ -205,7 +205,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename KeyT, typename ValueT, typename BeginOffsetIteratorT, typename EndOffsetIteratorT>
+  template <class KeyT, class ValueT, class BeginOffsetIteratorT, class EndOffsetIteratorT>
   CUB_RUNTIME_FUNCTION static cudaError_t SortPairs(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -389,7 +389,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename KeyT, typename ValueT, typename BeginOffsetIteratorT, typename EndOffsetIteratorT>
+  template <class KeyT, class ValueT, class BeginOffsetIteratorT, class EndOffsetIteratorT>
   CUB_RUNTIME_FUNCTION static cudaError_t SortPairs(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -525,11 +525,11 @@ public:
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename KeyT,
-            typename ValueT,
-            typename BeginOffsetIteratorT,
-            typename EndOffsetIteratorT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class KeyT,
+            class ValueT,
+            class BeginOffsetIteratorT,
+            class EndOffsetIteratorT,
+            class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t SortPairs(
     const KeyT* d_keys_in,
     KeyT* d_keys_out,
@@ -677,11 +677,11 @@ public:
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename KeyT,
-            typename ValueT,
-            typename BeginOffsetIteratorT,
-            typename EndOffsetIteratorT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class KeyT,
+            class ValueT,
+            class BeginOffsetIteratorT,
+            class EndOffsetIteratorT,
+            class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t SortPairs(
     DoubleBuffer<KeyT>& d_keys,
     DoubleBuffer<ValueT>& d_values,
@@ -854,7 +854,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename KeyT, typename ValueT, typename BeginOffsetIteratorT, typename EndOffsetIteratorT>
+  template <class KeyT, class ValueT, class BeginOffsetIteratorT, class EndOffsetIteratorT>
   CUB_RUNTIME_FUNCTION static cudaError_t SortPairsDescending(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1042,7 +1042,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename KeyT, typename ValueT, typename BeginOffsetIteratorT, typename EndOffsetIteratorT>
+  template <class KeyT, class ValueT, class BeginOffsetIteratorT, class EndOffsetIteratorT>
   CUB_RUNTIME_FUNCTION static cudaError_t SortPairsDescending(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1178,11 +1178,11 @@ public:
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename KeyT,
-            typename ValueT,
-            typename BeginOffsetIteratorT,
-            typename EndOffsetIteratorT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class KeyT,
+            class ValueT,
+            class BeginOffsetIteratorT,
+            class EndOffsetIteratorT,
+            class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t SortPairsDescending(
     const KeyT* d_keys_in,
     KeyT* d_keys_out,
@@ -1330,11 +1330,11 @@ public:
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename KeyT,
-            typename ValueT,
-            typename BeginOffsetIteratorT,
-            typename EndOffsetIteratorT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class KeyT,
+            class ValueT,
+            class BeginOffsetIteratorT,
+            class EndOffsetIteratorT,
+            class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t SortPairsDescending(
     DoubleBuffer<KeyT>& d_keys,
     DoubleBuffer<ValueT>& d_values,
@@ -1495,7 +1495,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename KeyT, typename BeginOffsetIteratorT, typename EndOffsetIteratorT>
+  template <class KeyT, class BeginOffsetIteratorT, class EndOffsetIteratorT>
   CUB_RUNTIME_FUNCTION static cudaError_t SortKeys(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1668,7 +1668,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename KeyT, typename BeginOffsetIteratorT, typename EndOffsetIteratorT>
+  template <class KeyT, class BeginOffsetIteratorT, class EndOffsetIteratorT>
   CUB_RUNTIME_FUNCTION static cudaError_t SortKeys(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1798,10 +1798,7 @@ public:
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename KeyT,
-            typename BeginOffsetIteratorT,
-            typename EndOffsetIteratorT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class KeyT, class BeginOffsetIteratorT, class EndOffsetIteratorT, class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t SortKeys(
     const KeyT* d_keys_in,
     KeyT* d_keys_out,
@@ -1936,10 +1933,7 @@ public:
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename KeyT,
-            typename BeginOffsetIteratorT,
-            typename EndOffsetIteratorT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class KeyT, class BeginOffsetIteratorT, class EndOffsetIteratorT, class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t SortKeys(
     DoubleBuffer<KeyT>& d_keys,
     ::cuda::std::int64_t num_items,
@@ -2100,7 +2094,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename KeyT, typename BeginOffsetIteratorT, typename EndOffsetIteratorT>
+  template <class KeyT, class BeginOffsetIteratorT, class EndOffsetIteratorT>
   CUB_RUNTIME_FUNCTION static cudaError_t SortKeysDescending(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -2270,7 +2264,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename KeyT, typename BeginOffsetIteratorT, typename EndOffsetIteratorT>
+  template <class KeyT, class BeginOffsetIteratorT, class EndOffsetIteratorT>
   CUB_RUNTIME_FUNCTION static cudaError_t SortKeysDescending(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -2398,10 +2392,7 @@ public:
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename KeyT,
-            typename BeginOffsetIteratorT,
-            typename EndOffsetIteratorT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class KeyT, class BeginOffsetIteratorT, class EndOffsetIteratorT, class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t SortKeysDescending(
     const KeyT* d_keys_in,
     KeyT* d_keys_out,
@@ -2536,10 +2527,7 @@ public:
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename KeyT,
-            typename BeginOffsetIteratorT,
-            typename EndOffsetIteratorT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class KeyT, class BeginOffsetIteratorT, class EndOffsetIteratorT, class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t SortKeysDescending(
     DoubleBuffer<KeyT>& d_keys,
     ::cuda::std::int64_t num_items,

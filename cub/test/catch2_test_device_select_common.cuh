@@ -9,7 +9,7 @@
 
 #include <c2h/catch2_test_helper.h>
 
-template <typename T>
+template <class T>
 struct less_than_t
 {
   T compare;
@@ -24,7 +24,7 @@ struct less_than_t
   }
 };
 
-template <typename T>
+template <class T>
 struct mod_n
 {
   T mod;
@@ -34,7 +34,7 @@ struct mod_n
   }
 };
 
-template <typename T>
+template <class T>
 struct multiply_n
 {
   T multiplier;
@@ -44,7 +44,7 @@ struct multiply_n
   }
 };
 
-template <typename T, typename TargetT>
+template <class T, class TargetT>
 struct modx_and_add_divy
 {
   T mod;
@@ -56,7 +56,7 @@ struct modx_and_add_divy
   }
 };
 
-template <typename SelectedItT, typename RejectedItT>
+template <class SelectedItT, class RejectedItT>
 struct index_to_expected_partition_op
 {
   using value_t = cub::detail::it_value_t<SelectedItT>;
@@ -64,7 +64,7 @@ struct index_to_expected_partition_op
   RejectedItT expected_rejected_it;
   std::int64_t expected_num_selected;
 
-  template <typename OffsetT>
+  template <class OffsetT>
   __host__ __device__ value_t operator()(OffsetT index)
   {
     return (index < static_cast<OffsetT>(expected_num_selected))
@@ -73,7 +73,7 @@ struct index_to_expected_partition_op
   }
 };
 
-template <typename SelectedItT, typename RejectedItT>
+template <class SelectedItT, class RejectedItT>
 static index_to_expected_partition_op<SelectedItT, RejectedItT> make_index_to_expected_partition_op(
   SelectedItT expected_selected_it, RejectedItT expected_rejected_it, std::int64_t expected_num_selected)
 {

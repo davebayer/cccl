@@ -50,13 +50,13 @@ _CCCL_API constexpr int num_total_threads(const scan_warpspeed_policy& policy)
   return num_total_warps * warp_threads;
 }
 
-template <typename PolicySelector>
+template <class PolicySelector>
 _CCCL_DEVICE_API constexpr scan_warpspeed_policy get_warpspeed_policy() noexcept
 {
   return PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).warpspeed;
 }
 
-template <typename InputT, typename OutputT, typename AccumT>
+template <class InputT, class OutputT, class AccumT>
 struct scanKernelParams
 {
   const InputT* ptrIn;
@@ -67,7 +67,7 @@ struct scanKernelParams
 };
 
 // Struct holding all scan kernel resources
-template <typename PolicySelector, typename InputT, typename OutputT, typename AccumT>
+template <class PolicySelector, class InputT, class OutputT, class AccumT>
 struct ScanResources
 {
   static constexpr scan_warpspeed_policy policy = get_warpspeed_policy<PolicySelector>();
@@ -93,7 +93,7 @@ struct ScanResources
 
 // Function to allocate resources.
 
-template <typename PolicySelector, typename InputT, typename OutputT, typename AccumT>
+template <class PolicySelector, class InputT, class OutputT, class AccumT>
 [[nodiscard]] _CCCL_API constexpr ScanResources<PolicySelector, InputT, OutputT, AccumT>
 allocResources(warpspeed::SyncHandler& syncHandler, warpspeed::SmemAllocator& smemAllocator, int numStages)
 {
@@ -134,7 +134,7 @@ _CCCL_DEVICE_API inline void squadGetNextBlockIdx(const warpspeed::Squad& squad,
   refDestSmem.squadIncreaseTxCount(squad, refDestSmem.sizeBytes());
 }
 
-template <typename Tp, typename ScanOpT>
+template <class Tp, class ScanOpT>
 _CCCL_DEVICE_API Tp warpReduce(const Tp input, ScanOpT& scan_op)
 {
   using warp_reduce_t = WarpReduce<Tp>;
@@ -147,7 +147,7 @@ _CCCL_DEVICE_API Tp warpReduce(const Tp input, ScanOpT& scan_op)
   return warp_reduce_t{temp_storage}.Reduce(input, scan_op);
 }
 
-template <typename Tp, typename ScanOpT>
+template <class Tp, class ScanOpT>
 _CCCL_DEVICE_API Tp warpReducePartial(const Tp input, ScanOpT& scan_op, const int num_items)
 {
   using warp_reduce_t = WarpReduce<Tp>;
@@ -160,7 +160,7 @@ _CCCL_DEVICE_API Tp warpReducePartial(const Tp input, ScanOpT& scan_op, const in
   return warp_reduce_t{temp_storage}.Reduce(input, scan_op, num_items);
 }
 
-template <typename Tp, typename ScanOpT>
+template <class Tp, class ScanOpT>
 _CCCL_DEVICE_API Tp warpScanExclusive(const Tp regInput, ScanOpT& scan_op)
 {
   using warp_scan_t = WarpScan<Tp>;
@@ -177,7 +177,7 @@ _CCCL_DEVICE_API Tp warpScanExclusive(const Tp regInput, ScanOpT& scan_op)
   return result;
 }
 
-template <typename Tp, typename ScanOpT>
+template <class Tp, class ScanOpT>
 _CCCL_DEVICE_API _CCCL_FORCEINLINE Tp
 warpScanExclusivePartial(Tp regInput, ScanOpT& scan_op, const int num_items, bool this_lane_is_valid)
 {
@@ -205,7 +205,7 @@ warpScanExclusivePartial(Tp regInput, ScanOpT& scan_op, const int num_items, boo
   }
 }
 
-template <bool is_last_tile, typename ScanOpT, typename Tp, size_t elemPerThread>
+template <bool is_last_tile, class ScanOpT, class Tp, size_t elemPerThread>
 _CCCL_DEVICE_API _CCCL_FORCEINLINE void fillWithIdentity(Tp (&regSumInclusive)[elemPerThread], int valid_items)
 {
   // if we are in the last tile and have an identity, fill the invalid array items with it
@@ -222,7 +222,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void fillWithIdentity(Tp (&regSumInclusive)[e
   }
 }
 
-template <bool isInclusive, bool is_last_tile, typename Tp, size_t elemPerThread, typename ScanOpT>
+template <bool isInclusive, bool is_last_tile, class Tp, size_t elemPerThread, class ScanOpT>
 _CCCL_DEVICE_API _CCCL_FORCEINLINE void
 threadScanPartial(Tp (&regSumInclusive)[elemPerThread], ScanOpT& scan_op, Tp prefix, bool use_prefix, int valid_items)
 {
@@ -265,12 +265,12 @@ threadScanPartial(Tp (&regSumInclusive)[elemPerThread], ScanOpT& scan_op, Tp pre
 // warp-specialization dispatch is performed once at the start of the kernel and
 // not in any of the hot loops (even if that may seem the case from a first
 // glance at the code).
-template <typename PolicySelector,
-          typename InputT,
-          typename OutputT,
-          typename AccumT,
-          typename ScanOpT,
-          typename RealInitValueT,
+template <class PolicySelector,
+          class InputT,
+          class OutputT,
+          class AccumT,
+          class ScanOpT,
+          class RealInitValueT,
           bool ForceInclusive>
 _CCCL_DEVICE_API _CCCL_FORCEINLINE void kernelBody(
   warpspeed::Squad squad,
@@ -799,14 +799,14 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void kernelBody(
 
 #endif // __cccl_ptx_isa >= 860
 
-template <typename PolicySelector,
+template <class PolicySelector,
           bool ForceInclusive,
-          typename RealInitValueT,
-          typename InputT,
-          typename OutputT,
-          typename AccumT,
-          typename ScanOpT,
-          typename InitValueT>
+          class RealInitValueT,
+          class InputT,
+          class OutputT,
+          class AccumT,
+          class ScanOpT,
+          class InitValueT>
 _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_scan_lookahead_body(
   const scanKernelParams<InputT, OutputT, AccumT> params, ScanOpT scan_op, const InitValueT& init_value)
 {
@@ -833,7 +833,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_scan_lookahead_body(
 #endif // __cccl_ptx_isa >= 860
 }
 
-template <typename AccumT>
+template <class AccumT>
 _CCCL_DEVICE_API _CCCL_FORCEINLINE void
 device_scan_init_lookahead_body(warpspeed::tile_state_t<AccumT>* tile_states, const int num_temp_states)
 {
@@ -867,7 +867,7 @@ device_scan_init_lookahead_body(warpspeed::tile_state_t<AccumT>* tile_states, co
   }
 }
 
-template <typename InputT, typename OutputT, typename AccumT>
+template <class InputT, class OutputT, class AccumT>
 _CCCL_API constexpr auto smem_for_stages(const scan_warpspeed_policy& policy, int num_stages) -> int
 {
   return smem_for_stages(

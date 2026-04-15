@@ -55,7 +55,7 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail
 {
-template <typename DeterminismT>
+template <class DeterminismT>
 inline constexpr bool is_non_deterministic_v =
   ::cuda::std::is_same_v<DeterminismT, ::cuda::execution::determinism::not_guaranteed_t>;
 } // namespace detail
@@ -89,13 +89,13 @@ inline constexpr bool is_non_deterministic_v =
 struct DeviceReduce
 {
 private:
-  template <typename TuningEnvT,
-            typename InputIteratorT,
-            typename OutputIteratorT,
-            typename ReductionOpT,
-            typename TransformOpT,
-            typename T,
-            typename NumItemsT,
+  template <class TuningEnvT,
+            class InputIteratorT,
+            class OutputIteratorT,
+            class ReductionOpT,
+            class TransformOpT,
+            class T,
+            class NumItemsT,
             ::cuda::execution::determinism::__determinism_t Determinism>
   CUB_RUNTIME_FUNCTION static cudaError_t reduce_impl(
     void* d_temp_storage,
@@ -129,13 +129,13 @@ private:
       policy_selector{});
   }
 
-  template <typename TuningEnvT,
-            typename InputIteratorT,
-            typename OutputIteratorT,
-            typename ReductionOpT,
-            typename TransformOpT,
-            typename T,
-            typename NumItemsT>
+  template <class TuningEnvT,
+            class InputIteratorT,
+            class OutputIteratorT,
+            class ReductionOpT,
+            class TransformOpT,
+            class T,
+            class NumItemsT>
   CUB_RUNTIME_FUNCTION static cudaError_t reduce_impl(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -167,13 +167,13 @@ private:
       policy_selector{});
   }
 
-  template <typename TuningEnvT,
-            typename InputIteratorT,
-            typename OutputIteratorT,
-            typename ReductionOpT,
-            typename TransformOpT,
-            typename T,
-            typename NumItemsT>
+  template <class TuningEnvT,
+            class InputIteratorT,
+            class OutputIteratorT,
+            class ReductionOpT,
+            class TransformOpT,
+            class T,
+            class NumItemsT>
   CUB_RUNTIME_FUNCTION static cudaError_t reduce_impl(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -206,14 +206,14 @@ private:
   }
 
   //! @brief Internal implementation shared by Reduce and TransformReduce env overloads
-  template <typename AccumT,
-            typename InputIteratorT,
-            typename OutputIteratorT,
-            typename ReductionOpT,
-            typename TransformOpT,
-            typename T,
-            typename NumItemsT,
-            typename EnvT>
+  template <class AccumT,
+            class InputIteratorT,
+            class OutputIteratorT,
+            class ReductionOpT,
+            class TransformOpT,
+            class T,
+            class NumItemsT,
+            class EnvT>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t __transform_reduce(
     InputIteratorT d_in,
     OutputIteratorT d_out,
@@ -400,7 +400,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT, typename OutputIteratorT, typename ReductionOpT, typename T, typename NumItemsT>
+  template <class InputIteratorT, class OutputIteratorT, class ReductionOpT, class T, class NumItemsT>
   CUB_RUNTIME_FUNCTION static cudaError_t Reduce(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -489,12 +489,12 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename ReductionOpT,
-            typename T,
-            typename NumItemsT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class ReductionOpT,
+            class T,
+            class NumItemsT,
+            class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t Reduce(
     InputIteratorT d_in, OutputIteratorT d_out, NumItemsT num_items, ReductionOpT reduction_op, T init, EnvT env = {})
   {
@@ -561,10 +561,7 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is `cuda::std::execution::env{}`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename NumItemsT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class InputIteratorT, class OutputIteratorT, class NumItemsT, class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t
   Sum(InputIteratorT d_in, OutputIteratorT d_out, NumItemsT num_items, EnvT env = {})
   {
@@ -693,7 +690,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT, typename OutputIteratorT, typename NumItemsT>
+  template <class InputIteratorT, class OutputIteratorT, class NumItemsT>
   CUB_RUNTIME_FUNCTION static cudaError_t
   Sum(void* d_temp_storage,
       size_t& temp_storage_bytes,
@@ -802,7 +799,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT, typename OutputIteratorT, typename NumItemsT>
+  template <class InputIteratorT, class OutputIteratorT, class NumItemsT>
   CUB_RUNTIME_FUNCTION static cudaError_t
   Min(void* d_temp_storage,
       size_t& temp_storage_bytes,
@@ -887,10 +884,7 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is `cuda::std::execution::env{}`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename NumItemsT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class InputIteratorT, class OutputIteratorT, class NumItemsT, class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t
   Min(InputIteratorT d_in, OutputIteratorT d_out, NumItemsT num_items, EnvT env = {})
   {
@@ -934,7 +928,7 @@ public:
   }
 
 private:
-  template <typename InputIteratorT, typename ExtremumOutIteratorT, typename IndexOutIteratorT, typename CompareOpT>
+  template <class InputIteratorT, class ExtremumOutIteratorT, class IndexOutIteratorT, class CompareOpT>
   CUB_RUNTIME_FUNCTION static cudaError_t __arg_min(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1063,10 +1057,10 @@ public:
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
   template <
-    typename InputIteratorT,
-    typename ExtremumOutIteratorT,
-    typename IndexOutIteratorT,
-    typename CompareOpT,
+    class InputIteratorT,
+    class ExtremumOutIteratorT,
+    class IndexOutIteratorT,
+    class CompareOpT,
     // TODO(bgruber): this constraint is not accurate, since the implementation will compare the value types of
     // ExtremumOutIteratorT, which is wrong IMO
     ::cuda::std::enable_if_t<::cuda::std::indirectly_comparable<InputIteratorT, InputIteratorT, CompareOpT>, int> = 0>
@@ -1090,7 +1084,7 @@ public:
   //! @overload
   //! @note Uses ``cuda::std::less`` as comparison operator
   //! @endrst
-  template <typename InputIteratorT, typename ExtremumOutIteratorT, typename IndexOutIteratorT>
+  template <class InputIteratorT, class ExtremumOutIteratorT, class IndexOutIteratorT>
   CUB_RUNTIME_FUNCTION static cudaError_t ArgMin(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1104,11 +1098,7 @@ public:
       d_temp_storage, temp_storage_bytes, d_in, d_min_out, d_index_out, num_items, ::cuda::std::less{}, stream);
   }
 
-  template <typename InputIteratorT,
-            typename ExtremumOutIteratorT,
-            typename IndexOutIteratorT,
-            typename CompareOpT,
-            typename EnvT>
+  template <class InputIteratorT, class ExtremumOutIteratorT, class IndexOutIteratorT, class CompareOpT, class EnvT>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t __arg_min_env(
     InputIteratorT d_in,
     ExtremumOutIteratorT d_min_out,
@@ -1249,11 +1239,11 @@ public:
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
   template <
-    typename InputIteratorT,
-    typename ExtremumOutIteratorT,
-    typename IndexOutIteratorT,
-    typename CompareOpT,
-    typename EnvT = ::cuda::std::execution::env<>,
+    class InputIteratorT,
+    class ExtremumOutIteratorT,
+    class IndexOutIteratorT,
+    class CompareOpT,
+    class EnvT = ::cuda::std::execution::env<>,
     // TODO(bgruber): this constraint is not accurate, since the implementation will compare the value types of
     // ExtremumOutIteratorT, which is wrong IMO
     ::cuda::std::enable_if_t<::cuda::std::indirectly_comparable<InputIteratorT, InputIteratorT, CompareOpT>, int> = 0>
@@ -1271,10 +1261,10 @@ public:
 
   //! @overload
   //! @note Uses ``cuda::std::less`` as comparison operator
-  template <typename InputIteratorT,
-            typename ExtremumOutIteratorT,
-            typename IndexOutIteratorT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class InputIteratorT,
+            class ExtremumOutIteratorT,
+            class IndexOutIteratorT,
+            class EnvT = ::cuda::std::execution::env<>,
             // TODO(bgruber): this constraint is not accurate, since the implementation will compare the value types of
             // ExtremumOutIteratorT, which is wrong IMO
             ::cuda::std::enable_if_t<!::cuda::std::indirectly_comparable<InputIteratorT, InputIteratorT, EnvT>, int> = 0>
@@ -1369,7 +1359,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT, typename OutputIteratorT>
+  template <class InputIteratorT, class OutputIteratorT>
   CCCL_DEPRECATED_BECAUSE("CUB has superseded this interface in favor of the ArgMin interface that takes two separate "
                           "iterators: one iterator to which the extremum is written and another iterator to which the "
                           "index of the found extremum is written. ") CUB_RUNTIME_FUNCTION static cudaError_t
@@ -1493,7 +1483,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT, typename OutputIteratorT, typename NumItemsT>
+  template <class InputIteratorT, class OutputIteratorT, class NumItemsT>
   CUB_RUNTIME_FUNCTION static cudaError_t
   Max(void* d_temp_storage,
       size_t& temp_storage_bytes,
@@ -1579,10 +1569,7 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename NumItemsT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class InputIteratorT, class OutputIteratorT, class NumItemsT, class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t
   Max(InputIteratorT d_in, OutputIteratorT d_out, NumItemsT num_items, EnvT env = {})
   {
@@ -1728,10 +1715,10 @@ public:
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
   template <
-    typename InputIteratorT,
-    typename ExtremumOutIteratorT,
-    typename IndexOutIteratorT,
-    typename CompareOpT,
+    class InputIteratorT,
+    class ExtremumOutIteratorT,
+    class IndexOutIteratorT,
+    class CompareOpT,
     // TODO(bgruber): this constraint is not accurate, since the implementation will compare the value types of
     // ExtremumOutIteratorT, which is wrong IMO
     ::cuda::std::enable_if_t<::cuda::std::indirectly_comparable<InputIteratorT, InputIteratorT, CompareOpT>, int> = 0>
@@ -1763,7 +1750,7 @@ public:
   //! @overload
   //! @note Uses ``cuda::std::less`` as comparison operator
   //! @endrst
-  template <typename InputIteratorT, typename ExtremumOutIteratorT, typename IndexOutIteratorT>
+  template <class InputIteratorT, class ExtremumOutIteratorT, class IndexOutIteratorT>
   CUB_RUNTIME_FUNCTION static cudaError_t ArgMax(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1862,7 +1849,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT, typename OutputIteratorT>
+  template <class InputIteratorT, class OutputIteratorT>
   CCCL_DEPRECATED_BECAUSE("CUB has superseded this interface in favor of the ArgMax interface that takes two separate "
                           "iterators: one iterator to which the extremum is written and another iterator to which the "
                           "index of the found extremum is written. ") CUB_RUNTIME_FUNCTION static cudaError_t
@@ -1975,11 +1962,11 @@ public:
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
   template <
-    typename InputIteratorT,
-    typename ExtremumOutIteratorT,
-    typename IndexOutIteratorT,
-    typename CompareOpT,
-    typename EnvT = ::cuda::std::execution::env<>,
+    class InputIteratorT,
+    class ExtremumOutIteratorT,
+    class IndexOutIteratorT,
+    class CompareOpT,
+    class EnvT = ::cuda::std::execution::env<>,
     // TODO(bgruber): this constraint is not accurate, since the implementation will compare the value types of
     // ExtremumOutIteratorT, which is wrong IMO
     ::cuda::std::enable_if_t<::cuda::std::indirectly_comparable<InputIteratorT, InputIteratorT, CompareOpT>, int> = 0>
@@ -1998,10 +1985,10 @@ public:
 
   //! @overload
   //! @note Uses ``cuda::std::less`` as comparison operator
-  template <typename InputIteratorT,
-            typename ExtremumOutIteratorT,
-            typename IndexOutIteratorT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class InputIteratorT,
+            class ExtremumOutIteratorT,
+            class IndexOutIteratorT,
+            class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t
   ArgMax(InputIteratorT d_in,
          ExtremumOutIteratorT d_max_out,
@@ -2121,12 +2108,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename ReductionOpT,
-            typename TransformOpT,
-            typename T,
-            typename NumItemsT>
+  template <class InputIteratorT, class OutputIteratorT, class ReductionOpT, class TransformOpT, class T, class NumItemsT>
   CUB_RUNTIME_FUNCTION static cudaError_t TransformReduce(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -2231,13 +2213,13 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename ReductionOpT,
-            typename TransformOpT,
-            typename T,
-            typename NumItemsT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class ReductionOpT,
+            class TransformOpT,
+            class T,
+            class NumItemsT,
+            class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t TransformReduce(
     InputIteratorT d_in,
     OutputIteratorT d_out,
@@ -2342,14 +2324,14 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename KeysInputIteratorT,
-            typename UniqueOutputIteratorT,
-            typename ValuesInputIteratorT,
-            typename AggregatesOutputIteratorT,
-            typename NumRunsOutputIteratorT,
-            typename ReductionOpT,
-            typename NumItemsT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class KeysInputIteratorT,
+            class UniqueOutputIteratorT,
+            class ValuesInputIteratorT,
+            class AggregatesOutputIteratorT,
+            class NumRunsOutputIteratorT,
+            class ReductionOpT,
+            class NumItemsT,
+            class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t ReduceByKey(
     KeysInputIteratorT d_keys_in,
     UniqueOutputIteratorT d_unique_out,
@@ -2518,13 +2500,13 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename KeysInputIteratorT,
-            typename UniqueOutputIteratorT,
-            typename ValuesInputIteratorT,
-            typename AggregatesOutputIteratorT,
-            typename NumRunsOutputIteratorT,
-            typename ReductionOpT,
-            typename NumItemsT>
+  template <class KeysInputIteratorT,
+            class UniqueOutputIteratorT,
+            class ValuesInputIteratorT,
+            class AggregatesOutputIteratorT,
+            class NumRunsOutputIteratorT,
+            class ReductionOpT,
+            class NumItemsT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t ReduceByKey(
     void* d_temp_storage,
     size_t& temp_storage_bytes,

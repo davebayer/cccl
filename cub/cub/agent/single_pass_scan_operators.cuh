@@ -53,7 +53,7 @@ CUB_NAMESPACE_BEGIN
  * @tparam ScanOpT
  *   Wrapped scan operator type
  */
-template <typename T, typename ScanOpT>
+template <class T, class ScanOpT>
 struct BlockScanRunningPrefixOp
 {
   /// Wrapped scan operator
@@ -568,7 +568,7 @@ using default_reduce_by_key_delay_constructor_t =
  * @tparam T The ScanTileState's value type
  * @tparam Order The memory order to be implemented by the ScanTileState
  */
-template <typename ScanTileStateT, MemoryOrder Order>
+template <class ScanTileStateT, MemoryOrder Order>
 struct tile_state_with_memory_order
 {
   ScanTileStateT& tile_state;
@@ -653,7 +653,7 @@ _CCCL_HOST_DEVICE _CCCL_FORCEINLINE cudaError_t tile_state_init(
 /**
  * Tile status interface.
  */
-template <typename T,
+template <class T,
           // TODO(bgruber): remove the check for is_primitive<T> in CCCL 4.0
           bool SingleWord = detail::is_primitive<T>::value
                          || (::cuda::std::is_trivially_copyable_v<T>
@@ -669,7 +669,7 @@ struct ScanTileState;
  * read/written coherently in a single access.
  */
 #ifndef _CCCL_DOXYGEN_INVOKED // Do not document - causes Breathe/Sphinx parsing errors with nested templates
-template <typename T>
+template <class T>
 struct ScanTileState<T, true>
 {
   using StatusValueT = T;
@@ -873,7 +873,7 @@ public:
  * Tile status interface specialized for scan status and value types that
  * cannot be combined into one machine word.
  */
-template <typename T>
+template <class T>
 struct ScanTileState<T, false>
 {
   using StatusValueT = T;
@@ -1031,8 +1031,8 @@ struct ScanTileState<T, false>
  * Tile status interface for reduction by key.
  *
  */
-template <typename ValueT,
-          typename KeyT,
+template <class ValueT,
+          class KeyT,
           // TODO(bgruber): remove the check for is_primitive<ValueT> in CCCL 4.0
           bool SingleWord = (detail::is_primitive<ValueT>::value || ::cuda::std::is_trivially_copyable_v<ValueT>)
                          && (sizeof(ValueT) + sizeof(KeyT) < detail::largest_atomic_message_size)>
@@ -1042,7 +1042,7 @@ struct ReduceByKeyScanTileState;
  * Tile status interface for reduction by key, specialized for scan status and value types that
  * cannot be combined into one machine word.
  */
-template <typename ValueT, typename KeyT>
+template <class ValueT, class KeyT>
 struct ReduceByKeyScanTileState<ValueT, KeyT, false> : ScanTileState<KeyValuePair<KeyT, ValueT>>
 {
   using SuperClass = ScanTileState<KeyValuePair<KeyT, ValueT>>;
@@ -1058,7 +1058,7 @@ struct ReduceByKeyScanTileState<ValueT, KeyT, false> : ScanTileState<KeyValuePai
  * can be combined into one machine word that can be read/written coherently in a single access.
  */
 #ifndef _CCCL_DOXYGEN_INVOKED // Do not document - causes Breathe/Sphinx parsing errors with nested templates
-template <typename ValueT, typename KeyT>
+template <class ValueT, class KeyT>
 struct ReduceByKeyScanTileState<ValueT, KeyT, true>
 {
   using KeyValuePairT = KeyValuePair<KeyT, ValueT>;
@@ -1251,10 +1251,7 @@ struct ReduceByKeyScanTileState<ValueT, KeyT, true>
  *   Implementation detail, do not specify directly, requirements on the
  *   content of this type are subject to breaking change.
  */
-template <typename T,
-          typename ScanOpT,
-          typename ScanTileStateT,
-          typename DelayConstructorT = detail::default_delay_constructor_t<T>>
+template <class T, class ScanOpT, class ScanTileStateT, class DelayConstructorT = detail::default_delay_constructor_t<T>>
 struct TilePrefixCallbackOp
 {
   // Parameterized warp reduce

@@ -38,7 +38,7 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail::adjacent_difference
 {
-template <typename AgentDifferenceInitT, typename InputIteratorT, typename InputT, typename OffsetT>
+template <class AgentDifferenceInitT, class InputIteratorT, class InputT, class OffsetT>
 _CCCL_KERNEL_ATTRIBUTES void DeviceAdjacentDifferenceInitKernel(
   _CCCL_GRID_CONSTANT const InputIteratorT first,
   _CCCL_GRID_CONSTANT InputT* const result,
@@ -49,12 +49,12 @@ _CCCL_KERNEL_ATTRIBUTES void DeviceAdjacentDifferenceInitKernel(
   AgentDifferenceInitT::Process(tile_idx, first, result, num_tiles, items_per_tile);
 }
 
-template <typename PolicySelector,
-          typename InputIteratorT,
-          typename OutputIteratorT,
-          typename DifferenceOpT,
-          typename OffsetT,
-          typename InputT,
+template <class PolicySelector,
+          class InputIteratorT,
+          class OutputIteratorT,
+          class DifferenceOpT,
+          class OffsetT,
+          class InputT,
           bool MayAlias,
           bool ReadLeft>
 _CCCL_KERNEL_ATTRIBUTES void DeviceAdjacentDifferenceDifferenceKernel(
@@ -98,7 +98,7 @@ _CCCL_KERNEL_ATTRIBUTES void DeviceAdjacentDifferenceDifferenceKernel(
   agent.Process(tile_idx, tile_base);
 }
 
-template <typename PolicyHub>
+template <class PolicyHub>
 struct policy_selector_from_hub
 {
   // this is only called in device code, so we can ignore the arch parameter
@@ -118,13 +118,13 @@ enum class ReadOption
 };
 
 // TODO(bgruber): remove in CCL 4.0
-template <typename InputIteratorT,
-          typename OutputIteratorT,
-          typename DifferenceOpT,
-          typename OffsetT,
+template <class InputIteratorT,
+          class OutputIteratorT,
+          class DifferenceOpT,
+          class OffsetT,
           MayAlias AliasOpt,
           ReadOption ReadOpt,
-          typename PolicyHub = detail::adjacent_difference::policy_hub<InputIteratorT, AliasOpt == MayAlias::Yes>>
+          class PolicyHub = detail::adjacent_difference::policy_hub<InputIteratorT, AliasOpt == MayAlias::Yes>>
 struct DispatchAdjacentDifference
 {
   using InputT = detail::it_value_t<InputIteratorT>;
@@ -155,7 +155,7 @@ struct DispatchAdjacentDifference
   {}
 
   /// Invocation
-  template <typename ActivePolicyT>
+  template <class ActivePolicyT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t Invoke()
   {
     using AdjacentDifferencePolicyT = typename ActivePolicyT::AdjacentDifferencePolicy;
@@ -318,12 +318,12 @@ namespace detail::adjacent_difference
 {
 template <MayAlias AliasOpt,
           ReadOption ReadOpt,
-          typename InputIteratorT,
-          typename OutputIteratorT,
-          typename OffsetT,
-          typename DifferenceOpT,
-          typename PolicySelector        = policy_selector_from_types<InputIteratorT, AliasOpt == MayAlias::Yes>,
-          typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+          class InputIteratorT,
+          class OutputIteratorT,
+          class OffsetT,
+          class DifferenceOpT,
+          class PolicySelector        = policy_selector_from_types<InputIteratorT, AliasOpt == MayAlias::Yes>,
+          class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
 #if _CCCL_HAS_CONCEPTS()
   requires adjacent_difference_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()

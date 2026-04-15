@@ -27,7 +27,7 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail
 {
-template <typename SortKeyT>
+template <class SortKeyT>
 struct compare_key_prefix_op
 {
   static_assert(::cuda::std::is_unsigned_v<SortKeyT>, "SortKeyT must be an unsigned type");
@@ -52,7 +52,7 @@ struct compare_key_prefix_op
 //! the histogram in shared memory is updated. (2) Partitioning scatters the top-k items (key
 //! prefix <= k-th prefix) into shared memory via atomic counters, then each thread reads back
 //! its portion. Supports key-only and key-value selection.
-template <typename KeyT, int BlockThreads, int ItemsPerThread, typename ValueT = NullType, int RadixBits = 8>
+template <class KeyT, int BlockThreads, int ItemsPerThread, class ValueT = NullType, int RadixBits = 8>
 class block_topk_air
 {
 private:
@@ -133,7 +133,7 @@ private:
   }
 
   // Compute histogram over keys
-  template <bool IsFullTile, typename DigitExtractorT, typename FilterOpT>
+  template <bool IsFullTile, class DigitExtractorT, class FilterOpT>
   _CCCL_DEVICE_API _CCCL_FORCEINLINE void compute_histograms(
     const bit_ordered_type (&unsigned_keys)[items_per_thread],
     int valid_items,
@@ -206,7 +206,7 @@ private:
     }
   }
 
-  template <typename detail::topk::select SelectDirection, bool IsFullTile, typename DecomposerT>
+  template <typename detail::topk::select SelectDirection, bool IsFullTile, class DecomposerT>
   _CCCL_DEVICE_API _CCCL_FORCEINLINE void get_kth_key_prefix(
     bit_ordered_type (&unsigned_keys)[items_per_thread],
     int k,

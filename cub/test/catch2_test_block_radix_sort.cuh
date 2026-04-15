@@ -8,9 +8,9 @@
 #include "catch2_radix_sort_helper.cuh"
 #include <c2h/catch2_test_helper.h>
 
-template <typename InputIteratorT,
-          typename OutputIteratorT,
-          typename ActionT,
+template <class InputIteratorT,
+          class OutputIteratorT,
+          class ActionT,
           int ItemsPerThread,
           int ThreadsInBlock,
           int RadixBits,
@@ -63,9 +63,9 @@ template <int ItemsPerThread,
           bool Memoize,
           cub::BlockScanAlgorithm Algorithm,
           cudaSharedMemConfig ShmemConfig,
-          typename InputIteratorT,
-          typename OutputIteratorT,
-          typename ActionT>
+          class InputIteratorT,
+          class OutputIteratorT,
+          class ActionT>
 void block_radix_sort(
   ActionT action, InputIteratorT input, OutputIteratorT output, int begin_bit, int end_bit, bool striped)
 {
@@ -76,11 +76,11 @@ void block_radix_sort(
   REQUIRE(cudaSuccess == cudaDeviceSynchronize());
 }
 
-template <typename InputKeyIteratorT,
-          typename InputValueIteratorT,
-          typename OutputKeyIteratorT,
-          typename OutputValueIteratorT,
-          typename ActionT,
+template <class InputKeyIteratorT,
+          class InputValueIteratorT,
+          class OutputKeyIteratorT,
+          class OutputValueIteratorT,
+          class ActionT,
           int ItemsPerThread,
           int ThreadsInBlock,
           int RadixBits,
@@ -144,11 +144,11 @@ template <int ItemsPerThread,
           bool Memoize,
           cub::BlockScanAlgorithm Algorithm,
           cudaSharedMemConfig ShmemConfig,
-          typename InputKeyIteratorT,
-          typename InputValueIteratorT,
-          typename OutputKeyIteratorT,
-          typename OutputValueIteratorT,
-          typename ActionT>
+          class InputKeyIteratorT,
+          class InputValueIteratorT,
+          class OutputKeyIteratorT,
+          class OutputValueIteratorT,
+          class ActionT>
 void block_radix_sort(
   ActionT action,
   InputKeyIteratorT input_keys,

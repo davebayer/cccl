@@ -52,7 +52,7 @@ template <int BlockThreads,
           CacheLoadModifier LoadModifier     = LOAD_DEFAULT,
           BlockScanAlgorithm ScanAlgorithm   = BLOCK_SCAN_WARP_SCANS,
           BlockStoreAlgorithm StoreAlgorithm = BLOCK_STORE_DIRECT,
-          typename DelayConstructorT         = detail::fixed_delay_constructor_t<350, 450>>
+          class DelayConstructorT            = detail::fixed_delay_constructor_t<350, 450>>
 struct AgentScanByKeyPolicy
 {
   static constexpr int BLOCK_THREADS    = BlockThreads;
@@ -106,15 +106,15 @@ namespace detail::scan_by_key
  * @tparam AccumT
  *   The type of intermediate accumulator (according to P2322R6)
  */
-template <typename AgentScanByKeyPolicyT,
-          typename KeysInputIteratorT,
-          typename ValuesInputIteratorT,
-          typename ValuesOutputIteratorT,
-          typename EqualityOp,
-          typename ScanOpT,
-          typename InitValueT,
-          typename OffsetT,
-          typename AccumT>
+template <class AgentScanByKeyPolicyT,
+          class KeysInputIteratorT,
+          class ValuesInputIteratorT,
+          class ValuesOutputIteratorT,
+          class EqualityOp,
+          class ScanOpT,
+          class InitValueT,
+          class OffsetT,
+          class AccumT>
 struct AgentScanByKey
 {
   //---------------------------------------------------------------------

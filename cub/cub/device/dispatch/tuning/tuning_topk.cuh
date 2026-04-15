@@ -80,7 +80,7 @@ struct topk_policy
 };
 
 #if _CCCL_HAS_CONCEPTS()
-template <typename T>
+template <class T>
 concept topk_policy_selector = policy_selector<T, topk_policy>;
 #endif // _CCCL_HAS_CONCEPTS()
 
@@ -111,7 +111,7 @@ struct policy_selector
 static_assert(topk_policy_selector<policy_selector>);
 #endif // _CCCL_HAS_CONCEPTS()
 
-template <typename KeyT>
+template <class KeyT>
 struct policy_selector_from_types
 {
   [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::arch_id arch) const -> topk_policy

@@ -120,12 +120,7 @@ finalize_and_store_aggregate(OutputIteratorT d_out, ReductionOpT, empty_problem_
  * @param[in] reduction_op
  *   Binary reduction functor
  */
-template <typename PolicySelector,
-          typename InputIteratorT,
-          typename OffsetT,
-          typename ReductionOpT,
-          typename AccumT,
-          typename TransformOpT>
+template <class PolicySelector, class InputIteratorT, class OffsetT, class ReductionOpT, class AccumT, class TransformOpT>
 #if _CCCL_HAS_CONCEPTS()
   requires reduce_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()
@@ -211,14 +206,14 @@ __launch_bounds__(int(PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).reduc
  * @param[in] init
  *   The initial value of the reduction
  */
-template <typename PolicySelector,
-          typename InputIteratorT,
-          typename OutputIteratorT,
-          typename OffsetT,
-          typename ReductionOpT,
-          typename InitT,
-          typename AccumT,
-          typename TransformOpT = ::cuda::std::identity>
+template <class PolicySelector,
+          class InputIteratorT,
+          class OutputIteratorT,
+          class OffsetT,
+          class ReductionOpT,
+          class InitT,
+          class AccumT,
+          class TransformOpT = ::cuda::std::identity>
 #if _CCCL_HAS_CONCEPTS()
   requires reduce_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()
@@ -274,14 +269,14 @@ _CCCL_KERNEL_ATTRIBUTES __launch_bounds__(
   }
 }
 
-template <typename PolicySelector,
-          typename InputIteratorT,
-          typename OutputIteratorT,
-          typename OffsetT,
-          typename ReductionOpT,
-          typename AccumT,
-          typename InitT,
-          typename TransformOpT>
+template <class PolicySelector,
+          class InputIteratorT,
+          class OutputIteratorT,
+          class OffsetT,
+          class ReductionOpT,
+          class AccumT,
+          class InitT,
+          class TransformOpT>
 #if _CCCL_HAS_CONCEPTS()
   requires reduce_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()

@@ -30,7 +30,7 @@ CUB_NAMESPACE_BEGIN
 namespace detail::radix_sort
 {
 _CCCL_EXEC_CHECK_DISABLE
-template <typename PolicySelector, bool AltDigitBits>
+template <class PolicySelector, bool AltDigitBits>
 _CCCL_API constexpr int segmented_radix_sort_kernel_launch_bounds()
 {
   constexpr auto policy = PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10});
@@ -97,15 +97,15 @@ _CCCL_API constexpr int segmented_radix_sort_kernel_launch_bounds()
  * @param[in] pass_bits
  *   Number of bits of current radix digit
  */
-template <typename PolicySelector,
+template <class PolicySelector,
           bool AltDigitBits,
           SortOrder Order,
-          typename KeyT,
-          typename ValueT,
-          typename BeginOffsetIteratorT,
-          typename EndOffsetIteratorT,
-          typename SegmentSizeT,
-          typename DecomposerT = detail::identity_decomposer_t>
+          class KeyT,
+          class ValueT,
+          class BeginOffsetIteratorT,
+          class EndOffsetIteratorT,
+          class SegmentSizeT,
+          class DecomposerT = detail::identity_decomposer_t>
 #if _CCCL_HAS_CONCEPTS()
   requires radix_sort_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()

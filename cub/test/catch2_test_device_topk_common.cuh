@@ -15,7 +15,7 @@
 #include <c2h/catch2_test_helper.h>
 
 // Function object to generate monotonically non-decreasing values for small key types
-template <typename T>
+template <class T>
 struct inc_t
 {
   size_t num_item;
@@ -37,26 +37,26 @@ struct inc_t
     }
   }
 
-  template <typename IndexT>
+  template <class IndexT>
   __host__ __device__ T operator()(IndexT x)
   {
     return static_cast<T>(value_increment * x);
   }
 };
 
-template <typename OffsetItT>
+template <class OffsetItT>
 struct segment_size_op
 {
   OffsetItT d_offsets;
 
-  template <typename IndexT>
+  template <class IndexT>
   __host__ __device__ __forceinline__ auto operator()(IndexT segment_id) const
   {
     return d_offsets[segment_id + 1] - d_offsets[segment_id];
   }
 };
 
-template <typename OffsetItT, typename KSizesItT>
+template <class OffsetItT, class KSizesItT>
 struct get_output_size_op
 {
   OffsetItT offset_it;
@@ -69,10 +69,10 @@ struct get_output_size_op
   }
 };
 
-template <typename OffsetItT, typename KSizesItT>
+template <class OffsetItT, class KSizesItT>
 get_output_size_op(OffsetItT, KSizesItT) -> get_output_size_op<OffsetItT, KSizesItT>;
 
-template <typename IteratorT, typename OffsetItT>
+template <class IteratorT, class OffsetItT>
 struct offset_iterator_op
 {
   IteratorT base_it;
@@ -83,7 +83,7 @@ struct offset_iterator_op
       , offset_it(offset_it)
   {}
 
-  template <typename IndexT>
+  template <class IndexT>
   __device__ __forceinline__ IteratorT operator()(IndexT segment_id) const
   {
     return base_it + offset_it[segment_id];
@@ -159,7 +159,7 @@ struct set_bit_flag_for_write_op
 
   static constexpr auto bits_per_element = 8 * sizeof(std::uint32_t);
 
-  template <typename OffsetT>
+  template <class OffsetT>
   __host__ __device__ void set_bit_flag(std::uint32_t* d_flags, OffsetT index)
   {
     // Set the n-th bit from a given flags array
@@ -168,7 +168,7 @@ struct set_bit_flag_for_write_op
     atomicOr(&d_flags[uint_index], bit_flag);
   }
 
-  template <typename OffsetT, typename T>
+  template <class OffsetT, class T>
   __host__ __device__ void operator()(OffsetT index, T val)
   {
     static_assert(cuda::std::is_integral<T>::value, "set_bit_for_element_op requires values to be of integral type");
@@ -271,7 +271,7 @@ struct remove_out_of_topk_op
 };
 
 // Stream-compacts each segment to only contain the top-k elements
-template <typename KeyT>
+template <class KeyT>
 void compact_sorted_keys_to_topk(
   c2h::device_vector<KeyT>& d_keys_in, cuda::std::int64_t segment_size, cuda::std::int64_t k)
 {
@@ -284,7 +284,7 @@ void compact_sorted_keys_to_topk(
 }
 
 // Stream-compacts each segment to only contain the top-k elements
-template <typename KeyT, typename OffsetT>
+template <class KeyT, class OffsetT>
 c2h::device_vector<KeyT> compact_to_topk_batched(
   c2h::device_vector<KeyT>& d_keys_in, const c2h::device_vector<OffsetT>& d_offsets, cuda::std::int64_t k)
 {
@@ -323,7 +323,7 @@ c2h::device_vector<KeyT> compact_to_topk_batched(
   return d_keys_out;
 }
 
-template <typename KeyT, typename OffsetItT>
+template <class KeyT, class OffsetItT>
 void segmented_sort_keys(
   c2h::device_vector<KeyT>& d_keys_in,
   cuda::std::int64_t num_segments,
@@ -396,7 +396,7 @@ void segmented_sort_keys(
   }
 }
 
-template <typename KeyT>
+template <class KeyT>
 void fixed_size_segmented_sort_keys(
   c2h::device_vector<KeyT>& d_keys_in,
   cuda::std::int64_t num_segments,

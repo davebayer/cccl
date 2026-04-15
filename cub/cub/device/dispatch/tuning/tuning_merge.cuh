@@ -60,7 +60,7 @@ struct merge_policy
 };
 
 #if _CCCL_HAS_CONCEPTS()
-template <typename T>
+template <class T>
 concept merge_policy_selector = policy_selector<T, merge_policy>;
 #endif // _CCCL_HAS_CONCEPTS()
 
@@ -121,7 +121,7 @@ struct policy_selector
 static_assert(merge_policy_selector<policy_selector>);
 #endif // _CCCL_HAS_CONCEPTS()
 
-template <typename KeyT, typename ValueT, typename OffsetT>
+template <class KeyT, class ValueT, class OffsetT>
 struct policy_selector_from_types
 {
   [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::arch_id arch) const -> merge_policy

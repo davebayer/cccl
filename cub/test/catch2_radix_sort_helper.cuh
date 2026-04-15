@@ -161,13 +161,13 @@ public:
 };
 
 // Helpers to assist with specifying default args to DeviceRadixSort API:
-template <typename T>
+template <class T>
 constexpr int begin_bit()
 {
   return 0;
 }
 
-template <typename T>
+template <class T>
 constexpr int end_bit()
 {
   return static_cast<int>(sizeof(T) * CHAR_BIT);
@@ -430,7 +430,7 @@ std::pair<c2h::host_vector<KeyT>, c2h::host_vector<ValueT>> segmented_radix_sort
     d_keys, d_values, is_descending, num_segments, h_seg_begin_it, h_seg_end_it, begin_bit, end_bit);
 }
 
-template <typename OffsetT>
+template <class OffsetT>
 struct radix_offset_scan_op_t
 {
   OffsetT num_items;

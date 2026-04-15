@@ -29,7 +29,7 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail::reduce
 {
-template <typename GlobalAccumT, typename PromoteToGlobalOpT, typename GlobalReductionOpT, typename FinalResultOutIteratorT>
+template <class GlobalAccumT, class PromoteToGlobalOpT, class GlobalReductionOpT, class FinalResultOutIteratorT>
 struct accumulating_transform_output_op
 {
   bool first_partition;
@@ -48,7 +48,7 @@ struct accumulating_transform_output_op
   // Reduction operation
   GlobalReductionOpT reduce_op;
 
-  template <typename IndexT, typename AccumT>
+  template <class IndexT, class AccumT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void operator()(IndexT, AccumT per_partition_aggregate)
   {
     // Add this partitions aggregate to the global aggregate
@@ -71,7 +71,7 @@ struct accumulating_transform_output_op
   /**
    * This is a helper function that's invoked after a partition has been fully processed
    */
-  template <typename GlobalOffsetT>
+  template <class GlobalOffsetT>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE void advance(GlobalOffsetT partition_size, bool next_partition_is_the_last)
   {
     promote_op.advance(partition_size);
@@ -85,7 +85,7 @@ struct accumulating_transform_output_op
 /**
  * Unary "promotion" operator type that is used to transform a per-partition result to a global result
  */
-template <typename GlobalOffsetT>
+template <class GlobalOffsetT>
 struct local_to_global_op
 {
   // The current partition's offset to be factored into this partition's index
@@ -103,7 +103,7 @@ struct local_to_global_op
    * Unary operator called to transform the per-partition aggregate of a partition to a global aggregate type (i.e., one
    * that is used to reduce across partitions).
    */
-  template <typename PerPartitionOffsetT, typename AccumT>
+  template <class PerPartitionOffsetT, class AccumT>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE KeyValuePair<GlobalOffsetT, AccumT>
   operator()(KeyValuePair<PerPartitionOffsetT, AccumT> partition_aggregate)
   {
@@ -112,13 +112,13 @@ struct local_to_global_op
   }
 };
 
-template <typename ExtremumOutIteratorT, typename IndexOutIteratorT>
+template <class ExtremumOutIteratorT, class IndexOutIteratorT>
 struct unzip_and_write_arg_extremum_op
 {
   ExtremumOutIteratorT result_out_it;
   IndexOutIteratorT index_out_it;
 
-  template <typename IndexT, typename KeyValuePairT>
+  template <class IndexT, class KeyValuePairT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void operator()(IndexT, KeyValuePairT reduced_result)
   {
     *result_out_it = reduced_result.value;
@@ -157,13 +157,13 @@ struct unzip_and_write_arg_extremum_op
 //
 // @tparam PolicySelector
 //   Selects the tuning policy
-template <typename PerPartitionOffsetT,
-          typename InputIteratorT,
-          typename ExtremumOutIteratorT,
-          typename IndexOutIteratorT,
-          typename GlobalOffsetT,
-          typename ReductionOpT,
-          typename PolicySelector = policy_selector_from_types<
+template <class PerPartitionOffsetT,
+          class InputIteratorT,
+          class ExtremumOutIteratorT,
+          class IndexOutIteratorT,
+          class GlobalOffsetT,
+          class ReductionOpT,
+          class PolicySelector = policy_selector_from_types<
             KeyValuePair<PerPartitionOffsetT, non_void_value_t<ExtremumOutIteratorT, it_value_t<InputIteratorT>>>,
             PerPartitionOffsetT,
             ReductionOpT>>

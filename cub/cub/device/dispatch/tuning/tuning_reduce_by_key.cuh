@@ -892,7 +892,7 @@ struct policy_hub
   {};
 
   // Use values from tuning if a specialization exists, otherwise pick DefaultPolicy
-  template <typename Tuning>
+  template <class Tuning>
   static auto select_agent_policy(int)
     -> AgentReduceByKeyPolicy<Tuning::threads,
                               Tuning::items,
@@ -901,7 +901,7 @@ struct policy_hub
                               BLOCK_SCAN_WARP_SCANS,
                               typename Tuning::delay_constructor>;
 
-  template <typename Tuning>
+  template <class Tuning>
   static auto select_agent_policy(long) -> typename DefaultPolicy<LOAD_DEFAULT>::ReduceByKeyPolicyT;
 
   struct Policy800 : ChainedPolicy<800, Policy800, Policy500>
@@ -927,7 +927,7 @@ struct policy_hub
   struct Policy1000 : ChainedPolicy<1000, Policy1000, Policy900>
   {
     // Use values from tuning if a specialization exists, otherwise fall back to SM90
-    template <typename Tuning>
+    template <class Tuning>
     static auto select_agent_policy(int)
       -> AgentReduceByKeyPolicy<Tuning::threads,
                                 Tuning::items,
@@ -936,7 +936,7 @@ struct policy_hub
                                 BLOCK_SCAN_WARP_SCANS,
                                 typename Tuning::delay_constructor>;
 
-    template <typename Tuning>
+    template <class Tuning>
     static auto select_agent_policy(long) -> typename Policy900::ReduceByKeyPolicyT;
 
     using ReduceByKeyPolicyT =
@@ -980,7 +980,7 @@ struct reduce_by_key_policy
 };
 
 #if _CCCL_HAS_CONCEPTS()
-template <typename T>
+template <class T>
 concept reduce_by_key_policy_selector = detail::policy_selector<T, reduce_by_key_policy>;
 #endif // _CCCL_HAS_CONCEPTS()
 
@@ -1633,7 +1633,7 @@ static_assert(reduce_by_key_policy_selector<policy_selector>);
 #endif // _CCCL_HAS_CONCEPTS()
 
 // TODO(bgruber): remove in CCCL 4.0 when we drop the reduce-by-key dispatchers
-template <typename PolicyHub>
+template <class PolicyHub>
 struct policy_selector_from_hub
 {
   [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::arch_id /*arch*/) const -> reduce_by_key_policy

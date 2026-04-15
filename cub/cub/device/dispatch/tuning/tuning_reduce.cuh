@@ -87,12 +87,12 @@ struct reduce_policy
 };
 
 #if _CCCL_HAS_CONCEPTS()
-template <typename T>
+template <class T>
 concept reduce_policy_selector = policy_selector<T, reduce_policy>;
 #endif // _CCCL_HAS_CONCEPTS()
 
 // TODO(bgruber): remove in CCCL 4.0 when we drop the dispatchers
-template <typename PolicyT, typename = void>
+template <class PolicyT, class = void>
 struct ReducePolicyWrapper : PolicyT
 {
   _CCCL_HOST_DEVICE ReducePolicyWrapper(PolicyT base)
@@ -101,7 +101,7 @@ struct ReducePolicyWrapper : PolicyT
 };
 
 // TODO(bgruber): remove in CCCL 4.0 when we drop the dispatchers
-template <typename StaticPolicyT>
+template <class StaticPolicyT>
 struct ReducePolicyWrapper<
   StaticPolicyT,
   ::cuda::std::void_t<typename StaticPolicyT::ReducePolicy, typename StaticPolicyT::SingleTilePolicy>> : StaticPolicyT
@@ -117,7 +117,7 @@ struct ReducePolicyWrapper<
 };
 
 // TODO(bgruber): remove in CCCL 4.0 when we drop the dispatchers
-template <typename PolicyT>
+template <class PolicyT>
 _CCCL_HOST_DEVICE ReducePolicyWrapper<PolicyT> MakeReducePolicyWrapper(PolicyT policy)
 {
   return ReducePolicyWrapper<PolicyT>{policy};
@@ -245,7 +245,7 @@ _CCCL_API constexpr auto get_sm100_tuning(type_t accum_t, op_kind_t operation_t,
 }
 
 // TODO(bgruber): remove in CCCL 4.0 when we drop the reduce dispatchers
-template <typename AccumT, typename OffsetT, typename ReductionOpT>
+template <class AccumT, class OffsetT, class ReductionOpT>
 struct policy_hub
 {
   struct Policy500 : ChainedPolicy<500, Policy500, Policy500>
@@ -307,7 +307,7 @@ struct policy_hub
   struct Policy1000 : ChainedPolicy<1000, Policy1000, Policy600>
   {
     // Use values from tuning if a specialization exists, otherwise pick Policy600
-    template <typename Tuning>
+    template <class Tuning>
     static _CCCL_HOST_DEVICE auto select_agent_policy(int)
       -> AgentReducePolicy<Tuning::threads,
                            Tuning::items,
@@ -316,7 +316,7 @@ struct policy_hub
                            BLOCK_REDUCE_WARP_REDUCTIONS,
                            LOAD_LDG>;
     // use Policy600 as DefaultPolicy
-    template <typename Tuning>
+    template <class Tuning>
     static _CCCL_HOST_DEVICE auto select_agent_policy(long) -> typename Policy600::ReducePolicy;
 
     using ReducePolicy =
@@ -402,7 +402,7 @@ static_assert(reduce_policy_selector<policy_selector>);
 #endif // _CCCL_HAS_CONCEPTS()
 
 // stateless version which can be passed to kernels
-template <typename AccumT, typename OffsetT, typename ReductionOpT>
+template <class AccumT, class OffsetT, class ReductionOpT>
 struct policy_selector_from_types
 {
   [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::arch_id arch) const -> reduce_policy

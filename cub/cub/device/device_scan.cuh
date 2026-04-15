@@ -87,12 +87,12 @@ CUB_NAMESPACE_BEGIN
 struct DeviceScan
 {
   //! @cond
-  template <typename TuningEnvT,
-            typename InputIteratorT,
-            typename OutputIteratorT,
-            typename ScanOpT,
-            typename InitValueT,
-            typename NumItemsT,
+  template <class TuningEnvT,
+            class InputIteratorT,
+            class OutputIteratorT,
+            class ScanOpT,
+            class InitValueT,
+            class NumItemsT,
             ::cuda::execution::determinism::__determinism_t Determinism,
             ForceInclusive EnforceInclusive = ForceInclusive::No>
   CUB_RUNTIME_FUNCTION static cudaError_t scan_impl_determinism(
@@ -135,12 +135,12 @@ struct DeviceScan
   }
 
   template <ForceInclusive EnforceInclusive = ForceInclusive::No,
-            typename InputIteratorT,
-            typename OutputIteratorT,
-            typename ScanOpT,
-            typename InitValueT,
-            typename NumItemsT,
-            typename EnvT>
+            class InputIteratorT,
+            class OutputIteratorT,
+            class ScanOpT,
+            class InitValueT,
+            class NumItemsT,
+            class EnvT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t scan_impl_env(
     InputIteratorT d_in, OutputIteratorT d_out, ScanOpT scan_op, InitValueT init, NumItemsT num_items, EnvT env)
   {
@@ -271,7 +271,7 @@ struct DeviceScan
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT, typename OutputIteratorT, typename NumItemsT>
+  template <class InputIteratorT, class OutputIteratorT, class NumItemsT>
   CUB_RUNTIME_FUNCTION static cudaError_t ExclusiveSum(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -356,10 +356,10 @@ struct DeviceScan
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename NumItemsT,
-            typename EnvT = // Doxygen cannot resolve ::cuda::std::execution::env
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class NumItemsT,
+            class EnvT = // Doxygen cannot resolve ::cuda::std::execution::env
 #ifdef _CCCL_DOXYGEN_INVOKED
             void
 #else
@@ -449,7 +449,7 @@ struct DeviceScan
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename IteratorT, typename NumItemsT>
+  template <class IteratorT, class NumItemsT>
   CUB_RUNTIME_FUNCTION static cudaError_t ExclusiveSum(
     void* d_temp_storage, size_t& temp_storage_bytes, IteratorT d_data, NumItemsT num_items, cudaStream_t stream = 0)
   {
@@ -563,7 +563,7 @@ struct DeviceScan
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT, typename OutputIteratorT, typename ScanOpT, typename InitValueT, typename NumItemsT>
+  template <class InputIteratorT, class OutputIteratorT, class ScanOpT, class InitValueT, class NumItemsT>
   CUB_RUNTIME_FUNCTION static cudaError_t ExclusiveScan(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -668,12 +668,12 @@ struct DeviceScan
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename ScanOpT,
-            typename InitValueT,
-            typename NumItemsT,
-            typename EnvT = // Doxygen cannot resolve ::cuda::std::execution::env
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class ScanOpT,
+            class InitValueT,
+            class NumItemsT,
+            class EnvT = // Doxygen cannot resolve ::cuda::std::execution::env
 #ifdef _CCCL_DOXYGEN_INVOKED
             void
 #else
@@ -791,7 +791,7 @@ struct DeviceScan
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename IteratorT, typename ScanOpT, typename InitValueT, typename NumItemsT>
+  template <class IteratorT, class ScanOpT, class InitValueT, class NumItemsT>
   CUB_RUNTIME_FUNCTION static cudaError_t ExclusiveScan(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -915,12 +915,12 @@ struct DeviceScan
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename ScanOpT,
-            typename InitValueT,
-            typename InitValueIterT = InitValueT*,
-            typename NumItemsT      = int>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class ScanOpT,
+            class InitValueT,
+            class InitValueIterT = InitValueT*,
+            class NumItemsT      = int>
   CUB_RUNTIME_FUNCTION static cudaError_t ExclusiveScan(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1048,11 +1048,7 @@ struct DeviceScan
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename IteratorT,
-            typename ScanOpT,
-            typename InitValueT,
-            typename InitValueIterT = InitValueT*,
-            typename NumItemsT      = int>
+  template <class IteratorT, class ScanOpT, class InitValueT, class InitValueIterT = InitValueT*, class NumItemsT = int>
   CUB_RUNTIME_FUNCTION static cudaError_t ExclusiveScan(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1138,13 +1134,13 @@ struct DeviceScan
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename ScanOpT,
-            typename InitValueT,
-            typename InitValueIterT,
-            typename NumItemsT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class ScanOpT,
+            class InitValueT,
+            class InitValueIterT,
+            class NumItemsT,
+            class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t ExclusiveScan(
     InputIteratorT d_in,
     OutputIteratorT d_out,
@@ -1244,7 +1240,7 @@ struct DeviceScan
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT, typename OutputIteratorT, typename NumItemsT>
+  template <class InputIteratorT, class OutputIteratorT, class NumItemsT>
   CUB_RUNTIME_FUNCTION static cudaError_t InclusiveSum(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1340,7 +1336,7 @@ struct DeviceScan
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename IteratorT, typename NumItemsT>
+  template <class IteratorT, class NumItemsT>
   CUB_RUNTIME_FUNCTION static cudaError_t InclusiveSum(
     void* d_temp_storage, size_t& temp_storage_bytes, IteratorT d_data, NumItemsT num_items, cudaStream_t stream = 0)
   {
@@ -1401,10 +1397,7 @@ struct DeviceScan
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename NumItemsT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class InputIteratorT, class OutputIteratorT, class NumItemsT, class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t
   InclusiveSum(InputIteratorT d_in, OutputIteratorT d_out, NumItemsT num_items, EnvT env = {})
   {
@@ -1513,7 +1506,7 @@ struct DeviceScan
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT, typename OutputIteratorT, typename ScanOpT, typename NumItemsT>
+  template <class InputIteratorT, class OutputIteratorT, class ScanOpT, class NumItemsT>
   CUB_RUNTIME_FUNCTION static cudaError_t InclusiveScan(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1604,7 +1597,7 @@ struct DeviceScan
   //!
   //! @param[in] stream
   //!   CUDA stream to launch kernels within.
-  template <typename InputIteratorT, typename OutputIteratorT, typename ScanOpT, typename InitValueT, typename NumItemsT>
+  template <class InputIteratorT, class OutputIteratorT, class ScanOpT, class InitValueT, class NumItemsT>
   CUB_RUNTIME_FUNCTION static cudaError_t InclusiveScanInit(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1721,7 +1714,7 @@ struct DeviceScan
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename IteratorT, typename ScanOpT, typename NumItemsT>
+  template <class IteratorT, class ScanOpT, class NumItemsT>
   CUB_RUNTIME_FUNCTION static cudaError_t InclusiveScan(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1793,11 +1786,11 @@ struct DeviceScan
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename ScanOpT,
-            typename NumItemsT,
-            typename EnvT = // Doxygen cannot resolve ::cuda::std::execution::env
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class ScanOpT,
+            class NumItemsT,
+            class EnvT = // Doxygen cannot resolve ::cuda::std::execution::env
 #ifdef _CCCL_DOXYGEN_INVOKED
             void
 #else
@@ -1882,12 +1875,12 @@ struct DeviceScan
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename ScanOpT,
-            typename InitValueT,
-            typename NumItemsT,
-            typename EnvT = // Doxygen cannot resolve ::cuda::std::execution::env
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class ScanOpT,
+            class InitValueT,
+            class NumItemsT,
+            class EnvT = // Doxygen cannot resolve ::cuda::std::execution::env
 #ifdef _CCCL_DOXYGEN_INVOKED
             void
 #else
@@ -2013,11 +2006,11 @@ struct DeviceScan
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename KeysInputIteratorT,
-            typename ValuesInputIteratorT,
-            typename ValuesOutputIteratorT,
-            typename EqualityOpT = ::cuda::std::equal_to<>,
-            typename NumItemsT   = uint32_t>
+  template <class KeysInputIteratorT,
+            class ValuesInputIteratorT,
+            class ValuesOutputIteratorT,
+            class EqualityOpT = ::cuda::std::equal_to<>,
+            class NumItemsT   = uint32_t>
   CUB_RUNTIME_FUNCTION static cudaError_t ExclusiveSumByKey(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -2197,13 +2190,13 @@ struct DeviceScan
   //!    @rst
   //!    **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!    @endrst
-  template <typename KeysInputIteratorT,
-            typename ValuesInputIteratorT,
-            typename ValuesOutputIteratorT,
-            typename ScanOpT,
-            typename InitValueT,
-            typename EqualityOpT = ::cuda::std::equal_to<>,
-            typename NumItemsT   = uint32_t>
+  template <class KeysInputIteratorT,
+            class ValuesInputIteratorT,
+            class ValuesOutputIteratorT,
+            class ScanOpT,
+            class InitValueT,
+            class EqualityOpT = ::cuda::std::equal_to<>,
+            class NumItemsT   = uint32_t>
   CUB_RUNTIME_FUNCTION static cudaError_t ExclusiveScanByKey(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -2338,11 +2331,11 @@ struct DeviceScan
   //!    @rst
   //!    **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!    @endrst
-  template <typename KeysInputIteratorT,
-            typename ValuesInputIteratorT,
-            typename ValuesOutputIteratorT,
-            typename EqualityOpT = ::cuda::std::equal_to<>,
-            typename NumItemsT   = uint32_t>
+  template <class KeysInputIteratorT,
+            class ValuesInputIteratorT,
+            class ValuesOutputIteratorT,
+            class EqualityOpT = ::cuda::std::equal_to<>,
+            class NumItemsT   = uint32_t>
   CUB_RUNTIME_FUNCTION static cudaError_t InclusiveSumByKey(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -2505,12 +2498,12 @@ struct DeviceScan
   //!    @rst
   //!    **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!    @endrst
-  template <typename KeysInputIteratorT,
-            typename ValuesInputIteratorT,
-            typename ValuesOutputIteratorT,
-            typename ScanOpT,
-            typename EqualityOpT = ::cuda::std::equal_to<>,
-            typename NumItemsT   = uint32_t>
+  template <class KeysInputIteratorT,
+            class ValuesInputIteratorT,
+            class ValuesOutputIteratorT,
+            class ScanOpT,
+            class EqualityOpT = ::cuda::std::equal_to<>,
+            class NumItemsT   = uint32_t>
   CUB_RUNTIME_FUNCTION static cudaError_t InclusiveScanByKey(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -2618,12 +2611,12 @@ struct DeviceScan
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename KeysInputIteratorT,
-            typename ValuesInputIteratorT,
-            typename ValuesOutputIteratorT,
-            typename EqualityOpT = ::cuda::std::equal_to<>,
-            typename NumItemsT   = uint32_t,
-            typename EnvT        = // Doxygen cannot resolve ::cuda::std::execution::env
+  template <class KeysInputIteratorT,
+            class ValuesInputIteratorT,
+            class ValuesOutputIteratorT,
+            class EqualityOpT = ::cuda::std::equal_to<>,
+            class NumItemsT   = uint32_t,
+            class EnvT        = // Doxygen cannot resolve ::cuda::std::execution::env
 #ifdef _CCCL_DOXYGEN_INVOKED
             void,
 #else
@@ -2754,14 +2747,14 @@ struct DeviceScan
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename KeysInputIteratorT,
-            typename ValuesInputIteratorT,
-            typename ValuesOutputIteratorT,
-            typename ScanOpT,
-            typename InitValueT,
-            typename EqualityOpT = ::cuda::std::equal_to<>,
-            typename NumItemsT   = uint32_t,
-            typename EnvT        = // Doxygen cannot resolve ::cuda::std::execution::env
+  template <class KeysInputIteratorT,
+            class ValuesInputIteratorT,
+            class ValuesOutputIteratorT,
+            class ScanOpT,
+            class InitValueT,
+            class EqualityOpT = ::cuda::std::equal_to<>,
+            class NumItemsT   = uint32_t,
+            class EnvT        = // Doxygen cannot resolve ::cuda::std::execution::env
 #ifdef _CCCL_DOXYGEN_INVOKED
             void,
 #else
@@ -2875,12 +2868,12 @@ struct DeviceScan
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename KeysInputIteratorT,
-            typename ValuesInputIteratorT,
-            typename ValuesOutputIteratorT,
-            typename EqualityOpT = ::cuda::std::equal_to<>,
-            typename NumItemsT   = uint32_t,
-            typename EnvT        = // Doxygen cannot resolve ::cuda::std::execution::env
+  template <class KeysInputIteratorT,
+            class ValuesInputIteratorT,
+            class ValuesOutputIteratorT,
+            class EqualityOpT = ::cuda::std::equal_to<>,
+            class NumItemsT   = uint32_t,
+            class EnvT        = // Doxygen cannot resolve ::cuda::std::execution::env
 #ifdef _CCCL_DOXYGEN_INVOKED
             void,
 #else
@@ -2999,13 +2992,13 @@ struct DeviceScan
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename KeysInputIteratorT,
-            typename ValuesInputIteratorT,
-            typename ValuesOutputIteratorT,
-            typename ScanOpT,
-            typename EqualityOpT = ::cuda::std::equal_to<>,
-            typename NumItemsT   = uint32_t,
-            typename EnvT        = // Doxygen cannot resolve ::cuda::std::execution::env
+  template <class KeysInputIteratorT,
+            class ValuesInputIteratorT,
+            class ValuesOutputIteratorT,
+            class ScanOpT,
+            class EqualityOpT = ::cuda::std::equal_to<>,
+            class NumItemsT   = uint32_t,
+            class EnvT        = // Doxygen cannot resolve ::cuda::std::execution::env
 #ifdef _CCCL_DOXYGEN_INVOKED
             void,
 #else

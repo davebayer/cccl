@@ -35,15 +35,15 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail::unique_by_key
 {
-template <typename MaxPolicyT,
-          typename KeyInputIteratorT,
-          typename ValueInputIteratorT,
-          typename KeyOutputIteratorT,
-          typename ValueOutputIteratorT,
-          typename NumSelectedIteratorT,
-          typename ScanTileStateT,
-          typename EqualityOpT,
-          typename OffsetT>
+template <class MaxPolicyT,
+          class KeyInputIteratorT,
+          class ValueInputIteratorT,
+          class KeyOutputIteratorT,
+          class ValueOutputIteratorT,
+          class NumSelectedIteratorT,
+          class ScanTileStateT,
+          class EqualityOpT,
+          class OffsetT>
 
 struct DeviceUniqueByKeyKernelSource
 {
@@ -99,16 +99,16 @@ struct DeviceUniqueByKeyKernelSource
  *   Signed integer type for global offsets
  */
 template <
-  typename KeyInputIteratorT,
-  typename ValueInputIteratorT,
-  typename KeyOutputIteratorT,
-  typename ValueOutputIteratorT,
-  typename NumSelectedIteratorT,
-  typename EqualityOpT,
-  typename OffsetT,
-  typename PolicyHub =
+  class KeyInputIteratorT,
+  class ValueInputIteratorT,
+  class KeyOutputIteratorT,
+  class ValueOutputIteratorT,
+  class NumSelectedIteratorT,
+  class EqualityOpT,
+  class OffsetT,
+  class PolicyHub =
     detail::unique_by_key::policy_hub<detail::it_value_t<KeyInputIteratorT>, detail::it_value_t<ValueInputIteratorT>>,
-  typename KernelSource = detail::unique_by_key::DeviceUniqueByKeyKernelSource<
+  class KernelSource = detail::unique_by_key::DeviceUniqueByKeyKernelSource<
     typename PolicyHub::MaxPolicy,
     KeyInputIteratorT,
     ValueInputIteratorT,
@@ -118,10 +118,10 @@ template <
     ScanTileState<OffsetT>,
     EqualityOpT,
     OffsetT>,
-  typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY,
-  typename VSMemHelperT          = detail::unique_by_key::VSMemHelper,
-  typename KeyT                  = detail::it_value_t<KeyInputIteratorT>,
-  typename ValueT                = detail::it_value_t<ValueInputIteratorT>>
+  class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY,
+  class VSMemHelperT          = detail::unique_by_key::VSMemHelper,
+  class KeyT                  = detail::it_value_t<KeyInputIteratorT>,
+  class ValueT                = detail::it_value_t<ValueInputIteratorT>>
 struct DispatchUniqueByKey
 {
   /******************************************************************************
@@ -232,7 +232,7 @@ struct DispatchUniqueByKey
    * Dispatch entrypoints
    ******************************************************************************/
 
-  template <typename ActivePolicyT, typename InitKernelT, typename UniqueByKeySweepKernelT>
+  template <class ActivePolicyT, class InitKernelT, class UniqueByKeySweepKernelT>
   CUB_RUNTIME_FUNCTION _CCCL_HOST _CCCL_FORCEINLINE cudaError_t
   Invoke(InitKernelT init_kernel, UniqueByKeySweepKernelT sweep_kernel, ActivePolicyT policy = {})
   {
@@ -381,7 +381,7 @@ struct DispatchUniqueByKey
     return CubDebug(detail::DebugSyncStream(stream));
   }
 
-  template <typename ActivePolicyT>
+  template <class ActivePolicyT>
   CUB_RUNTIME_FUNCTION _CCCL_HOST _CCCL_FORCEINLINE cudaError_t Invoke(ActivePolicyT active_policy = {})
   {
     auto wrapped_policy = detail::unique_by_key::MakeUniqueByKeyPolicyWrapper(active_policy);
@@ -426,7 +426,7 @@ struct DispatchUniqueByKey
    *   **[optional]** CUDA stream to launch kernels within.
    *   Default is stream<sub>0</sub>.
    */
-  template <typename MaxPolicyT = typename PolicyHub::MaxPolicy>
+  template <class MaxPolicyT = typename PolicyHub::MaxPolicy>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t Dispatch(
     void* d_temp_storage,
     size_t& temp_storage_bytes,

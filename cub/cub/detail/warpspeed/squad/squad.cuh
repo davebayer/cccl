@@ -98,7 +98,7 @@ struct Squad : SquadDesc
 // the avoidance of linear search and BRX instructions translates into latency
 // reductions.
 //
-template <int numSquads, typename F>
+template <int numSquads, class F>
 _CCCL_DEVICE_API _CCCL_FORCEINLINE void
 squadDispatch(SpecialRegisters sr, const SquadDesc (&squads)[numSquads], F f, int warpIdxStart = 0)
 {

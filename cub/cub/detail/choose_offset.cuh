@@ -31,7 +31,7 @@ namespace detail
  * choose_offset checks NumItemsT, the type of the num_items parameter, and
  * selects the offset type based on it.
  */
-template <typename NumItemsT>
+template <class NumItemsT>
 struct choose_offset
 {
   // NumItemsT must be an integral type (but not bool).
@@ -47,14 +47,14 @@ struct choose_offset
  * choose_offset_t is an alias template that checks NumItemsT, the type of the num_items parameter, and
  * selects the offset type based on it.
  */
-template <typename NumItemsT>
+template <class NumItemsT>
 using choose_offset_t = typename choose_offset<NumItemsT>::type;
 
 /**
  * promote_small_offset checks NumItemsT, the type of the num_items parameter, and
  * promotes any integral type smaller than 32 bits to a signed 32-bit integer type.
  */
-template <typename NumItemsT>
+template <class NumItemsT>
 struct promote_small_offset
 {
   // NumItemsT must be an integral type (but not bool).
@@ -70,7 +70,7 @@ struct promote_small_offset
  * promote_small_offset_t is an alias template that checks NumItemsT, the type of the num_items parameter, and
  * promotes any integral type smaller than 32 bits to a signed 32-bit integer type.
  */
-template <typename NumItemsT>
+template <class NumItemsT>
 using promote_small_offset_t = typename promote_small_offset<NumItemsT>::type;
 
 /**
@@ -78,7 +78,7 @@ using promote_small_offset_t = typename promote_small_offset<NumItemsT>::type;
  * selects the offset type to be either int32 or int64, such that the selected offset type covers the range of NumItemsT
  * unless it was uint64, in which case int64 will be used.
  */
-template <typename NumItemsT>
+template <class NumItemsT>
 struct choose_signed_offset
 {
   // NumItemsT must be an integral type (but not bool).
@@ -115,7 +115,7 @@ struct choose_signed_offset
  * choose_signed_offset_t is an alias template that checks NumItemsT, the type of the num_items parameter, and
  * selects the corresponding signed offset type based on it.
  */
-template <typename NumItemsT>
+template <class NumItemsT>
 using choose_signed_offset_t = typename choose_signed_offset<NumItemsT>::type;
 
 /**
@@ -123,12 +123,12 @@ using choose_signed_offset_t = typename choose_signed_offset<NumItemsT>::type;
  * value_type for all argument types. used to get OffsetT in
  * DeviceSegmentedReduce.
  */
-template <typename... Iter>
+template <class... Iter>
 struct common_iterator_value
 {
   using type = ::cuda::std::common_type_t<::cuda::std::__iter_value_type<Iter>...>;
 };
-template <typename... Iter>
+template <class... Iter>
 using common_iterator_value_t = typename common_iterator_value<Iter...>::type;
 } // namespace detail
 

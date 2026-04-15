@@ -36,14 +36,14 @@
 CUB_NAMESPACE_BEGIN
 
 //! @param ComputeT If void, use NOMINAL_4B_NUM_PARTS directly for NUM_PARTS. Otherwise, perform scaling.
-template <int BlockThreads, int ItemsPerThread, int NOMINAL_4B_NUM_PARTS, typename ComputeT, int RadixBits>
+template <int BlockThreads, int ItemsPerThread, int NOMINAL_4B_NUM_PARTS, class ComputeT, int RadixBits>
 struct AgentRadixSortHistogramPolicy
 {
   static constexpr int BLOCK_THREADS    = BlockThreads;
   static constexpr int ITEMS_PER_THREAD = ItemsPerThread;
 
   // need to discard sizeof(ComputeType) in case it's void
-  template <typename ComputeType = ComputeT>
+  template <class ComputeType = ComputeT>
   _CCCL_API static constexpr int num_parts_helper()
   {
     if constexpr (::cuda::std::is_void_v<ComputeT>)
@@ -97,11 +97,11 @@ CUB_DETAIL_POLICY_WRAPPER_DEFINE(
 
 namespace detail::radix_sort
 {
-template <typename AgentRadixSortHistogramPolicy,
+template <class AgentRadixSortHistogramPolicy,
           bool IS_DESCENDING,
-          typename KeyT,
-          typename OffsetT,
-          typename DecomposerT = identity_decomposer_t>
+          class KeyT,
+          class OffsetT,
+          class DecomposerT = identity_decomposer_t>
 struct AgentRadixSortHistogram
 {
   // constants

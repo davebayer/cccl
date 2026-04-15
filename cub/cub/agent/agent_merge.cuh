@@ -40,14 +40,14 @@ template <int BlockThreads,
           CacheLoadModifier LoadModifier,
           BlockStoreAlgorithm StoreAlgorithm,
           bool UseBlockLoadToShared,
-          typename KeysIt1,
-          typename ItemsIt1,
-          typename KeysIt2,
-          typename ItemsIt2,
-          typename KeysOutputIt,
-          typename ItemsOutputIt,
-          typename Offset,
-          typename CompareOp>
+          class KeysIt1,
+          class ItemsIt1,
+          class KeysIt2,
+          class ItemsIt2,
+          class KeysOutputIt,
+          class ItemsOutputIt,
+          class Offset,
+          class CompareOp>
 struct agent_t
 {
   static constexpr int block_threads  = BlockThreads; // also used for kernel launch bounds and dispatch logic
@@ -61,7 +61,7 @@ struct agent_t
   using block_store_keys     = BlockStore<key_type, BlockThreads, ItemsPerThread, StoreAlgorithm>;
   using block_store_items    = BlockStore<item_type, BlockThreads, ItemsPerThread, StoreAlgorithm>;
 
-  template <typename ValueT, typename Iter1, typename Iter2>
+  template <class ValueT, class Iter1, class Iter2>
   static constexpr bool use_block_load_to_shared =
     UseBlockLoadToShared && (sizeof(ValueT) == alignof(ValueT))
     && THRUST_NS_QUALIFIER::is_trivially_relocatable_v<ValueT> //
@@ -74,7 +74,7 @@ struct agent_t
   static constexpr bool items_use_bl2sh    = use_block_load_to_shared<item_type, ItemsIt1, ItemsIt2>;
   static constexpr int bl2sh_minimum_align = cub::detail::LoadToSharedBufferAlignBytes<char>();
 
-  template <typename ValueT>
+  template <class ValueT>
   struct alignas(cub::detail::LoadToSharedBufferAlignBytes<ValueT>()) buffer_t
   {
     // Need extra bytes of padding for TMA because this static buffer has to hold the two dynamically sized buffers.

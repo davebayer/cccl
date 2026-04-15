@@ -35,7 +35,7 @@ inline constexpr int fallback_BLOCK_THREADS    = 64;
 inline constexpr int fallback_ITEMS_PER_THREAD = 1;
 
 // TODO(bgruber): we should choose the merge_policy rather than the agent, but before C++20 this is more verbose
-template <typename PolicyGetter, class... Args>
+template <class PolicyGetter, class... Args>
 class choose_merge_agent
 {
   static constexpr merge_policy active_policy = PolicyGetter{}();
@@ -79,15 +79,15 @@ public:
 // Computes the merge path intersections at equally wide intervals. The approach is outlined in the paper:
 // Odeh et al, "Merge Path - Parallel Merging Made Simple" * doi : 10.1109 / IPDPSW .2012.202
 // The algorithm is the same as AgentPartition for merge sort, but that agent handles a lot more.
-template <typename PolicySelector,
-          typename KeyIt1,
-          typename ValueIt1,
-          typename KeyIt2,
-          typename ValueIt2,
-          typename KeyIt3,
-          typename ValueIt3,
-          typename Offset,
-          typename CompareOp>
+template <class PolicySelector,
+          class KeyIt1,
+          class ValueIt1,
+          class KeyIt2,
+          class ValueIt2,
+          class KeyIt3,
+          class ValueIt3,
+          class Offset,
+          class CompareOp>
 _CCCL_KERNEL_ATTRIBUTES void device_partition_merge_path_kernel(
   _CCCL_GRID_CONSTANT const KeyIt1 keys1,
   _CCCL_GRID_CONSTANT const Offset keys1_count,
@@ -117,15 +117,15 @@ _CCCL_KERNEL_ATTRIBUTES void device_partition_merge_path_kernel(
   }
 }
 
-template <typename PolicySelector,
-          typename KeyIt1,
-          typename ValueIt1,
-          typename KeyIt2,
-          typename ValueIt2,
-          typename KeyIt3,
-          typename ValueIt3,
-          typename Offset,
-          typename CompareOp>
+template <class PolicySelector,
+          class KeyIt1,
+          class ValueIt1,
+          class KeyIt2,
+          class ValueIt2,
+          class KeyIt3,
+          class ValueIt3,
+          class Offset,
+          class CompareOp>
 __launch_bounds__(
   choose_merge_agent<policy_getter<PolicySelector, ::cuda::arch_id{CUB_PTX_ARCH / 10}>,
                      KeyIt1,
@@ -183,16 +183,16 @@ __launch_bounds__(
   vsmem_helper_t::discard_temp_storage(temp_storage);
 }
 
-template <typename KeyIt1,
-          typename ValueIt1,
-          typename KeyIt2,
-          typename ValueIt2,
-          typename KeyIt3,
-          typename ValueIt3,
-          typename Offset,
-          typename CompareOp,
-          typename PolicySelector        = policy_selector_from_types<it_value_t<KeyIt1>, it_value_t<ValueIt1>, Offset>,
-          typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+template <class KeyIt1,
+          class ValueIt1,
+          class KeyIt2,
+          class ValueIt2,
+          class KeyIt3,
+          class ValueIt3,
+          class Offset,
+          class CompareOp,
+          class PolicySelector        = policy_selector_from_types<it_value_t<KeyIt1>, it_value_t<ValueIt1>, Offset>,
+          class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
 #if _CCCL_HAS_CONCEPTS()
   requires merge_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()

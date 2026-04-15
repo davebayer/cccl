@@ -72,13 +72,13 @@ CUB_NAMESPACE_BEGIN
  */
 template <int NominalBlockThreads4B,
           int NominalItemsPerThread4B,
-          typename ComputeT,
+          class ComputeT,
           BlockLoadAlgorithm LoadAlgorithm,
           CacheLoadModifier LoadModifier,
           RadixRankAlgorithm RankAlgorithm,
           BlockScanAlgorithm ScanAlgorithm,
           int RadixBits,
-          typename ScalingType = detail::RegBoundScaling<NominalBlockThreads4B, NominalItemsPerThread4B, ComputeT>>
+          class ScalingType = detail::RegBoundScaling<NominalBlockThreads4B, NominalItemsPerThread4B, ComputeT>>
 struct AgentRadixSortDownsweepPolicy : ScalingType
 {
   /// The number of radix bits, i.e., log2(bins)
@@ -144,12 +144,12 @@ namespace detail::radix_sort
  * @tparam OffsetT
  *   Signed integer type for global offsets
  */
-template <typename AgentRadixSortDownsweepPolicy,
+template <class AgentRadixSortDownsweepPolicy,
           bool IS_DESCENDING,
-          typename KeyT,
-          typename ValueT,
-          typename OffsetT,
-          typename DecomposerT = identity_decomposer_t>
+          class KeyT,
+          class ValueT,
+          class OffsetT,
+          class DecomposerT = identity_decomposer_t>
 struct AgentRadixSortDownsweep
 {
   //---------------------------------------------------------------------
@@ -589,7 +589,7 @@ struct AgentRadixSortDownsweep
   /**
    * Copy tiles within the range of input
    */
-  template <typename InputIteratorT, typename T>
+  template <class InputIteratorT, class T>
   _CCCL_DEVICE _CCCL_FORCEINLINE void Copy(InputIteratorT d_in, T* d_out, OffsetT block_offset, OffsetT block_end)
   {
     // Simply copy the input
@@ -620,7 +620,7 @@ struct AgentRadixSortDownsweep
   /**
    * Copy tiles within the range of input (specialized for NullType)
    */
-  template <typename InputIteratorT>
+  template <class InputIteratorT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   Copy(InputIteratorT /*d_in*/, NullType* /*d_out*/, OffsetT /*block_offset*/, OffsetT /*block_end*/)
   {}

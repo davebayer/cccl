@@ -37,7 +37,7 @@ CUB_NAMESPACE_BEGIN
 namespace detail::topk
 {
 // Used in the bin ID calculation to exclude bits unrelated to the current pass
-template <typename T, int BitsPerPass>
+template <class T, int BitsPerPass>
 [[nodiscard]] _CCCL_HOST_DEVICE _CCCL_FORCEINLINE constexpr unsigned calc_mask(const int pass)
 {
   int num_bits = calc_start_bit<T, BitsPerPass>(pass - 1) - calc_start_bit<T, BitsPerPass>(pass);
@@ -45,14 +45,14 @@ template <typename T, int BitsPerPass>
 }
 
 // Get the bin ID from the value of element
-template <typename T,
+template <class T,
           select SelectDirection,
           int BitsPerPass,
-          typename DecomposerT,
+          class DecomposerT,
           bool CanTwiddle = detail::radix::can_twiddle<T>>
 struct extract_bin_op_t;
 
-template <typename T, select SelectDirection, int BitsPerPass, typename DecomposerT>
+template <class T, select SelectDirection, int BitsPerPass, class DecomposerT>
 struct extract_bin_op_t<T, SelectDirection, BitsPerPass, DecomposerT, true>
 {
   static constexpr bool is_descending = SelectDirection != select::min;
@@ -81,7 +81,7 @@ struct extract_bin_op_t<T, SelectDirection, BitsPerPass, DecomposerT, true>
   }
 };
 
-template <typename T, select SelectDirection, int BitsPerPass, typename DecomposerT>
+template <class T, select SelectDirection, int BitsPerPass, class DecomposerT>
 struct extract_bin_op_t<T, SelectDirection, BitsPerPass, DecomposerT, false>
 {
   static constexpr bool is_descending = SelectDirection != select::min;
@@ -109,14 +109,14 @@ struct extract_bin_op_t<T, SelectDirection, BitsPerPass, DecomposerT, false>
 };
 
 // Check if the input element is still a candidate for the target pass.
-template <typename T,
+template <class T,
           select SelectDirection,
           int BitsPerPass,
-          typename DecomposerT,
+          class DecomposerT,
           bool CanTwiddle = detail::radix::can_twiddle<T>>
 struct identify_candidates_op_t;
 
-template <typename T, select SelectDirection, int BitsPerPass, typename DecomposerT>
+template <class T, select SelectDirection, int BitsPerPass, class DecomposerT>
 struct identify_candidates_op_t<T, SelectDirection, BitsPerPass, DecomposerT, true>
 {
   using unsigned_bits_t = typename Traits<T>::UnsignedBits;
@@ -149,7 +149,7 @@ struct identify_candidates_op_t<T, SelectDirection, BitsPerPass, DecomposerT, tr
   }
 };
 
-template <typename T, select SelectDirection, int BitsPerPass, typename DecomposerT>
+template <class T, select SelectDirection, int BitsPerPass, class DecomposerT>
 struct identify_candidates_op_t<T, SelectDirection, BitsPerPass, DecomposerT, false>
 {
   static constexpr bool is_descending = SelectDirection != select::min;
@@ -234,16 +234,16 @@ struct identify_candidates_op_t<T, SelectDirection, BitsPerPass, DecomposerT, fa
   }
 };
 
-template <typename PolicySelector,
-          typename KeyInputIteratorT,
-          typename KeyOutputIteratorT,
-          typename ValueInputIteratorT,
-          typename ValueOutputIteratorT,
-          typename OffsetT,
-          typename OutOffsetT,
-          typename KeyInT,
-          typename ExtractBinOpT,
-          typename IdentifyCandidatesOpT>
+template <class PolicySelector,
+          class KeyInputIteratorT,
+          class KeyOutputIteratorT,
+          class ValueInputIteratorT,
+          class ValueOutputIteratorT,
+          class OffsetT,
+          class OutOffsetT,
+          class KeyInT,
+          class ExtractBinOpT,
+          class IdentifyCandidatesOpT>
 #if _CCCL_HAS_CONCEPTS()
   requires topk_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()
@@ -300,15 +300,15 @@ __launch_bounds__(int(PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).block
     .invoke_filter_and_histogram(in_buf, in_idx_buf, out_buf, out_idx_buf, counter, histogram, pass, is_last_pass);
 }
 
-template <typename PolicySelector,
-          typename KeyInputIteratorT,
-          typename KeyOutputIteratorT,
-          typename ValueInputIteratorT,
-          typename ValueOutputIteratorT,
-          typename OffsetT,
-          typename OutOffsetT,
-          typename KeyInT,
-          typename ExtractBinOpT>
+template <class PolicySelector,
+          class KeyInputIteratorT,
+          class KeyOutputIteratorT,
+          class ValueInputIteratorT,
+          class ValueOutputIteratorT,
+          class OffsetT,
+          class OutOffsetT,
+          class KeyInT,
+          class ExtractBinOpT>
 #if _CCCL_HAS_CONCEPTS()
   requires topk_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()
@@ -361,15 +361,15 @@ __launch_bounds__(int(PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).block
     .invoke_histogram_only(counter, histogram, pass, is_last_pass);
 }
 
-template <typename PolicySelector,
-          typename KeyInputIteratorT,
-          typename KeyOutputIteratorT,
-          typename ValueInputIteratorT,
-          typename ValueOutputIteratorT,
-          typename OffsetT,
-          typename OutOffsetT,
-          typename KeyInT,
-          typename IdentifyCandidatesOpT>
+template <class PolicySelector,
+          class KeyInputIteratorT,
+          class KeyOutputIteratorT,
+          class ValueInputIteratorT,
+          class ValueOutputIteratorT,
+          class OffsetT,
+          class OutOffsetT,
+          class KeyInT,
+          class IdentifyCandidatesOpT>
 #if _CCCL_HAS_CONCEPTS()
   requires topk_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()
@@ -447,15 +447,15 @@ __launch_bounds__(int(PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).block
 //!   Implementation detail, do not specify directly, requirements on the content of this type are subject to breaking
 //!   change.
 template <select SelectDirection,
-          typename KeyInputIteratorT,
-          typename KeyOutputIteratorT,
-          typename ValueInputIteratorT,
-          typename ValueOutputIteratorT,
-          typename OffsetT,
-          typename OutOffsetT,
-          typename DecomposerT           = detail::identity_decomposer_t,
-          typename PolicySelector        = policy_selector_from_types<it_value_t<KeyInputIteratorT>>,
-          typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+          class KeyInputIteratorT,
+          class KeyOutputIteratorT,
+          class ValueInputIteratorT,
+          class ValueOutputIteratorT,
+          class OffsetT,
+          class OutOffsetT,
+          class DecomposerT           = detail::identity_decomposer_t,
+          class PolicySelector        = policy_selector_from_types<it_value_t<KeyInputIteratorT>>,
+          class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
 #if _CCCL_HAS_CONCEPTS()
   requires topk_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()

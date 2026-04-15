@@ -41,7 +41,7 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail::find
 {
-template <typename ValueType, typename OffsetT>
+template <class ValueType, class OffsetT>
 __launch_bounds__(1) __global__ void init_found_pos_pointer(ValueType* found_pos_ptr, OffsetT num_items)
 {
   // we immediately trigger launching the find kernel, before waiting for a previous kernel
@@ -50,7 +50,7 @@ __launch_bounds__(1) __global__ void init_found_pos_pointer(ValueType* found_pos
   *found_pos_ptr = num_items;
 }
 
-template <typename PolicySelector, typename IteratorT, typename OffsetT, typename PredicateT>
+template <class PolicySelector, class IteratorT, class OffsetT, class PredicateT>
 #if _CCCL_HAS_CONCEPTS()
   requires find_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()
@@ -74,7 +74,7 @@ __launch_bounds__(int(PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).block
   agent_find_t{sresult.Alias(), d_in, predicate, found_pos_ptr, num_items}.Process();
 }
 
-template <typename ValueType, typename OutputIteratorT>
+template <class ValueType, class OutputIteratorT>
 __launch_bounds__(1) __global__
   void copy_final_result_to_output_iterator(ValueType* found_pos_ptr, OutputIteratorT d_out)
 {
@@ -82,11 +82,11 @@ __launch_bounds__(1) __global__
   *d_out = *found_pos_ptr;
 }
 
-template <typename InputIteratorT,
-          typename OutputIteratorT,
-          typename OffsetT,
-          typename PredicateT,
-          typename PolicySelector = policy_selector_from_types<it_value_t<InputIteratorT>>>
+template <class InputIteratorT,
+          class OutputIteratorT,
+          class OffsetT,
+          class PredicateT,
+          class PolicySelector = policy_selector_from_types<it_value_t<InputIteratorT>>>
 #if _CCCL_HAS_CONCEPTS()
   requires find_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()

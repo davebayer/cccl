@@ -37,7 +37,7 @@ CUB_NAMESPACE_BEGIN
 
 // TODO(bgruber): deprecate in C++17 with a note: "replace by decltype(cuda::std::not_fn(EqualityOp{}))"
 /// @brief Inequality functor (wraps equality functor)
-template <typename EqualityOp>
+template <class EqualityOp>
 struct InequalityWrapper
 {
   /// Wrapped equality operator
@@ -49,7 +49,7 @@ struct InequalityWrapper
   {}
 
   /// Boolean inequality operator, returns `t != u`
-  template <typename T, typename U>
+  template <class T, class U>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE bool operator()(T&& t, U&& u)
   {
     return !op(::cuda::std::forward<T>(t), ::cuda::std::forward<U>(u));
@@ -62,7 +62,7 @@ struct ArgMax
 {
   /// Boolean max operator, preferring the item having the smaller offset in
   /// case of ties
-  template <typename T, typename OffsetT>
+  template <class T, class OffsetT>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE KeyValuePair<OffsetT, T>
   operator()(const KeyValuePair<OffsetT, T>& a, const KeyValuePair<OffsetT, T>& b) const
   {
@@ -86,7 +86,7 @@ struct ArgMin
 {
   /// Boolean min operator, preferring the item having the smaller offset in
   /// case of ties
-  template <typename T, typename OffsetT>
+  template <class T, class OffsetT>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE KeyValuePair<OffsetT, T>
   operator()(const KeyValuePair<OffsetT, T>& a, const KeyValuePair<OffsetT, T>& b) const
   {
@@ -107,10 +107,10 @@ struct ArgMin
 namespace detail
 {
 // Less-than comparator for an index/value pair that compares values first, and indices when the values are equal
-template <typename ValueLessThen = ::cuda::std::less<>>
+template <class ValueLessThen = ::cuda::std::less<>>
 struct arg_less : ValueLessThen
 {
-  template <typename T, typename OffsetT>
+  template <class T, class OffsetT>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE ::cuda::std::pair<OffsetT, T>
   operator()(const ::cuda::std::pair<OffsetT, T>& a, const ::cuda::std::pair<OffsetT, T>& b) const
   {
@@ -123,7 +123,7 @@ struct arg_less : ValueLessThen
     return a;
   }
 
-  template <typename T, typename OffsetT>
+  template <class T, class OffsetT>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE KeyValuePair<OffsetT, T>
   operator()(const KeyValuePair<OffsetT, T>& a, const KeyValuePair<OffsetT, T>& b) const
   {
@@ -137,30 +137,30 @@ struct arg_less : ValueLessThen
   }
 };
 
-template <typename ValueLessThen>
+template <class ValueLessThen>
 arg_less(ValueLessThen) -> arg_less<ValueLessThen>;
 
 /// @brief Arg min functor (keeps the value and offset of the first occurrence of the smallest item)
 using arg_min = arg_less<::cuda::std::less<>>;
 
 //! @brief Binary functor swapping the arguments to ``operator()`` before forwarding to an inner functor
-template <typename Predicate>
+template <class Predicate>
 struct swap_args : Predicate
 {
-  template <typename T, typename U>
+  template <class T, class U>
   _CCCL_API _CCCL_FORCEINLINE decltype(auto) operator()(T&& t, U&& u) const
   {
     return Predicate::operator()(::cuda::std::forward<U>(u), ::cuda::std::forward<T>(t));
   }
 };
 
-template <typename Predicate>
+template <class Predicate>
 swap_args(Predicate) -> swap_args<Predicate>;
 
 /// @brief Arg max functor (keeps the value and offset of the first occurrence of the larger item)
 using arg_max = arg_less<swap_args<::cuda::std::less<>>>;
 
-template <typename ScanOpT>
+template <class ScanOpT>
 struct ScanBySegmentOp
 {
   /// Wrapped operator
@@ -186,7 +186,7 @@ struct ScanBySegmentOp
    * @param[in] second
    *   Second partial reduction
    */
-  template <typename KeyValuePairT>
+  template <class KeyValuePairT>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE KeyValuePairT operator()(const KeyValuePairT& first, const KeyValuePairT& second)
   {
     KeyValuePairT retval;
@@ -224,19 +224,19 @@ struct basic_binary_op_t
   static constexpr bool value = false;
 };
 
-template <typename T>
+template <class T>
 struct basic_binary_op_t<::cuda::std::plus<T>>
 {
   static constexpr bool value = true;
 };
 
-template <typename T>
+template <class T>
 struct basic_binary_op_t<::cuda::minimum<T>>
 {
   static constexpr bool value = true;
 };
 
-template <typename T>
+template <class T>
 struct basic_binary_op_t<::cuda::maximum<T>>
 {
   static constexpr bool value = true;
@@ -244,11 +244,11 @@ struct basic_binary_op_t<::cuda::maximum<T>>
 } // namespace detail
 
 /// @brief Default cast functor
-template <typename B>
+template <class B>
 struct CastOp
 {
   /// Cast operator, returns `(B) a`
-  template <typename A>
+  template <class A>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE B operator()(A&& a) const
   {
     return (B) a;
@@ -256,7 +256,7 @@ struct CastOp
 };
 
 /// @brief Binary operator wrapper for switching non-commutative scan arguments
-template <typename ScanOp>
+template <class ScanOp>
 class SwizzleScanOp
 {
 private:
@@ -270,7 +270,7 @@ public:
   {}
 
   /// Switch the scan arguments
-  template <typename T>
+  template <class T>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE T operator()(const T& a, const T& b)
   {
     return scan_op(b, a);
@@ -294,7 +294,7 @@ public:
  *
  * @tparam ReductionOpT Binary reduction operator to apply to values
  */
-template <typename ReductionOpT>
+template <class ReductionOpT>
 struct ReduceBySegmentOp
 {
   /// Wrapped reduction operator
@@ -320,7 +320,7 @@ struct ReduceBySegmentOp
    * @param[in] second
    *   Second partial reduction
    */
-  template <typename KeyValuePairT>
+  template <class KeyValuePairT>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE KeyValuePairT operator()(const KeyValuePairT& first, const KeyValuePairT& second)
   {
     KeyValuePairT retval;
@@ -355,7 +355,7 @@ struct ReduceBySegmentOp
 /**
  * @tparam ReductionOpT Binary reduction operator to apply to values
  */
-template <typename ReductionOpT>
+template <class ReductionOpT>
 struct ReduceByKeyOp
 {
   /// Wrapped reduction operator
@@ -375,7 +375,7 @@ struct ReduceByKeyOp
    * @param[in] first First partial reduction
    * @param[in] second Second partial reduction
    */
-  template <typename KeyValuePairT>
+  template <class KeyValuePairT>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE KeyValuePairT operator()(const KeyValuePairT& first, const KeyValuePairT& second)
   {
     KeyValuePairT retval = second;
@@ -399,112 +399,112 @@ namespace detail
 //----------------------------------------------------------------------------------------------------------------------
 // Predefined operators
 
-template <typename, typename = void>
+template <class, class = void>
 inline constexpr bool is_cuda_std_plus_v = false;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_cuda_std_plus_v<::cuda::std::plus<T>, void> = true;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_cuda_std_plus_v<::cuda::std::plus<T>, T> = true;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_cuda_std_plus_v<::cuda::std::plus<>, T> = true;
 
 template <>
 inline constexpr bool is_cuda_std_plus_v<::cuda::std::plus<>, void> = true;
 
-template <typename, typename = void>
+template <class, class = void>
 inline constexpr bool is_cuda_std_mul_v = false;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_cuda_std_mul_v<::cuda::std::multiplies<T>, void> = true;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_cuda_std_mul_v<::cuda::std::multiplies<T>, T> = true;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_cuda_std_mul_v<::cuda::std::multiplies<>, T> = true;
 
 template <>
 inline constexpr bool is_cuda_std_mul_v<::cuda::std::multiplies<>, void> = true;
 
-template <typename, typename = void>
+template <class, class = void>
 inline constexpr bool is_cuda_maximum_v = false;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_cuda_maximum_v<::cuda::maximum<T>, void> = true;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_cuda_maximum_v<::cuda::maximum<T>, T> = true;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_cuda_maximum_v<::cuda::maximum<>, T> = true;
 
 template <>
 inline constexpr bool is_cuda_maximum_v<::cuda::maximum<>, void> = true;
 
-template <typename, typename = void>
+template <class, class = void>
 inline constexpr bool is_cuda_minimum_v = false;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_cuda_minimum_v<::cuda::minimum<T>, void> = true;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_cuda_minimum_v<::cuda::minimum<T>, T> = true;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_cuda_minimum_v<::cuda::minimum<>, T> = true;
 
 template <>
 inline constexpr bool is_cuda_minimum_v<::cuda::minimum<>, void> = true;
 
-template <typename, typename = void>
+template <class, class = void>
 inline constexpr bool is_cuda_std_bit_and_v = false;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_cuda_std_bit_and_v<::cuda::std::bit_and<T>, void> = true;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_cuda_std_bit_and_v<::cuda::std::bit_and<T>, T> = true;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_cuda_std_bit_and_v<::cuda::std::bit_and<>, T> = true;
 
 template <>
 inline constexpr bool is_cuda_std_bit_and_v<::cuda::std::bit_and<>, void> = true;
 
-template <typename, typename = void>
+template <class, class = void>
 inline constexpr bool is_cuda_std_bit_or_v = false;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_cuda_std_bit_or_v<::cuda::std::bit_or<T>, void> = true;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_cuda_std_bit_or_v<::cuda::std::bit_or<T>, T> = true;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_cuda_std_bit_or_v<::cuda::std::bit_or<>, T> = true;
 
 template <>
 inline constexpr bool is_cuda_std_bit_or_v<::cuda::std::bit_or<>, void> = true;
 
-template <typename, typename = void>
+template <class, class = void>
 inline constexpr bool is_cuda_std_bit_xor_v = false;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_cuda_std_bit_xor_v<::cuda::std::bit_xor<T>, void> = true;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_cuda_std_bit_xor_v<::cuda::std::bit_xor<T>, T> = true;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_cuda_std_bit_xor_v<::cuda::std::bit_xor<>, T> = true;
 
 template <>
 inline constexpr bool is_cuda_std_bit_xor_v<::cuda::std::bit_xor<>, void> = true;
 
-template <typename, typename = void>
+template <class, class = void>
 inline constexpr bool is_cuda_std_logical_and_v = false;
 
 template <>
@@ -519,7 +519,7 @@ inline constexpr bool is_cuda_std_logical_and_v<::cuda::std::logical_and<>, bool
 template <>
 inline constexpr bool is_cuda_std_logical_and_v<::cuda::std::logical_and<>, void> = true;
 
-template <typename, typename = void>
+template <class, class = void>
 inline constexpr bool is_cuda_std_logical_or_v = false;
 
 template <>
@@ -534,26 +534,26 @@ inline constexpr bool is_cuda_std_logical_or_v<::cuda::std::logical_or<>, bool> 
 template <>
 inline constexpr bool is_cuda_std_logical_or_v<::cuda::std::logical_or<>, void> = true;
 
-template <typename Op, typename T = void>
+template <class Op, class T = void>
 inline constexpr bool is_cuda_minimum_maximum_v = is_cuda_maximum_v<Op, T> || is_cuda_minimum_v<Op, T>;
 
-template <typename Op, typename T = void>
+template <class Op, class T = void>
 inline constexpr bool is_cuda_std_plus_mul_v = is_cuda_std_plus_v<Op, T> || is_cuda_std_mul_v<Op, T>;
 
-template <typename Op, typename T = void>
+template <class Op, class T = void>
 inline constexpr bool is_cuda_std_bitwise_v =
   is_cuda_std_bit_and_v<Op, T> || is_cuda_std_bit_or_v<Op, T> || is_cuda_std_bit_xor_v<Op, T>;
 
-template <typename Op, typename T = void>
+template <class Op, class T = void>
 inline constexpr bool is_cuda_std_logical_v = is_cuda_std_logical_and_v<Op, T> || is_cuda_std_logical_or_v<Op, T>;
 
-template <typename Op, typename T = void>
+template <class Op, class T = void>
 inline constexpr bool is_simd_enabled_cuda_operator =
   is_cuda_minimum_maximum_v<Op, T> || //
   is_cuda_std_plus_mul_v<Op, T> || //
   is_cuda_std_bitwise_v<Op, T>;
 
-template <typename Op, typename T = void>
+template <class Op, class T = void>
 inline constexpr bool is_cuda_binary_operator =
   is_cuda_minimum_maximum_v<Op, T> || //
   is_cuda_std_plus_mul_v<Op, T> || //
@@ -563,22 +563,22 @@ inline constexpr bool is_cuda_binary_operator =
 //----------------------------------------------------------------------------------------------------------------------
 // Generalize Operator
 
-template <typename Operator>
+template <class Operator>
 struct GeneralizeOperator
 {
   using type = Operator;
 };
 
-template <template <typename = void> class Operator, typename T>
+template <template <class = void> class Operator, class T>
 struct GeneralizeOperator<Operator<T>>
 {
   using type = Operator<>;
 };
 
-template <typename Op>
+template <class Op>
 using generalize_operator_t = typename GeneralizeOperator<Op>::type;
 
-template <typename Operator>
+template <class Operator>
 [[nodiscard]] constexpr _CCCL_DEVICE _CCCL_FORCEINLINE auto generalize_operator(Operator op)
 {
   if constexpr (is_cuda_std_logical_or_v<Operator> || is_cuda_std_logical_and_v<Operator>

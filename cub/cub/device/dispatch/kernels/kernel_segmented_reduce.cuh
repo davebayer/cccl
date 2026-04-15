@@ -26,12 +26,12 @@ CUB_NAMESPACE_BEGIN
 namespace detail::segmented_reduce
 {
 /// Normalize input iterator to segment offset
-template <typename T, typename OffsetT, typename IteratorT>
+template <class T, class OffsetT, class IteratorT>
 _CCCL_DEVICE _CCCL_FORCEINLINE void NormalizeReductionOutput(T& /*val*/, OffsetT /*base_offset*/, IteratorT /*itr*/)
 {}
 
 /// Normalize input iterator to segment offset (specialized for arg-index)
-template <typename KeyValuePairT, typename OffsetT, typename WrappedIteratorT, typename OutputValueT>
+template <class KeyValuePairT, class OffsetT, class WrappedIteratorT, class OutputValueT>
 _CCCL_DEVICE _CCCL_FORCEINLINE void NormalizeReductionOutput(
   KeyValuePairT& val, OffsetT base_offset, ArgIndexInputIterator<WrappedIteratorT, OffsetT, OutputValueT> /*itr*/)
 {
@@ -97,15 +97,15 @@ _CCCL_DEVICE _CCCL_FORCEINLINE void NormalizeReductionOutput(
  * @param[in] max_segment_size
  *   Maximum segment size guarantee
  */
-template <typename PolicySelector,
-          typename InputIteratorT,
-          typename OutputIteratorT,
-          typename BeginOffsetIteratorT,
-          typename EndOffsetIteratorT,
-          typename OffsetT,
-          typename ReductionOpT,
-          typename InitT,
-          typename AccumT>
+template <class PolicySelector,
+          class InputIteratorT,
+          class OutputIteratorT,
+          class BeginOffsetIteratorT,
+          class EndOffsetIteratorT,
+          class OffsetT,
+          class ReductionOpT,
+          class InitT,
+          class AccumT>
 #if _CCCL_HAS_CONCEPTS()
   requires segmented_reduce_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()
@@ -305,13 +305,13 @@ __launch_bounds__(PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).large_red
  * @param[in] blocks_per_segment
  *   The number of blocks to be used for reducing each segment in two-phase reduction
  */
-template <typename ChainedPolicyT,
-          typename InputIteratorT,
-          typename OutputIteratorT,
-          typename OffsetT,
-          typename ReductionOpT,
-          typename InitT,
-          typename AccumT>
+template <class ChainedPolicyT,
+          class InputIteratorT,
+          class OutputIteratorT,
+          class OffsetT,
+          class ReductionOpT,
+          class InitT,
+          class AccumT>
 _CCCL_KERNEL_ATTRIBUTES
 __launch_bounds__(int(ChainedPolicyT::ActivePolicy::ReducePolicy::BLOCK_THREADS)) void DeviceFixedSizeSegmentedReduceKernel(
   _CCCL_GRID_CONSTANT const InputIteratorT d_in,

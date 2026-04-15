@@ -75,7 +75,7 @@ inline ::std::ostream& operator<<(::std::ostream& os, RadixSortStoreAlgorithm al
 
 template <int NominalBlockThreads4B,
           int NominalItemsPerThread4B,
-          typename ComputeT,
+          class ComputeT,
           /** Number of private histograms to use in the ranker;
               ignored if the ranking algorithm is not one of RADIX_RANK_MATCH_EARLY_COUNTS_* */
           int RankNumParts,
@@ -85,7 +85,7 @@ template <int NominalBlockThreads4B,
           BlockScanAlgorithm ScanAlgorithm,
           RadixSortStoreAlgorithm StoreAlgorithm,
           int RadixBits,
-          typename ScalingType = detail::RegBoundScaling<NominalBlockThreads4B, NominalItemsPerThread4B, ComputeT>>
+          class ScalingType = detail::RegBoundScaling<NominalBlockThreads4B, NominalItemsPerThread4B, ComputeT>>
 struct AgentRadixSortOnesweepPolicy : ScalingType
 {
   static constexpr int RANK_NUM_PARTS                      = RankNumParts;
@@ -119,13 +119,13 @@ CUB_DETAIL_POLICY_WRAPPER_DEFINE(
 
 namespace detail::radix_sort
 {
-template <typename AgentRadixSortOnesweepPolicy,
+template <class AgentRadixSortOnesweepPolicy,
           bool IS_DESCENDING,
-          typename KeyT,
-          typename ValueT,
-          typename OffsetT,
-          typename PortionOffsetT,
-          typename DecomposerT = identity_decomposer_t>
+          class KeyT,
+          class ValueT,
+          class OffsetT,
+          class PortionOffsetT,
+          class DecomposerT = identity_decomposer_t>
 struct AgentRadixSortOnesweep
 {
   // constants

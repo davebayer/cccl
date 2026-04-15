@@ -145,7 +145,7 @@ struct DeviceCopy
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIt, typename OutputIt, typename SizeIteratorT>
+  template <class InputIt, class OutputIt, class SizeIteratorT>
   CUB_RUNTIME_FUNCTION static cudaError_t Batched(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -226,7 +226,7 @@ struct DeviceCopy
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename InputIt, typename OutputIt, typename SizeIteratorT, typename EnvT = ::cuda::std::execution::env<>>
+  template <class InputIt, class OutputIt, class SizeIteratorT, class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t
   Batched(InputIt input_it, OutputIt output_it, SizeIteratorT sizes, ::cuda::std::int64_t num_ranges, EnvT env = {})
   {
@@ -317,14 +317,14 @@ struct DeviceCopy
   //!   @rst
   //!   **cudaSuccess** on success, **cudaErrorInvalidValue** if mdspan extents don't match, or error code on failure
   //!   @endrst
-  template <typename T_In,
-            typename Extents_In,
-            typename Layout_In,
-            typename Accessor_In,
-            typename T_Out,
-            typename Extents_Out,
-            typename Layout_Out,
-            typename Accessor_Out>
+  template <class T_In,
+            class Extents_In,
+            class Layout_In,
+            class Accessor_In,
+            class T_Out,
+            class Extents_Out,
+            class Layout_Out,
+            class Accessor_Out>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t
   Copy(void* d_temp_storage,
        size_t& temp_storage_bytes,
@@ -427,15 +427,15 @@ struct DeviceCopy
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename T_In,
-            typename Extents_In,
-            typename Layout_In,
-            typename Accessor_In,
-            typename T_Out,
-            typename Extents_Out,
-            typename Layout_Out,
-            typename Accessor_Out,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class T_In,
+            class Extents_In,
+            class Layout_In,
+            class Accessor_In,
+            class T_Out,
+            class Extents_Out,
+            class Layout_Out,
+            class Accessor_Out,
+            class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t
   Copy(::cuda::std::mdspan<T_In, Extents_In, Layout_In, Accessor_In> mdspan_in,
        ::cuda::std::mdspan<T_Out, Extents_Out, Layout_Out, Accessor_Out> mdspan_out,

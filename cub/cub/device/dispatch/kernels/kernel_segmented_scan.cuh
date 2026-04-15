@@ -21,18 +21,18 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail::segmented_scan
 {
-template <typename ChainedPolicyT,
-          typename InputIteratorT,
-          typename OutputIteratorT,
-          typename BeginOffsetIteratorInputT,
-          typename EndOffsetIteratorInputT,
-          typename BeginOffsetIteratorOutputT,
-          typename OffsetT,
-          typename ScanOpT,
-          typename InitValueT,
-          typename AccumT,
+template <class ChainedPolicyT,
+          class InputIteratorT,
+          class OutputIteratorT,
+          class BeginOffsetIteratorInputT,
+          class EndOffsetIteratorInputT,
+          class BeginOffsetIteratorOutputT,
+          class OffsetT,
+          class ScanOpT,
+          class InitValueT,
+          class AccumT,
           bool ForceInclusive,
-          typename ActualInitValueT = typename InitValueT::value_type>
+          class ActualInitValueT = typename InitValueT::value_type>
 __launch_bounds__(int(ChainedPolicyT::ActivePolicy::segmented_scan_policy_t::BLOCK_THREADS))
   _CCCL_KERNEL_ATTRIBUTES void device_segmented_scan_kernel(
     _CCCL_GRID_CONSTANT const InputIteratorT d_in,

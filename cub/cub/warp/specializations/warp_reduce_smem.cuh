@@ -43,7 +43,7 @@ namespace detail
  * @tparam LOGICAL_WARP_THREADS
  *   Number of threads per logical warp
  */
-template <typename T, int LOGICAL_WARP_THREADS>
+template <class T, int LOGICAL_WARP_THREADS>
 struct WarpReduceSmem
 {
   /******************************************************************************
@@ -126,7 +126,7 @@ struct WarpReduceSmem
    * @param[in] reduction_op
    *   Reduction operator
    */
-  template <bool ALL_LANES_VALID, typename ReductionOp, int STEP>
+  template <bool ALL_LANES_VALID, class ReductionOp, int STEP>
   _CCCL_DEVICE _CCCL_FORCEINLINE T
   ReduceStep(T input, int valid_items, ReductionOp reduction_op, constant_t<STEP> /*step*/)
   {
@@ -159,7 +159,7 @@ struct WarpReduceSmem
    * @param[in] reduction_op
    *   Reduction operator
    */
-  template <bool ALL_LANES_VALID, typename ReductionOp>
+  template <bool ALL_LANES_VALID, class ReductionOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE T
   ReduceStep(T input, int valid_items, ReductionOp /*reduction_op*/, constant_t<STEPS> /*step*/)
   {
@@ -188,7 +188,7 @@ struct WarpReduceSmem
    * @param[in] has_ballot
    *   Marker type for whether the target arch has ballot functionality
    */
-  template <bool HEAD_SEGMENTED, typename FlagT, typename ReductionOp>
+  template <bool HEAD_SEGMENTED, class FlagT, class ReductionOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE T
   SegmentedReduce(T input, FlagT flag, ReductionOp reduction_op, ::cuda::std::true_type /*has_ballot*/)
   {
@@ -259,7 +259,7 @@ struct WarpReduceSmem
    * @param[in] has_ballot
    *   Marker type for whether the target arch has ballot functionality
    */
-  template <bool HEAD_SEGMENTED, typename FlagT, typename ReductionOp>
+  template <bool HEAD_SEGMENTED, class FlagT, class ReductionOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE T
   SegmentedReduce(T input, FlagT flag, ReductionOp reduction_op, ::cuda::std::false_type /*has_ballot*/)
   {
@@ -346,7 +346,7 @@ struct WarpReduceSmem
    * @param[in] reduction_op
    *   Reduction operator
    */
-  template <bool ALL_LANES_VALID, typename ReductionOp>
+  template <bool ALL_LANES_VALID, class ReductionOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE T Reduce(T input, int valid_items, ReductionOp reduction_op)
   {
     return ReduceStep<ALL_LANES_VALID>(input, valid_items, reduction_op, constant_v<0>);
@@ -367,7 +367,7 @@ struct WarpReduceSmem
    * @param[in] reduction_op
    *   Reduction operator
    */
-  template <bool HEAD_SEGMENTED, typename FlagT, typename ReductionOp>
+  template <bool HEAD_SEGMENTED, class FlagT, class ReductionOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE T SegmentedReduce(T input, FlagT flag, ReductionOp reduction_op)
   {
     return SegmentedReduce<HEAD_SEGMENTED>(input, flag, reduction_op, ::cuda::std::true_type());

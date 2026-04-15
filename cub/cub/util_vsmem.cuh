@@ -49,7 +49,7 @@ struct vsmem_t
  * @tparam AgentT The agent for which we check whether per-thread block shared memory is sufficient or whether virtual
  * shared memory is needed.
  */
-template <typename AgentT>
+template <class AgentT>
 class vsmem_helper_impl
 {
 private:
@@ -183,17 +183,17 @@ _CCCL_HOST_DEVICE constexpr bool use_fallback_agent()
  * agent falls within the bounds of `max_smem_per_block`.
  * @tparam FallbackAgentT The fallback agent, instantiated with the given fallback tuning policy
  */
-template <typename DefaultAgentPolicyT,
-          typename DefaultAgentT,
-          typename FallbackAgentPolicyT = DefaultAgentPolicyT,
-          typename FallbackAgentT       = DefaultAgentT,
-          bool UseFallbackPolicy        = use_fallback_agent<DefaultAgentT, FallbackAgentT>()>
+template <class DefaultAgentPolicyT,
+          class DefaultAgentT,
+          class FallbackAgentPolicyT = DefaultAgentPolicyT,
+          class FallbackAgentT       = DefaultAgentT,
+          bool UseFallbackPolicy     = use_fallback_agent<DefaultAgentT, FallbackAgentT>()>
 struct vsmem_helper_with_fallback_impl : public vsmem_helper_impl<DefaultAgentT>
 {
   using agent_t        = DefaultAgentT;
   using agent_policy_t = DefaultAgentPolicyT;
 };
-template <typename DefaultAgentPolicyT, typename DefaultAgentT, typename FallbackAgentPolicyT, typename FallbackAgentT>
+template <class DefaultAgentPolicyT, class DefaultAgentT, class FallbackAgentPolicyT, class FallbackAgentT>
 struct vsmem_helper_with_fallback_impl<DefaultAgentPolicyT, DefaultAgentT, FallbackAgentPolicyT, FallbackAgentT, true>
     : public vsmem_helper_impl<FallbackAgentT>
 {
@@ -206,7 +206,7 @@ struct vsmem_helper_with_fallback_impl<DefaultAgentPolicyT, DefaultAgentT, Fallb
  * respective policy as first template parameter, followed by the parameters captured by the `AgentParamsT` template
  * parameter pack.
  */
-template <typename DefaultPolicyT, typename FallbackPolicyT, template <typename...> class AgentT, typename... AgentParamsT>
+template <class DefaultPolicyT, class FallbackPolicyT, template <class...> class AgentT, class... AgentParamsT>
 using vsmem_helper_fallback_policy_t =
   vsmem_helper_with_fallback_impl<DefaultPolicyT,
                                   AgentT<DefaultPolicyT, AgentParamsT...>,
@@ -217,7 +217,7 @@ using vsmem_helper_fallback_policy_t =
  * @brief Alias template for the `vsmem_helper_t` by using a simple fallback policy that uses `DefaultPolicyT` as basis,
  * overwriting `64` threads per block and `1` item per thread.
  */
-template <typename DefaultPolicyT, template <typename...> class AgentT, typename... AgentParamsT>
+template <class DefaultPolicyT, template <class...> class AgentT, class... AgentParamsT>
 using vsmem_helper_default_fallback_policy_t =
   vsmem_helper_fallback_policy_t<DefaultPolicyT, policy_wrapper_t<DefaultPolicyT, 64, 1>, AgentT, AgentParamsT...>;
 } // namespace detail

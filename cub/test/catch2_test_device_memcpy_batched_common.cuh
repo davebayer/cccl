@@ -18,19 +18,19 @@
  * @brief Function object that takes an offset and returns an iterator at the given
  * offset relative to a fixed base iterator.
  */
-template <typename IteratorT>
+template <class IteratorT>
 struct offset_to_ptr_op
 {
   IteratorT base_it;
 
-  template <typename T>
+  template <class T>
   __host__ __device__ __forceinline__ IteratorT operator()(T offset) const
   {
     return base_it + offset;
   }
 };
 
-template <typename IteratorT, typename ValueT>
+template <class IteratorT, class ValueT>
 struct prepend_n_constants_op
 {
   IteratorT base_it;
@@ -47,7 +47,7 @@ struct prepend_n_constants_op
  * @brief Used for generating a shuffled but cohesive sequence of output-buffer offsets for the
  * sequence of input-buffers.
  */
-template <typename BufferOffsetT, typename ByteOffsetT, typename BufferSizeT>
+template <class BufferOffsetT, class ByteOffsetT, class BufferSizeT>
 auto get_shuffled_buffer_offsets(const c2h::device_vector<BufferSizeT>& buffer_sizes, c2h::seed_t seed)
   -> c2h::device_vector<ByteOffsetT>
 {

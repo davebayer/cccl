@@ -41,14 +41,14 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail::rfa
 {
-template <typename Invocable, typename InputT>
+template <class Invocable, class InputT>
 using transformed_input_t = ::cuda::std::decay_t<::cuda::std::invoke_result_t<Invocable, InputT>>;
 
-template <typename InitT, typename InputIteratorT, typename TransformOpT>
+template <class InitT, class InputIteratorT, class TransformOpT>
 using accum_t =
   ::cuda::std::__accumulator_t<::cuda::std::plus<>, InitT, transformed_input_t<TransformOpT, it_value_t<InputIteratorT>>>;
 
-template <typename FloatType = float, ::cuda::std::enable_if_t<::cuda::std::is_floating_point_v<FloatType>>* = nullptr>
+template <class FloatType = float, ::cuda::std::enable_if_t<::cuda::std::is_floating_point_v<FloatType>>* = nullptr>
 struct deterministic_sum_t
 {
   using DeterministicAcc = ReproducibleFloatingAccumulator<FloatType>;
@@ -77,15 +77,15 @@ struct deterministic_sum_t
   }
 };
 
-template <typename PolicySelector,
-          typename InputIteratorT,
-          typename OutputIteratorT,
-          typename OffsetT,
-          typename ReductionOpT,
-          typename InitT,
-          typename DeterministicAccumT,
-          typename TransformOpT,
-          typename KernelLauncherFactory>
+template <class PolicySelector,
+          class InputIteratorT,
+          class OutputIteratorT,
+          class OffsetT,
+          class ReductionOpT,
+          class InitT,
+          class DeterministicAccumT,
+          class TransformOpT,
+          class KernelLauncherFactory>
 CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE cudaError_t invoke_single_tile(
   void* d_temp_storage,
   size_t& temp_storage_bytes,
@@ -146,15 +146,15 @@ CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE cudaError_t invok
   return CubDebug(detail::DebugSyncStream(stream));
 }
 
-template <typename PolicySelector,
-          typename InputIteratorT,
-          typename OutputIteratorT,
-          typename OffsetT,
-          typename ReductionOpT,
-          typename InitT,
-          typename DeterministicAccumT,
-          typename TransformOpT,
-          typename KernelLauncherFactory>
+template <class PolicySelector,
+          class InputIteratorT,
+          class OutputIteratorT,
+          class OffsetT,
+          class ReductionOpT,
+          class InitT,
+          class DeterministicAccumT,
+          class TransformOpT,
+          class KernelLauncherFactory>
 CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE cudaError_t invoke_passes(
   void* d_temp_storage,
   size_t& temp_storage_bytes,
@@ -318,14 +318,14 @@ CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE cudaError_t invok
   return CubDebug(detail::DebugSyncStream(stream));
 }
 
-template <typename InputIteratorT,
-          typename OutputIteratorT,
-          typename OffsetT,
-          typename InitT,
-          typename TransformOpT          = ::cuda::std::identity,
-          typename AccumT                = accum_t<InitT, InputIteratorT, TransformOpT>,
-          typename PolicySelector        = policy_selector_from_types<AccumT>,
-          typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+template <class InputIteratorT,
+          class OutputIteratorT,
+          class OffsetT,
+          class InitT,
+          class TransformOpT          = ::cuda::std::identity,
+          class AccumT                = accum_t<InitT, InputIteratorT, TransformOpT>,
+          class PolicySelector        = policy_selector_from_types<AccumT>,
+          class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
 CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t dispatch(
   void* d_temp_storage,
   size_t& temp_storage_bytes,

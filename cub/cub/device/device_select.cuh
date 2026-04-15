@@ -83,15 +83,15 @@ struct default_tuning : tuning<default_tuning>
 struct DeviceSelect
 {
 private:
-  template <typename TuningEnvT,
+  template <class TuningEnvT,
             SelectImpl SelectionMode,
-            typename InputIteratorT,
-            typename FlagIteratorT,
-            typename OutputIteratorT,
-            typename NumSelectedIteratorT,
-            typename SelectOpT,
-            typename EqualityOpT,
-            typename OffsetT>
+            class InputIteratorT,
+            class FlagIteratorT,
+            class OutputIteratorT,
+            class NumSelectedIteratorT,
+            class SelectOpT,
+            class EqualityOpT,
+            class OffsetT>
   CUB_RUNTIME_FUNCTION static cudaError_t select_impl(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -122,14 +122,14 @@ private:
       policy_selector{});
   }
 
-  template <typename TuningEnvT,
-            typename KeyInputIteratorT,
-            typename ValueInputIteratorT,
-            typename KeyOutputIteratorT,
-            typename ValueOutputIteratorT,
-            typename NumSelectedIteratorT,
-            typename EqualityOpT,
-            typename OffsetT>
+  template <class TuningEnvT,
+            class KeyInputIteratorT,
+            class ValueInputIteratorT,
+            class KeyOutputIteratorT,
+            class ValueOutputIteratorT,
+            class NumSelectedIteratorT,
+            class EqualityOpT,
+            class OffsetT>
   CUB_RUNTIME_FUNCTION static cudaError_t unique_by_key_impl(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -260,7 +260,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT, typename FlagIterator, typename OutputIteratorT, typename NumSelectedIteratorT>
+  template <class InputIteratorT, class FlagIterator, class OutputIteratorT, class NumSelectedIteratorT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t Flagged(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -358,12 +358,12 @@ public:
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   template <
-    typename InputIteratorT,
-    typename FlagIterator,
-    typename OutputIteratorT,
-    typename NumSelectedIteratorT,
-    typename NumItemsT,
-    typename EnvT                 = ::cuda::std::execution::env<>,
+    class InputIteratorT,
+    class FlagIterator,
+    class OutputIteratorT,
+    class NumSelectedIteratorT,
+    class NumItemsT,
+    class EnvT                    = ::cuda::std::execution::env<>,
     ::cuda::std::enable_if_t<::cuda::std::is_integral_v<NumItemsT> && !::cuda::std::is_same_v<InputIteratorT, void*>
                                && !::cuda::std::is_same_v<FlagIterator, size_t&>,
                              int> = 0>
@@ -457,11 +457,11 @@ public:
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename IteratorT,
-            typename FlagIterator,
-            typename NumSelectedIteratorT,
-            typename NumItemsT,
-            typename EnvT                 = ::cuda::std::execution::env<>,
+  template <class IteratorT,
+            class FlagIterator,
+            class NumSelectedIteratorT,
+            class NumItemsT,
+            class EnvT                    = ::cuda::std::execution::env<>,
             ::cuda::std::enable_if_t<::cuda::std::is_integral_v<NumItemsT> && !::cuda::std::is_same_v<IteratorT, void*>
                                        && !::cuda::std::is_same_v<FlagIterator, size_t&>,
                                      int> = 0>
@@ -557,12 +557,12 @@ public:
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   template <
-    typename InputIteratorT,
-    typename OutputIteratorT,
-    typename NumSelectedIteratorT,
-    typename SelectOp,
-    typename NumItemsT,
-    typename EnvT                 = ::cuda::std::execution::env<>,
+    class InputIteratorT,
+    class OutputIteratorT,
+    class NumSelectedIteratorT,
+    class SelectOp,
+    class NumItemsT,
+    class EnvT                    = ::cuda::std::execution::env<>,
     ::cuda::std::enable_if_t<::cuda::std::is_integral_v<NumItemsT> && !::cuda::std::is_same_v<InputIteratorT, void*>,
                              int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t
@@ -652,11 +652,11 @@ public:
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename IteratorT,
-            typename NumSelectedIteratorT,
-            typename SelectOp,
-            typename NumItemsT,
-            typename EnvT                 = ::cuda::std::execution::env<>,
+  template <class IteratorT,
+            class NumSelectedIteratorT,
+            class SelectOp,
+            class NumItemsT,
+            class EnvT                    = ::cuda::std::execution::env<>,
             ::cuda::std::enable_if_t<::cuda::std::is_integral_v<NumItemsT> && !::cuda::std::is_same_v<IteratorT, void*>,
                                      int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t
@@ -764,7 +764,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename IteratorT, typename FlagIterator, typename NumSelectedIteratorT>
+  template <class IteratorT, class FlagIterator, class NumSelectedIteratorT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t Flagged(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -897,7 +897,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT, typename OutputIteratorT, typename NumSelectedIteratorT, typename SelectOp>
+  template <class InputIteratorT, class OutputIteratorT, class NumSelectedIteratorT, class SelectOp>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t
   If(void* d_temp_storage,
      size_t& temp_storage_bytes,
@@ -1020,7 +1020,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename IteratorT, typename NumSelectedIteratorT, typename SelectOp>
+  template <class IteratorT, class NumSelectedIteratorT, class SelectOp>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t
   If(void* d_temp_storage,
      size_t& temp_storage_bytes,
@@ -1128,11 +1128,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename FlagIterator,
-            typename OutputIteratorT,
-            typename NumSelectedIteratorT,
-            typename SelectOp>
+  template <class InputIteratorT, class FlagIterator, class OutputIteratorT, class NumSelectedIteratorT, class SelectOp>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t FlaggedIf(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1234,7 +1230,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename IteratorT, typename FlagIterator, typename NumSelectedIteratorT, typename SelectOp>
+  template <class IteratorT, class FlagIterator, class NumSelectedIteratorT, class SelectOp>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t FlaggedIf(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1341,13 +1337,13 @@ public:
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   template <
-    typename InputIteratorT,
-    typename FlagIterator,
-    typename OutputIteratorT,
-    typename NumSelectedIteratorT,
-    typename SelectOp,
-    typename NumItemsT,
-    typename EnvT                 = ::cuda::std::execution::env<>,
+    class InputIteratorT,
+    class FlagIterator,
+    class OutputIteratorT,
+    class NumSelectedIteratorT,
+    class SelectOp,
+    class NumItemsT,
+    class EnvT                    = ::cuda::std::execution::env<>,
     ::cuda::std::enable_if_t<::cuda::std::is_integral_v<NumItemsT> && !::cuda::std::is_same_v<InputIteratorT, void*>,
                              int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t FlaggedIf(
@@ -1449,12 +1445,12 @@ public:
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   template <
-    typename IteratorT,
-    typename FlagIterator,
-    typename NumSelectedIteratorT,
-    typename SelectOp,
-    typename NumItemsT,
-    typename EnvT = ::cuda::std::execution::env<>,
+    class IteratorT,
+    class FlagIterator,
+    class NumSelectedIteratorT,
+    class SelectOp,
+    class NumItemsT,
+    class EnvT = ::cuda::std::execution::env<>,
     ::cuda::std::enable_if_t<::cuda::std::is_integral_v<NumItemsT> && !::cuda::std::is_same_v<IteratorT, void*>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t FlaggedIf(
     IteratorT d_data,
@@ -1548,11 +1544,11 @@ public:
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   template <
-    typename InputIteratorT,
-    typename OutputIteratorT,
-    typename NumSelectedIteratorT,
-    typename NumItemsT,
-    typename EnvT                 = ::cuda::std::execution::env<>,
+    class InputIteratorT,
+    class OutputIteratorT,
+    class NumSelectedIteratorT,
+    class NumItemsT,
+    class EnvT                    = ::cuda::std::execution::env<>,
     ::cuda::std::enable_if_t<::cuda::std::is_integral_v<NumItemsT> && !::cuda::std::is_same_v<InputIteratorT, void*>,
                              int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t
@@ -1665,14 +1661,14 @@ public:
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   template <
-    typename KeyInputIteratorT,
-    typename ValueInputIteratorT,
-    typename KeyOutputIteratorT,
-    typename ValueOutputIteratorT,
-    typename NumSelectedIteratorT,
-    typename NumItemsT,
-    typename EqualityOpT          = ::cuda::std::equal_to<>,
-    typename EnvT                 = ::cuda::std::execution::env<>,
+    class KeyInputIteratorT,
+    class ValueInputIteratorT,
+    class KeyOutputIteratorT,
+    class ValueOutputIteratorT,
+    class NumSelectedIteratorT,
+    class NumItemsT,
+    class EqualityOpT             = ::cuda::std::equal_to<>,
+    class EnvT                    = ::cuda::std::execution::env<>,
     ::cuda::std::enable_if_t<::cuda::std::is_integral_v<NumItemsT> && !::cuda::std::is_same_v<KeyInputIteratorT, void*>
                                && !::cuda::std::is_convertible_v<EqualityOpT, cudaStream_t>,
                              int> = 0>
@@ -1796,10 +1792,10 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename NumSelectedIteratorT,
-            typename EqualityOpT,
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class NumSelectedIteratorT,
+            class EqualityOpT,
             ::cuda::std::enable_if_t<::cuda::std::indirect_binary_predicate<EqualityOpT, InputIteratorT, InputIteratorT>,
                                      int> = 0>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t Unique(
@@ -1914,7 +1910,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT, typename OutputIteratorT, typename NumSelectedIteratorT>
+  template <class InputIteratorT, class OutputIteratorT, class NumSelectedIteratorT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t Unique(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -2061,13 +2057,13 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename KeyInputIteratorT,
-            typename ValueInputIteratorT,
-            typename KeyOutputIteratorT,
-            typename ValueOutputIteratorT,
-            typename NumSelectedIteratorT,
-            typename NumItemsT,
-            typename EqualityOpT>
+  template <class KeyInputIteratorT,
+            class ValueInputIteratorT,
+            class KeyOutputIteratorT,
+            class ValueOutputIteratorT,
+            class NumSelectedIteratorT,
+            class NumItemsT,
+            class EqualityOpT>
   CUB_RUNTIME_FUNCTION __forceinline__ static //
     ::cuda::std::enable_if_t< //
       !::cuda::std::is_convertible_v<EqualityOpT, cudaStream_t>, //
@@ -2219,12 +2215,12 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename KeyInputIteratorT,
-            typename ValueInputIteratorT,
-            typename KeyOutputIteratorT,
-            typename ValueOutputIteratorT,
-            typename NumSelectedIteratorT,
-            typename NumItemsT>
+  template <class KeyInputIteratorT,
+            class ValueInputIteratorT,
+            class KeyOutputIteratorT,
+            class ValueOutputIteratorT,
+            class NumSelectedIteratorT,
+            class NumItemsT>
   CUB_RUNTIME_FUNCTION __forceinline__ static cudaError_t UniqueByKey(
     void* d_temp_storage,
     size_t& temp_storage_bytes,

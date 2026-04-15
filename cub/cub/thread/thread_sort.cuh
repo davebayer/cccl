@@ -50,7 +50,7 @@ CUB_NAMESPACE_BEGIN
  *   Comparison function object which returns true if the first argument is
  *   ordered before the second
  */
-template <typename KeyT, typename ValueT, typename CompareOp, int ITEMS_PER_THREAD>
+template <class KeyT, class ValueT, class CompareOp, int ITEMS_PER_THREAD>
 _CCCL_DEVICE _CCCL_FORCEINLINE void
 StableOddEvenSort(KeyT (&keys)[ITEMS_PER_THREAD], ValueT (&items)[ITEMS_PER_THREAD], CompareOp compare_op)
 {

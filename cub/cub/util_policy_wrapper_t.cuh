@@ -17,7 +17,7 @@ namespace detail
  * configurations of a given policy.
  */
 // TODO(bgruber): this should be called something like "override_policy"
-template <typename PolicyT, int BLOCK_THREADS_, int ITEMS_PER_THREAD_ = PolicyT::ITEMS_PER_THREAD>
+template <class PolicyT, int BLOCK_THREADS_, int ITEMS_PER_THREAD_ = PolicyT::ITEMS_PER_THREAD>
 struct policy_wrapper_t : PolicyT
 {
   static constexpr int ITEMS_PER_THREAD = ITEMS_PER_THREAD_;

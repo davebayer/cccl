@@ -1525,7 +1525,7 @@ struct policy_hub
   {};
 
   // Use values from tuning if a specialization exists, otherwise pick the default
-  template <typename Tuning>
+  template <class Tuning>
   static auto select_agent_policy(int)
     -> AgentSelectIfPolicy<Tuning::threads,
                            Tuning::items,
@@ -1533,7 +1533,7 @@ struct policy_hub
                            LOAD_DEFAULT,
                            BLOCK_SCAN_WARP_SCANS,
                            typename Tuning::delay_constructor>;
-  template <typename Tuning>
+  template <class Tuning>
   static auto select_agent_policy(long) -> typename DefaultPolicy<LOAD_DEFAULT>::SelectIfPolicyT;
 
   struct Policy800 : ChainedPolicy<800, Policy800, Policy500>
@@ -1569,7 +1569,7 @@ struct policy_hub
   struct Policy1000 : ChainedPolicy<1000, Policy1000, Policy900>
   {
     // Use values from tuning if a specialization exists, otherwise pick Policy900
-    template <typename Tuning>
+    template <class Tuning>
     static auto select_agent_policy100(int)
       -> AgentSelectIfPolicy<Tuning::threads,
                              Nominal4BItemsToItems<InputT>(Tuning::nominal_4b_items),
@@ -1577,7 +1577,7 @@ struct policy_hub
                              Tuning::load_modifier,
                              BLOCK_SCAN_WARP_SCANS,
                              typename Tuning::delay_constructor>;
-    template <typename Tuning>
+    template <class Tuning>
     static auto select_agent_policy100(long) -> typename Policy900::SelectIfPolicyT;
 
     using SelectIfPolicyT =
@@ -1627,7 +1627,7 @@ struct select_if_policy
 };
 
 #if _CCCL_HAS_CONCEPTS()
-template <typename T>
+template <class T>
 concept select_if_policy_selector = policy_selector<T, select_if_policy>;
 #endif // _CCCL_HAS_CONCEPTS()
 
@@ -2548,10 +2548,10 @@ public:
   }
 };
 
-template <typename InputIteratorT,
-          typename FlagsInputIteratorT,
-          typename SelectedOutputIteratorT,
-          typename OffsetT,
+template <class InputIteratorT,
+          class FlagsInputIteratorT,
+          class SelectedOutputIteratorT,
+          class OffsetT,
           SelectImpl SelectionOpt>
 struct policy_selector_from_types
 {

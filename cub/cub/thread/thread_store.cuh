@@ -81,7 +81,7 @@ enum CacheStoreModifier
 //!
 //! @tparam T
 //!   <b>[inferred]</b> Data type of output value
-template <CacheStoreModifier MODIFIER, typename OutputIteratorT, typename T>
+template <CacheStoreModifier MODIFIER, class OutputIteratorT, class T>
 _CCCL_DEVICE _CCCL_FORCEINLINE void ThreadStore(OutputIteratorT itr, T val);
 
 //@}
@@ -94,14 +94,14 @@ namespace detail
 template <int COUNT, int MAX>
 struct iterate_thread_store
 {
-  template <CacheStoreModifier MODIFIER, typename T>
+  template <CacheStoreModifier MODIFIER, class T>
   static _CCCL_DEVICE _CCCL_FORCEINLINE void Store(T* ptr, T* vals)
   {
     ThreadStore<MODIFIER>(ptr + COUNT, vals[COUNT]);
     iterate_thread_store<COUNT + 1, MAX>::template Store<MODIFIER>(ptr, vals);
   }
 
-  template <typename OutputIteratorT, typename T>
+  template <class OutputIteratorT, class T>
   static _CCCL_DEVICE _CCCL_FORCEINLINE void Dereference(OutputIteratorT ptr, T* vals)
   {
     ptr[COUNT] = vals[COUNT];
@@ -113,22 +113,22 @@ struct iterate_thread_store
 template <int MAX>
 struct iterate_thread_store<MAX, MAX>
 {
-  template <CacheStoreModifier MODIFIER, typename T>
+  template <CacheStoreModifier MODIFIER, class T>
   static _CCCL_DEVICE _CCCL_FORCEINLINE void Store(T* /*ptr*/, T* /*vals*/)
   {}
 
-  template <typename OutputIteratorT, typename T>
+  template <class OutputIteratorT, class T>
   static _CCCL_DEVICE _CCCL_FORCEINLINE void Dereference(OutputIteratorT /*ptr*/, T* /*vals*/)
   {}
 };
 
-template <CacheStoreModifier MODIFIER, typename T, size_t... Is>
+template <CacheStoreModifier MODIFIER, class T, size_t... Is>
 _CCCL_DEVICE _CCCL_FORCEINLINE void store_helper(T* ptr, T* vals, ::cuda::std::index_sequence<Is...>)
 {
   (ThreadStore<MODIFIER>(ptr + Is, vals[Is]), ...);
 }
 
-template <typename T, size_t... Is>
+template <class T, size_t... Is>
 _CCCL_DEVICE _CCCL_FORCEINLINE void dereference_helper(volatile T* ptr, T* vals, ::cuda::std::index_sequence<Is...>)
 {
   ((ptr[Is] = vals[Is]), ...);
@@ -230,7 +230,7 @@ _CUB_STORE_ALL(STORE_WT, wt)
 
 //! ThreadStore definition for STORE_DEFAULT modifier on iterator types
 //! deprecated [Since 3.3]
-template <typename OutputIteratorT, typename T>
+template <class OutputIteratorT, class T>
 CCCL_DEPRECATED_BECAUSE("Use *itr = val instead") _CCCL_DEVICE _CCCL_FORCEINLINE void ThreadStore(
   OutputIteratorT itr, T val, detail::constant_t<STORE_DEFAULT> /*modifier*/, ::cuda::std::false_type /*is_pointer*/)
 {
@@ -239,7 +239,7 @@ CCCL_DEPRECATED_BECAUSE("Use *itr = val instead") _CCCL_DEVICE _CCCL_FORCEINLINE
 
 //! ThreadStore definition for STORE_DEFAULT modifier on pointer types
 //! deprecated [Since 3.3]
-template <typename T>
+template <class T>
 CCCL_DEPRECATED_BECAUSE("Use *itr = val instead") _CCCL_DEVICE _CCCL_FORCEINLINE void
 ThreadStore(T* ptr, T val, detail::constant_t<STORE_DEFAULT> /*modifier*/, ::cuda::std::true_type /*is_pointer*/)
 {
@@ -248,7 +248,7 @@ ThreadStore(T* ptr, T val, detail::constant_t<STORE_DEFAULT> /*modifier*/, ::cud
 
 //! ThreadStore definition for STORE_VOLATILE modifier on primitive pointer types
 //! deprecated [Since 3.3]
-template <typename T>
+template <class T>
 CCCL_DEPRECATED_BECAUSE("Use ThreadStore<STORE_VOLATILE>(ptr, val) instead") _CCCL_DEVICE _CCCL_FORCEINLINE void
 ThreadStoreVolatilePtr(T* ptr, T val, ::cuda::std::true_type /*is_primitive*/)
 {
@@ -257,7 +257,7 @@ ThreadStoreVolatilePtr(T* ptr, T val, ::cuda::std::true_type /*is_primitive*/)
 
 //! ThreadStore definition for STORE_VOLATILE modifier on non-primitive pointer types
 //! deprecated [Since 3.3]
-template <typename T>
+template <class T>
 CCCL_DEPRECATED_BECAUSE("Use ThreadStore<STORE_VOLATILE>(ptr, val) instead") _CCCL_DEVICE _CCCL_FORCEINLINE void
 ThreadStoreVolatilePtr(T* ptr, T val, ::cuda::std::false_type /*is_primitive*/)
 {
@@ -281,7 +281,7 @@ ThreadStoreVolatilePtr(T* ptr, T val, ::cuda::std::false_type /*is_primitive*/)
 
 //! ThreadStore definition for STORE_VOLATILE modifier on pointer types
 //! deprecated [Since 3.3]
-template <typename T>
+template <class T>
 CCCL_DEPRECATED_BECAUSE("Use ThreadStore<STORE_VOLATILE>(ptr, val) instead") _CCCL_DEVICE _CCCL_FORCEINLINE void
 ThreadStore(T* ptr, T val, detail::constant_t<STORE_VOLATILE> /*modifier*/, ::cuda::std::true_type /*is_pointer*/)
 {
@@ -290,7 +290,7 @@ ThreadStore(T* ptr, T val, detail::constant_t<STORE_VOLATILE> /*modifier*/, ::cu
 
 //! ThreadStore definition for generic modifiers on pointer types
 //! deprecated [Since 3.3]
-template <typename T, CacheStoreModifier MODIFIER>
+template <class T, CacheStoreModifier MODIFIER>
 CCCL_DEPRECATED_BECAUSE("Use ThreadStore<MODIFIER>(ptr, val) instead") _CCCL_DEVICE _CCCL_FORCEINLINE void
 ThreadStore(T* ptr, T val, detail::constant_t<MODIFIER> /*modifier*/, ::cuda::std::true_type /*is_pointer*/)
 {
@@ -313,7 +313,7 @@ ThreadStore(T* ptr, T val, detail::constant_t<MODIFIER> /*modifier*/, ::cuda::st
     reinterpret_cast<DeviceWord*>(ptr), words);
 }
 
-template <CacheStoreModifier MODIFIER, typename OutputIteratorT, typename T>
+template <CacheStoreModifier MODIFIER, class OutputIteratorT, class T>
 _CCCL_DEVICE _CCCL_FORCEINLINE void ThreadStore(OutputIteratorT itr, T val)
 {
   if constexpr (!::cuda::std::contiguous_iterator<OutputIteratorT> || MODIFIER == STORE_DEFAULT)

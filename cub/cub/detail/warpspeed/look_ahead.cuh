@@ -51,7 +51,7 @@ enum scan_state : ::cuda::std::uint32_t
   tile_aggregate = 1,
 };
 
-template <typename AccumT>
+template <class AccumT>
 struct tile_state_unaligned_t
 {
   scan_state state;
@@ -60,14 +60,14 @@ struct tile_state_unaligned_t
 
 // some older nvcc versions do not evaluate next_power_of_two() at compile time when called inside an attribute, so we
 // have to force constant evaluation by assigning the result to a template parameter
-template <typename AccumT,
+template <class AccumT,
           ::cuda::std::size_t _Alignment = ::cuda::next_power_of_two(sizeof(tile_state_unaligned_t<AccumT>))>
 struct alignas(_Alignment) tile_state_t : tile_state_unaligned_t<AccumT>
 {};
 
 #if __cccl_ptx_isa >= 860
 
-template <typename AccumT>
+template <class AccumT>
 _CCCL_DEVICE_API void
 storeTileAggregate(tile_state_t<AccumT>* ptrTileStates, scan_state scanState, AccumT sum, int index)
 {
@@ -95,7 +95,7 @@ storeTileAggregate(tile_state_t<AccumT>* ptrTileStates, scan_state scanState, Ac
   }
 }
 
-template <typename AccumT>
+template <class AccumT>
 _CCCL_DEVICE_API tile_state_t<AccumT> loadTileAggregate(tile_state_t<AccumT>* ptrTileStates, int index)
 {
   _CCCL_ASSERT(::cuda::is_aligned(ptrTileStates, alignof(tile_state_t<AccumT>)), "");
@@ -140,7 +140,7 @@ _CCCL_DEVICE_API tile_state_t<AccumT> loadTileAggregate(tile_state_t<AccumT>* pt
 //
 // If the index idxTileCur + ii of the loaded state is equal to or exceeds idxTileNext, i.e., idxTileCur + ii >=
 // idxTileNext, then the state is not loaded from memory and set to empty.
-template <int numTileStatesPerThread, typename AccumT>
+template <int numTileStatesPerThread, class AccumT>
 _CCCL_DEVICE_API void warpLoadLookback(
   int laneIdx,
   tile_state_t<AccumT> (&outTileStates)[numTileStatesPerThread],
@@ -176,7 +176,7 @@ _CCCL_DEVICE_API void warpLoadLookback(
 // The function must be called from a single warp. All passed arguments must be
 // warp-uniform.
 //
-template <int numTileStatesPerThread, typename AccumT, typename ScanOpT>
+template <int numTileStatesPerThread, class AccumT, class ScanOpT>
 [[nodiscard]] _CCCL_DEVICE_API _CCCL_FORCEINLINE AccumT warpIncrementalLookback(
   SpecialRegisters specialRegisters,
   tile_state_t<AccumT>* ptrTileStates,

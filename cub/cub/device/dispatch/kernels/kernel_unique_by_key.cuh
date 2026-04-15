@@ -33,23 +33,23 @@ namespace detail::unique_by_key
 // individually instead.
 struct VSMemHelper
 {
-  template <typename ActivePolicyT, typename... Ts>
+  template <class ActivePolicyT, class... Ts>
   using VSMemHelperDefaultFallbackPolicyT =
     vsmem_helper_default_fallback_policy_t<ActivePolicyT, detail::unique_by_key::AgentUniqueByKey, Ts...>;
 
-  template <typename ActivePolicyT, typename... Ts>
+  template <class ActivePolicyT, class... Ts>
   _CCCL_HOST_DEVICE static constexpr int BlockThreads(ActivePolicyT /*policy*/)
   {
     return VSMemHelperDefaultFallbackPolicyT<ActivePolicyT, Ts...>::agent_policy_t::BLOCK_THREADS;
   }
 
-  template <typename ActivePolicyT, typename... Ts>
+  template <class ActivePolicyT, class... Ts>
   _CCCL_HOST_DEVICE static constexpr int ItemsPerThread(ActivePolicyT /*policy*/)
   {
     return VSMemHelperDefaultFallbackPolicyT<ActivePolicyT, Ts...>::agent_policy_t::ITEMS_PER_THREAD;
   }
 
-  template <typename ActivePolicyT, typename... Ts>
+  template <class ActivePolicyT, class... Ts>
   _CCCL_HOST_DEVICE static constexpr ::cuda::std::size_t VSMemPerBlock(ActivePolicyT /*policy*/)
   {
     return VSMemHelperDefaultFallbackPolicyT<ActivePolicyT, Ts...>::vsmem_per_block;
@@ -115,16 +115,16 @@ struct VSMemHelper
  * @param[in] vsmem
  *   Memory to support virtual shared memory
  */
-template <typename ChainedPolicyT,
-          typename KeyInputIteratorT,
-          typename ValueInputIteratorT,
-          typename KeyOutputIteratorT,
-          typename ValueOutputIteratorT,
-          typename NumSelectedIteratorT,
-          typename ScanTileStateT,
-          typename EqualityOpT,
-          typename OffsetT,
-          typename VSMemHelperT = VSMemHelper>
+template <class ChainedPolicyT,
+          class KeyInputIteratorT,
+          class ValueInputIteratorT,
+          class KeyOutputIteratorT,
+          class ValueOutputIteratorT,
+          class NumSelectedIteratorT,
+          class ScanTileStateT,
+          class EqualityOpT,
+          class OffsetT,
+          class VSMemHelperT = VSMemHelper>
 __launch_bounds__(int(
   VSMemHelperT::template VSMemHelperDefaultFallbackPolicyT<
     typename ChainedPolicyT::ActivePolicy::UniqueByKeyPolicyT,

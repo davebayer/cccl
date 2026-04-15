@@ -50,7 +50,7 @@ using select_direction_uniform =
   params::uniform_discrete_param<detail::topk::select, detail::topk::select::max, detail::topk::select::min>;
 
 // Per-segment selection direction via iterator
-template <typename SelectionDirectionIt, detail::topk::select... SelectDirectionOptions>
+template <class SelectionDirectionIt, detail::topk::select... SelectDirectionOptions>
 using select_direction_per_segment =
   params::per_segment_discrete_param<SelectionDirectionIt, detail::topk::select, SelectDirectionOptions...>;
 
@@ -66,7 +66,7 @@ template <::cuda::std::int64_t MinSegmentSize = 0,
 using segment_size_uniform = params::uniform_param<::cuda::std::int64_t, MinSegmentSize, MaxSegmentSize>;
 
 // Segment size via iterator
-template <typename SegmentSizesItT,
+template <class SegmentSizesItT,
           ::cuda::std::int64_t MinSegmentSize = 1,
           ::cuda::std::int64_t MaxSegmentSize = ::cuda::std::numeric_limits<::cuda::std::int64_t>::max()>
 using segment_size_per_segment =
@@ -84,7 +84,7 @@ template <::cuda::std::int64_t MinK = 1,
 using k_uniform = params::uniform_param<::cuda::std::int64_t, MinK, MaxK>;
 
 // K via iterator
-template <typename KItT,
+template <class KItT,
           ::cuda::std::int64_t MinK = 1,
           ::cuda::std::int64_t MaxK = ::cuda::std::numeric_limits<::cuda::std::int64_t>::max()>
 using k_per_segment = params::per_segment_param<KItT, ::cuda::std::int64_t, MinK, MaxK>;
@@ -100,7 +100,7 @@ template <::cuda::std::int64_t MinNumSegments = 1,
 using num_segments_uniform = params::uniform_param<::cuda::std::int64_t, MinNumSegments, MaxNumSegments>;
 
 // Number of segments via iterator
-template <typename NumSegmentsItT,
+template <class NumSegmentsItT,
           ::cuda::std::int64_t MinNumSegments = 1,
           ::cuda::std::int64_t MaxNumSegments = ::cuda::std::numeric_limits<::cuda::std::int64_t>::max()>
 using num_segments_per_segment =
@@ -136,19 +136,19 @@ struct total_num_items_guarantee
 // -----------------------------------------------------------------------------
 // Segmented Top-K Dispatch
 // -----------------------------------------------------------------------------
-template <typename KeyInputItItT,
-          typename KeyOutputItItT,
-          typename ValueInputItItT,
-          typename ValueOutputItItT,
-          typename SegmentSizeParameterT,
-          typename KParameterT,
-          typename SelectDirectionParameterT,
-          typename NumSegmentsParameterT,
-          typename TotalNumItemsGuaranteeT,
-          typename SelectedPolicy = policy_hub<it_value_t<it_value_t<KeyInputItItT>>,
-                                               it_value_t<it_value_t<ValueInputItItT>>,
-                                               ::cuda::std::int64_t,
-                                               params::static_max_value_v<KParameterT>>>
+template <class KeyInputItItT,
+          class KeyOutputItItT,
+          class ValueInputItItT,
+          class ValueOutputItItT,
+          class SegmentSizeParameterT,
+          class KParameterT,
+          class SelectDirectionParameterT,
+          class NumSegmentsParameterT,
+          class TotalNumItemsGuaranteeT,
+          class SelectedPolicy = policy_hub<it_value_t<it_value_t<KeyInputItItT>>,
+                                            it_value_t<it_value_t<ValueInputItItT>>,
+                                            ::cuda::std::int64_t,
+                                            params::static_max_value_v<KParameterT>>>
 struct dispatch_batched_topk
 {
   using offset_t = ::cuda::std::int64_t;
@@ -197,7 +197,7 @@ struct dispatch_batched_topk
   // We pass ValueInputItItT itself as cub::NullType** when only keys are processed
   static constexpr bool keys_only = ::cuda::std::is_same_v<ValueInputItItT, NullType**>;
 
-  template <typename ActiveWorkerPerSegmentPolicyTPolicyT>
+  template <class ActiveWorkerPerSegmentPolicyTPolicyT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t invoke_one_worker_per_segment()
   {
     using max_policy_t = typename SelectedPolicy::max_policy;
@@ -259,7 +259,7 @@ struct dispatch_batched_topk
     return cudaSuccess;
   }
 
-  template <typename ActivePolicyT>
+  template <class ActivePolicyT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t Invoke()
   {
     // Helper that determines (a) whether there's any one-worker-per-segment policy supporting the range of segment

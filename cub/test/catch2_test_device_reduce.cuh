@@ -157,7 +157,7 @@ cuda::constant_iterator<__nv_bfloat16, OffsetT> inline unwrap_it(cuda::constant_
 }
 #endif // TEST_BF_T()
 
-template <typename T>
+template <class T>
 using unwrap_value_t = std::remove_reference_t<decltype(*unwrap_it(std::declval<T*>()))>;
 
 template <class WrappedItT, //
@@ -182,13 +182,13 @@ inline constexpr OpT unwrap_op(std::integral_constant<bool, V> /* base case */, 
 /**
  * @brief Initializes the given item type with a constant non-zero value.
  */
-template <typename T>
+template <class T>
 inline void init_default_constant(T& val, int element_val = 2)
 {
   val = T{static_cast<T>(element_val)};
 }
 
-template <template <typename> class... Policies>
+template <template <class> class... Policies>
 inline void init_default_constant(c2h::custom_type_t<Policies...>& val, int element_val = 2)
 {
   val.key = static_cast<size_t>(element_val);
@@ -217,12 +217,7 @@ inline void init_default_constant(ulonglong4_16a& val, int element_val = 2)
 }
 #endif // _CCCL_CTK_AT_LEAST(13, 0)
 
-template <typename InputItT,
-          typename OffsetItT,
-          typename SizeItT,
-          typename ReductionOpT,
-          typename InitT,
-          typename ResultOutItT>
+template <class InputItT, class OffsetItT, class SizeItT, class ReductionOpT, class InitT, class ResultOutItT>
 inline void compute_host_reference(
   InputItT h_in,
   OffsetItT h_offsets,
@@ -246,7 +241,7 @@ inline void compute_host_reference(
  * @brief Helper function to compute the reference solution for result verification taking an
  * arbitrary host-accessible input iterator.
  */
-template <typename InputItT, typename ReductionOpT, typename AccumulatorT>
+template <class InputItT, class ReductionOpT, class AccumulatorT>
 inline AccumulatorT
 compute_single_problem_reference(InputItT h_in_begin, InputItT h_in_end, ReductionOpT reduction_op, AccumulatorT init)
 {
@@ -269,7 +264,7 @@ compute_single_problem_reference(InputItT h_in_begin, InputItT h_in_end, Reducti
  * @brief Helper function to compute the reference solution for result verification, taking a
  * c2h::device_vector.
  */
-template <typename ItemT, typename ReductionOpT, typename AccumulatorT>
+template <class ItemT, class ReductionOpT, class AccumulatorT>
 inline AccumulatorT
 compute_single_problem_reference(const c2h::device_vector<ItemT>& d_in, ReductionOpT reduction_op, AccumulatorT init)
 {
@@ -284,7 +279,7 @@ compute_single_problem_reference(const c2h::device_vector<ItemT>& d_in, Reductio
  * @brief Helper function to compute the reference solution for result verification, taking a
  * c2h::device_vector of input items and a c2h::device_vector of offsets into the segments.
  */
-template <typename ItemT, typename OffsetT, typename ReductionOpT, typename AccumulatorT, typename ResultItT>
+template <class ItemT, class OffsetT, class ReductionOpT, class AccumulatorT, class ResultItT>
 void compute_segmented_problem_reference(
   const c2h::device_vector<ItemT>& d_in,
   const c2h::device_vector<OffsetT>& d_offsets,
@@ -308,7 +303,7 @@ void compute_segmented_problem_reference(
  * @brief Helper function to compute the reference solution for result verification, taking a
  * host-accessible input iterator and a c2h::device_vector of offsets into the segments.
  */
-template <typename InputItT, typename OffsetT, typename ReductionOpT, typename AccumulatorT, typename ResultItT>
+template <class InputItT, class OffsetT, class ReductionOpT, class AccumulatorT, class ResultItT>
 void compute_segmented_problem_reference(
   InputItT in_it,
   const c2h::device_vector<OffsetT>& d_offsets,
@@ -330,7 +325,7 @@ void compute_segmented_problem_reference(
  * @brief Helper function to compute the reference solution for result verification, taking a
  * c2h::device_vector of input items and a c2h::device_vector of offsets into the segments.
  */
-template <typename ItemT, typename OffsetT, typename ResultItT>
+template <class ItemT, class OffsetT, class ResultItT>
 void compute_segmented_argmin_reference(
   const c2h::device_vector<ItemT>& d_in, const c2h::device_vector<OffsetT>& d_offsets, ResultItT h_results)
 {
@@ -358,7 +353,7 @@ void compute_segmented_argmin_reference(
  * @brief Helper function to compute the reference solution for result verification, taking a
  * c2h::device_vector of input items and a c2h::device_vector of offsets into the segments.
  */
-template <typename ItemT, typename OffsetT, typename ResultItT>
+template <class ItemT, class OffsetT, class ResultItT>
 void compute_segmented_argmax_reference(
   const c2h::device_vector<ItemT>& d_in, const c2h::device_vector<OffsetT>& d_offsets, ResultItT h_results)
 {
@@ -386,7 +381,7 @@ void compute_segmented_argmax_reference(
  * @brief Helper function to compute the reference solution for result verification, taking a
  * c2h::device_vector of input items, num_segments and segment_size.
  */
-template <typename ItemT, typename ReductionOpT, typename AccumulatorT, typename ResultItT>
+template <class ItemT, class ReductionOpT, class AccumulatorT, class ResultItT>
 void compute_fixed_size_segmented_problem_reference(
   const c2h::device_vector<ItemT>& d_in,
   const int num_segments,
@@ -411,7 +406,7 @@ void compute_fixed_size_segmented_problem_reference(
  * @brief Helper function to compute the reference solution for result verification, taking a
  * c2h::device_vector of input items, num_segments and segment_size.
  */
-template <typename ItemT, typename ResultItT>
+template <class ItemT, class ResultItT>
 void compute_fixed_size_segmented_argmax_reference(
   const c2h::device_vector<ItemT>& d_in, const int num_segments, const int segment_size, ResultItT h_results)
 {
@@ -439,7 +434,7 @@ void compute_fixed_size_segmented_argmax_reference(
  * @brief Helper function to compute the reference solution for result verification, taking a
  * c2h::device_vector of input items, num_segments and segment_size.
  */
-template <typename ItemT, typename ResultItT>
+template <class ItemT, class ResultItT>
 void compute_fixed_size_segmented_argmin_reference(
   const c2h::device_vector<ItemT>& d_in, const int num_segments, const int segment_size, ResultItT h_results)
 {
@@ -467,7 +462,7 @@ void compute_fixed_size_segmented_argmin_reference(
  * @brief Helper function to compute the reference solution for unique keys (i.e., collapsing each
  * run of equal keys into a single key).
  */
-template <typename InputItT, typename OutputItT>
+template <class InputItT, class OutputItT>
 inline OutputItT compute_unique_keys_reference(InputItT h_in_begin, std::size_t num_keys, OutputItT h_out_it)
 {
   if (num_keys == 0)
@@ -490,7 +485,7 @@ inline OutputItT compute_unique_keys_reference(InputItT h_in_begin, std::size_t 
  * @brief Helper function to compute the reference solution for unique keys (i.e., collapsing each
  * run of equal keys into a single key).
  */
-template <typename ItemT>
+template <class ItemT>
 inline c2h::host_vector<ItemT> compute_unique_keys_reference(const c2h::device_vector<ItemT>& d_keys)
 {
   c2h::host_vector<ItemT> h_keys(d_keys);
@@ -505,7 +500,7 @@ inline c2h::host_vector<ItemT> compute_unique_keys_reference(const c2h::device_v
  * @brief Helper class template to facilitate specifying input/output type pairs along with the key
  * type for reduce-by-key algorithms.
  */
-template <typename InputT, typename OutputT = InputT, typename KeyT = std::int32_t>
+template <class InputT, class OutputT = InputT, class KeyT = std::int32_t>
 struct type_triple
 {
   using input_t  = InputT;
@@ -516,7 +511,7 @@ struct type_triple
 /**
  * @brief Helper class template to facilitate specifying input/output type pairs.
  */
-template <typename InputT, typename OutputT = InputT>
+template <class InputT, class OutputT = InputT>
 struct type_pair
 {
   using input_t  = InputT;
@@ -526,7 +521,7 @@ struct type_pair
 /**
  * @brief Helper class template to facilitate accessing types specified by type-parameterized tests.
  */
-template <typename TestType>
+template <class TestType>
 struct params_t
 {
   using type_pair_t = typename c2h::get<0, TestType>;

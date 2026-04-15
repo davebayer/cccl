@@ -47,14 +47,14 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail::reduce
 {
-template <typename PolicySelector,
-          typename InputIteratorT,
-          typename OutputIteratorT,
-          typename OffsetT,
-          typename ReductionOpT,
-          typename InitT,
-          typename AccumT,
-          typename TransformOpT>
+template <class PolicySelector,
+          class InputIteratorT,
+          class OutputIteratorT,
+          class OffsetT,
+          class ReductionOpT,
+          class InitT,
+          class AccumT,
+          class TransformOpT>
 struct DeviceReduceKernelSource
 {
   // PolicySelector must be stateless, so we can pass the type to the kernel
@@ -91,11 +91,11 @@ struct DeviceReduceKernelSource
 };
 
 // TODO(bgruber): remove in CCCL 4.0
-template <typename PolicyHub>
+template <class PolicyHub>
 struct policy_selector_from_hub
 {
   // not every PolicyHub may have a ReduceNondeterministicPolicy
-  template <typename ActivePolicy, typename ap_reduce_nondet = typename ActivePolicy::ReduceNondeterministicPolicy>
+  template <class ActivePolicy, class ap_reduce_nondet = typename ActivePolicy::ReduceNondeterministicPolicy>
   _CCCL_DEVICE_API constexpr auto convert_nondet_policy(int) const
   {
     return agent_reduce_policy{
@@ -107,7 +107,7 @@ struct policy_selector_from_hub
     };
   }
 
-  template <typename>
+  template <class>
   _CCCL_DEVICE_API constexpr auto convert_nondet_policy(long) const
   {
     return agent_reduce_policy{};
@@ -165,15 +165,15 @@ struct policy_selector_from_hub
  * @tparam InitT
  *   Initial value type
  */
-template <typename InputIteratorT,
-          typename OutputIteratorT,
-          typename OffsetT,
-          typename ReductionOpT,
-          typename InitT  = cub::detail::non_void_value_t<OutputIteratorT, cub::detail::it_value_t<InputIteratorT>>,
-          typename AccumT = ::cuda::std::__accumulator_t<ReductionOpT, cub::detail::it_value_t<InputIteratorT>, InitT>,
-          typename TransformOpT = ::cuda::std::identity,
-          typename PolicyHub    = detail::reduce::policy_hub<AccumT, OffsetT, ReductionOpT>,
-          typename KernelSource = detail::reduce::DeviceReduceKernelSource<
+template <class InputIteratorT,
+          class OutputIteratorT,
+          class OffsetT,
+          class ReductionOpT,
+          class InitT  = cub::detail::non_void_value_t<OutputIteratorT, cub::detail::it_value_t<InputIteratorT>>,
+          class AccumT = ::cuda::std::__accumulator_t<ReductionOpT, cub::detail::it_value_t<InputIteratorT>, InitT>,
+          class TransformOpT = ::cuda::std::identity,
+          class PolicyHub    = detail::reduce::policy_hub<AccumT, OffsetT, ReductionOpT>,
+          class KernelSource = detail::reduce::DeviceReduceKernelSource<
             detail::reduce::policy_selector_from_hub<PolicyHub>,
             InputIteratorT,
             OutputIteratorT,
@@ -182,7 +182,7 @@ template <typename InputIteratorT,
             InitT,
             AccumT,
             TransformOpT>,
-          typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+          class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
 struct DispatchReduce
 {
   //---------------------------------------------------------------------------
@@ -272,7 +272,7 @@ struct DispatchReduce
    *   Kernel function pointer to parameterization of
    *   cub::DeviceReduceSingleTileKernel
    */
-  template <typename ActivePolicyT, typename SingleTileKernelT>
+  template <class ActivePolicyT, class SingleTileKernelT>
   CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE cudaError_t
   InvokeSingleTile(SingleTileKernelT single_tile_kernel, ActivePolicyT policy = {})
   {
@@ -328,7 +328,7 @@ struct DispatchReduce
    *   Kernel function pointer to parameterization of
    *   cub::DeviceReduceSingleTileKernel
    */
-  template <typename ActivePolicyT, typename ReduceKernelT, typename SingleTileKernelT>
+  template <class ActivePolicyT, class ReduceKernelT, class SingleTileKernelT>
   CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE cudaError_t
   InvokePasses(ReduceKernelT reduce_kernel, SingleTileKernelT single_tile_kernel, ActivePolicyT active_policy = {})
   {
@@ -437,7 +437,7 @@ struct DispatchReduce
   //---------------------------------------------------------------------------
 
   /// Invocation
-  template <typename ActivePolicyT>
+  template <class ActivePolicyT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t Invoke(ActivePolicyT active_policy = {})
   {
     auto wrapped_policy = detail::reduce::MakeReducePolicyWrapper(active_policy);
@@ -488,7 +488,7 @@ struct DispatchReduce
    *   **[optional]** CUDA stream to launch kernels within.
    *   Default is stream<sub>0</sub>.
    */
-  template <typename MaxPolicyT = typename PolicyHub::MaxPolicy>
+  template <class MaxPolicyT = typename PolicyHub::MaxPolicy>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t Dispatch(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -561,18 +561,18 @@ struct DispatchReduce
  *   Initial value type
  */
 template <
-  typename InputIteratorT,
-  typename OutputIteratorT,
-  typename OffsetT,
-  typename ReductionOpT,
-  typename TransformOpT,
-  typename InitT,
-  typename AccumT =
+  class InputIteratorT,
+  class OutputIteratorT,
+  class OffsetT,
+  class ReductionOpT,
+  class TransformOpT,
+  class InitT,
+  class AccumT =
     ::cuda::std::__accumulator_t<ReductionOpT,
                                  ::cuda::std::invoke_result_t<TransformOpT, ::cuda::std::iter_value_t<InputIteratorT>>,
                                  InitT>,
-  typename PolicyHub    = detail::reduce::policy_hub<AccumT, OffsetT, ReductionOpT>,
-  typename KernelSource = detail::reduce::DeviceReduceKernelSource<
+  class PolicyHub    = detail::reduce::policy_hub<AccumT, OffsetT, ReductionOpT>,
+  class KernelSource = detail::reduce::DeviceReduceKernelSource<
     typename PolicyHub::MaxPolicy,
     InputIteratorT,
     OutputIteratorT,
@@ -581,7 +581,7 @@ template <
     InitT,
     AccumT,
     TransformOpT>,
-  typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+  class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
 using DispatchTransformReduce =
   DispatchReduce<InputIteratorT,
                  OutputIteratorT,
@@ -596,15 +596,15 @@ using DispatchTransformReduce =
 
 namespace detail::reduce
 {
-template <typename AccumT,
-          typename InputIteratorT,
-          typename OutputIteratorT,
-          typename OffsetT,
-          typename ReductionOpT,
-          typename InitT,
-          typename TransformOpT,
-          typename KernelSource,
-          typename KernelLauncherFactory>
+template <class AccumT,
+          class InputIteratorT,
+          class OutputIteratorT,
+          class OffsetT,
+          class ReductionOpT,
+          class InitT,
+          class TransformOpT,
+          class KernelSource,
+          class KernelLauncherFactory>
 CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t invoke_passes(
   void* d_temp_storage,
   size_t& temp_storage_bytes,
@@ -731,33 +731,33 @@ CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t invoke_passes(
 
 // select the accumulator type using an overload set, so __accumulator_t and invoke_result_t are not instantiated when
 // an overriding accumulator type is present. This is needed by CCCL.C.
-template <typename InputIteratorT, typename InitT, typename ReductionOpT, typename TransformOpT>
+template <class InputIteratorT, class InitT, class ReductionOpT, class TransformOpT>
 _CCCL_API auto select_accum_t(use_default*)
   -> ::cuda::std::__accumulator_t<ReductionOpT,
                                   ::cuda::std::invoke_result_t<TransformOpT, ::cuda::std::iter_value_t<InputIteratorT>>,
                                   InitT>;
-template <typename InputIteratorT,
-          typename InitT,
-          typename ReductionOpT,
-          typename TransformOpT,
-          typename OverrideAccumT,
+template <class InputIteratorT,
+          class InitT,
+          class ReductionOpT,
+          class TransformOpT,
+          class OverrideAccumT,
           ::cuda::std::enable_if_t<!::cuda::std::is_same_v<OverrideAccumT, use_default>, int> = 0>
 _CCCL_API auto select_accum_t(OverrideAccumT*) -> OverrideAccumT;
 
 template <
-  typename OverrideAccumT = use_default,
-  typename InputIteratorT,
-  typename OutputIteratorT,
-  typename OffsetT,
-  typename ReductionOpT,
-  typename InitT        = non_void_value_t<OutputIteratorT, it_value_t<InputIteratorT>>,
-  typename TransformOpT = ::cuda::std::identity,
-  typename AccumT =
+  class OverrideAccumT = use_default,
+  class InputIteratorT,
+  class OutputIteratorT,
+  class OffsetT,
+  class ReductionOpT,
+  class InitT        = non_void_value_t<OutputIteratorT, it_value_t<InputIteratorT>>,
+  class TransformOpT = ::cuda::std::identity,
+  class AccumT =
     decltype(select_accum_t<InputIteratorT, InitT, ReductionOpT, TransformOpT>(static_cast<OverrideAccumT*>(nullptr))),
-  typename PolicySelector = policy_selector_from_types<AccumT, OffsetT, ReductionOpT>,
-  typename KernelSource =
+  class PolicySelector = policy_selector_from_types<AccumT, OffsetT, ReductionOpT>,
+  class KernelSource =
     DeviceReduceKernelSource<PolicySelector, InputIteratorT, OutputIteratorT, OffsetT, ReductionOpT, InitT, AccumT, TransformOpT>,
-  typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+  class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
 #if _CCCL_HAS_CONCEPTS()
   requires reduce_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()

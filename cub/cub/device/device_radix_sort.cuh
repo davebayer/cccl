@@ -125,7 +125,7 @@ CUB_NAMESPACE_BEGIN
 struct DeviceRadixSort
 {
 private:
-  template <SortOrder Order, typename KeyT, typename ValueT, typename NumItemsT, typename DecomposerT>
+  template <SortOrder Order, class KeyT, class ValueT, class NumItemsT, class DecomposerT>
   CUB_RUNTIME_FUNCTION static cudaError_t radix_sort_with_decomposer(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -162,7 +162,7 @@ private:
     _CCCL_UNREACHABLE();
   }
 
-  template <SortOrder Order, typename KeyT, typename ValueT, typename NumItemsT, typename DecomposerT>
+  template <SortOrder Order, class KeyT, class ValueT, class NumItemsT, class DecomposerT>
   CUB_RUNTIME_FUNCTION static cudaError_t radix_sort_with_decomposer(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -307,7 +307,7 @@ public:
   //! @param[in] stream
   //!   **[optional]** CUDA stream to launch kernels within.
   //!   Default is stream<sub>0</sub>.
-  template <typename KeyT, typename ValueT, typename NumItemsT>
+  template <class KeyT, class ValueT, class NumItemsT>
   CUB_RUNTIME_FUNCTION static cudaError_t SortPairs(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -423,10 +423,10 @@ public:
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename KeyT,
-            typename ValueT,
-            typename NumItemsT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class KeyT,
+            class ValueT,
+            class NumItemsT,
+            class EnvT = ::cuda::std::execution::env<>,
             typename ::cuda::std::enable_if_t<::cuda::std::is_integral_v<NumItemsT>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t SortPairs(
     const KeyT* d_keys_in,
@@ -555,7 +555,7 @@ public:
   //! @param[in] stream
   //!   **[optional]** CUDA stream to launch kernels within.
   //!   Default is stream<sub>0</sub>.
-  template <typename KeyT, typename ValueT, typename NumItemsT, typename DecomposerT>
+  template <class KeyT, class ValueT, class NumItemsT, class DecomposerT>
   CUB_RUNTIME_FUNCTION static //
     ::cuda::std::enable_if_t< //
       !::cuda::std::is_convertible_v<DecomposerT, int>, //
@@ -659,11 +659,11 @@ public:
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename KeyT,
-            typename ValueT,
-            typename NumItemsT,
-            typename DecomposerT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class KeyT,
+            class ValueT,
+            class NumItemsT,
+            class DecomposerT,
+            class EnvT = ::cuda::std::execution::env<>,
             typename ::cuda::std::enable_if_t<!::cuda::std::is_convertible_v<DecomposerT, int>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t SortPairs(
     const KeyT* d_keys_in,
@@ -788,7 +788,7 @@ public:
   //! @param[in] stream
   //!   **[optional]** CUDA stream to launch kernels within.
   //!   Default is stream<sub>0</sub>.
-  template <typename KeyT, typename ValueT, typename NumItemsT, typename DecomposerT>
+  template <class KeyT, class ValueT, class NumItemsT, class DecomposerT>
   CUB_RUNTIME_FUNCTION static //
     ::cuda::std::enable_if_t< //
       !::cuda::std::is_convertible_v<DecomposerT, int>, //
@@ -880,11 +880,11 @@ public:
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename KeyT,
-            typename ValueT,
-            typename NumItemsT,
-            typename DecomposerT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class KeyT,
+            class ValueT,
+            class NumItemsT,
+            class DecomposerT,
+            class EnvT = ::cuda::std::execution::env<>,
             typename ::cuda::std::enable_if_t<!::cuda::std::is_convertible_v<DecomposerT, int>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t SortPairs(
     const KeyT* d_keys_in,
@@ -1014,7 +1014,7 @@ public:
   //! @param[in] stream
   //!   **[optional]** CUDA stream to launch kernels within.
   //!   Default is stream<sub>0</sub>.
-  template <typename KeyT, typename ValueT, typename NumItemsT>
+  template <class KeyT, class ValueT, class NumItemsT>
   CUB_RUNTIME_FUNCTION static cudaError_t SortPairs(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1113,10 +1113,10 @@ public:
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename KeyT,
-            typename ValueT,
-            typename NumItemsT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class KeyT,
+            class ValueT,
+            class NumItemsT,
+            class EnvT = ::cuda::std::execution::env<>,
             typename ::cuda::std::enable_if_t<::cuda::std::is_integral_v<NumItemsT>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t SortPairs(
     DoubleBuffer<KeyT>& d_keys,
@@ -1234,7 +1234,7 @@ public:
   //! @param[in] stream
   //!   **[optional]** CUDA stream to launch kernels within.
   //!   Default is stream<sub>0</sub>.
-  template <typename KeyT, typename ValueT, typename NumItemsT, typename DecomposerT>
+  template <class KeyT, class ValueT, class NumItemsT, class DecomposerT>
   CUB_RUNTIME_FUNCTION static //
     ::cuda::std::enable_if_t< //
       !::cuda::std::is_convertible_v<DecomposerT, int>, //
@@ -1312,11 +1312,11 @@ public:
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename KeyT,
-            typename ValueT,
-            typename NumItemsT,
-            typename DecomposerT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class KeyT,
+            class ValueT,
+            class NumItemsT,
+            class DecomposerT,
+            class EnvT = ::cuda::std::execution::env<>,
             typename ::cuda::std::enable_if_t<!::cuda::std::is_convertible_v<DecomposerT, int>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t SortPairs(
     DoubleBuffer<KeyT>& d_keys,
@@ -1441,7 +1441,7 @@ public:
   //! @param[in] stream
   //!   **[optional]** CUDA stream to launch kernels within.
   //!   Default is stream<sub>0</sub>.
-  template <typename KeyT, typename ValueT, typename NumItemsT, typename DecomposerT>
+  template <class KeyT, class ValueT, class NumItemsT, class DecomposerT>
   CUB_RUNTIME_FUNCTION static //
     ::cuda::std::enable_if_t< //
       !::cuda::std::is_convertible_v<DecomposerT, int>, //
@@ -1528,11 +1528,11 @@ public:
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename KeyT,
-            typename ValueT,
-            typename NumItemsT,
-            typename DecomposerT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class KeyT,
+            class ValueT,
+            class NumItemsT,
+            class DecomposerT,
+            class EnvT = ::cuda::std::execution::env<>,
             typename ::cuda::std::enable_if_t<!::cuda::std::is_convertible_v<DecomposerT, int>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t SortPairs(
     DoubleBuffer<KeyT>& d_keys,
@@ -1657,7 +1657,7 @@ public:
   //! @param[in] stream
   //!   **[optional]** CUDA stream to launch kernels within.
   //!   Default is stream<sub>0</sub>.
-  template <typename KeyT, typename ValueT, typename NumItemsT>
+  template <class KeyT, class ValueT, class NumItemsT>
   CUB_RUNTIME_FUNCTION static cudaError_t SortPairsDescending(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1771,10 +1771,10 @@ public:
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename KeyT,
-            typename ValueT,
-            typename NumItemsT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class KeyT,
+            class ValueT,
+            class NumItemsT,
+            class EnvT = ::cuda::std::execution::env<>,
             typename ::cuda::std::enable_if_t<::cuda::std::is_integral_v<NumItemsT>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t SortPairsDescending(
     const KeyT* d_keys_in,
@@ -1902,7 +1902,7 @@ public:
   //! @param[in] stream
   //!   **[optional]** CUDA stream to launch kernels within.
   //!   Default is stream<sub>0</sub>.
-  template <typename KeyT, typename ValueT, typename NumItemsT, typename DecomposerT>
+  template <class KeyT, class ValueT, class NumItemsT, class DecomposerT>
   CUB_RUNTIME_FUNCTION static //
     ::cuda::std::enable_if_t< //
       !::cuda::std::is_convertible_v<DecomposerT, int>, //
@@ -2030,7 +2030,7 @@ public:
   //! @param[in] stream
   //!   **[optional]** CUDA stream to launch kernels within.
   //!   Default is stream<sub>0</sub>.
-  template <typename KeyT, typename ValueT, typename NumItemsT, typename DecomposerT>
+  template <class KeyT, class ValueT, class NumItemsT, class DecomposerT>
   CUB_RUNTIME_FUNCTION static //
     ::cuda::std::enable_if_t< //
       !::cuda::std::is_convertible_v<DecomposerT, int>, //
@@ -2171,7 +2171,7 @@ public:
   //! @param[in] stream
   //!   **[optional]** CUDA stream to launch kernels within.
   //!   Default is stream<sub>0</sub>.
-  template <typename KeyT, typename ValueT, typename NumItemsT>
+  template <class KeyT, class ValueT, class NumItemsT>
   CUB_RUNTIME_FUNCTION static cudaError_t SortPairsDescending(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -2270,10 +2270,10 @@ public:
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename KeyT,
-            typename ValueT,
-            typename NumItemsT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class KeyT,
+            class ValueT,
+            class NumItemsT,
+            class EnvT = ::cuda::std::execution::env<>,
             typename ::cuda::std::enable_if_t<::cuda::std::is_integral_v<NumItemsT>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t SortPairsDescending(
     DoubleBuffer<KeyT>& d_keys,
@@ -2391,7 +2391,7 @@ public:
   //! @param[in] stream
   //!   **[optional]** CUDA stream to launch kernels within.
   //!   Default is stream<sub>0</sub>.
-  template <typename KeyT, typename ValueT, typename NumItemsT, typename DecomposerT>
+  template <class KeyT, class ValueT, class NumItemsT, class DecomposerT>
   CUB_RUNTIME_FUNCTION static //
     ::cuda::std::enable_if_t< //
       !::cuda::std::is_convertible_v<DecomposerT, int>, //
@@ -2519,7 +2519,7 @@ public:
   //! @param[in] stream
   //!   **[optional]** CUDA stream to launch kernels within.
   //!   Default is stream<sub>0</sub>.
-  template <typename KeyT, typename ValueT, typename NumItemsT, typename DecomposerT>
+  template <class KeyT, class ValueT, class NumItemsT, class DecomposerT>
   CUB_RUNTIME_FUNCTION static //
     ::cuda::std::enable_if_t< //
       !::cuda::std::is_convertible_v<DecomposerT, int>, //
@@ -2585,11 +2585,11 @@ public:
   //! @param[in] begin_bit Least-significant bit index (inclusive)
   //! @param[in] end_bit Most-significant bit index (exclusive)
   //! @param[in] env **[optional]** Execution environment
-  template <typename KeyT,
-            typename ValueT,
-            typename NumItemsT,
-            typename DecomposerT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class KeyT,
+            class ValueT,
+            class NumItemsT,
+            class DecomposerT,
+            class EnvT = ::cuda::std::execution::env<>,
             typename ::cuda::std::enable_if_t<!::cuda::std::is_convertible_v<DecomposerT, int>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t SortPairsDescending(
     const KeyT* d_keys_in,
@@ -2661,11 +2661,11 @@ public:
   //! @param[in] num_items Number of items to sort
   //! @param[in] decomposer Decomposer callable
   //! @param[in] env **[optional]** Execution environment
-  template <typename KeyT,
-            typename ValueT,
-            typename NumItemsT,
-            typename DecomposerT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class KeyT,
+            class ValueT,
+            class NumItemsT,
+            class DecomposerT,
+            class EnvT = ::cuda::std::execution::env<>,
             typename ::cuda::std::enable_if_t<!::cuda::std::is_convertible_v<DecomposerT, int>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t SortPairsDescending(
     const KeyT* d_keys_in,
@@ -2723,11 +2723,11 @@ public:
   //! @param[in] num_items Number of items to sort
   //! @param[in] decomposer Decomposer callable
   //! @param[in] env **[optional]** Execution environment
-  template <typename KeyT,
-            typename ValueT,
-            typename NumItemsT,
-            typename DecomposerT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class KeyT,
+            class ValueT,
+            class NumItemsT,
+            class DecomposerT,
+            class EnvT = ::cuda::std::execution::env<>,
             typename ::cuda::std::enable_if_t<!::cuda::std::is_convertible_v<DecomposerT, int>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t SortPairsDescending(
     DoubleBuffer<KeyT>& d_keys,
@@ -2786,11 +2786,11 @@ public:
   //! @param[in] begin_bit Least-significant bit index (inclusive)
   //! @param[in] end_bit Most-significant bit index (exclusive)
   //! @param[in] env **[optional]** Execution environment
-  template <typename KeyT,
-            typename ValueT,
-            typename NumItemsT,
-            typename DecomposerT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class KeyT,
+            class ValueT,
+            class NumItemsT,
+            class DecomposerT,
+            class EnvT = ::cuda::std::execution::env<>,
             typename ::cuda::std::enable_if_t<!::cuda::std::is_convertible_v<DecomposerT, int>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t SortPairsDescending(
     DoubleBuffer<KeyT>& d_keys,
@@ -2905,7 +2905,7 @@ public:
   //! @param[in] stream
   //!   **[optional]** CUDA stream to launch kernels within.
   //!   Default is stream<sub>0</sub>.
-  template <typename KeyT, typename NumItemsT>
+  template <class KeyT, class NumItemsT>
   CUB_RUNTIME_FUNCTION static cudaError_t SortKeys(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -3006,9 +3006,9 @@ public:
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename KeyT,
-            typename NumItemsT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class KeyT,
+            class NumItemsT,
+            class EnvT = ::cuda::std::execution::env<>,
             typename ::cuda::std::enable_if_t<::cuda::std::is_integral_v<NumItemsT>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t SortKeys(
     const KeyT* d_keys_in,
@@ -3126,7 +3126,7 @@ public:
   //! @param[in] stream
   //!   **[optional]** CUDA stream to launch kernels within.
   //!   Default is stream<sub>0</sub>.
-  template <typename KeyT, typename NumItemsT, typename DecomposerT>
+  template <class KeyT, class NumItemsT, class DecomposerT>
   CUB_RUNTIME_FUNCTION static //
     ::cuda::std::enable_if_t< //
       !::cuda::std::is_convertible_v<DecomposerT, int>, //
@@ -3203,10 +3203,10 @@ public:
   //! @param[in] begin_bit Least-significant bit index (inclusive)
   //! @param[in] end_bit Most-significant bit index (exclusive)
   //! @param[in] env **[optional]** Execution environment
-  template <typename KeyT,
-            typename NumItemsT,
-            typename DecomposerT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class KeyT,
+            class NumItemsT,
+            class DecomposerT,
+            class EnvT = ::cuda::std::execution::env<>,
             typename ::cuda::std::enable_if_t<!::cuda::std::is_convertible_v<DecomposerT, int>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t SortKeys(
     const KeyT* d_keys_in,
@@ -3320,7 +3320,7 @@ public:
   //! @param[in] stream
   //!   **[optional]** CUDA stream to launch kernels within.
   //!   Default is stream<sub>0</sub>.
-  template <typename KeyT, typename NumItemsT, typename DecomposerT>
+  template <class KeyT, class NumItemsT, class DecomposerT>
   CUB_RUNTIME_FUNCTION static //
     ::cuda::std::enable_if_t< //
       !::cuda::std::is_convertible_v<DecomposerT, int>, //
@@ -3390,10 +3390,10 @@ public:
   //! @param[in] num_items Number of items to sort
   //! @param[in] decomposer Decomposer callable
   //! @param[in] env **[optional]** Execution environment
-  template <typename KeyT,
-            typename NumItemsT,
-            typename DecomposerT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class KeyT,
+            class NumItemsT,
+            class DecomposerT,
+            class EnvT = ::cuda::std::execution::env<>,
             typename ::cuda::std::enable_if_t<!::cuda::std::is_convertible_v<DecomposerT, int>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t
   SortKeys(const KeyT* d_keys_in, KeyT* d_keys_out, NumItemsT num_items, DecomposerT decomposer, EnvT env = {})
@@ -3509,7 +3509,7 @@ public:
   //! @param[in] stream
   //!   **[optional]** CUDA stream to launch kernels within.
   //!   Default is stream<sub>0</sub>.
-  template <typename KeyT, typename NumItemsT>
+  template <class KeyT, class NumItemsT>
   CUB_RUNTIME_FUNCTION static cudaError_t SortKeys(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -3609,9 +3609,9 @@ public:
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename KeyT,
-            typename NumItemsT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class KeyT,
+            class NumItemsT,
+            class EnvT = ::cuda::std::execution::env<>,
             typename ::cuda::std::enable_if_t<::cuda::std::is_integral_v<NumItemsT>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t SortKeys(
     DoubleBuffer<KeyT>& d_keys, NumItemsT num_items, int begin_bit = 0, int end_bit = sizeof(KeyT) * 8, EnvT env = {})
@@ -3714,7 +3714,7 @@ public:
   //! @param[in] stream
   //!   **[optional]** CUDA stream to launch kernels within.
   //!   Default is stream<sub>0</sub>.
-  template <typename KeyT, typename NumItemsT, typename DecomposerT>
+  template <class KeyT, class NumItemsT, class DecomposerT>
   CUB_RUNTIME_FUNCTION static //
     ::cuda::std::enable_if_t< //
       !::cuda::std::is_convertible_v<DecomposerT, int>, //
@@ -3775,10 +3775,10 @@ public:
   //! @param[in] num_items Number of items to sort
   //! @param[in] decomposer Decomposer callable
   //! @param[in] env **[optional]** Execution environment
-  template <typename KeyT,
-            typename NumItemsT,
-            typename DecomposerT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class KeyT,
+            class NumItemsT,
+            class DecomposerT,
+            class EnvT = ::cuda::std::execution::env<>,
             typename ::cuda::std::enable_if_t<!::cuda::std::is_convertible_v<DecomposerT, int>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t
   SortKeys(DoubleBuffer<KeyT>& d_keys, NumItemsT num_items, DecomposerT decomposer, EnvT env = {})
@@ -3888,7 +3888,7 @@ public:
   //! @param[in] stream
   //!   **[optional]** CUDA stream to launch kernels within.
   //!   Default is stream<sub>0</sub>.
-  template <typename KeyT, typename NumItemsT, typename DecomposerT>
+  template <class KeyT, class NumItemsT, class DecomposerT>
   CUB_RUNTIME_FUNCTION static //
     ::cuda::std::enable_if_t< //
       !::cuda::std::is_convertible_v<DecomposerT, int>, //
@@ -3954,10 +3954,10 @@ public:
   //! @param[in] begin_bit Least-significant bit index (inclusive)
   //! @param[in] end_bit Most-significant bit index (exclusive)
   //! @param[in] env **[optional]** Execution environment
-  template <typename KeyT,
-            typename NumItemsT,
-            typename DecomposerT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class KeyT,
+            class NumItemsT,
+            class DecomposerT,
+            class EnvT = ::cuda::std::execution::env<>,
             typename ::cuda::std::enable_if_t<!::cuda::std::is_convertible_v<DecomposerT, int>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t SortKeys(
     DoubleBuffer<KeyT>& d_keys, NumItemsT num_items, DecomposerT decomposer, int begin_bit, int end_bit, EnvT env = {})
@@ -4063,7 +4063,7 @@ public:
   //! @param[in] stream
   //!   **[optional]** CUDA stream to launch kernels within.
   //!   Default is stream<sub>0</sub>.
-  template <typename KeyT, typename NumItemsT>
+  template <class KeyT, class NumItemsT>
   CUB_RUNTIME_FUNCTION static cudaError_t SortKeysDescending(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -4163,9 +4163,9 @@ public:
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename KeyT,
-            typename NumItemsT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class KeyT,
+            class NumItemsT,
+            class EnvT = ::cuda::std::execution::env<>,
             typename ::cuda::std::enable_if_t<::cuda::std::is_integral_v<NumItemsT>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t SortKeysDescending(
     const KeyT* d_keys_in,
@@ -4283,7 +4283,7 @@ public:
   //! @param[in] stream
   //!   **[optional]** CUDA stream to launch kernels within.
   //!   Default is stream<sub>0</sub>.
-  template <typename KeyT, typename NumItemsT, typename DecomposerT>
+  template <class KeyT, class NumItemsT, class DecomposerT>
   CUB_RUNTIME_FUNCTION static //
     ::cuda::std::enable_if_t< //
       !::cuda::std::is_convertible_v<DecomposerT, int>, //
@@ -4397,7 +4397,7 @@ public:
   //! @param[in] stream
   //!   **[optional]** CUDA stream to launch kernels within.
   //!   Default is stream<sub>0</sub>.
-  template <typename KeyT, typename NumItemsT, typename DecomposerT>
+  template <class KeyT, class NumItemsT, class DecomposerT>
   CUB_RUNTIME_FUNCTION static //
     ::cuda::std::enable_if_t< //
       !::cuda::std::is_convertible_v<DecomposerT, int>, //
@@ -4519,7 +4519,7 @@ public:
   //! @param[in] stream
   //!   **[optional]** CUDA stream to launch kernels within.
   //!   Default is stream<sub>0</sub>.
-  template <typename KeyT, typename NumItemsT>
+  template <class KeyT, class NumItemsT>
   CUB_RUNTIME_FUNCTION static cudaError_t SortKeysDescending(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -4619,9 +4619,9 @@ public:
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename KeyT,
-            typename NumItemsT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class KeyT,
+            class NumItemsT,
+            class EnvT = ::cuda::std::execution::env<>,
             typename ::cuda::std::enable_if_t<::cuda::std::is_integral_v<NumItemsT>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t SortKeysDescending(
     DoubleBuffer<KeyT>& d_keys, NumItemsT num_items, int begin_bit = 0, int end_bit = sizeof(KeyT) * 8, EnvT env = {})
@@ -4724,7 +4724,7 @@ public:
   //! @param[in] stream
   //!   **[optional]** CUDA stream to launch kernels within.
   //!   Default is stream<sub>0</sub>.
-  template <typename KeyT, typename NumItemsT, typename DecomposerT>
+  template <class KeyT, class NumItemsT, class DecomposerT>
   CUB_RUNTIME_FUNCTION static //
     ::cuda::std::enable_if_t< //
       !::cuda::std::is_convertible_v<DecomposerT, int>, //
@@ -4840,7 +4840,7 @@ public:
   //! @param[in] stream
   //!   **[optional]** CUDA stream to launch kernels within.
   //!   Default is stream<sub>0</sub>.
-  template <typename KeyT, typename NumItemsT, typename DecomposerT>
+  template <class KeyT, class NumItemsT, class DecomposerT>
   CUB_RUNTIME_FUNCTION static //
     ::cuda::std::enable_if_t< //
       !::cuda::std::is_convertible_v<DecomposerT, int>, //
@@ -4902,10 +4902,10 @@ public:
   //! @param[in] begin_bit Least-significant bit index (inclusive)
   //! @param[in] end_bit Most-significant bit index (exclusive)
   //! @param[in] env **[optional]** Execution environment
-  template <typename KeyT,
-            typename NumItemsT,
-            typename DecomposerT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class KeyT,
+            class NumItemsT,
+            class DecomposerT,
+            class EnvT = ::cuda::std::execution::env<>,
             typename ::cuda::std::enable_if_t<!::cuda::std::is_convertible_v<DecomposerT, int>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t SortKeysDescending(
     const KeyT* d_keys_in,
@@ -4972,10 +4972,10 @@ public:
   //! @param[in] num_items Number of items to sort
   //! @param[in] decomposer Decomposer callable
   //! @param[in] env **[optional]** Execution environment
-  template <typename KeyT,
-            typename NumItemsT,
-            typename DecomposerT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class KeyT,
+            class NumItemsT,
+            class DecomposerT,
+            class EnvT = ::cuda::std::execution::env<>,
             typename ::cuda::std::enable_if_t<!::cuda::std::is_convertible_v<DecomposerT, int>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t SortKeysDescending(
     const KeyT* d_keys_in, KeyT* d_keys_out, NumItemsT num_items, DecomposerT decomposer, EnvT env = {})
@@ -5032,10 +5032,10 @@ public:
   //! @param[in] num_items Number of items to sort
   //! @param[in] decomposer Decomposer callable
   //! @param[in] env **[optional]** Execution environment
-  template <typename KeyT,
-            typename NumItemsT,
-            typename DecomposerT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class KeyT,
+            class NumItemsT,
+            class DecomposerT,
+            class EnvT = ::cuda::std::execution::env<>,
             typename ::cuda::std::enable_if_t<!::cuda::std::is_convertible_v<DecomposerT, int>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t
   SortKeysDescending(DoubleBuffer<KeyT>& d_keys, NumItemsT num_items, DecomposerT decomposer, EnvT env = {})
@@ -5088,10 +5088,10 @@ public:
   //! @param[in] begin_bit Least-significant bit index (inclusive)
   //! @param[in] end_bit Most-significant bit index (exclusive)
   //! @param[in] env **[optional]** Execution environment
-  template <typename KeyT,
-            typename NumItemsT,
-            typename DecomposerT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class KeyT,
+            class NumItemsT,
+            class DecomposerT,
+            class EnvT = ::cuda::std::execution::env<>,
             typename ::cuda::std::enable_if_t<!::cuda::std::is_convertible_v<DecomposerT, int>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t SortKeysDescending(
     DoubleBuffer<KeyT>& d_keys, NumItemsT num_items, DecomposerT decomposer, int begin_bit, int end_bit, EnvT env = {})

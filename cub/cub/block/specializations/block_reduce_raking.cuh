@@ -56,7 +56,7 @@ namespace detail
  * @tparam BlockDimZ
  *   The thread block length in threads along the Z dimension
  */
-template <typename T, int BlockDimX, int BlockDimY, int BlockDimZ>
+template <class T, int BlockDimX, int BlockDimY, int BlockDimZ>
 struct BlockReduceRaking
 {
   /// The thread block size in threads
@@ -119,7 +119,7 @@ struct BlockReduceRaking
    * @param[in] num_valid
    *   Number of valid elements (may be less than BLOCK_THREADS)
    */
-  template <bool IS_FULL_TILE, typename ReductionOp, int ITERATION>
+  template <bool IS_FULL_TILE, class ReductionOp, int ITERATION>
   _CCCL_DEVICE _CCCL_FORCEINLINE T RakingReduction(
     ReductionOp reduction_op, T* raking_segment, T partial, int num_valid, constant_t<ITERATION> /*iteration*/)
   {
@@ -142,7 +142,7 @@ struct BlockReduceRaking
    * @param[in] num_valid
    *   Number of valid elements (may be less than BLOCK_THREADS)
    */
-  template <bool IS_FULL_TILE, typename ReductionOp>
+  template <bool IS_FULL_TILE, class ReductionOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE T RakingReduction(
     ReductionOp /*reduction_op*/,
     T* /*raking_segment*/,
@@ -167,7 +167,7 @@ struct BlockReduceRaking
    * @param[in] reduction_op
    *   Binary reduction operator
    */
-  template <bool IS_FULL_TILE, typename ReductionOp>
+  template <bool IS_FULL_TILE, class ReductionOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE T Reduce(T partial, int num_valid, ReductionOp reduction_op)
   {
     if (WARP_SYNCHRONOUS)

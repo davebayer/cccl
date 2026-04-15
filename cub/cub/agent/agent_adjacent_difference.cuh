@@ -42,13 +42,13 @@ struct AgentAdjacentDifferencePolicy
 
 namespace detail::adjacent_difference
 {
-template <typename Policy,
-          typename InputIteratorT,
-          typename OutputIteratorT,
-          typename DifferenceOpT,
-          typename OffsetT,
-          typename InputT,
-          typename OutputT,
+template <class Policy,
+          class InputIteratorT,
+          class OutputIteratorT,
+          class DifferenceOpT,
+          class OffsetT,
+          class InputT,
+          class OutputT,
           bool MayAlias,
           bool ReadLeft>
 struct AgentDifference
@@ -205,7 +205,7 @@ struct AgentDifference
   }
 };
 
-template <typename InputIteratorT, typename InputT, typename OffsetT, bool ReadLeft>
+template <class InputIteratorT, class InputT, class OffsetT, bool ReadLeft>
 struct AgentDifferenceInit
 {
   static constexpr int BLOCK_THREADS = 128;

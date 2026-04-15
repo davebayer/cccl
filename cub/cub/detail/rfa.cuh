@@ -33,7 +33,7 @@ namespace detail::rfa
 inline constexpr int cub_rfa_max_jump = 5;
 static_assert(cub_rfa_max_jump <= 5, "cub_rfa_max_jump must be less than or equal to 5");
 
-template <typename FType, int Len>
+template <class FType, int Len>
 static _CCCL_DEVICE FType* get_shared_bin_array()
 {
   static __shared__ FType bin_computed_array[Len];

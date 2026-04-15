@@ -63,14 +63,14 @@ namespace detail::transform
 // Prefetches (at least on Hopper) a 128 byte cache line. Prefetching out-of-bounds addresses has no side effects
 // TODO(bgruber): there is also the cp.async.bulk.prefetch instruction available on Hopper. May improve perf a tiny bit
 // as we need to create less instructions to prefetch the same amount of data.
-template <typename T>
+template <class T>
 _CCCL_DEVICE _CCCL_FORCEINLINE void prefetch(const T* addr)
 {
   // TODO(bgruber): prefetch to L1 may be even better
   asm volatile("prefetch.global.L2 [%0];" : : "l"(__cvta_generic_to_global(addr)) : "memory");
 }
 
-template <int BlockDim, int PrefetchStride, typename It>
+template <int BlockDim, int PrefetchStride, class It>
 _CCCL_DEVICE _CCCL_FORCEINLINE void prefetch_tile(It begin, int items)
 {
   if constexpr (THRUST_NS_QUALIFIER::is_contiguous_iterator_v<It>)
@@ -90,7 +90,7 @@ _CCCL_DEVICE _CCCL_FORCEINLINE void prefetch_tile(It begin, int items)
 // that would disable the pragma and leave it to the compiler to choose whether to unroll or not. nvcc supports
 // _CCCL_PRAGMA_UNROLL(-1), but issues a warning though. Trying to suppress this warning inside the _CCCL_PRAGMA_UNROLL
 // macro kills MSVC. Also clang in CUDA mode does not support a non-positive unroll factor.
-template <int UnrollFactor, typename F>
+template <int UnrollFactor, class F>
 _CCCL_DEVICE _CCCL_FORCEINLINE void unrolled_for(int count, F&& body)
 {
   if constexpr (UnrollFactor > 0)
@@ -116,11 +116,11 @@ _CCCL_DEVICE _CCCL_FORCEINLINE void unrolled_for(int count, F&& body)
 template <int BlockThreads,
           int PrefetchByteStride,
           int UnrollFactor,
-          typename Offset,
-          typename Predicate,
-          typename F,
-          typename RandomAccessIteratorOut,
-          typename... RandomAccessIteratorIn>
+          class Offset,
+          class Predicate,
+          class F,
+          class RandomAccessIteratorOut,
+          class... RandomAccessIteratorIn>
 _CCCL_DEVICE void transform_kernel_prefetch(
   Offset num_items,
   int num_elem_per_thread,
@@ -226,10 +226,10 @@ template < // const transform_policy& Policy,
   int vec_size,
   int PrefetchByteStride,
   int PrefetchUnrollFactor,
-  typename Offset,
-  typename F,
-  typename RandomAccessIteratorOut,
-  typename... RandomAccessIteratorsIn>
+  class Offset,
+  class F,
+  class RandomAccessIteratorOut,
+  class... RandomAccessIteratorsIn>
 _CCCL_DEVICE void transform_kernel_vectorized(
   Offset num_items,
   int num_elem_per_thread_prefetch,
@@ -391,7 +391,7 @@ _CCCL_DEVICE void transform_kernel_vectorized(
 // Pointer with metadata to describe readonly input memory for memcpy_async and UBLKCP kernels.
 // LDGSTS is most efficient when the data is 16-byte aligned and the size a multiple of 16 bytes
 // UBLKCP is most efficient when the data is 128/16-byte aligned (Hopper/Blackwell) and the size a multiple of 16 bytes
-template <typename T> // Cannot add alignment to signature, because we need a uniform kernel template instantiation
+template <class T> // Cannot add alignment to signature, because we need a uniform kernel template instantiation
 struct aligned_base_ptr
 {
   using value_type = T;
@@ -411,7 +411,7 @@ struct aligned_base_ptr
   }
 };
 
-template <typename T>
+template <class T>
 _CCCL_HOST_DEVICE auto make_aligned_base_ptr(const T* ptr, int alignment) -> aligned_base_ptr<T>
 {
   const auto raw_ptr  = reinterpret_cast<const char*>(ptr);
@@ -501,7 +501,7 @@ _CCCL_DEVICE void memcpy_async_maybe_unaligned(void* dst, const void* src, unsig
 
 // Turning this function into a lambda will make nvcc generate it once for each iterator instead of for each distinct
 // value type (which may be less).
-template <int BlockThreads, typename AlignedPtr, typename Offset>
+template <int BlockThreads, class AlignedPtr, class Offset>
 _CCCL_DEVICE auto
 copy_and_return_smem_dst(AlignedPtr aligned_ptr, int& smem_offset, Offset offset, char* smem, int valid_items)
 {
@@ -536,7 +536,7 @@ copy_and_return_smem_dst(AlignedPtr aligned_ptr, int& smem_offset, Offset offset
   return reinterpret_cast<const T*>(dst_start_of_data);
 }
 
-template <int BlockThreads, typename AlignedPtr, typename Offset>
+template <int BlockThreads, class AlignedPtr, class Offset>
 _CCCL_DEVICE auto copy_and_return_smem_dst_fallback(
   AlignedPtr aligned_ptr, int& smem_offset, Offset offset, char* smem, int valid_items, int tile_size)
 {
@@ -576,11 +576,11 @@ _CCCL_DEVICE auto copy_and_return_smem_dst_fallback(
 template < // const transform_policy& Policy,
   int block_threads,
   int UnrollFactor,
-  typename Offset,
-  typename Predicate,
-  typename F,
-  typename RandomAccessIteratorOut,
-  typename... InTs>
+  class Offset,
+  class Predicate,
+  class F,
+  class RandomAccessIteratorOut,
+  class... InTs>
 _CCCL_DEVICE void transform_kernel_ldgsts(
   Offset num_items,
   int num_elem_per_thread,
@@ -728,11 +728,11 @@ template < // const transform_policy& Policy,
   int block_threads,
   int bulk_copy_alignment,
   int UnrollFactor,
-  typename Offset,
-  typename Predicate,
-  typename F,
-  typename RandomAccessIteratorOut,
-  typename... InTs>
+  class Offset,
+  class Predicate,
+  class F,
+  class RandomAccessIteratorOut,
+  class... InTs>
 _CCCL_DEVICE void transform_kernel_ublkcp(
   Offset num_items,
   int num_elem_per_thread,
@@ -949,7 +949,7 @@ _CCCL_DEVICE void transform_kernel_ublkcp(
   }
 }
 
-template <typename It>
+template <class It>
 union kernel_arg
 {
   aligned_base_ptr<it_value_t<It>> aligned_ptr; // first member is trivial
@@ -971,7 +971,7 @@ union kernel_arg
   }
 };
 
-template <typename It>
+template <class It>
 _CCCL_HOST_DEVICE auto make_iterator_kernel_arg(It it) -> kernel_arg<It>
 {
   kernel_arg<It> arg;
@@ -982,7 +982,7 @@ _CCCL_HOST_DEVICE auto make_iterator_kernel_arg(It it) -> kernel_arg<It>
   return arg;
 }
 
-template <typename It>
+template <class It>
 _CCCL_HOST_DEVICE auto make_aligned_base_ptr_kernel_arg(It ptr, int alignment) -> kernel_arg<It>
 {
   kernel_arg<It> arg;
@@ -990,7 +990,7 @@ _CCCL_HOST_DEVICE auto make_aligned_base_ptr_kernel_arg(It ptr, int alignment) -
   return arg;
 }
 
-template <typename PolicySelector>
+template <class PolicySelector>
 _CCCL_API constexpr int get_block_threads_helper()
 {
   constexpr transform_policy policy = PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10});
@@ -1010,18 +1010,18 @@ _CCCL_API constexpr int get_block_threads_helper()
 
 // need a variable template to force constant evaluation of get_block_threads_helper(), otherwise nvcc will give us a
 // "bad attribute argument substitution" error
-template <typename PolicySelector>
+template <class PolicySelector>
 inline constexpr int get_block_threads = get_block_threads_helper<PolicySelector>();
 
 // There is only one kernel for all algorithms, that dispatches based on the selected policy. It must be instantiated
 // with the same arguments for each algorithm. Only the device compiler will then select the implementation. This
 // saves some compile-time and binary size.
-template <typename PolicySelector,
-          typename Offset,
-          typename Predicate,
-          typename F,
-          typename RandomAccessIteratorOut,
-          typename... RandomAccessIteratorsIn>
+template <class PolicySelector,
+          class Offset,
+          class Predicate,
+          class F,
+          class RandomAccessIteratorOut,
+          class... RandomAccessIteratorsIn>
 #if _CCCL_HAS_CONCEPTS()
   requires transform_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()

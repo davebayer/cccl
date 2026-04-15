@@ -136,7 +136,7 @@ scale_reg_bound(int nominal_4B_block_threads, int nominal_4B_items_per_thread, i
   return {items_per_thread, block_threads};
 }
 
-template <int Nominal4ByteBlockThreads, int Nominal4ByteItemsPerThread, typename T>
+template <int Nominal4ByteBlockThreads, int Nominal4ByteItemsPerThread, class T>
 struct RegBoundScaling
 {
 private:
@@ -158,7 +158,7 @@ scale_mem_bound(int nominal_4B_block_threads, int nominal_4B_items_per_thread, i
   return {items_per_thread, block_threads};
 }
 
-template <int Nominal4ByteBlockThreads, int Nominal4ByteItemsPerThread, typename T>
+template <int Nominal4ByteBlockThreads, int Nominal4ByteItemsPerThread, class T>
 struct MemBoundScaling
 {
 private:
@@ -169,7 +169,7 @@ public:
   static constexpr int BLOCK_THREADS    = result.block_threads;
 };
 
-template <int Nominal4ByteBlockThreads, int Nominal4ByteItemsPerThread, typename = void>
+template <int Nominal4ByteBlockThreads, int Nominal4ByteItemsPerThread, class = void>
 struct NoScaling
 {
   static constexpr int ITEMS_PER_THREAD = Nominal4ByteItemsPerThread;

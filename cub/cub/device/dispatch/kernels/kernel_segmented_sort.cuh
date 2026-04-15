@@ -29,7 +29,7 @@ using local_segment_index_t = ::cuda::std::uint32_t;
 // Type used for total number of segments and to index within segments globally
 using global_segment_offset_t = ::cuda::std::int64_t;
 
-template <typename OffsetT, typename BeginOffsetIteratorT, typename EndOffsetIteratorT>
+template <class OffsetT, class BeginOffsetIteratorT, class EndOffsetIteratorT>
 struct LargeSegmentsSelectorT
 {
   OffsetT value{};
@@ -54,7 +54,7 @@ struct LargeSegmentsSelectorT
   }
 };
 
-template <typename OffsetT, typename BeginOffsetIteratorT, typename EndOffsetIteratorT>
+template <class OffsetT, class BeginOffsetIteratorT, class EndOffsetIteratorT>
 struct SmallSegmentsSelectorT
 {
   OffsetT value{};
@@ -120,12 +120,12 @@ struct SmallSegmentsSelectorT
  *   considered empty.
  */
 template <SortOrder Order,
-          typename PolicySelector,
-          typename KeyT,
-          typename ValueT,
-          typename BeginOffsetIteratorT,
-          typename EndOffsetIteratorT,
-          typename OffsetT>
+          class PolicySelector,
+          class KeyT,
+          class ValueT,
+          class BeginOffsetIteratorT,
+          class EndOffsetIteratorT,
+          class OffsetT>
 #if _CCCL_HAS_CONCEPTS()
   requires segmented_sort_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()
@@ -317,12 +317,12 @@ __launch_bounds__(PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).large_seg
  *   considered empty.
  */
 template <SortOrder Order,
-          typename PolicySelector,
-          typename KeyT,
-          typename ValueT,
-          typename BeginOffsetIteratorT,
-          typename EndOffsetIteratorT,
-          typename OffsetT>
+          class PolicySelector,
+          class KeyT,
+          class ValueT,
+          class BeginOffsetIteratorT,
+          class EndOffsetIteratorT,
+          class OffsetT>
 #if _CCCL_HAS_CONCEPTS()
   requires segmented_sort_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()
@@ -455,12 +455,12 @@ __launch_bounds__(PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).small_seg
  *   considered empty.
  */
 template <SortOrder Order,
-          typename PolicySelector,
-          typename KeyT,
-          typename ValueT,
-          typename BeginOffsetIteratorT,
-          typename EndOffsetIteratorT,
-          typename OffsetT>
+          class PolicySelector,
+          class KeyT,
+          class ValueT,
+          class BeginOffsetIteratorT,
+          class EndOffsetIteratorT,
+          class OffsetT>
 #if _CCCL_HAS_CONCEPTS()
   requires segmented_sort_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()

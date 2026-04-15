@@ -36,7 +36,7 @@ namespace detail
 //!
 //! @param env The execution environment
 //! @param algorithm_callable Callable that invokes the algorithm implementation with determinism specified
-template <typename EnvT, typename AlgorithmCallable>
+template <class EnvT, class AlgorithmCallable>
 CUB_RUNTIME_FUNCTION static cudaError_t dispatch_with_env(EnvT env, AlgorithmCallable&& algorithm_callable)
 {
   // Query stream from environment

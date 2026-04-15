@@ -45,14 +45,14 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail::radix_sort
 {
-template <typename PolicySelectorT,
+template <class PolicySelectorT,
           SortOrder Order,
-          typename KeyT,
-          typename ValueT,
-          typename BeginOffsetIteratorT,
-          typename EndOffsetIteratorT,
-          typename SegmentSizeT,
-          typename DecomposerT>
+          class KeyT,
+          class ValueT,
+          class BeginOffsetIteratorT,
+          class EndOffsetIteratorT,
+          class SegmentSizeT,
+          class DecomposerT>
 struct DeviceSegmentedRadixSortKernelSource
 {
   static_assert(::cuda::std::is_empty_v<PolicySelectorT>);
@@ -123,14 +123,14 @@ struct DeviceSegmentedRadixSortKernelSource
  */
 // TODO(bgruber): deprecate when we make the tuning API public, and remove in CCCL 4.0
 template <SortOrder Order,
-          typename KeyT,
-          typename ValueT,
-          typename BeginOffsetIteratorT,
-          typename EndOffsetIteratorT,
-          typename SegmentSizeT,
-          typename PolicyHub    = detail::radix_sort::policy_hub<KeyT, ValueT, SegmentSizeT>,
-          typename DecomposerT  = detail::identity_decomposer_t,
-          typename KernelSource = detail::radix_sort::DeviceSegmentedRadixSortKernelSource<
+          class KeyT,
+          class ValueT,
+          class BeginOffsetIteratorT,
+          class EndOffsetIteratorT,
+          class SegmentSizeT,
+          class PolicyHub    = detail::radix_sort::policy_hub<KeyT, ValueT, SegmentSizeT>,
+          class DecomposerT  = detail::identity_decomposer_t,
+          class KernelSource = detail::radix_sort::DeviceSegmentedRadixSortKernelSource<
             detail::radix_sort::policy_selector_from_hub<PolicyHub>,
             Order,
             KeyT,
@@ -139,7 +139,7 @@ template <SortOrder Order,
             EndOffsetIteratorT,
             SegmentSizeT,
             DecomposerT>,
-          typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+          class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
 struct DispatchSegmentedRadixSort
 {
   //------------------------------------------------------------------------------
@@ -251,7 +251,7 @@ struct DispatchSegmentedRadixSort
   //------------------------------------------------------------------------------
 
   /// Invoke a three-kernel sorting pass at the current bit.
-  template <typename PassConfigT>
+  template <class PassConfigT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t InvokePass(
     const KeyT* d_keys_in,
     KeyT* d_keys_out,
@@ -343,7 +343,7 @@ struct DispatchSegmentedRadixSort
   }
 
   /// PassConfig data structure
-  template <typename SegmentedKernelT>
+  template <class SegmentedKernelT>
   struct PassConfig
   {
     SegmentedKernelT segmented_kernel;
@@ -352,7 +352,7 @@ struct DispatchSegmentedRadixSort
     int radix_digits;
 
     /// Initialize pass configuration
-    template <typename SegmentedPolicyT>
+    template <class SegmentedPolicyT>
     CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE cudaError_t InitPassConfig(
       SegmentedKernelT segmented_kernel,
       int radix_bits,
@@ -383,7 +383,7 @@ struct DispatchSegmentedRadixSort
    *   Alternate kernel function pointer to parameterization of
    *   cub::DeviceSegmentedRadixSortKernel
    */
-  template <typename ActivePolicyT, typename SegmentedKernelT>
+  template <class ActivePolicyT, class SegmentedKernelT>
   CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE cudaError_t
   InvokePasses(SegmentedKernelT segmented_kernel, SegmentedKernelT alt_segmented_kernel, ActivePolicyT policy = {})
   {
@@ -505,7 +505,7 @@ struct DispatchSegmentedRadixSort
   //------------------------------------------------------------------------------
 
   /// Invocation
-  template <typename ActivePolicyT>
+  template <class ActivePolicyT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t Invoke(ActivePolicyT policy = {})
   {
     // Return if empty problem, or if no bits to sort and double-buffering is used
@@ -576,7 +576,7 @@ struct DispatchSegmentedRadixSort
    * @param[in] stream
    *   CUDA stream to launch kernels within.  Default is stream<sub>0</sub>.
    */
-  template <typename MaxPolicyT = typename PolicyHub::MaxPolicy>
+  template <class MaxPolicyT = typename PolicyHub::MaxPolicy>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t Dispatch(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -639,13 +639,13 @@ struct DispatchSegmentedRadixSort
 
 namespace detail::radix_sort
 {
-template <typename KeyT,
-          typename ValueT,
-          typename BeginOffsetIteratorT,
-          typename EndOffsetIteratorT,
-          typename DecomposerT,
-          typename KernelSource,
-          typename KernelLauncherFactory>
+template <class KeyT,
+          class ValueT,
+          class BeginOffsetIteratorT,
+          class EndOffsetIteratorT,
+          class DecomposerT,
+          class KernelSource,
+          class KernelLauncherFactory>
 CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t invoke_passes_segmented_radix_sort(
   void* d_temp_storage,
   size_t& temp_storage_bytes,
@@ -856,14 +856,14 @@ CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t invoke_passes_segmented_radix
 }
 
 template <SortOrder Order,
-          typename SegmentSizeT,
-          typename KeyT,
-          typename ValueT,
-          typename BeginOffsetIteratorT,
-          typename EndOffsetIteratorT,
-          typename DecomposerT    = identity_decomposer_t,
-          typename PolicySelector = policy_selector_from_types<KeyT, ValueT, SegmentSizeT>,
-          typename KernelSource   = DeviceSegmentedRadixSortKernelSource<
+          class SegmentSizeT,
+          class KeyT,
+          class ValueT,
+          class BeginOffsetIteratorT,
+          class EndOffsetIteratorT,
+          class DecomposerT    = identity_decomposer_t,
+          class PolicySelector = policy_selector_from_types<KeyT, ValueT, SegmentSizeT>,
+          class KernelSource   = DeviceSegmentedRadixSortKernelSource<
               PolicySelector,
               Order,
               KeyT,
@@ -872,7 +872,7 @@ template <SortOrder Order,
               EndOffsetIteratorT,
               SegmentSizeT,
               DecomposerT>,
-          typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+          class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
 #if _CCCL_HAS_CONCEPTS()
   requires radix_sort_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()

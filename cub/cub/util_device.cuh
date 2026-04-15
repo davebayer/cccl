@@ -59,7 +59,7 @@ namespace detail
 /**
  * \brief Empty kernel for querying PTX manifest metadata (e.g., version) for the current device
  */
-template <typename T>
+template <class T>
 _CCCL_KERNEL_ATTRIBUTES void EmptyKernel()
 {}
 } // namespace detail
@@ -204,7 +204,7 @@ public:
    * \note You must pass a morally equivalent function in to every call or
    *       this function has undefined behavior.
    */
-  template <typename Invocable>
+  template <class Invocable>
   _CCCL_HOST DevicePayload operator()(Invocable&& f, int device)
   {
     if (device >= DeviceCount() || device < 0)
@@ -303,7 +303,7 @@ _CCCL_HOST cudaError_t PtxVersionUncached(int& ptx_version, int device)
   return PtxVersionUncached<T>(ptx_version);
 }
 
-template <typename Tag>
+template <class Tag>
 _CCCL_HOST inline PerDeviceAttributeCache& GetPerDeviceAttributeCache()
 {
   static PerDeviceAttributeCache cache;
@@ -574,7 +574,7 @@ CUB_RUNTIME_FUNCTION inline cudaError_t HasUVA(bool& has_uva)
  * @param[in] dynamic_smem_bytes
  *   Dynamically allocated shared memory in bytes. Default is 0.
  */
-template <typename KernelPtr>
+template <class KernelPtr>
 _CCCL_VISIBILITY_HIDDEN CUB_RUNTIME_FUNCTION inline cudaError_t
 MaxSmOccupancy(int& max_sm_occupancy, KernelPtr kernel_ptr, int block_threads, int dynamic_smem_bytes = 0)
 {
@@ -595,7 +595,7 @@ inline constexpr int bulk_copy_min_align = 16;
 //! @brief Returns the alignment needed for the shared memory destination buffer of BlockLoadToShared.
 //! @tparam T
 //!   Value type to be loaded.
-template <typename T>
+template <class T>
 _CCCL_HOST_DEVICE constexpr int LoadToSharedBufferAlignBytes()
 {
   return (::cuda::std::max) (int{alignof(T)}, detail::bulk_copy_min_align);
@@ -608,7 +608,7 @@ _CCCL_HOST_DEVICE constexpr int LoadToSharedBufferAlignBytes()
 //!   Guaranteed alignment in bytes of the source range (both begin and end) in global memory
 //! @param[in] num_items
 //!   Size of the source range in global memory
-template <typename T, ::cuda::std::size_t GmemAlign = alignof(T)>
+template <class T, ::cuda::std::size_t GmemAlign = alignof(T)>
 _CCCL_HOST_DEVICE constexpr int LoadToSharedBufferSizeBytes(::cuda::std::size_t num_items)
 {
   static_assert(::cuda::__is_valid_alignment<T>(GmemAlign));
@@ -690,7 +690,7 @@ namespace detail
 #  define CUB_DETAIL_POLICY_WRAPPER_AGENT_POLICY(...)
 #endif // defined(CUB_DEFINE_RUNTIME_POLICIES)
 
-template <typename T>
+template <class T>
 _CCCL_CONCEPT always_true = true;
 
 #define CUB_DETAIL_POLICY_WRAPPER_DEFINE(concept_name, refines, ...)                                                   \
@@ -759,9 +759,7 @@ struct KernelConfig
 
   // TODO(bgruber): remove this function once all reduce and radix sort (segmented) algorithms have been ported to the
   // new tuning API
-  template <typename AgentPolicyT,
-            typename KernelPtrT,
-            typename LauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+  template <class AgentPolicyT, class KernelPtrT, class LauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
   CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE cudaError_t
   Init(KernelPtrT kernel_ptr, AgentPolicyT agent_policy = {}, LauncherFactory launcher_factory = {})
   {
@@ -772,9 +770,7 @@ struct KernelConfig
   }
 
   // Using new tuning API conventions
-  template <typename AgentPolicyT,
-            typename KernelPtrT,
-            typename LauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+  template <class AgentPolicyT, class KernelPtrT, class LauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
   CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE cudaError_t
   __init(KernelPtrT kernel_ptr, AgentPolicyT agent_policy = {}, LauncherFactory launcher_factory = {})
   {
@@ -789,7 +785,7 @@ struct KernelConfig
 
 namespace detail
 {
-template <typename T>
+template <class T>
 struct get_active_policy
 {
   using type = typename T::ActivePolicy;
@@ -797,7 +793,7 @@ struct get_active_policy
 } // namespace detail
 
 /// Helper for dispatching into a policy chain
-template <int PolicyPtxVersion, typename PolicyT, typename PrevPolicyT>
+template <int PolicyPtxVersion, class PolicyT, class PrevPolicyT>
 struct ChainedPolicy
 {
 private:
@@ -812,7 +808,7 @@ public:
 
 #if !_CCCL_COMPILER(NVRTC)
   /// Specializes and dispatches op in accordance to the first policy in the chain of adequate PTX version
-  template <typename FunctorT>
+  template <class FunctorT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static constexpr cudaError_t Invoke(int device_ptx_version, FunctorT& op)
   {
     // __CUDA_ARCH_LIST__ is available from CTK 11.5 onwards and contains values like 860
@@ -836,11 +832,11 @@ public:
 #endif // !_CCCL_COMPILER(NVRTC)
 
 private:
-  template <int, typename, typename>
+  template <int, class, class>
   friend struct ChainedPolicy; // let us call find_and_invoke_policy of other ChainedPolicy instantiations
 
 #if !_CCCL_COMPILER(NVRTC)
-  template <int ArchMult, int... CudaArches, typename FunctorT>
+  template <int ArchMult, int... CudaArches, class FunctorT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static constexpr cudaError_t
   runtime_arch_to_compiletime(int device_ptx_version, FunctorT& op)
   {
@@ -858,7 +854,7 @@ private:
     return e;
   }
 
-  template <int DevicePtxVersion, typename FunctorT>
+  template <int DevicePtxVersion, class FunctorT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static constexpr cudaError_t find_and_invoke_policy(FunctorT& op)
   {
     // find the first policy we can use on DevicePtxVersion
@@ -878,7 +874,7 @@ namespace detail
 {
 #if _CCCL_HAS_CONCEPTS()
 // TODO(bgruber): should we either drop the Policy template argument or rename it to policy_selector_for?
-template <typename T, typename Policy>
+template <class T, class Policy>
 concept policy_selector = requires(T pol_sel, ::cuda::arch_id arch) {
   requires ::cuda::std::regular<Policy>;
   { pol_sel(arch) } -> _CCCL_CONCEPT_VSTD::same_as<Policy>;

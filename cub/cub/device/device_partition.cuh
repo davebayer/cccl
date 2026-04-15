@@ -55,13 +55,13 @@ CUB_NAMESPACE_BEGIN
 struct DevicePartition
 {
 private:
-  template <typename TuningEnvT,
-            typename InputIteratorT,
-            typename FlagIteratorT,
-            typename OutputIteratorT,
-            typename NumSelectedIteratorT,
-            typename SelectOpT,
-            typename OffsetT>
+  template <class TuningEnvT,
+            class InputIteratorT,
+            class FlagIteratorT,
+            class OutputIteratorT,
+            class NumSelectedIteratorT,
+            class SelectOpT,
+            class OffsetT>
   CUB_RUNTIME_FUNCTION static cudaError_t partition_impl(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -193,11 +193,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename FlagIterator,
-            typename OutputIteratorT,
-            typename NumSelectedIteratorT,
-            typename NumItemsT>
+  template <class InputIteratorT, class FlagIterator, class OutputIteratorT, class NumSelectedIteratorT, class NumItemsT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t Flagged(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -301,12 +297,12 @@ public:
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename InputIteratorT,
-            typename FlagIterator,
-            typename OutputIteratorT,
-            typename NumSelectedIteratorT,
-            typename NumItemsT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class InputIteratorT,
+            class FlagIterator,
+            class OutputIteratorT,
+            class NumSelectedIteratorT,
+            class NumItemsT,
+            class EnvT = ::cuda::std::execution::env<>,
             typename ::cuda::std::enable_if_t<
               ::cuda::std::is_integral_v<NumItemsT> && !::cuda::std::is_same_v<InputIteratorT, void*>
                 && !::cuda::std::is_same_v<FlagIterator, size_t&>,
@@ -441,11 +437,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename NumSelectedIteratorT,
-            typename SelectOp,
-            typename NumItemsT>
+  template <class InputIteratorT, class OutputIteratorT, class NumSelectedIteratorT, class SelectOp, class NumItemsT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t
   If(void* d_temp_storage,
      size_t& temp_storage_bytes,
@@ -547,12 +539,12 @@ public:
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   template <
-    typename InputIteratorT,
-    typename OutputIteratorT,
-    typename NumSelectedIteratorT,
-    typename SelectOp,
-    typename NumItemsT,
-    typename EnvT = ::cuda::std::execution::env<>,
+    class InputIteratorT,
+    class OutputIteratorT,
+    class NumSelectedIteratorT,
+    class SelectOp,
+    class NumItemsT,
+    class EnvT = ::cuda::std::execution::env<>,
     typename ::cuda::std::
       enable_if_t<::cuda::std::is_integral_v<NumItemsT> && !::cuda::std::is_same_v<InputIteratorT, void*>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t
@@ -585,27 +577,27 @@ public:
 
 private:
   template <SortOrder Order,
-            typename KeyT,
-            typename ValueT,
-            typename OffsetT,
-            typename BeginOffsetIteratorT,
-            typename EndOffsetIteratorT,
-            typename PolicyHub,
-            typename KernelSource,
-            typename KernelLauncherFactory,
-            typename PartitionPolicyHub,
-            typename PartitionKernelSource>
+            class KeyT,
+            class ValueT,
+            class OffsetT,
+            class BeginOffsetIteratorT,
+            class EndOffsetIteratorT,
+            class PolicyHub,
+            class KernelSource,
+            class KernelLauncherFactory,
+            class PartitionPolicyHub,
+            class PartitionKernelSource>
   friend class DispatchSegmentedSort;
 
   // Internal version without NVTX range
-  template <typename InputIteratorT,
-            typename FirstOutputIteratorT,
-            typename SecondOutputIteratorT,
-            typename UnselectedOutputIteratorT,
-            typename NumSelectedIteratorT,
-            typename SelectFirstPartOp,
-            typename SelectSecondPartOp,
-            typename NumItemsT>
+  template <class InputIteratorT,
+            class FirstOutputIteratorT,
+            class SecondOutputIteratorT,
+            class UnselectedOutputIteratorT,
+            class NumSelectedIteratorT,
+            class SelectFirstPartOp,
+            class SelectSecondPartOp,
+            class NumItemsT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t IfNoNVTX(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -829,14 +821,14 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename FirstOutputIteratorT,
-            typename SecondOutputIteratorT,
-            typename UnselectedOutputIteratorT,
-            typename NumSelectedIteratorT,
-            typename SelectFirstPartOp,
-            typename SelectSecondPartOp,
-            typename NumItemsT>
+  template <class InputIteratorT,
+            class FirstOutputIteratorT,
+            class SecondOutputIteratorT,
+            class UnselectedOutputIteratorT,
+            class NumSelectedIteratorT,
+            class SelectFirstPartOp,
+            class SelectSecondPartOp,
+            class NumItemsT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t
   If(void* d_temp_storage,
      size_t& temp_storage_bytes,

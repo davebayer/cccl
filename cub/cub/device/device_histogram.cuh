@@ -158,7 +158,7 @@ struct DeviceHistogram
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename SampleIteratorT, typename CounterT, typename LevelT, typename OffsetT>
+  template <class SampleIteratorT, class CounterT, class LevelT, class OffsetT>
   CUB_RUNTIME_FUNCTION static cudaError_t HistogramEven(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -312,7 +312,7 @@ struct DeviceHistogram
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename SampleIteratorT, typename CounterT, typename LevelT, typename OffsetT>
+  template <class SampleIteratorT, class CounterT, class LevelT, class OffsetT>
   CUB_RUNTIME_FUNCTION static cudaError_t HistogramEven(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -478,12 +478,7 @@ struct DeviceHistogram
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <int NUM_CHANNELS,
-            int NUM_ACTIVE_CHANNELS,
-            typename SampleIteratorT,
-            typename CounterT,
-            typename LevelT,
-            typename OffsetT>
+  template <int NUM_CHANNELS, int NUM_ACTIVE_CHANNELS, class SampleIteratorT, class CounterT, class LevelT, class OffsetT>
   CUB_RUNTIME_FUNCTION static cudaError_t MultiHistogramEven(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -513,7 +508,7 @@ struct DeviceHistogram
   }
 
 private:
-  template <size_t N, typename T>
+  template <size_t N, class T>
   _CCCL_HOST_DEVICE static auto to_array(T* ptr)
   {
     ::cuda::std::array<::cuda::std::remove_const_t<T>, N> a{};
@@ -523,12 +518,7 @@ private:
 
 public:
   //! Deprecate [Since 3.0]
-  template <int NUM_CHANNELS,
-            int NUM_ACTIVE_CHANNELS,
-            typename SampleIteratorT,
-            typename CounterT,
-            typename LevelT,
-            typename OffsetT>
+  template <int NUM_CHANNELS, int NUM_ACTIVE_CHANNELS, class SampleIteratorT, class CounterT, class LevelT, class OffsetT>
   CCCL_DEPRECATED_BECAUSE("Prefer the new overload taking cuda::std::arrays") CUB_RUNTIME_FUNCTION static cudaError_t
   MultiHistogramEven(
     void* d_temp_storage,
@@ -711,12 +701,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <int NUM_CHANNELS,
-            int NUM_ACTIVE_CHANNELS,
-            typename SampleIteratorT,
-            typename CounterT,
-            typename LevelT,
-            typename OffsetT>
+  template <int NUM_CHANNELS, int NUM_ACTIVE_CHANNELS, class SampleIteratorT, class CounterT, class LevelT, class OffsetT>
   CUB_RUNTIME_FUNCTION static cudaError_t MultiHistogramEven(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -778,12 +763,7 @@ public:
   }
 
   //! Deprecate [Since 3.0]
-  template <int NUM_CHANNELS,
-            int NUM_ACTIVE_CHANNELS,
-            typename SampleIteratorT,
-            typename CounterT,
-            typename LevelT,
-            typename OffsetT>
+  template <int NUM_CHANNELS, int NUM_ACTIVE_CHANNELS, class SampleIteratorT, class CounterT, class LevelT, class OffsetT>
   CCCL_DEPRECATED_BECAUSE("Prefer the new overload taking cuda::std::arrays") CUB_RUNTIME_FUNCTION static cudaError_t
   MultiHistogramEven(
     void* d_temp_storage,
@@ -914,7 +894,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename SampleIteratorT, typename CounterT, typename LevelT, typename OffsetT>
+  template <class SampleIteratorT, class CounterT, class LevelT, class OffsetT>
   CUB_RUNTIME_FUNCTION static cudaError_t HistogramRange(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1055,7 +1035,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename SampleIteratorT, typename CounterT, typename LevelT, typename OffsetT>
+  template <class SampleIteratorT, class CounterT, class LevelT, class OffsetT>
   CUB_RUNTIME_FUNCTION static cudaError_t HistogramRange(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1210,12 +1190,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <int NUM_CHANNELS,
-            int NUM_ACTIVE_CHANNELS,
-            typename SampleIteratorT,
-            typename CounterT,
-            typename LevelT,
-            typename OffsetT>
+  template <int NUM_CHANNELS, int NUM_ACTIVE_CHANNELS, class SampleIteratorT, class CounterT, class LevelT, class OffsetT>
   CUB_RUNTIME_FUNCTION static cudaError_t MultiHistogramRange(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1243,12 +1218,7 @@ public:
   }
 
   //! Deprecate [Since 3.0]
-  template <int NUM_CHANNELS,
-            int NUM_ACTIVE_CHANNELS,
-            typename SampleIteratorT,
-            typename CounterT,
-            typename LevelT,
-            typename OffsetT>
+  template <int NUM_CHANNELS, int NUM_ACTIVE_CHANNELS, class SampleIteratorT, class CounterT, class LevelT, class OffsetT>
   CCCL_DEPRECATED_BECAUSE("Prefer the new overload taking cuda::std::arrays") CUB_RUNTIME_FUNCTION static cudaError_t
   MultiHistogramRange(
     void* d_temp_storage,
@@ -1419,12 +1389,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <int NUM_CHANNELS,
-            int NUM_ACTIVE_CHANNELS,
-            typename SampleIteratorT,
-            typename CounterT,
-            typename LevelT,
-            typename OffsetT>
+  template <int NUM_CHANNELS, int NUM_ACTIVE_CHANNELS, class SampleIteratorT, class CounterT, class LevelT, class OffsetT>
   CUB_RUNTIME_FUNCTION static cudaError_t MultiHistogramRange(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1483,12 +1448,7 @@ public:
   }
 
   //! Deprecate [Since 3.0]
-  template <int NUM_CHANNELS,
-            int NUM_ACTIVE_CHANNELS,
-            typename SampleIteratorT,
-            typename CounterT,
-            typename LevelT,
-            typename OffsetT>
+  template <int NUM_CHANNELS, int NUM_ACTIVE_CHANNELS, class SampleIteratorT, class CounterT, class LevelT, class OffsetT>
   CCCL_DEPRECATED_BECAUSE("Prefer the new overload taking cuda::std::arrays") CUB_RUNTIME_FUNCTION static cudaError_t
   MultiHistogramRange(
     void* d_temp_storage,
@@ -1595,11 +1555,7 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename SampleIteratorT,
-            typename CounterT,
-            typename LevelT,
-            typename OffsetT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class SampleIteratorT, class CounterT, class LevelT, class OffsetT, class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t HistogramEven(
     SampleIteratorT d_samples,
     CounterT* d_histogram,
@@ -1710,11 +1666,7 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename SampleIteratorT,
-            typename CounterT,
-            typename LevelT,
-            typename OffsetT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class SampleIteratorT, class CounterT, class LevelT, class OffsetT, class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t HistogramEven(
     SampleIteratorT d_samples,
     CounterT* d_histogram,
@@ -1832,11 +1784,11 @@ public:
   //!   @endrst
   template <int NUM_CHANNELS,
             int NUM_ACTIVE_CHANNELS,
-            typename SampleIteratorT,
-            typename CounterT,
-            typename LevelT,
-            typename OffsetT,
-            typename EnvT = ::cuda::std::execution::env<>>
+            class SampleIteratorT,
+            class CounterT,
+            class LevelT,
+            class OffsetT,
+            class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t MultiHistogramEven(
     SampleIteratorT d_samples,
     ::cuda::std::array<CounterT*, NUM_ACTIVE_CHANNELS> d_histogram,
@@ -1967,11 +1919,11 @@ public:
   //!   @endrst
   template <int NUM_CHANNELS,
             int NUM_ACTIVE_CHANNELS,
-            typename SampleIteratorT,
-            typename CounterT,
-            typename LevelT,
-            typename OffsetT,
-            typename EnvT = ::cuda::std::execution::env<>>
+            class SampleIteratorT,
+            class CounterT,
+            class LevelT,
+            class OffsetT,
+            class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t MultiHistogramEven(
     SampleIteratorT d_samples,
     ::cuda::std::array<CounterT*, NUM_ACTIVE_CHANNELS> d_histogram,
@@ -2097,11 +2049,7 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename SampleIteratorT,
-            typename CounterT,
-            typename LevelT,
-            typename OffsetT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class SampleIteratorT, class CounterT, class LevelT, class OffsetT, class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t HistogramRange(
     SampleIteratorT d_samples,
     CounterT* d_histogram,
@@ -2198,11 +2146,7 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename SampleIteratorT,
-            typename CounterT,
-            typename LevelT,
-            typename OffsetT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class SampleIteratorT, class CounterT, class LevelT, class OffsetT, class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t HistogramRange(
     SampleIteratorT d_samples,
     CounterT* d_histogram,
@@ -2306,11 +2250,11 @@ public:
   //!   @endrst
   template <int NUM_CHANNELS,
             int NUM_ACTIVE_CHANNELS,
-            typename SampleIteratorT,
-            typename CounterT,
-            typename LevelT,
-            typename OffsetT,
-            typename EnvT = ::cuda::std::execution::env<>>
+            class SampleIteratorT,
+            class CounterT,
+            class LevelT,
+            class OffsetT,
+            class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t MultiHistogramRange(
     SampleIteratorT d_samples,
     ::cuda::std::array<CounterT*, NUM_ACTIVE_CHANNELS> d_histogram,
@@ -2427,11 +2371,11 @@ public:
   //!   @endrst
   template <int NUM_CHANNELS,
             int NUM_ACTIVE_CHANNELS,
-            typename SampleIteratorT,
-            typename CounterT,
-            typename LevelT,
-            typename OffsetT,
-            typename EnvT = ::cuda::std::execution::env<>>
+            class SampleIteratorT,
+            class CounterT,
+            class LevelT,
+            class OffsetT,
+            class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t MultiHistogramRange(
     SampleIteratorT d_samples,
     ::cuda::std::array<CounterT*, NUM_ACTIVE_CHANNELS> d_histogram,

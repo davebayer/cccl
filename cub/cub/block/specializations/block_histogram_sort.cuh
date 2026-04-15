@@ -49,7 +49,7 @@ namespace detail
  * @tparam BlockDimZ
  *   The thread block length in threads along the Z dimension
  */
-template <typename T, int BlockDimX, int ItemsPerThread, int Bins, int BlockDimY, int BlockDimZ>
+template <class T, int BlockDimX, int ItemsPerThread, int Bins, int BlockDimY, int BlockDimZ>
 struct BlockHistogramSort
 {
   /// The thread block size in threads
@@ -140,7 +140,7 @@ struct BlockHistogramSort
    * @param[out] histogram
    *   Reference to shared/device-accessible memory histogram
    */
-  template <typename CounterT>
+  template <class CounterT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void Composite(T (&items)[ItemsPerThread], CounterT histogram[Bins])
   {
     static constexpr int TILE_SIZE = BLOCK_THREADS * ItemsPerThread;

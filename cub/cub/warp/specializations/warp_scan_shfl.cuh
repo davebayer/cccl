@@ -47,7 +47,7 @@ namespace detail
  * @tparam LOGICAL_WARP_THREADS
  *   Number of threads per logical warp (must be a power-of-two)
  */
-template <typename T, int LOGICAL_WARP_THREADS>
+template <class T, int LOGICAL_WARP_THREADS>
 struct WarpScanShfl
 {
   //---------------------------------------------------------------------
@@ -63,7 +63,7 @@ struct WarpScanShfl
   /// The 5-bit SHFL mask for logically splitting warps into sub-segments starts 8-bits up
   static constexpr int SHFL_C = (warp_threads - LOGICAL_WARP_THREADS) << 8;
 
-  template <typename S>
+  template <class S>
   struct IntegerTraits
   {
     /// Whether the data type is a small (32b or less) integer for which we can use a single SFHL instruction per
@@ -378,7 +378,7 @@ struct WarpScanShfl
    * @param[in] offset
    *   Up-offset to pull from
    */
-  template <typename _Tp, typename ScanOpT>
+  template <class _Tp, class ScanOpT>
   _CCCL_DEVICE _CCCL_FORCEINLINE _Tp InclusiveScanStep(_Tp input, ScanOpT scan_op, int first_lane, int offset)
   {
     _Tp temp = ShuffleUp<LOGICAL_WARP_THREADS>(input, offset, first_lane, member_mask);
@@ -411,7 +411,7 @@ struct WarpScanShfl
    * @param[in] offset
    *   Up-offset to pull from
    */
-  template <typename _Tp, typename ScanOpT>
+  template <class _Tp, class ScanOpT>
   _CCCL_DEVICE _CCCL_FORCEINLINE _Tp
   InclusiveScanStepPartial(_Tp input, ScanOpT scan_op, int valid_items, int first_lane, int offset)
   {
@@ -449,7 +449,7 @@ struct WarpScanShfl
    * @param[in] is_small_unsigned
    *   Marker type indicating whether T is a small integer
    */
-  template <typename _Tp, typename ScanOpT>
+  template <class _Tp, class ScanOpT>
   _CCCL_DEVICE _CCCL_FORCEINLINE _Tp InclusiveScanStep(
     _Tp input, ScanOpT scan_op, int first_lane, int offset, ::cuda::std::true_type /*is_small_unsigned*/)
   {
@@ -475,7 +475,7 @@ struct WarpScanShfl
    * @param[in] is_small_unsigned
    *   Marker type indicating whether T is a small integer
    */
-  template <typename _Tp, typename ScanOpT>
+  template <class _Tp, class ScanOpT>
   _CCCL_DEVICE _CCCL_FORCEINLINE _Tp InclusiveScanStep(
     _Tp input, ScanOpT scan_op, int first_lane, int offset, ::cuda::std::false_type /*is_small_unsigned*/)
   {
@@ -520,7 +520,7 @@ struct WarpScanShfl
    * @param[in] scan_op
    *   Binary scan operator
    */
-  template <typename _Tp, typename ScanOpT>
+  template <class _Tp, class ScanOpT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void InclusiveScan(_Tp input, _Tp& inclusive_output, ScanOpT scan_op)
   {
     inclusive_output = input;
@@ -556,7 +556,7 @@ struct WarpScanShfl
    * @param[in] valid_items
    *   Number of valid items in warp
    */
-  template <typename _Tp, typename ScanOpT>
+  template <class _Tp, class ScanOpT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   InclusiveScanPartial(_Tp input, _Tp& inclusive_output, ScanOpT scan_op, int valid_items)
   {
@@ -586,7 +586,7 @@ struct WarpScanShfl
    * @param[in] scan_op
    *   Binary scan operator
    */
-  template <typename KeyT, typename ValueT, typename ReductionOpT>
+  template <class KeyT, class ValueT, class ReductionOpT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void InclusiveScan(
     KeyValuePair<KeyT, ValueT> input, KeyValuePair<KeyT, ValueT>& inclusive_output, ReduceByKeyOp<ReductionOpT> scan_op)
   {
@@ -630,7 +630,7 @@ struct WarpScanShfl
    * @param[out] warp_aggregate
    *   Warp-wide aggregate reduction of input items
    */
-  template <typename ScanOpT>
+  template <class ScanOpT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void InclusiveScan(T input, T& inclusive_output, ScanOpT scan_op, T& warp_aggregate)
   {
     InclusiveScan(input, inclusive_output, scan_op);
@@ -657,7 +657,7 @@ struct WarpScanShfl
    * @param[out] warp_aggregate
    *   Warp-wide aggregate reduction of input items
    */
-  template <typename ScanOpT>
+  template <class ScanOpT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   InclusiveScanPartial(T input, T& inclusive_output, ScanOpT scan_op, int valid_items, T& warp_aggregate)
   {
@@ -686,7 +686,7 @@ struct WarpScanShfl
    *
    * @param[in] is_integer
    */
-  template <typename ScanOpT, typename IsIntegerT>
+  template <class ScanOpT, class IsIntegerT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   Update(T /*input*/, T& inclusive, T& exclusive, ScanOpT /*scan_op*/, IsIntegerT /*is_integer*/)
   {
@@ -709,7 +709,7 @@ struct WarpScanShfl
    * @brief Update inclusive and exclusive using initial value using input, inclusive, and initial
    *        value
    */
-  template <typename ScanOpT, typename IsIntegerT>
+  template <class ScanOpT, class IsIntegerT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   Update(T /*input*/, T& inclusive, T& exclusive, ScanOpT scan_op, T initial_value, IsIntegerT /*is_integer*/)
   {
@@ -741,7 +741,7 @@ struct WarpScanShfl
   /**
    * @brief Update inclusive, exclusive, and warp aggregate using input and inclusive
    */
-  template <typename ScanOpT, typename IsIntegerT>
+  template <class ScanOpT, class IsIntegerT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   Update(T input, T& inclusive, T& exclusive, T& warp_aggregate, ScanOpT scan_op, IsIntegerT is_integer)
   {
@@ -753,7 +753,7 @@ struct WarpScanShfl
    * @brief Update inclusive, exclusive, and warp aggregate using input, inclusive, and initial
    *        value
    */
-  template <typename ScanOpT, typename IsIntegerT>
+  template <class ScanOpT, class IsIntegerT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void Update(
     T input, T& inclusive, T& exclusive, T& warp_aggregate, ScanOpT scan_op, T initial_value, IsIntegerT is_integer)
   {
@@ -779,7 +779,7 @@ struct WarpScanShfl
    * @param[in] valid_items
    *   Number of valid items in warp
    */
-  template <typename ScanOpT>
+  template <class ScanOpT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   UpdatePartial([[maybe_unused]] T input, T& inclusive, T& exclusive, [[maybe_unused]] ScanOpT scan_op, int valid_items)
   {
@@ -825,7 +825,7 @@ struct WarpScanShfl
    * @param[in] initial_value
    *   Initial value to seed the scan (uniform across warp)
    */
-  template <typename ScanOpT>
+  template <class ScanOpT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   UpdatePartial(T input, T& inclusive, T& exclusive, ScanOpT scan_op, int valid_items, T initial_value)
   {
@@ -869,7 +869,7 @@ struct WarpScanShfl
    * @param[in] valid_items
    *   Number of valid items in warp
    */
-  template <typename ScanOpT>
+  template <class ScanOpT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   UpdatePartial(T input, T& inclusive, T& exclusive, T& warp_aggregate, ScanOpT scan_op, int valid_items)
   {
@@ -906,7 +906,7 @@ struct WarpScanShfl
    * @param[in] initial_value
    *   Initial value to seed the scan (uniform across warp)
    */
-  template <typename ScanOpT>
+  template <class ScanOpT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void UpdatePartial(
     T input, T& inclusive, T& exclusive, T& warp_aggregate, ScanOpT scan_op, int valid_items, T initial_value)
   {

@@ -34,7 +34,7 @@
 #    define TUNE_USE_BL2SH     true
 #  endif // TUNE_LOAD
 
-template <typename KeyT>
+template <class KeyT>
 struct policy_hub_t
 {
   struct policy_t : cub::ChainedPolicy<500, policy_t, policy_t>
@@ -62,7 +62,7 @@ struct select_if_less_than_t
   }
 };
 
-template <typename OffsetT>
+template <class OffsetT>
 struct write_pivot_point_t
 {
   OffsetT threshold;
@@ -77,7 +77,7 @@ struct write_pivot_point_t
   }
 };
 
-template <typename KeyT>
+template <class KeyT>
 std::pair<thrust::device_vector<KeyT>, thrust::device_vector<KeyT>>
 generate_lhs_rhs(std::size_t num_items_lhs, std::size_t num_items_rhs, bit_entropy entropy)
 {

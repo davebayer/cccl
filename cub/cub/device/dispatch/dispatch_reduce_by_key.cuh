@@ -44,7 +44,7 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail::reduce_by_key
 {
-template <typename PrecedingKeyItT, typename AccumT, typename GlobalOffsetT>
+template <class PrecedingKeyItT, class AccumT, class GlobalOffsetT>
 struct streaming_context
 {
   bool first_partition;
@@ -98,7 +98,7 @@ struct streaming_context
     return num_accumulated_uniques_out();
   }
 
-  template <typename NumUniquesT>
+  template <class NumUniquesT>
   _CCCL_FORCEINLINE _CCCL_HOST_DEVICE GlobalOffsetT add_num_uniques(NumUniquesT num_uniques) const
   {
     GlobalOffsetT total_uniques = num_accumulated_uniques_out() + static_cast<GlobalOffsetT>(num_uniques);
@@ -174,18 +174,18 @@ struct streaming_context
  * @param num_items
  *   Total number of items to select from
  */
-template <typename PolicySelector,
-          typename KeysInputIteratorT,
-          typename UniqueOutputIteratorT,
-          typename ValuesInputIteratorT,
-          typename AggregatesOutputIteratorT,
-          typename NumRunsOutputIteratorT,
-          typename ScanTileStateT,
-          typename EqualityOpT,
-          typename ReductionOpT,
-          typename OffsetT,
-          typename AccumT,
-          typename StreamingContextT>
+template <class PolicySelector,
+          class KeysInputIteratorT,
+          class UniqueOutputIteratorT,
+          class ValuesInputIteratorT,
+          class AggregatesOutputIteratorT,
+          class NumRunsOutputIteratorT,
+          class ScanTileStateT,
+          class EqualityOpT,
+          class ReductionOpT,
+          class OffsetT,
+          class AccumT,
+          class StreamingContextT>
 #if _CCCL_HAS_CONCEPTS()
   requires reduce_by_key_policy_selector<PolicySelector>
 #endif
@@ -294,18 +294,18 @@ __launch_bounds__(int(PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).block
  *   content of this type are subject to breaking change.
  */
 // TODO(bgruber): deprecate when we make the tuning API public and remove in CCCL 4.0
-template <typename KeysInputIteratorT,
-          typename UniqueOutputIteratorT,
-          typename ValuesInputIteratorT,
-          typename AggregatesOutputIteratorT,
-          typename NumRunsOutputIteratorT,
-          typename EqualityOpT,
-          typename ReductionOpT,
-          typename OffsetT,
-          typename AccumT    = ::cuda::std::__accumulator_t<ReductionOpT,
-                                                            cub::detail::it_value_t<ValuesInputIteratorT>,
-                                                            cub::detail::it_value_t<ValuesInputIteratorT>>,
-          typename PolicyHub = detail::reduce_by_key::policy_hub<
+template <class KeysInputIteratorT,
+          class UniqueOutputIteratorT,
+          class ValuesInputIteratorT,
+          class AggregatesOutputIteratorT,
+          class NumRunsOutputIteratorT,
+          class EqualityOpT,
+          class ReductionOpT,
+          class OffsetT,
+          class AccumT    = ::cuda::std::__accumulator_t<ReductionOpT,
+                                                         cub::detail::it_value_t<ValuesInputIteratorT>,
+                                                         cub::detail::it_value_t<ValuesInputIteratorT>>,
+          class PolicyHub = detail::reduce_by_key::policy_hub<
             ReductionOpT,
             AccumT,
             cub::detail::non_void_value_t<UniqueOutputIteratorT, cub::detail::it_value_t<KeysInputIteratorT>>>>
@@ -367,7 +367,7 @@ struct DispatchReduceByKey
   // Dispatch entrypoints
   //---------------------------------------------------------------------
 
-  template <typename ActivePolicyT, typename ScanInitKernelT, typename ReduceByKeyKernelT>
+  template <class ActivePolicyT, class ScanInitKernelT, class ReduceByKeyKernelT>
   CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE cudaError_t
   Invoke(ScanInitKernelT init_kernel, ReduceByKeyKernelT reduce_by_key_kernel)
   {
@@ -535,7 +535,7 @@ struct DispatchReduceByKey
     return error;
   }
 
-  template <typename ActivePolicyT>
+  template <class ActivePolicyT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t Invoke()
   {
     return Invoke<ActivePolicyT>(
@@ -647,7 +647,7 @@ struct DispatchReduceByKey
 namespace detail::reduce_by_key
 {
 // we move the conversion of the policy to the agent policy and its use out of the lambda below, so MSVC does not ICE
-template <typename PolicyGetter, typename... Args>
+template <class PolicyGetter, class... Args>
 _CCCL_API auto determine_threads_items_vsmem(PolicyGetter policy_getter)
 {
   // TODO(bgruber): refactor this in the future
@@ -668,21 +668,21 @@ _CCCL_API auto determine_threads_items_vsmem(PolicyGetter policy_getter)
 }
 
 template <
-  typename OverrideAccumT = use_default,
-  typename KeysInputIteratorT,
-  typename UniqueOutputIteratorT,
-  typename ValuesInputIteratorT,
-  typename AggregatesOutputIteratorT,
-  typename NumRunsOutputIteratorT,
-  typename EqualityOpT,
-  typename ReductionOpT,
-  typename OffsetT,
-  typename AccumT = ::cuda::std::conditional_t<
+  class OverrideAccumT = use_default,
+  class KeysInputIteratorT,
+  class UniqueOutputIteratorT,
+  class ValuesInputIteratorT,
+  class AggregatesOutputIteratorT,
+  class NumRunsOutputIteratorT,
+  class EqualityOpT,
+  class ReductionOpT,
+  class OffsetT,
+  class AccumT = ::cuda::std::conditional_t<
     !::cuda::std::is_same_v<OverrideAccumT, use_default>,
     OverrideAccumT,
     ::cuda::std::__accumulator_t<ReductionOpT, it_value_t<ValuesInputIteratorT>, it_value_t<ValuesInputIteratorT>>>,
-  typename KeyT           = non_void_value_t<UniqueOutputIteratorT, it_value_t<KeysInputIteratorT>>,
-  typename PolicySelector = policy_selector_from_types<ReductionOpT, AccumT, KeyT>>
+  class KeyT           = non_void_value_t<UniqueOutputIteratorT, it_value_t<KeysInputIteratorT>>,
+  class PolicySelector = policy_selector_from_types<ReductionOpT, AccumT, KeyT>>
 #if _CCCL_HAS_CONCEPTS()
   requires reduce_by_key::reduce_by_key_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()

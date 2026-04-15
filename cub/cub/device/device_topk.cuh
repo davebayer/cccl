@@ -34,14 +34,14 @@ CUB_NAMESPACE_BEGIN
 namespace detail
 {
 template <topk::select SelectDirection,
-          typename KeyInputIteratorT,
-          typename KeyOutputIteratorT,
-          typename ValueInputIteratorT,
-          typename ValueOutputIteratorT,
-          typename NumItemsT,
-          typename NumOutItemsT,
-          typename DecomposerT,
-          typename EnvT>
+          class KeyInputIteratorT,
+          class KeyOutputIteratorT,
+          class ValueInputIteratorT,
+          class ValueOutputIteratorT,
+          class NumItemsT,
+          class NumOutItemsT,
+          class DecomposerT,
+          class EnvT>
 CUB_RUNTIME_FUNCTION static cudaError_t dispatch_topk(
   void* d_temp_storage,
   size_t& temp_storage_bytes,
@@ -99,13 +99,13 @@ CUB_RUNTIME_FUNCTION static cudaError_t dispatch_topk(
 }
 
 template <topk::select SelectDirection,
-          typename KeyInputIteratorT,
-          typename KeyOutputIteratorT,
-          typename ValueInputIteratorT,
-          typename ValueOutputIteratorT,
-          typename NumItemsT,
-          typename NumOutItemsT,
-          typename EnvT>
+          class KeyInputIteratorT,
+          class KeyOutputIteratorT,
+          class ValueInputIteratorT,
+          class ValueOutputIteratorT,
+          class NumItemsT,
+          class NumOutItemsT,
+          class EnvT>
 CUB_RUNTIME_FUNCTION static cudaError_t dispatch_topk_hub(
   void* d_temp_storage,
   size_t& temp_storage_bytes,
@@ -250,13 +250,13 @@ struct DeviceTopK
   //!   **[optional]** Execution environment. Default is `cuda::std::execution::env{}`.
   //!   @endrst
   template <
-    typename KeyInputIteratorT,
-    typename KeyOutputIteratorT,
-    typename ValueInputIteratorT,
-    typename ValueOutputIteratorT,
-    typename NumItemsT,
-    typename NumOutItemsT,
-    typename EnvT = ::cuda::std::execution::env<>,
+    class KeyInputIteratorT,
+    class KeyOutputIteratorT,
+    class ValueInputIteratorT,
+    class ValueOutputIteratorT,
+    class NumItemsT,
+    class NumOutItemsT,
+    class EnvT = ::cuda::std::execution::env<>,
     ::cuda::std::enable_if_t<!detail::radix::is_valid_decomposer<detail::it_value_t<KeyInputIteratorT>, EnvT>, int> = 0>
   CUB_RUNTIME_FUNCTION static cudaError_t MaxPairs(
     void* d_temp_storage,
@@ -382,14 +382,14 @@ struct DeviceTopK
   //!   @rst
   //!   **[optional]** Execution environment. Default is `cuda::std::execution::env{}`.
   //!   @endrst
-  template <typename KeyInputIteratorT,
-            typename KeyOutputIteratorT,
-            typename ValueInputIteratorT,
-            typename ValueOutputIteratorT,
-            typename NumItemsT,
-            typename NumOutItemsT,
-            typename DecomposerT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class KeyInputIteratorT,
+            class KeyOutputIteratorT,
+            class ValueInputIteratorT,
+            class ValueOutputIteratorT,
+            class NumItemsT,
+            class NumOutItemsT,
+            class DecomposerT,
+            class EnvT = ::cuda::std::execution::env<>>
   CUB_RUNTIME_FUNCTION static //
     ::cuda::std::enable_if_t<detail::radix::is_valid_decomposer<detail::it_value_t<KeyInputIteratorT>, DecomposerT>,
                              cudaError_t>
@@ -502,13 +502,13 @@ struct DeviceTopK
   //!   **[optional]** Execution environment. Default is `cuda::std::execution::env{}`.
   //!   @endrst
   template <
-    typename KeyInputIteratorT,
-    typename KeyOutputIteratorT,
-    typename ValueInputIteratorT,
-    typename ValueOutputIteratorT,
-    typename NumItemsT,
-    typename NumOutItemsT,
-    typename EnvT = ::cuda::std::execution::env<>,
+    class KeyInputIteratorT,
+    class KeyOutputIteratorT,
+    class ValueInputIteratorT,
+    class ValueOutputIteratorT,
+    class NumItemsT,
+    class NumOutItemsT,
+    class EnvT = ::cuda::std::execution::env<>,
     ::cuda::std::enable_if_t<!detail::radix::is_valid_decomposer<detail::it_value_t<KeyInputIteratorT>, EnvT>, int> = 0>
   CUB_RUNTIME_FUNCTION static cudaError_t MinPairs(
     void* d_temp_storage,
@@ -634,14 +634,14 @@ struct DeviceTopK
   //!   @rst
   //!   **[optional]** Execution environment. Default is `cuda::std::execution::env{}`.
   //!   @endrst
-  template <typename KeyInputIteratorT,
-            typename KeyOutputIteratorT,
-            typename ValueInputIteratorT,
-            typename ValueOutputIteratorT,
-            typename NumItemsT,
-            typename NumOutItemsT,
-            typename DecomposerT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class KeyInputIteratorT,
+            class KeyOutputIteratorT,
+            class ValueInputIteratorT,
+            class ValueOutputIteratorT,
+            class NumItemsT,
+            class NumOutItemsT,
+            class DecomposerT,
+            class EnvT = ::cuda::std::execution::env<>>
   CUB_RUNTIME_FUNCTION static //
     ::cuda::std::enable_if_t<detail::radix::is_valid_decomposer<detail::it_value_t<KeyInputIteratorT>, DecomposerT>,
                              cudaError_t>
@@ -741,11 +741,11 @@ struct DeviceTopK
   //!   **[optional]** Execution environment. Default is `cuda::std::execution::env{}`.
   //!   @endrst
   template <
-    typename KeyInputIteratorT,
-    typename KeyOutputIteratorT,
-    typename NumItemsT,
-    typename NumOutItemsT,
-    typename EnvT = ::cuda::std::execution::env<>,
+    class KeyInputIteratorT,
+    class KeyOutputIteratorT,
+    class NumItemsT,
+    class NumOutItemsT,
+    class EnvT = ::cuda::std::execution::env<>,
     ::cuda::std::enable_if_t<!detail::radix::is_valid_decomposer<detail::it_value_t<KeyInputIteratorT>, EnvT>, int> = 0>
   CUB_RUNTIME_FUNCTION static cudaError_t MaxKeys(
     void* d_temp_storage,
@@ -856,12 +856,12 @@ struct DeviceTopK
   //!   @rst
   //!   **[optional]** Execution environment. Default is `cuda::std::execution::env{}`.
   //!   @endrst
-  template <typename KeyInputIteratorT,
-            typename KeyOutputIteratorT,
-            typename NumItemsT,
-            typename NumOutItemsT,
-            typename DecomposerT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class KeyInputIteratorT,
+            class KeyOutputIteratorT,
+            class NumItemsT,
+            class NumOutItemsT,
+            class DecomposerT,
+            class EnvT = ::cuda::std::execution::env<>>
   CUB_RUNTIME_FUNCTION static //
     ::cuda::std::enable_if_t<detail::radix::is_valid_decomposer<detail::it_value_t<KeyInputIteratorT>, DecomposerT>,
                              cudaError_t>
@@ -959,11 +959,11 @@ struct DeviceTopK
   //!   **[optional]** Execution environment. Default is `cuda::std::execution::env{}`.
   //!   @endrst
   template <
-    typename KeyInputIteratorT,
-    typename KeyOutputIteratorT,
-    typename NumItemsT,
-    typename NumOutItemsT,
-    typename EnvT = ::cuda::std::execution::env<>,
+    class KeyInputIteratorT,
+    class KeyOutputIteratorT,
+    class NumItemsT,
+    class NumOutItemsT,
+    class EnvT = ::cuda::std::execution::env<>,
     ::cuda::std::enable_if_t<!detail::radix::is_valid_decomposer<detail::it_value_t<KeyInputIteratorT>, EnvT>, int> = 0>
   CUB_RUNTIME_FUNCTION static cudaError_t MinKeys(
     void* d_temp_storage,
@@ -1074,12 +1074,12 @@ struct DeviceTopK
   //!   @rst
   //!   **[optional]** Execution environment. Default is `cuda::std::execution::env{}`.
   //!   @endrst
-  template <typename KeyInputIteratorT,
-            typename KeyOutputIteratorT,
-            typename NumItemsT,
-            typename NumOutItemsT,
-            typename DecomposerT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class KeyInputIteratorT,
+            class KeyOutputIteratorT,
+            class NumItemsT,
+            class NumOutItemsT,
+            class DecomposerT,
+            class EnvT = ::cuda::std::execution::env<>>
   CUB_RUNTIME_FUNCTION static //
     ::cuda::std::enable_if_t<detail::radix::is_valid_decomposer<detail::it_value_t<KeyInputIteratorT>, DecomposerT>,
                              cudaError_t>

@@ -18,7 +18,7 @@
 
 namespace detail
 {
-template <typename T, typename Operator, cuda::std::ptrdiff_t MaxReductionLength, typename = void>
+template <class T, class Operator, cuda::std::ptrdiff_t MaxReductionLength, class = void>
 struct dist_interval
 {
   static constexpr T min()
@@ -31,7 +31,7 @@ struct dist_interval
   }
 };
 
-template <typename T, cuda::std::ptrdiff_t MaxReductionLength>
+template <class T, cuda::std::ptrdiff_t MaxReductionLength>
 struct dist_interval<
   T,
   cuda::std::plus<>,
@@ -50,7 +50,7 @@ struct dist_interval<
   }
 };
 
-template <typename T, cuda::std::ptrdiff_t MaxReductionLength>
+template <class T, cuda::std::ptrdiff_t MaxReductionLength>
 struct dist_interval<
   T,
   cuda::std::multiplies<>,
@@ -73,11 +73,11 @@ struct dist_interval<
 };
 } // namespace detail
 
-template <typename Input,
-          typename Operator,
+template <class Input,
+          class Operator,
           cuda::std::ptrdiff_t MaxRedductionLength,
-          typename Accum  = cuda::std::__accumulator_t<Operator, Input>,
-          typename Output = Accum>
+          class Accum  = cuda::std::__accumulator_t<Operator, Input>,
+          class Output = Accum>
 struct dist_interval
 {
   // Values in the interval need to be representable in Input and if either Output or Accum are signed integers we want

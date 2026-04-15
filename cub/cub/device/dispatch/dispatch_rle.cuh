@@ -50,7 +50,7 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail::rle
 {
-template <typename PrecedingKeyItT, typename RunLengthT, typename GlobalOffsetT>
+template <class PrecedingKeyItT, class RunLengthT, class GlobalOffsetT>
 struct streaming_context
 {
   bool first_partition;
@@ -96,7 +96,7 @@ struct streaming_context
     return current_base_offset;
   }
 
-  template <typename NumUniquesT>
+  template <class NumUniquesT>
   _CCCL_FORCEINLINE _CCCL_HOST_DEVICE GlobalOffsetT add_num_uniques(NumUniquesT num_uniques) const
   {
     GlobalOffsetT total_uniques = num_accumulated_uniques_out() + static_cast<GlobalOffsetT>(num_uniques);
@@ -163,16 +163,16 @@ struct streaming_context
  * @param num_tiles
  *   Total number of tiles for the entire problem
  */
-template <typename PolicySelector,
-          typename InputIteratorT,
-          typename OffsetsOutputIteratorT,
-          typename LengthsOutputIteratorT,
-          typename NumRunsOutputIteratorT,
-          typename ScanTileStateT,
-          typename EqualityOpT,
-          typename OffsetT,
-          typename GlobalOffsetT,
-          typename StreamingContextT>
+template <class PolicySelector,
+          class InputIteratorT,
+          class OffsetsOutputIteratorT,
+          class LengthsOutputIteratorT,
+          class NumRunsOutputIteratorT,
+          class ScanTileStateT,
+          class EqualityOpT,
+          class OffsetT,
+          class GlobalOffsetT,
+          class StreamingContextT>
 #if _CCCL_HAS_CONCEPTS()
   requires non_trivial_runs::rle_non_trivial_runs_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()
@@ -220,7 +220,7 @@ __launch_bounds__(int(PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).block
 }
 
 // TODO(bgruber): remove in CCCL 4.0 when we drop the RLE dispatchers
-template <typename PolicyHub>
+template <class PolicyHub>
 struct policy_selector_from_hub
 {
   [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::arch_id /*arch*/) const
@@ -270,13 +270,13 @@ struct policy_selector_from_hub
  *   content of this type are subject to breaking change.
  */
 // TODO(bgruber): deprecate when we make the tuning API public and remove in CCCL 4.0
-template <typename InputIteratorT,
-          typename OffsetsOutputIteratorT,
-          typename LengthsOutputIteratorT,
-          typename NumRunsOutputIteratorT,
-          typename EqualityOpT,
-          typename OffsetT,
-          typename PolicyHub =
+template <class InputIteratorT,
+          class OffsetsOutputIteratorT,
+          class LengthsOutputIteratorT,
+          class NumRunsOutputIteratorT,
+          class EqualityOpT,
+          class OffsetT,
+          class PolicyHub =
             detail::rle::non_trivial_runs::policy_hub<cub::detail::non_void_value_t<LengthsOutputIteratorT, OffsetT>,
                                                       cub::detail::it_value_t<InputIteratorT>>>
 struct DeviceRleDispatch
@@ -360,7 +360,7 @@ struct DeviceRleDispatch
    * @param device_rle_sweep_kernel
    *   Kernel function pointer to parameterization of cub::DeviceRleSweepKernel
    */
-  template <typename ActivePolicyT, typename DeviceScanInitKernelPtr, typename DeviceRleSweepKernelPtr>
+  template <class ActivePolicyT, class DeviceScanInitKernelPtr, class DeviceRleSweepKernelPtr>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t
   Invoke(DeviceScanInitKernelPtr device_scan_init_kernel, DeviceRleSweepKernelPtr device_rle_sweep_kernel)
   {
@@ -642,15 +642,15 @@ struct DeviceRleDispatch
 
 namespace detail::rle
 {
-template <typename InputIteratorT,
-          typename OffsetsOutputIteratorT,
-          typename LengthsOutputIteratorT,
-          typename NumRunsOutputIteratorT,
-          typename EqualityOpT,
-          typename OffsetT,
-          typename length_t       = non_void_value_t<LengthsOutputIteratorT, OffsetT>,
-          typename key_t          = it_value_t<InputIteratorT>,
-          typename PolicySelector = non_trivial_runs::policy_selector_from_types<length_t, key_t>>
+template <class InputIteratorT,
+          class OffsetsOutputIteratorT,
+          class LengthsOutputIteratorT,
+          class NumRunsOutputIteratorT,
+          class EqualityOpT,
+          class OffsetT,
+          class length_t       = non_void_value_t<LengthsOutputIteratorT, OffsetT>,
+          class key_t          = it_value_t<InputIteratorT>,
+          class PolicySelector = non_trivial_runs::policy_selector_from_types<length_t, key_t>>
 #if _CCCL_HAS_CONCEPTS()
   requires non_trivial_runs::rle_non_trivial_runs_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()

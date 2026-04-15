@@ -42,13 +42,13 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail
 {
-template <typename T>
+template <class T>
 extern _CCCL_HOST_DEVICE T simd_operation_is_not_supported_before_sm80();
 
-template <typename T>
+template <class T>
 extern _CCCL_HOST_DEVICE T simd_operation_is_not_supported_before_sm53();
 
-template <typename T>
+template <class T>
 struct SimdMin
 {
   static_assert(::cuda::std::__always_false_v<T>, "Unsupported specialization");
@@ -112,7 +112,7 @@ struct SimdMin<__nv_bfloat162>
 
 //----------------------------------------------------------------------------------------------------------------------
 
-template <typename T>
+template <class T>
 struct SimdMax
 {
   static_assert(::cuda::std::__always_false_v<T>, "Unsupported specialization");
@@ -176,7 +176,7 @@ struct SimdMax<__nv_bfloat162>
 
 //----------------------------------------------------------------------------------------------------------------------
 
-template <typename T>
+template <class T>
 struct SimdSum
 {
   static_assert(::cuda::std::__always_false_v<T>, "Unsupported specialization");
@@ -268,7 +268,7 @@ struct SimdSum<float2>
 
 //----------------------------------------------------------------------------------------------------------------------
 
-template <typename T>
+template <class T>
 struct SimdMul
 {
   static_assert(::cuda::std::__always_false_v<T>, "Unsupported specialization");
@@ -306,25 +306,25 @@ struct SimdMul<__nv_bfloat162>
 
 //----------------------------------------------------------------------------------------------------------------------
 
-template <typename ReductionOp>
+template <class ReductionOp>
 inline constexpr bool is_simd_operator_v = false;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_simd_operator_v<SimdSum<T>> = true;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_simd_operator_v<SimdMul<T>> = true;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_simd_operator_v<SimdMin<T>> = true;
 
-template <typename T>
+template <class T>
 inline constexpr bool is_simd_operator_v<SimdMax<T>> = true;
 
 //----------------------------------------------------------------------------------------------------------------------
 // SIMD type
 
-template <typename T>
+template <class T>
 struct VectorTypeX2
 {
   static_assert(::cuda::std::__always_false_v<T>, "Unsupported specialization");
@@ -362,72 +362,72 @@ struct VectorTypeX2<__nv_bfloat16>
 
 #  endif // _CCCL_HAS_NVBF16()
 
-template <typename T>
+template <class T>
 using vector_type_x2_t = typename VectorTypeX2<T>::type;
 
 //----------------------------------------------------------------------------------------------------------------------
 // Predefined CUDA operators to SIMD
 
-template <typename ReduceOp, typename T>
+template <class ReduceOp, class T>
 struct CudaOperatorToSimdX2
 {
   static_assert(::cuda::std::__always_false_v<T>, "Unsupported specialization");
 };
 
-template <typename T>
+template <class T>
 struct CudaOperatorToSimdX2<::cuda::minimum<>, T>
 {
   using type = SimdMin<vector_type_x2_t<T>>;
 };
 
-template <typename T>
+template <class T>
 struct CudaOperatorToSimdX2<::cuda::minimum<T>, T>
 {
   using type = SimdMin<vector_type_x2_t<T>>;
 };
 
-template <typename T>
+template <class T>
 struct CudaOperatorToSimdX2<::cuda::maximum<>, T>
 {
   using type = SimdMax<vector_type_x2_t<T>>;
 };
 
-template <typename T>
+template <class T>
 struct CudaOperatorToSimdX2<::cuda::maximum<T>, T>
 {
   using type = SimdMax<vector_type_x2_t<T>>;
 };
 
-template <typename T>
+template <class T>
 struct CudaOperatorToSimdX2<::cuda::std::plus<>, T>
 {
   using type = SimdSum<vector_type_x2_t<T>>;
 };
 
-template <typename T>
+template <class T>
 struct CudaOperatorToSimdX2<::cuda::std::plus<T>, T>
 {
   using type = SimdSum<vector_type_x2_t<T>>;
 };
 
-template <typename T>
+template <class T>
 struct CudaOperatorToSimdX2<::cuda::std::multiplies<>, T>
 {
   using type = SimdMul<vector_type_x2_t<T>>;
 };
 
-template <typename T>
+template <class T>
 struct CudaOperatorToSimdX2<::cuda::std::multiplies<T>, T>
 {
   using type = SimdMul<vector_type_x2_t<T>>;
 };
 
-template <typename ReduceOp, typename T>
+template <class ReduceOp, class T>
 using cuda_operator_to_simd_x2_t = typename CudaOperatorToSimdX2<ReduceOp, T>::type;
 
 //----------------------------------------------------------------------------------------------------------------------
 
-template <typename T, typename Op>
+template <class T, class Op>
 _CCCL_DEVICE _CCCL_FORCEINLINE auto try_simd_operator(Op op)
 {
   using ::cuda::std::is_same_v;

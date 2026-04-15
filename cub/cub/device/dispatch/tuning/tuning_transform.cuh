@@ -36,7 +36,7 @@ namespace detail::transform
 {
 struct always_true_predicate
 {
-  template <typename... Ts>
+  template <class... Ts>
   _CCCL_HOST_DEVICE constexpr bool operator()(Ts&&...) const
   {
     return true;
@@ -208,11 +208,11 @@ struct transform_policy
 };
 
 #if _CCCL_HAS_CONCEPTS()
-template <typename T>
+template <class T>
 concept transform_policy_selector = policy_selector<T, transform_policy>;
 #endif // _CCCL_HAS_CONCEPTS()
 
-template <typename... Its>
+template <class... Its>
 _CCCL_HOST_DEVICE constexpr auto loaded_bytes_per_iteration() -> int
 {
   return (int{sizeof(it_value_t<Its>)} + ... + 0);
@@ -463,19 +463,13 @@ static_assert(transform_policy_selector<policy_selector<1>>);
 #endif // _CCCL_HAS_CONCEPTS()
 
 // stateless version which can be passed to kernels
-template <bool RequiresStableAddress,
-          bool DenseOutput,
-          typename RandomAccessIteratorTupleIn,
-          typename RandomAccessIteratorOut>
+template <bool RequiresStableAddress, bool DenseOutput, class RandomAccessIteratorTupleIn, class RandomAccessIteratorOut>
 struct policy_selector_from_types
 {
   static_assert(sizeof(RandomAccessIteratorTupleIn) == 0, "Second parameter must be a tuple");
 };
 
-template <bool RequiresStableAddress,
-          bool DenseOutput,
-          typename... RandomAccessIteratorsIn,
-          typename RandomAccessIteratorOut>
+template <bool RequiresStableAddress, bool DenseOutput, class... RandomAccessIteratorsIn, class RandomAccessIteratorOut>
 struct policy_selector_from_types<RequiresStableAddress,
                                   DenseOutput,
                                   ::cuda::std::tuple<RandomAccessIteratorsIn...>,

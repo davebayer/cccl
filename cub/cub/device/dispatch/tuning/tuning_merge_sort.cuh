@@ -47,7 +47,7 @@ struct AgentMergeSortPolicy
 namespace detail::merge_sort
 {
 // TODO(bgruber): drop in CCCL 4.0 when we remove all public CUB dispatchers
-template <typename KeyIteratorT>
+template <class KeyIteratorT>
 struct policy_hub
 {
   using KeyT = it_value_t<KeyIteratorT>;
@@ -126,7 +126,7 @@ struct merge_sort_policy
 };
 
 #if _CCCL_HAS_CONCEPTS()
-template <typename T>
+template <class T>
 concept merge_sort_policy_selector = policy_selector<T, merge_sort_policy>;
 #endif // _CCCL_HAS_CONCEPTS()
 
@@ -150,7 +150,7 @@ struct policy_selector
 static_assert(merge_sort_policy_selector<policy_selector>);
 #endif // _CCCL_HAS_CONCEPTS()
 
-template <typename KeyIteratorT>
+template <class KeyIteratorT>
 struct policy_selector_from_types
 {
   [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::arch_id arch) const -> merge_sort_policy
@@ -160,7 +160,7 @@ struct policy_selector_from_types
 };
 
 // TODO(bgruber): remove in CCCL 4.0
-template <typename PolicyHub>
+template <class PolicyHub>
 struct policy_selector_from_hub
 {
   // this is only called in device code, so we can ignore the arch parameter

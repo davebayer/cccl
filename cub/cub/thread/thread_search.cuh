@@ -34,7 +34,7 @@ CUB_NAMESPACE_BEGIN
  *
  * Deprecated [Since 3.0]
  */
-template <typename AIteratorT, typename BIteratorT, typename OffsetT, typename CoordinateT>
+template <class AIteratorT, class BIteratorT, class OffsetT, class CoordinateT>
 CCCL_DEPRECATED _CCCL_HOST_DEVICE _CCCL_FORCEINLINE void MergePathSearch(
   OffsetT diagonal, AIteratorT a, BIteratorT b, OffsetT a_len, OffsetT b_len, CoordinateT& path_coordinate)
 {
@@ -77,7 +77,7 @@ CCCL_DEPRECATED _CCCL_HOST_DEVICE _CCCL_FORCEINLINE void MergePathSearch(
  *   Search key
  */
 // TODO(bgruber): deprecate once ::cuda::std::lower_bound is made public
-template <typename InputIteratorT, typename OffsetT, typename T>
+template <class InputIteratorT, class OffsetT, class T>
 _CCCL_DEVICE _CCCL_FORCEINLINE OffsetT LowerBound(InputIteratorT input, OffsetT num_items, T val)
 {
   OffsetT retval = 0;
@@ -112,7 +112,7 @@ _CCCL_DEVICE _CCCL_FORCEINLINE OffsetT LowerBound(InputIteratorT input, OffsetT 
  *   Search key
  */
 // TODO(bgruber): deprecate once ::cuda::std::upper_bound is made public
-template <typename InputIteratorT, typename OffsetT, typename T>
+template <class InputIteratorT, class OffsetT, class T>
 _CCCL_DEVICE _CCCL_FORCEINLINE OffsetT UpperBound(InputIteratorT input, OffsetT num_items, T val)
 {
   OffsetT retval = 0;
@@ -144,7 +144,7 @@ _CCCL_DEVICE _CCCL_FORCEINLINE OffsetT UpperBound(InputIteratorT input, OffsetT 
  * @param[in] val
  *   Search key
  */
-template <typename InputIteratorT, typename OffsetT>
+template <class InputIteratorT, class OffsetT>
 _CCCL_DEVICE _CCCL_FORCEINLINE OffsetT UpperBound(InputIteratorT input, OffsetT num_items, __half val)
 {
   OffsetT retval = 0;
@@ -183,7 +183,7 @@ _CCCL_DEVICE _CCCL_FORCEINLINE OffsetT UpperBound(InputIteratorT input, OffsetT 
  * @param[in] val
  *   Search key
  */
-template <typename InputIteratorT, typename OffsetT>
+template <class InputIteratorT, class OffsetT>
 _CCCL_DEVICE _CCCL_FORCEINLINE OffsetT UpperBound(InputIteratorT input, OffsetT num_items, __nv_bfloat16 val)
 {
   OffsetT retval = 0;

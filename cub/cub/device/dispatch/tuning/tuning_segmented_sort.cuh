@@ -143,7 +143,7 @@ struct segmented_sort_policy
 };
 
 #if _CCCL_HAS_CONCEPTS()
-template <typename T>
+template <class T>
 concept segmented_sort_policy_selector = policy_selector<T, segmented_sort_policy>;
 #endif // _CCCL_HAS_CONCEPTS()
 
@@ -278,7 +278,7 @@ struct policy_selector
 static_assert(segmented_sort_policy_selector<policy_selector>);
 #endif // _CCCL_HAS_CONCEPTS()
 
-template <typename KeyT, typename ValueT>
+template <class KeyT, class ValueT>
 struct policy_selector_from_types
 {
   [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::arch_id arch) const -> segmented_sort_policy
@@ -288,7 +288,7 @@ struct policy_selector_from_types
 };
 
 // TODO(bgruber): remove when we drop the CUB dispatchers in CCCL 4.0
-template <typename PolicyT, typename = void>
+template <class PolicyT, class = void>
 struct SegmentedSortPolicyWrapper : PolicyT
 {
   _CCCL_HOST_DEVICE SegmentedSortPolicyWrapper(PolicyT base)
@@ -297,7 +297,7 @@ struct SegmentedSortPolicyWrapper : PolicyT
 };
 
 // TODO(bgruber): remove when we drop the CUB dispatchers in CCCL 4.0
-template <typename StaticPolicyT>
+template <class StaticPolicyT>
 struct SegmentedSortPolicyWrapper<StaticPolicyT,
                                   ::cuda::std::void_t<typename StaticPolicyT::LargeSegmentPolicy,
                                                       typename StaticPolicyT::SmallSegmentPolicy,
@@ -395,14 +395,14 @@ struct SegmentedSortPolicyWrapper<StaticPolicyT,
 };
 
 // TODO(bgruber): remove when we drop the CUB dispatchers in CCCL 4.0
-template <typename PolicyT>
+template <class PolicyT>
 _CCCL_HOST_DEVICE SegmentedSortPolicyWrapper<PolicyT> MakeSegmentedSortPolicyWrapper(PolicyT policy)
 {
   return SegmentedSortPolicyWrapper<PolicyT>{policy};
 }
 
 // TODO(bgruber): remove when we drop the CUB dispatchers in CCCL 4.0
-template <typename KeyT, typename ValueT>
+template <class KeyT, class ValueT>
 struct policy_hub
 {
   using DominantT                = ::cuda::std::_If<(sizeof(ValueT) > sizeof(KeyT)), ValueT, KeyT>;

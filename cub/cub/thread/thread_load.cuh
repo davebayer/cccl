@@ -107,7 +107,7 @@ inline ::std::ostream& operator<<(::std::ostream& os, CacheLoadModifier modifier
 //!
 //! @tparam RandomAccessIterator
 //!   <b>[inferred]</b> The input's iterator type \iterator
-template <CacheLoadModifier MODIFIER, typename RandomAccessIterator>
+template <CacheLoadModifier MODIFIER, class RandomAccessIterator>
 _CCCL_DEVICE _CCCL_FORCEINLINE cub::detail::it_value_t<RandomAccessIterator> ThreadLoad(RandomAccessIterator itr);
 
 //@}
@@ -116,14 +116,14 @@ _CCCL_DEVICE _CCCL_FORCEINLINE cub::detail::it_value_t<RandomAccessIterator> Thr
 
 namespace detail
 {
-template <CacheLoadModifier MODIFIER, typename T, int... Is>
+template <CacheLoadModifier MODIFIER, class T, int... Is>
 _CCCL_DEVICE _CCCL_FORCEINLINE void
 UnrolledThreadLoadImpl(T const* src, T* dst, ::cuda::std::integer_sequence<int, Is...>)
 {
   ((dst[Is] = ThreadLoad<MODIFIER>(src + Is)), ...);
 }
 
-template <typename RandomAccessIterator, typename T, int... Is>
+template <class RandomAccessIterator, class T, int... Is>
 _CCCL_DEVICE _CCCL_FORCEINLINE void
 UnrolledCopyImpl(RandomAccessIterator src, T* dst, ::cuda::std::integer_sequence<int, Is...>)
 {
@@ -131,13 +131,13 @@ UnrolledCopyImpl(RandomAccessIterator src, T* dst, ::cuda::std::integer_sequence
 }
 } // namespace detail
 
-template <int Count, CacheLoadModifier MODIFIER, typename T>
+template <int Count, CacheLoadModifier MODIFIER, class T>
 _CCCL_DEVICE _CCCL_FORCEINLINE void UnrolledThreadLoad(T const* src, T* dst)
 {
   detail::UnrolledThreadLoadImpl<MODIFIER>(src, dst, ::cuda::std::make_integer_sequence<int, Count>{});
 }
 
-template <int Count, typename RandomAccessIterator, typename T>
+template <int Count, class RandomAccessIterator, class T>
 _CCCL_DEVICE _CCCL_FORCEINLINE void UnrolledCopy(RandomAccessIterator src, T* dst)
 {
   detail::UnrolledCopyImpl(src, dst, ::cuda::std::make_integer_sequence<int, Count>{});
@@ -253,7 +253,7 @@ _CUB_LOAD_ALL(LOAD_LDG, global.nc)
 
 //! ThreadLoad definition for LOAD_DEFAULT modifier on iterator types
 //! deprecated [Since 3.3]
-template <typename RandomAccessIterator>
+template <class RandomAccessIterator>
 CCCL_DEPRECATED_BECAUSE("Use *itr instead") _CCCL_DEVICE _CCCL_FORCEINLINE cub::detail::it_value_t<RandomAccessIterator>
 ThreadLoad(RandomAccessIterator itr,
            detail::constant_t<LOAD_DEFAULT> /*modifier*/,
@@ -264,7 +264,7 @@ ThreadLoad(RandomAccessIterator itr,
 
 //! ThreadLoad definition for LOAD_DEFAULT modifier on pointer types
 //! deprecated [Since 3.3]
-template <typename T>
+template <class T>
 CCCL_DEPRECATED_BECAUSE("Use *itr instead") _CCCL_DEVICE _CCCL_FORCEINLINE T
 ThreadLoad(const T* ptr, detail::constant_t<LOAD_DEFAULT> /*modifier*/, ::cuda::std::true_type /*is_pointer*/)
 {
@@ -273,7 +273,7 @@ ThreadLoad(const T* ptr, detail::constant_t<LOAD_DEFAULT> /*modifier*/, ::cuda::
 
 //! ThreadLoad definition for LOAD_VOLATILE modifier on primitive pointer types
 //! deprecated [Since 3.3]
-template <typename T>
+template <class T>
 CCCL_DEPRECATED_BECAUSE("Use ThreadLoad<LOAD_VOLATILE>(ptr) instead") _CCCL_DEVICE _CCCL_FORCEINLINE T
 ThreadLoadVolatilePointer(const T* ptr, ::cuda::std::true_type /*is_primitive*/)
 {
@@ -283,7 +283,7 @@ ThreadLoadVolatilePointer(const T* ptr, ::cuda::std::true_type /*is_primitive*/)
 
 //! ThreadLoad definition for LOAD_VOLATILE modifier on non-primitive pointer types
 //! deprecated [Since 3.3]
-template <typename T>
+template <class T>
 CCCL_DEPRECATED_BECAUSE("Use ThreadLoad<LOAD_VOLATILE>(ptr) instead") _CCCL_DEVICE _CCCL_FORCEINLINE T
 ThreadLoadVolatilePointer(const T* ptr, ::cuda::std::false_type /*is_primitive*/)
 {
@@ -299,7 +299,7 @@ ThreadLoadVolatilePointer(const T* ptr, ::cuda::std::false_type /*is_primitive*/
 
 //! ThreadLoad definition for LOAD_VOLATILE modifier on pointer types
 //! deprecated [Since 3.3]
-template <typename T>
+template <class T>
 CCCL_DEPRECATED_BECAUSE("Use ThreadLoad<LOAD_VOLATILE>(ptr) instead") _CCCL_DEVICE _CCCL_FORCEINLINE T
 ThreadLoad(const T* ptr, detail::constant_t<LOAD_VOLATILE> /*modifier*/, ::cuda::std::true_type /*is_pointer*/)
 {
@@ -308,7 +308,7 @@ ThreadLoad(const T* ptr, detail::constant_t<LOAD_VOLATILE> /*modifier*/, ::cuda:
 
 //! ThreadLoad definition for generic modifiers on pointer types
 //! deprecated [Since 3.3]
-template <typename T, CacheLoadModifier MODIFIER>
+template <class T, CacheLoadModifier MODIFIER>
 CCCL_DEPRECATED_BECAUSE("Use ThreadLoad(ptr) instead") _CCCL_DEVICE _CCCL_FORCEINLINE T
 ThreadLoad(T const* ptr, detail::constant_t<MODIFIER> /*modifier*/, ::cuda::std::true_type /*is_pointer*/)
 {
@@ -320,7 +320,7 @@ ThreadLoad(T const* ptr, detail::constant_t<MODIFIER> /*modifier*/, ::cuda::std:
   return *reinterpret_cast<T*>(words);
 }
 
-template <CacheLoadModifier MODIFIER, typename RandomAccessIterator>
+template <CacheLoadModifier MODIFIER, class RandomAccessIterator>
 _CCCL_DEVICE _CCCL_FORCEINLINE detail::it_value_t<RandomAccessIterator> ThreadLoad(RandomAccessIterator itr)
 {
   using T = detail::it_value_t<RandomAccessIterator>;

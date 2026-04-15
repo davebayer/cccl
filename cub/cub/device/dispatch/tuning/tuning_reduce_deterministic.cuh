@@ -95,7 +95,7 @@ struct policy_selector
 };
 
 // stateless version which can be passed to kernels
-template <typename AccumT>
+template <class AccumT>
 struct policy_selector_from_types
 {
   [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::arch_id arch) const -> rfa_policy

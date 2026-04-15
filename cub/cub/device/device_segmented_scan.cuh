@@ -160,10 +160,7 @@ struct DeviceSegmentedScan
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename BeginOffsetIteratorInputT,
-            typename EndOffsetIteratorInputT>
+  template <class InputIteratorT, class OutputIteratorT, class BeginOffsetIteratorInputT, class EndOffsetIteratorInputT>
   CUB_RUNTIME_FUNCTION static cudaError_t ExclusiveSegmentedSum(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -294,11 +291,11 @@ struct DeviceSegmentedScan
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename BeginOffsetIteratorInputT,
-            typename EndOffsetIteratorInputT,
-            typename BeginOffsetIteratorOutputT>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class BeginOffsetIteratorInputT,
+            class EndOffsetIteratorInputT,
+            class BeginOffsetIteratorOutputT>
   CUB_RUNTIME_FUNCTION static cudaError_t ExclusiveSegmentedSum(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -436,12 +433,12 @@ struct DeviceSegmentedScan
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename BeginOffsetIteratorInputT,
-            typename EndOffsetIteratorInputT,
-            typename ScanOpT,
-            typename InitValueT>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class BeginOffsetIteratorInputT,
+            class EndOffsetIteratorInputT,
+            class ScanOpT,
+            class InitValueT>
   CUB_RUNTIME_FUNCTION static cudaError_t ExclusiveSegmentedScan(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -571,13 +568,13 @@ struct DeviceSegmentedScan
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename BeginOffsetIteratorInputT,
-            typename EndOffsetIteratorInputT,
-            typename BeginOffsetIteratorOutputT,
-            typename ScanOpT,
-            typename InitValueT>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class BeginOffsetIteratorInputT,
+            class EndOffsetIteratorInputT,
+            class BeginOffsetIteratorOutputT,
+            class ScanOpT,
+            class InitValueT>
   CUB_RUNTIME_FUNCTION static cudaError_t ExclusiveSegmentedScan(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -698,10 +695,7 @@ struct DeviceSegmentedScan
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename BeginOffsetIteratorInputT,
-            typename EndOffsetIteratorInputT>
+  template <class InputIteratorT, class OutputIteratorT, class BeginOffsetIteratorInputT, class EndOffsetIteratorInputT>
   CUB_RUNTIME_FUNCTION static cudaError_t InclusiveSegmentedSum(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -830,11 +824,11 @@ struct DeviceSegmentedScan
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename BeginOffsetIteratorInputT,
-            typename EndOffsetIteratorInputT,
-            typename BeginOffsetIteratorOutputT>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class BeginOffsetIteratorInputT,
+            class EndOffsetIteratorInputT,
+            class BeginOffsetIteratorOutputT>
   CUB_RUNTIME_FUNCTION static cudaError_t InclusiveSegmentedSum(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -946,11 +940,11 @@ struct DeviceSegmentedScan
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename BeginOffsetIteratorInputT,
-            typename EndOffsetIteratorInputT,
-            typename ScanOpT>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class BeginOffsetIteratorInputT,
+            class EndOffsetIteratorInputT,
+            class ScanOpT>
   CUB_RUNTIME_FUNCTION static cudaError_t InclusiveSegmentedScan(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1082,12 +1076,12 @@ struct DeviceSegmentedScan
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename BeginOffsetIteratorInputT,
-            typename EndOffsetIteratorInputT,
-            typename BeginOffsetIteratorOutputT,
-            typename ScanOpT>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class BeginOffsetIteratorInputT,
+            class EndOffsetIteratorInputT,
+            class BeginOffsetIteratorOutputT,
+            class ScanOpT>
   CUB_RUNTIME_FUNCTION static cudaError_t InclusiveSegmentedScan(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1219,12 +1213,12 @@ struct DeviceSegmentedScan
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename BeginOffsetIteratorInputT,
-            typename EndOffsetIteratorInputT,
-            typename ScanOpT,
-            typename InitValueT>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class BeginOffsetIteratorInputT,
+            class EndOffsetIteratorInputT,
+            class ScanOpT,
+            class InitValueT>
   CUB_RUNTIME_FUNCTION static cudaError_t InclusiveSegmentedScanInit(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1358,13 +1352,13 @@ struct DeviceSegmentedScan
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename BeginOffsetIteratorInputT,
-            typename EndOffsetIteratorInputT,
-            typename BeginOffsetIteratorOutputT,
-            typename ScanOpT,
-            typename InitValueT>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class BeginOffsetIteratorInputT,
+            class EndOffsetIteratorInputT,
+            class BeginOffsetIteratorOutputT,
+            class ScanOpT,
+            class InitValueT>
   CUB_RUNTIME_FUNCTION static cudaError_t InclusiveSegmentedScanInit(
     void* d_temp_storage,
     size_t& temp_storage_bytes,

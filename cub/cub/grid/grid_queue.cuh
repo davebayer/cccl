@@ -59,7 +59,7 @@ CUB_NAMESPACE_BEGIN
  *
  * @tparam OffsetT Signed integer type for global offsets
  */
-template <typename OffsetT>
+template <class OffsetT>
 class GridQueue
 {
 private:
@@ -169,7 +169,7 @@ public:
 /**
  * Reset grid queue (call with 1 block of 1 thread)
  */
-template <typename OffsetT>
+template <class OffsetT>
 __global__ void FillAndResetDrainKernel(GridQueue<OffsetT> grid_queue, OffsetT num_items)
 {
   grid_queue.FillAndResetDrain(num_items);

@@ -32,18 +32,18 @@ namespace detail::batched_topk
 // -----------------------------------------------------------------------------
 // One-worker-per-segment policy selection
 // -----------------------------------------------------------------------------
-template <typename PoliciesT,
+template <class PoliciesT,
           ::cuda::std::int64_t Index,
           ::cuda::std::int64_t Count,
-          template <typename...> class WorkerPerSegmentAgentT,
-          typename... AgentParamsT>
+          template <class...> class WorkerPerSegmentAgentT,
+          class... AgentParamsT>
 struct find_first_smem_fitting_policy_impl;
 
 // Base case: End of policy chain reached: If we reach Index == Count, it means we checked all with no match
-template <typename PoliciesT,
+template <class PoliciesT,
           ::cuda::std::int64_t Count,
-          template <typename...> class WorkerPerSegmentAgentT,
-          typename... AgentParamsT>
+          template <class...> class WorkerPerSegmentAgentT,
+          class... AgentParamsT>
 struct find_first_smem_fitting_policy_impl<PoliciesT, Count, Count, WorkerPerSegmentAgentT, AgentParamsT...>
 {
   using policy_t                         = void;
@@ -54,11 +54,11 @@ struct find_first_smem_fitting_policy_impl<PoliciesT, Count, Count, WorkerPerSeg
 // TempStorage fits within the static shared memory limit (max_smem_per_block, typically 48KB).
 // This is useful to figure out which segments (given a runtime segment size) can still be addressed with a
 // one-worker-per-segment approach.
-template <typename PoliciesT,
+template <class PoliciesT,
           ::cuda::std::int64_t Index,
           ::cuda::std::int64_t Count,
-          template <typename...> class WorkerPerSegmentAgentT,
-          typename... AgentParamsT>
+          template <class...> class WorkerPerSegmentAgentT,
+          class... AgentParamsT>
 struct find_first_smem_fitting_policy_impl
 {
   // Inspect the current policy
@@ -84,7 +84,7 @@ struct find_first_smem_fitting_policy_impl
 
 // Policies are ordered by decreasing tile size. This finds the last (i.e., smallest) policy whose tile size
 // is still large enough to cover the user-provided upper bound on segment size (tile_size >= MaxSegmentSize).
-template <typename PoliciesT, ::cuda::std::int64_t Index, ::cuda::std::int64_t Count, int MaxSegmentSize>
+template <class PoliciesT, ::cuda::std::int64_t Index, ::cuda::std::int64_t Count, int MaxSegmentSize>
 struct find_smallest_covering_policy_impl
 {
   using current_policy_t = ::cuda::std::tuple_element_t<Index, PoliciesT>;
@@ -112,17 +112,17 @@ struct find_smallest_covering_policy_impl
 };
 
 // Base case: end of tuple
-template <typename PoliciesT, ::cuda::std::int64_t Count, int MaxSegmentSize>
+template <class PoliciesT, ::cuda::std::int64_t Count, int MaxSegmentSize>
 struct find_smallest_covering_policy_impl<PoliciesT, Count, Count, MaxSegmentSize>
 {
   using policy_t                         = void;
   static constexpr bool has_valid_policy = false;
 };
 
-template <typename SegmentedTopKPolicy,
-          typename SegmentSizeParameterT,
-          template <typename...> class WorkerPerSegmentAgentT,
-          typename... AgentParamsT>
+template <class SegmentedTopKPolicy,
+          class SegmentSizeParameterT,
+          template <class...> class WorkerPerSegmentAgentT,
+          class... AgentParamsT>
 struct find_smallest_covering_policy
 {
   using worker_per_segment_policies     = typename SegmentedTopKPolicy::worker_per_segment_policies;
@@ -151,15 +151,15 @@ struct find_smallest_covering_policy
 // -----------------------------------------------------------------------------
 // Global Kernel Entry Point
 // -----------------------------------------------------------------------------
-template <typename ChainedPolicyT,
-          typename KeyInputItItT,
-          typename KeyOutputItItT,
-          typename ValueInputItItT,
-          typename ValueOutputItItT,
-          typename SegmentSizeParameterT,
-          typename KParameterT,
-          typename SelectDirectionParameterT,
-          typename NumSegmentsParameterT>
+template <class ChainedPolicyT,
+          class KeyInputItItT,
+          class KeyOutputItItT,
+          class ValueInputItItT,
+          class ValueOutputItItT,
+          class SegmentSizeParameterT,
+          class KParameterT,
+          class SelectDirectionParameterT,
+          class NumSegmentsParameterT>
 __launch_bounds__(int(
   find_smallest_covering_policy<
     typename ChainedPolicyT::ActivePolicy,

@@ -30,7 +30,7 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail::segmented_scan
 {
-template <typename PolicyT, typename = void, typename = void>
+template <class PolicyT, class = void, class = void>
 struct segmented_scan_policy_wrapper : PolicyT
 {
   CUB_RUNTIME_FUNCTION segmented_scan_policy_wrapper(PolicyT base)
@@ -38,7 +38,7 @@ struct segmented_scan_policy_wrapper : PolicyT
   {}
 };
 
-template <typename StaticPolicyT>
+template <class StaticPolicyT>
 struct segmented_scan_policy_wrapper<
   StaticPolicyT,
   ::cuda::std::void_t<decltype(StaticPolicyT::segmented_scan_policy_t::load_modifier)>> : StaticPolicyT
@@ -65,13 +65,13 @@ struct segmented_scan_policy_wrapper<
   }
 };
 
-template <typename PolicyT>
+template <class PolicyT>
 CUB_RUNTIME_FUNCTION segmented_scan_policy_wrapper<PolicyT> make_segmented_scan_policy_wrapper(PolicyT policy)
 {
   return segmented_scan_policy_wrapper<PolicyT>{policy};
 }
 
-template <typename InputValueT, typename OutputValueT, typename AccumT, typename OffsetT, typename ScanOpT>
+template <class InputValueT, class OutputValueT, class AccumT, class OffsetT, class ScanOpT>
 struct policy_hub
 {
 private:

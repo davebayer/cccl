@@ -97,7 +97,7 @@ CUB_NAMESPACE_BEGIN
 //! ``{ [4,-2,-1,0], [0,0,0,0], [1,1,0,0], [0,1,-3,3], ... }``.
 //!
 //! @endrst
-template <typename T, int BlockDimX, int BlockDimY = 1, int BlockDimZ = 1>
+template <class T, int BlockDimX, int BlockDimY = 1, int BlockDimZ = 1>
 class BlockAdjacentDifference
 {
 private:
@@ -119,7 +119,7 @@ private:
   }
 
   /// Specialization for when FlagOp has third index param
-  template <typename FlagOp, bool HAS_PARAM = BinaryOpHasIdxParam<T, FlagOp>::value>
+  template <class FlagOp, bool HAS_PARAM = BinaryOpHasIdxParam<T, FlagOp>::value>
   struct ApplyOp
   {
     // Apply flag operator
@@ -130,7 +130,7 @@ private:
   };
 
   /// Specialization for when FlagOp does not have a third index param
-  template <typename FlagOp>
+  template <class FlagOp>
   struct ApplyOp<FlagOp, false>
   {
     // Apply flag operator
@@ -151,7 +151,7 @@ private:
      * @param[out] preds Calling thread's predecessor items
      * @param[in] flag_op Binary boolean flag predicate
      */
-    template <int ITEMS_PER_THREAD, typename FlagT, typename FlagOp>
+    template <int ITEMS_PER_THREAD, class FlagT, class FlagOp>
     static _CCCL_DEVICE _CCCL_FORCEINLINE void FlagHeads(
       int linear_tid,
       FlagT (&flags)[ITEMS_PER_THREAD],
@@ -174,7 +174,7 @@ private:
      * @param[in] input Calling thread's input items
      * @param[in] flag_op Binary boolean flag predicate
      */
-    template <int ITEMS_PER_THREAD, typename FlagT, typename FlagOp>
+    template <int ITEMS_PER_THREAD, class FlagT, class FlagOp>
     static _CCCL_DEVICE _CCCL_FORCEINLINE void
     FlagTails(int linear_tid, FlagT (&flags)[ITEMS_PER_THREAD], T (&input)[ITEMS_PER_THREAD], FlagOp flag_op)
     {
@@ -290,7 +290,7 @@ public:
   //!
   //! @param[in] difference_op
   //!   Binary difference operator
-  template <int ITEMS_PER_THREAD, typename OutputType, typename DifferenceOpT>
+  template <int ITEMS_PER_THREAD, class OutputType, class DifferenceOpT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   SubtractLeft(T (&input)[ITEMS_PER_THREAD], OutputType (&output)[ITEMS_PER_THREAD], DifferenceOpT difference_op)
   {
@@ -389,7 +389,7 @@ public:
   //!   *thread*\ :sub:`0` only item which is going to be subtracted from the first tile item
   //!   (*input*\ :sub:`0` from *thread*\ :sub:`0`).
   //!   @endrst
-  template <int ITEMS_PER_THREAD, typename OutputT, typename DifferenceOpT>
+  template <int ITEMS_PER_THREAD, class OutputT, class DifferenceOpT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void SubtractLeft(
     T (&input)[ITEMS_PER_THREAD],
     OutputT (&output)[ITEMS_PER_THREAD],
@@ -486,7 +486,7 @@ public:
   //!
   //! @param[in] valid_items
   //!   Number of valid items in thread block
-  template <int ITEMS_PER_THREAD, typename OutputType, typename DifferenceOpT>
+  template <int ITEMS_PER_THREAD, class OutputType, class DifferenceOpT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void SubtractLeftPartialTile(
     T (&input)[ITEMS_PER_THREAD], OutputType (&output)[ITEMS_PER_THREAD], DifferenceOpT difference_op, int valid_items)
   {
@@ -608,7 +608,7 @@ public:
   //!   *thread*\ :sub:`0` only item which is going to be subtracted from the first tile item
   //!   (*input*\ :sub:`0` from *thread*\ :sub:`0`).
   //!   @endrst
-  template <int ITEMS_PER_THREAD, typename OutputType, typename DifferenceOpT>
+  template <int ITEMS_PER_THREAD, class OutputType, class DifferenceOpT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void SubtractLeftPartialTile(
     T (&input)[ITEMS_PER_THREAD],
     OutputType (&output)[ITEMS_PER_THREAD],
@@ -729,7 +729,7 @@ public:
   //!
   //! @param[in] difference_op
   //!   Binary difference operator
-  template <int ITEMS_PER_THREAD, typename OutputT, typename DifferenceOpT>
+  template <int ITEMS_PER_THREAD, class OutputT, class DifferenceOpT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   SubtractRight(T (&input)[ITEMS_PER_THREAD], OutputT (&output)[ITEMS_PER_THREAD], DifferenceOpT difference_op)
   {
@@ -830,7 +830,7 @@ public:
   //!   *thread*\ :sub:`BLOCK_THREADS` only item which is going to be subtracted from the last tile item
   //!   (*input*\ :sub:`ITEMS_PER_THREAD` from *thread*\ :sub:`BLOCK_THREADS`).
   //!   @endrst
-  template <int ITEMS_PER_THREAD, typename OutputT, typename DifferenceOpT>
+  template <int ITEMS_PER_THREAD, class OutputT, class DifferenceOpT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void SubtractRight(
     T (&input)[ITEMS_PER_THREAD],
     OutputT (&output)[ITEMS_PER_THREAD],
@@ -925,7 +925,7 @@ public:
   //!
   //! @param[in] valid_items
   //!   Number of valid items in thread block
-  template <int ITEMS_PER_THREAD, typename OutputT, typename DifferenceOpT>
+  template <int ITEMS_PER_THREAD, class OutputT, class DifferenceOpT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void SubtractRightPartialTile(
     T (&input)[ITEMS_PER_THREAD], OutputT (&output)[ITEMS_PER_THREAD], DifferenceOpT difference_op, int valid_items)
   {

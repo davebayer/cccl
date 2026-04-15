@@ -19,7 +19,7 @@ namespace detail
 #ifndef _CCCL_DOXYGEN_INVOKED // Do not document
 
 // NOTE: bit_cast cannot be always used because __half, __nv_bfloat16, etc. are not trivially copyable
-template <typename Output, typename Input>
+template <class Output, class Input>
 [[nodiscard]] _CCCL_DEVICE _CCCL_FORCEINLINE Output unsafe_bitcast(const Input& input)
 {
   Output output;

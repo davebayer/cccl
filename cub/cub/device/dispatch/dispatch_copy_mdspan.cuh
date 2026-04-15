@@ -28,7 +28,7 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail::copy_mdspan
 {
-template <typename MdspanIn, typename MdspanOut>
+template <class MdspanIn, class MdspanOut>
 struct copy_mdspan_t
 {
   MdspanIn mdspan_in;
@@ -39,22 +39,22 @@ struct copy_mdspan_t
       , mdspan_out{mdspan_out}
   {}
 
-  template <typename Idx, typename... Indices>
+  template <class Idx, class... Indices>
   _CCCL_DEVICE_API _CCCL_FORCEINLINE void operator()(Idx, Indices... indices)
   {
     mdspan_out(indices...) = mdspan_in(indices...);
   }
 };
 
-template <typename T_In,
-          typename E_In,
-          typename L_In,
-          typename A_In,
-          typename T_Out,
-          typename E_Out,
-          typename L_Out,
-          typename A_Out,
-          typename EnvT = ::cuda::std::execution::env<>>
+template <class T_In,
+          class E_In,
+          class L_In,
+          class A_In,
+          class T_Out,
+          class E_Out,
+          class L_Out,
+          class A_Out,
+          class EnvT = ::cuda::std::execution::env<>>
 [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t
 copy(::cuda::std::mdspan<T_In, E_In, L_In, A_In> mdspan_in,
      ::cuda::std::mdspan<T_Out, E_Out, L_Out, A_Out> mdspan_out,

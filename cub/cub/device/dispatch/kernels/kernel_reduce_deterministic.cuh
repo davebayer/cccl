@@ -54,7 +54,7 @@ namespace detail::reduce
  * @param[in] reduction_op
  *   Binary reduction functor
  */
-template <typename PolicySelector, typename InputIteratorT, typename ReductionOpT, typename AccumT, typename TransformOpT>
+template <class PolicySelector, class InputIteratorT, class ReductionOpT, class AccumT, class TransformOpT>
 _CCCL_KERNEL_ATTRIBUTES __launch_bounds__(int(
   PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10})
     .reduce.block_threads)) void DeterministicDeviceReduceKernel(InputIteratorT d_in,
@@ -180,13 +180,13 @@ _CCCL_KERNEL_ATTRIBUTES __launch_bounds__(int(
  * @param[in] init
  *   The initial value of the reduction
  */
-template <typename PolicySelector,
-          typename InputIteratorT,
-          typename OutputIteratorT,
-          typename ReductionOpT,
-          typename InitT,
-          typename AccumT,
-          typename TransformOpT = ::cuda::std::identity>
+template <class PolicySelector,
+          class InputIteratorT,
+          class OutputIteratorT,
+          class ReductionOpT,
+          class InitT,
+          class AccumT,
+          class TransformOpT = ::cuda::std::identity>
 _CCCL_KERNEL_ATTRIBUTES __launch_bounds__(
   int(PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).single_tile.block_threads),
   1) void DeterministicDeviceReduceSingleTileKernel(InputIteratorT d_in,

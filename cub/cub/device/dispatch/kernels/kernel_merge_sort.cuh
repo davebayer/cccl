@@ -27,15 +27,15 @@ namespace detail::merge_sort
 //! its current implementation relies on the fact that both the sorting as well as the merging kernels use the same tile
 //! size. This circumstance needs to be respected when determining whether the fallback policy for large user types is
 //! applicable: we must either use the fallback for both or for none of the two agents.
-template <typename DefaultPolicyGetter,
-          typename KeyInIt,
-          typename ValInIt,
-          typename KeyOutIt,
-          typename ValOutIt,
-          typename OffsetT,
-          typename CompareOpT,
-          typename KeyT,
-          typename ValueT>
+template <class DefaultPolicyGetter,
+          class KeyInIt,
+          class ValInIt,
+          class KeyOutIt,
+          class ValOutIt,
+          class OffsetT,
+          class CompareOpT,
+          class KeyT,
+          class ValueT>
 class merge_sort_vsmem_helper_t
 {
   struct fallback_pol_getter
@@ -76,15 +76,15 @@ public:
   using merge_agent_t = ::cuda::std::_If<uses_fallback_policy, fallback_merge_agent_t, default_merge_agent_t>;
 };
 
-template <typename PolicySelectorT,
-          typename KeyInputIteratorT,
-          typename ValueInputIteratorT,
-          typename KeyIteratorT,
-          typename ValueIteratorT,
-          typename OffsetT,
-          typename CompareOpT,
-          typename KeyT,
-          typename ValueT>
+template <class PolicySelectorT,
+          class KeyInputIteratorT,
+          class ValueInputIteratorT,
+          class KeyIteratorT,
+          class ValueIteratorT,
+          class OffsetT,
+          class CompareOpT,
+          class KeyT,
+          class ValueT>
 __launch_bounds__(
   merge_sort_vsmem_helper_t<policy_getter<PolicySelectorT, cuda::arch_id{CUB_PTX_ARCH / 10}>,
                             KeyInputIteratorT,
@@ -146,7 +146,7 @@ __launch_bounds__(
   vsmem_helper_t::discard_temp_storage(temp_storage);
 }
 
-template <typename KeyIteratorT, typename OffsetT, typename CompareOpT, typename KeyT>
+template <class KeyIteratorT, class OffsetT, class CompareOpT, class KeyT>
 _CCCL_KERNEL_ATTRIBUTES void DeviceMergeSortPartitionKernel(
   _CCCL_GRID_CONSTANT const bool ping,
   _CCCL_GRID_CONSTANT const KeyIteratorT keys_ping,
@@ -176,15 +176,15 @@ _CCCL_KERNEL_ATTRIBUTES void DeviceMergeSortPartitionKernel(
   }
 }
 
-template <typename PolicySelectorT,
-          typename KeyInputIteratorT,
-          typename ValueInputIteratorT,
-          typename KeyIteratorT,
-          typename ValueIteratorT,
-          typename OffsetT,
-          typename CompareOpT,
-          typename KeyT,
-          typename ValueT>
+template <class PolicySelectorT,
+          class KeyInputIteratorT,
+          class ValueInputIteratorT,
+          class KeyIteratorT,
+          class ValueIteratorT,
+          class OffsetT,
+          class CompareOpT,
+          class KeyT,
+          class ValueT>
 __launch_bounds__(
   merge_sort_vsmem_helper_t<policy_getter<PolicySelectorT, cuda::arch_id{CUB_PTX_ARCH / 10}>,
                             KeyInputIteratorT,

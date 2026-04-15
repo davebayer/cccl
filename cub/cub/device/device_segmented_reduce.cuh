@@ -74,7 +74,7 @@ CUB_NAMESPACE_BEGIN
 struct DeviceSegmentedReduce
 {
 private:
-  template <typename ReductionOpT, typename InputIteratorT, typename OutputIteratorT>
+  template <class ReductionOpT, class InputIteratorT, class OutputIteratorT>
   CUB_RUNTIME_FUNCTION static cudaError_t fixed_size_arg_dispatch(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -126,15 +126,15 @@ private:
                          stream);
   }
 
-  template <typename AccumT,
-            typename OffsetT,
-            typename InputIteratorT,
-            typename OutputIteratorT,
-            typename BeginOffsetIteratorT,
-            typename EndOffsetIteratorT,
-            typename ReductionOpT,
-            typename InitT,
-            typename EnvT>
+  template <class AccumT,
+            class OffsetT,
+            class InputIteratorT,
+            class OutputIteratorT,
+            class BeginOffsetIteratorT,
+            class EndOffsetIteratorT,
+            class ReductionOpT,
+            class InitT,
+            class EnvT>
   CUB_RUNTIME_FUNCTION static cudaError_t segmented_reduce_impl(
     InputIteratorT d_in,
     OutputIteratorT d_out,
@@ -282,12 +282,12 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename BeginOffsetIteratorT,
-            typename EndOffsetIteratorT,
-            typename ReductionOpT,
-            typename T>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class BeginOffsetIteratorT,
+            class EndOffsetIteratorT,
+            class ReductionOpT,
+            class T>
   CUB_RUNTIME_FUNCTION static cudaError_t Reduce(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -420,13 +420,13 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename BeginOffsetIteratorT,
-            typename EndOffsetIteratorT,
-            typename ReductionOpT,
-            typename T,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class BeginOffsetIteratorT,
+            class EndOffsetIteratorT,
+            class ReductionOpT,
+            class T,
+            class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t Reduce(
     InputIteratorT d_in,
     OutputIteratorT d_out,
@@ -510,7 +510,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT, typename OutputIteratorT, typename ReductionOpT, typename T>
+  template <class InputIteratorT, class OutputIteratorT, class ReductionOpT, class T>
   CUB_RUNTIME_FUNCTION static cudaError_t Reduce(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -597,11 +597,11 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename ReductionOpT,
-            typename T,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class ReductionOpT,
+            class T,
+            class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t Reduce(
     InputIteratorT d_in,
     OutputIteratorT d_out,
@@ -721,12 +721,12 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename BeginOffsetIteratorT,
-            typename EndOffsetIteratorT,
-            typename = ::cuda::std::void_t<typename ::cuda::std::iterator_traits<BeginOffsetIteratorT>::value_type,
-                                           typename ::cuda::std::iterator_traits<EndOffsetIteratorT>::value_type>>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class BeginOffsetIteratorT,
+            class EndOffsetIteratorT,
+            class = ::cuda::std::void_t<typename ::cuda::std::iterator_traits<BeginOffsetIteratorT>::value_type,
+                                        typename ::cuda::std::iterator_traits<EndOffsetIteratorT>::value_type>>
   CUB_RUNTIME_FUNCTION static cudaError_t
   Sum(void* d_temp_storage,
       size_t& temp_storage_bytes,
@@ -837,11 +837,11 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename BeginOffsetIteratorT,
-            typename EndOffsetIteratorT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class BeginOffsetIteratorT,
+            class EndOffsetIteratorT,
+            class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t
   Sum(InputIteratorT d_in,
       OutputIteratorT d_out,
@@ -913,8 +913,8 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
+  template <class InputIteratorT,
+            class OutputIteratorT,
             ::cuda::std::enable_if_t<!::cuda::std::is_same_v<InputIteratorT, void*>, int> = 0>
   CUB_RUNTIME_FUNCTION static cudaError_t
   Sum(void* d_temp_storage,
@@ -992,7 +992,7 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename InputIteratorT, typename OutputIteratorT, typename EnvT = ::cuda::std::execution::env<>>
+  template <class InputIteratorT, class OutputIteratorT, class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t
   Sum(InputIteratorT d_in, OutputIteratorT d_out, ::cuda::std::int64_t num_segments, int segment_size, EnvT env = {})
   {
@@ -1114,12 +1114,12 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename BeginOffsetIteratorT,
-            typename EndOffsetIteratorT,
-            typename = ::cuda::std::void_t<typename ::cuda::std::iterator_traits<BeginOffsetIteratorT>::value_type,
-                                           typename ::cuda::std::iterator_traits<EndOffsetIteratorT>::value_type>>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class BeginOffsetIteratorT,
+            class EndOffsetIteratorT,
+            class = ::cuda::std::void_t<typename ::cuda::std::iterator_traits<BeginOffsetIteratorT>::value_type,
+                                        typename ::cuda::std::iterator_traits<EndOffsetIteratorT>::value_type>>
   CUB_RUNTIME_FUNCTION static cudaError_t
   Min(void* d_temp_storage,
       size_t& temp_storage_bytes,
@@ -1232,11 +1232,11 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename BeginOffsetIteratorT,
-            typename EndOffsetIteratorT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class BeginOffsetIteratorT,
+            class EndOffsetIteratorT,
+            class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t
   Min(InputIteratorT d_in,
       OutputIteratorT d_out,
@@ -1316,7 +1316,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT, typename OutputIteratorT>
+  template <class InputIteratorT, class OutputIteratorT>
   CUB_RUNTIME_FUNCTION static cudaError_t
   Min(void* d_temp_storage,
       size_t& temp_storage_bytes,
@@ -1396,7 +1396,7 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename InputIteratorT, typename OutputIteratorT, typename EnvT = ::cuda::std::execution::env<>>
+  template <class InputIteratorT, class OutputIteratorT, class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t
   Min(InputIteratorT d_in, OutputIteratorT d_out, ::cuda::std::int64_t num_segments, int segment_size, EnvT env = {})
   {
@@ -1525,12 +1525,12 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename BeginOffsetIteratorT,
-            typename EndOffsetIteratorT,
-            typename = ::cuda::std::void_t<typename ::cuda::std::iterator_traits<BeginOffsetIteratorT>::value_type,
-                                           typename ::cuda::std::iterator_traits<EndOffsetIteratorT>::value_type>>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class BeginOffsetIteratorT,
+            class EndOffsetIteratorT,
+            class = ::cuda::std::void_t<typename ::cuda::std::iterator_traits<BeginOffsetIteratorT>::value_type,
+                                        typename ::cuda::std::iterator_traits<EndOffsetIteratorT>::value_type>>
   CUB_RUNTIME_FUNCTION static cudaError_t ArgMin(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1671,11 +1671,11 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename BeginOffsetIteratorT,
-            typename EndOffsetIteratorT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class BeginOffsetIteratorT,
+            class EndOffsetIteratorT,
+            class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t ArgMin(
     InputIteratorT d_in,
     OutputIteratorT d_out,
@@ -1768,7 +1768,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT, typename OutputIteratorT>
+  template <class InputIteratorT, class OutputIteratorT>
   CUB_RUNTIME_FUNCTION static cudaError_t ArgMin(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1837,7 +1837,7 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename InputIteratorT, typename OutputIteratorT, typename EnvT = ::cuda::std::execution::env<>>
+  template <class InputIteratorT, class OutputIteratorT, class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t
   ArgMin(InputIteratorT d_in, OutputIteratorT d_out, ::cuda::std::int64_t num_segments, int segment_size, EnvT env = {})
   {
@@ -1939,12 +1939,12 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename BeginOffsetIteratorT,
-            typename EndOffsetIteratorT,
-            typename = ::cuda::std::void_t<typename ::cuda::std::iterator_traits<BeginOffsetIteratorT>::value_type,
-                                           typename ::cuda::std::iterator_traits<EndOffsetIteratorT>::value_type>>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class BeginOffsetIteratorT,
+            class EndOffsetIteratorT,
+            class = ::cuda::std::void_t<typename ::cuda::std::iterator_traits<BeginOffsetIteratorT>::value_type,
+                                        typename ::cuda::std::iterator_traits<EndOffsetIteratorT>::value_type>>
   CUB_RUNTIME_FUNCTION static cudaError_t
   Max(void* d_temp_storage,
       size_t& temp_storage_bytes,
@@ -2057,11 +2057,11 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename BeginOffsetIteratorT,
-            typename EndOffsetIteratorT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class BeginOffsetIteratorT,
+            class EndOffsetIteratorT,
+            class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t
   Max(InputIteratorT d_in,
       OutputIteratorT d_out,
@@ -2142,7 +2142,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT, typename OutputIteratorT>
+  template <class InputIteratorT, class OutputIteratorT>
   CUB_RUNTIME_FUNCTION static cudaError_t
   Max(void* d_temp_storage,
       size_t& temp_storage_bytes,
@@ -2222,7 +2222,7 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename InputIteratorT, typename OutputIteratorT, typename EnvT = ::cuda::std::execution::env<>>
+  template <class InputIteratorT, class OutputIteratorT, class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t
   Max(InputIteratorT d_in, OutputIteratorT d_out, ::cuda::std::int64_t num_segments, int segment_size, EnvT env = {})
   {
@@ -2353,12 +2353,12 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename BeginOffsetIteratorT,
-            typename EndOffsetIteratorT,
-            typename = ::cuda::std::void_t<typename ::cuda::std::iterator_traits<BeginOffsetIteratorT>::value_type,
-                                           typename ::cuda::std::iterator_traits<EndOffsetIteratorT>::value_type>>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class BeginOffsetIteratorT,
+            class EndOffsetIteratorT,
+            class = ::cuda::std::void_t<typename ::cuda::std::iterator_traits<BeginOffsetIteratorT>::value_type,
+                                        typename ::cuda::std::iterator_traits<EndOffsetIteratorT>::value_type>>
   CUB_RUNTIME_FUNCTION static cudaError_t ArgMax(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -2499,11 +2499,11 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OutputIteratorT,
-            typename BeginOffsetIteratorT,
-            typename EndOffsetIteratorT,
-            typename EnvT = ::cuda::std::execution::env<>>
+  template <class InputIteratorT,
+            class OutputIteratorT,
+            class BeginOffsetIteratorT,
+            class EndOffsetIteratorT,
+            class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t ArgMax(
     InputIteratorT d_in,
     OutputIteratorT d_out,
@@ -2599,7 +2599,7 @@ public:
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT, typename OutputIteratorT>
+  template <class InputIteratorT, class OutputIteratorT>
   CUB_RUNTIME_FUNCTION static cudaError_t ArgMax(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -2668,7 +2668,7 @@ public:
   //!   @rst
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
   //!   @endrst
-  template <typename InputIteratorT, typename OutputIteratorT, typename EnvT = ::cuda::std::execution::env<>>
+  template <class InputIteratorT, class OutputIteratorT, class EnvT = ::cuda::std::execution::env<>>
   [[nodiscard]] CUB_RUNTIME_FUNCTION static cudaError_t
   ArgMax(InputIteratorT d_in, OutputIteratorT d_out, ::cuda::std::int64_t num_segments, int segment_size, EnvT env = {})
   {

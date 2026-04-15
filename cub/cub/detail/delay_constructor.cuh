@@ -90,7 +90,7 @@ struct delay_constructor_policy
 #endif // !_CCCL_COMPILER(NVRTC)
 };
 
-template <typename DelayConstructor>
+template <class DelayConstructor>
 inline constexpr auto delay_constructor_policy_from_type = 0;
 
 template <unsigned int L2WriteLatency>

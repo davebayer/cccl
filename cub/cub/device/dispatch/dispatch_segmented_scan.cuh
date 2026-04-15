@@ -40,16 +40,16 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail::segmented_scan
 {
-template <typename MaxPolicyT,
-          typename InputIteratorT,
-          typename OutputIteratorT,
-          typename BeginOffsetIteratorInputT,
-          typename EndOffsetIteratorInputT,
-          typename BeginOffsetIteratorOutputT,
-          typename OffsetT,
-          typename ScanOpT,
-          typename InitValueT,
-          typename AccumT,
+template <class MaxPolicyT,
+          class InputIteratorT,
+          class OutputIteratorT,
+          class BeginOffsetIteratorInputT,
+          class EndOffsetIteratorInputT,
+          class BeginOffsetIteratorOutputT,
+          class OffsetT,
+          class ScanOpT,
+          class InitValueT,
+          class AccumT,
           ForceInclusive EnforceInclusive>
 struct device_segmented_scan_kernel_source
 {
@@ -75,24 +75,24 @@ struct device_segmented_scan_kernel_source
 };
 
 template <
-  typename InputIteratorT,
-  typename OutputIteratorT,
-  typename BeginOffsetIteratorInputT,
-  typename EndOffsetIteratorInputT,
-  typename BeginOffsetIteratorOutputT,
-  typename ScanOpT,
-  typename InitValueT,
-  typename AccumT                 = ::cuda::std::__accumulator_t<ScanOpT,
+  class InputIteratorT,
+  class OutputIteratorT,
+  class BeginOffsetIteratorInputT,
+  class EndOffsetIteratorInputT,
+  class BeginOffsetIteratorOutputT,
+  class ScanOpT,
+  class InitValueT,
+  class AccumT                    = ::cuda::std::__accumulator_t<ScanOpT,
                                                                  cub::detail::it_value_t<InputIteratorT>,
                                                                  ::cuda::std::_If<::cuda::std::is_same_v<InitValueT, NullType>,
                                                                                   cub::detail::it_value_t<InputIteratorT>,
                                                                                   typename InitValueT::value_type>>,
   ForceInclusive EnforceInclusive = ForceInclusive::No,
-  typename OffsetT                = typename detail::
+  class OffsetT                   = typename detail::
     common_iterator_value_t<BeginOffsetIteratorInputT, EndOffsetIteratorInputT, BeginOffsetIteratorOutputT>,
-  typename PolicyHub = detail::segmented_scan::
+  class PolicyHub = detail::segmented_scan::
     policy_hub<detail::it_value_t<InputIteratorT>, detail::it_value_t<OutputIteratorT>, AccumT, OffsetT, ScanOpT>,
-  typename KernelSource = detail::segmented_scan::device_segmented_scan_kernel_source<
+  class KernelSource = detail::segmented_scan::device_segmented_scan_kernel_source<
     typename PolicyHub::MaxPolicy,
     InputIteratorT,
     OutputIteratorT,
@@ -104,7 +104,7 @@ template <
     InitValueT,
     AccumT,
     EnforceInclusive>,
-  typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+  class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
 struct dispatch_segmented_scan
 {
   static_assert(::cuda::std::is_integral_v<OffsetT> && sizeof(OffsetT) >= 4 && sizeof(OffsetT) <= 8,
@@ -151,7 +151,7 @@ struct dispatch_segmented_scan
 
   KernelLauncherFactory launcher_factory;
 
-  template <typename ActivePolicyT, typename SegmentedScanKernelT>
+  template <class ActivePolicyT, class SegmentedScanKernelT>
   CUB_RUNTIME_FUNCTION _CCCL_HOST _CCCL_FORCEINLINE cudaError_t
   invoke_passes(SegmentedScanKernelT segmented_scan_kernel, ActivePolicyT policy = {})
   {
@@ -211,7 +211,7 @@ struct dispatch_segmented_scan
   }
 
   /// Invocation
-  template <typename ActivePolicyT>
+  template <class ActivePolicyT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t Invoke(ActivePolicyT policy = {})
   {
     auto wrapped_policy = detail::segmented_scan::make_segmented_scan_policy_wrapper(policy);
@@ -219,7 +219,7 @@ struct dispatch_segmented_scan
     return invoke_passes(kernel_source.segmented_scan_kernel(), wrapped_policy);
   }
 
-  template <typename MaxPolicyT = typename PolicyHub::MaxPolicy>
+  template <class MaxPolicyT = typename PolicyHub::MaxPolicy>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t dispatch(
     void* d_temp_storage,
     size_t& temp_storage_bytes,

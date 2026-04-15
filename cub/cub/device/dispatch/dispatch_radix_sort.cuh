@@ -51,7 +51,7 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail::radix_sort
 {
-template <typename PolicySelector, SortOrder Order, typename KeyT, typename ValueT, typename OffsetT, typename DecomposerT>
+template <class PolicySelector, SortOrder Order, class KeyT, class ValueT, class OffsetT, class DecomposerT>
 struct DeviceRadixSortKernelSource
 {
   // PolicySelector must be stateless, so we can pass the type to the kernel
@@ -132,19 +132,19 @@ struct DeviceRadixSortKernelSource
  */
 // TODO(bgruber): deprecate when we make the tuning API public and remove in CCCL 4.0
 template <SortOrder Order,
-          typename KeyT,
-          typename ValueT,
-          typename OffsetT,
-          typename DecomposerT  = detail::identity_decomposer_t,
-          typename PolicyHub    = detail::radix_sort::policy_hub<KeyT, ValueT, OffsetT>,
-          typename KernelSource = detail::radix_sort::DeviceRadixSortKernelSource<
+          class KeyT,
+          class ValueT,
+          class OffsetT,
+          class DecomposerT  = detail::identity_decomposer_t,
+          class PolicyHub    = detail::radix_sort::policy_hub<KeyT, ValueT, OffsetT>,
+          class KernelSource = detail::radix_sort::DeviceRadixSortKernelSource<
             detail::radix_sort::policy_selector_from_hub<PolicyHub>,
             Order,
             KeyT,
             ValueT,
             OffsetT,
             DecomposerT>,
-          typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+          class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
 struct DispatchRadixSort
 {
   //------------------------------------------------------------------------------
@@ -249,7 +249,7 @@ struct DispatchRadixSort
    *   Kernel function pointer to parameterization of cub::DeviceRadixSortSingleTileKernel
    */
   // TODO(bgruber): deprecate when we make the tuning API public and remove in CCCL 4.0
-  template <typename ActivePolicyT, typename SingleTileKernelT>
+  template <class ActivePolicyT, class SingleTileKernelT>
   CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE cudaError_t
   InvokeSingleTile(SingleTileKernelT single_tile_kernel, ActivePolicyT policy = {})
   {
@@ -257,7 +257,7 @@ struct DispatchRadixSort
   }
 
 private:
-  template <typename SingleTileKernelT>
+  template <class SingleTileKernelT>
   CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE cudaError_t
   __invoke_single_tile(SingleTileKernelT single_tile_kernel, detail::radix_sort::radix_sort_downsweep_policy policy)
   {
@@ -321,7 +321,7 @@ public:
    * Invoke a three-kernel sorting pass at the current bit.
    */
   // TODO(bgruber): deprecate when we make the tuning API public and remove in CCCL 4.0
-  template <typename PassConfigT>
+  template <class PassConfigT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t InvokePass(
     const KeyT* d_keys_in,
     KeyT* d_keys_out,
@@ -442,7 +442,7 @@ public:
 
   // TODO(bgruber): deprecate when we make the tuning API public and remove in CCCL 4.0
   /// Pass configuration structure
-  template <typename UpsweepKernelT, typename ScanKernelT, typename DownsweepKernelT>
+  template <class UpsweepKernelT, class ScanKernelT, class DownsweepKernelT>
   struct PassConfig
   {
     UpsweepKernelT upsweep_kernel;
@@ -458,7 +458,7 @@ public:
 
     // TODO(bgruber): deprecate when we make the tuning API public and remove in CCCL 4.0
     /// Initialize pass configuration
-    template <typename ActivePolicyT, typename UpsweepPolicyT, typename ScanPolicyT, typename DownsweepPolicyT>
+    template <class ActivePolicyT, class UpsweepPolicyT, class ScanPolicyT, class DownsweepPolicyT>
     CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE cudaError_t InitPassConfig(
       UpsweepKernelT upsweep_kernel,
       ScanKernelT scan_kernel,
@@ -533,7 +533,7 @@ public:
   };
 
   // TODO(bgruber): deprecate when we make the tuning API public and remove in CCCL 4.0
-  template <typename ActivePolicyT>
+  template <class ActivePolicyT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t InvokeOnesweep(ActivePolicyT policy = {})
   {
     return __invoke_onesweep(detail::radix_sort::convert_policy(policy));
@@ -789,7 +789,7 @@ public:
    *   cub::DeviceRadixSortDownsweepKernel
    */
   // TODO(bgruber): deprecate when we make the tuning API public and remove in CCCL 4.0
-  template <typename ActivePolicyT, typename UpsweepKernelT, typename ScanKernelT, typename DownsweepKernelT>
+  template <class ActivePolicyT, class UpsweepKernelT, class ScanKernelT, class DownsweepKernelT>
   CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE cudaError_t InvokePasses(
     UpsweepKernelT upsweep_kernel,
     UpsweepKernelT alt_upsweep_kernel,
@@ -808,7 +808,7 @@ public:
   }
 
 private:
-  template <typename UpsweepKernelT, typename ScanKernelT, typename DownsweepKernelT>
+  template <class UpsweepKernelT, class ScanKernelT, class DownsweepKernelT>
   CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE cudaError_t __invoke_passes(
     UpsweepKernelT upsweep_kernel,
     UpsweepKernelT alt_upsweep_kernel,
@@ -1016,7 +1016,7 @@ public:
 
   // TODO(bgruber): deprecate when we make the tuning API public and remove in CCCL 4.0
   /// Invocation
-  template <typename ActivePolicyT>
+  template <class ActivePolicyT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t Invoke(ActivePolicyT = {})
   {
     struct policy_getter
@@ -1029,7 +1029,7 @@ public:
     return __invoke(policy_getter{});
   }
 
-  template <typename PolicyGetter>
+  template <class PolicyGetter>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t __invoke(PolicyGetter policy_getter)
   {
     CUB_DETAIL_CONSTEXPR_ISH auto policy = policy_getter();
@@ -1124,7 +1124,7 @@ public:
    *   CUDA stream to launch kernels within. Default is stream<sub>0</sub>.
    */
   // TODO(bgruber): deprecate when we make the tuning API public and remove in CCCL 4.0
-  template <typename MaxPolicyT = typename PolicyHub::MaxPolicy>
+  template <class MaxPolicyT = typename PolicyHub::MaxPolicy>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t Dispatch(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -1182,13 +1182,13 @@ struct fake_policy
 };
 
 template <SortOrder Order,
-          typename KeyT,
-          typename ValueT,
-          typename OffsetT,
-          typename DecomposerT    = identity_decomposer_t,
-          typename PolicySelector = policy_selector_from_types<KeyT, ValueT, OffsetT>,
-          typename KernelSource = DeviceRadixSortKernelSource<PolicySelector, Order, KeyT, ValueT, OffsetT, DecomposerT>,
-          typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+          class KeyT,
+          class ValueT,
+          class OffsetT,
+          class DecomposerT    = identity_decomposer_t,
+          class PolicySelector = policy_selector_from_types<KeyT, ValueT, OffsetT>,
+          class KernelSource   = DeviceRadixSortKernelSource<PolicySelector, Order, KeyT, ValueT, OffsetT, DecomposerT>,
+          class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
 CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t dispatch(
   void* d_temp_storage,
   size_t& temp_storage_bytes,

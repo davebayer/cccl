@@ -99,7 +99,7 @@ CUB_NAMESPACE_BEGIN
 //! @tparam BlockDimZ
 //!   **[optional]** The thread block length in threads along the Z dimension (default: 1)
 //!
-template <typename T, int BlockDimX, int BlockDimY = 1, int BlockDimZ = 1>
+template <class T, int BlockDimX, int BlockDimY = 1, int BlockDimZ = 1>
 class BlockDiscontinuity
 {
 private:
@@ -121,7 +121,7 @@ private:
   }
 
   /// Specialization for when FlagOp has third index param
-  template <typename FlagOp, bool HAS_PARAM = BinaryOpHasIdxParam<T, FlagOp>::value>
+  template <class FlagOp, bool HAS_PARAM = BinaryOpHasIdxParam<T, FlagOp>::value>
   struct ApplyOp
   {
     // Apply flag operator
@@ -132,7 +132,7 @@ private:
   };
 
   /// Specialization for when FlagOp does not have a third index param
-  template <typename FlagOp>
+  template <class FlagOp>
   struct ApplyOp<FlagOp, false>
   {
     // Apply flag operator
@@ -160,7 +160,7 @@ private:
      * @param[in] flag_op
      *   Binary boolean flag predicate
      */
-    template <int ITEMS_PER_THREAD, typename FlagT, typename FlagOp>
+    template <int ITEMS_PER_THREAD, class FlagT, class FlagOp>
     static _CCCL_DEVICE _CCCL_FORCEINLINE void FlagHeads(
       int linear_tid,
       FlagT (&flags)[ITEMS_PER_THREAD],
@@ -188,7 +188,7 @@ private:
      * @param[in] flag_op
      *   Binary boolean flag predicate
      */
-    template <int ITEMS_PER_THREAD, typename FlagT, typename FlagOp>
+    template <int ITEMS_PER_THREAD, class FlagT, class FlagOp>
     static _CCCL_DEVICE _CCCL_FORCEINLINE void
     FlagTails(int linear_tid, FlagT (&flags)[ITEMS_PER_THREAD], T (&input)[ITEMS_PER_THREAD], FlagOp flag_op)
     {
@@ -267,7 +267,7 @@ public:
    * @param[in] flag_op
    *   Binary boolean flag predicate
    */
-  template <int ITEMS_PER_THREAD, typename FlagT, typename FlagOp>
+  template <int ITEMS_PER_THREAD, class FlagT, class FlagOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void FlagHeads(
     FlagT (&head_flags)[ITEMS_PER_THREAD], T (&input)[ITEMS_PER_THREAD], T (&preds)[ITEMS_PER_THREAD], FlagOp flag_op)
   {
@@ -308,7 +308,7 @@ public:
    *   <b>[<em>thread</em><sub>0</sub> only]</b> Item with which to compare the first tile item
    *   (<tt>input<sub>0</sub></tt> from <em>thread</em><sub>0</sub>).
    */
-  template <int ITEMS_PER_THREAD, typename FlagT, typename FlagOp>
+  template <int ITEMS_PER_THREAD, class FlagT, class FlagOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void FlagHeads(
     FlagT (&head_flags)[ITEMS_PER_THREAD],
     T (&input)[ITEMS_PER_THREAD],
@@ -403,7 +403,7 @@ public:
   //!
   //! @param[in] flag_op
   //!   Binary boolean flag predicate
-  template <int ITEMS_PER_THREAD, typename FlagT, typename FlagOp>
+  template <int ITEMS_PER_THREAD, class FlagT, class FlagOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   FlagHeads(FlagT (&head_flags)[ITEMS_PER_THREAD], T (&input)[ITEMS_PER_THREAD], FlagOp flag_op)
   {
@@ -490,7 +490,7 @@ public:
   //!   @rst
   //!   *thread*\ :sub:`0` only item with which to compare the first tile item (``input[0]`` from *thread*\ :sub:`0`).
   //!   @endrst
-  template <int ITEMS_PER_THREAD, typename FlagT, typename FlagOp>
+  template <int ITEMS_PER_THREAD, class FlagT, class FlagOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void FlagHeads(
     FlagT (&head_flags)[ITEMS_PER_THREAD], T (&input)[ITEMS_PER_THREAD], FlagOp flag_op, T tile_predecessor_item)
   {
@@ -573,7 +573,7 @@ public:
   //!
   //! @param[in] flag_op
   //!   Binary boolean flag predicate
-  template <int ITEMS_PER_THREAD, typename FlagT, typename FlagOp>
+  template <int ITEMS_PER_THREAD, class FlagT, class FlagOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   FlagTails(FlagT (&tail_flags)[ITEMS_PER_THREAD], T (&input)[ITEMS_PER_THREAD], FlagOp flag_op)
   {
@@ -677,7 +677,7 @@ public:
   //!   compare the last tile item (``input[ITEMS_PER_THREAD - 1]`` from
   //!   *thread*\ :sub:`BLOCK_THREADS - 1`).
   //!   @endrst
-  template <int ITEMS_PER_THREAD, typename FlagT, typename FlagOp>
+  template <int ITEMS_PER_THREAD, class FlagT, class FlagOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   FlagTails(FlagT (&tail_flags)[ITEMS_PER_THREAD], T (&input)[ITEMS_PER_THREAD], FlagOp flag_op, T tile_successor_item)
   {
@@ -781,7 +781,7 @@ public:
   //!
   //! @param[in] flag_op
   //!   Binary boolean flag predicate
-  template <int ITEMS_PER_THREAD, typename FlagT, typename FlagOp>
+  template <int ITEMS_PER_THREAD, class FlagT, class FlagOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void FlagHeadsAndTails(
     FlagT (&head_flags)[ITEMS_PER_THREAD],
     FlagT (&tail_flags)[ITEMS_PER_THREAD],
@@ -915,7 +915,7 @@ public:
   //!
   //! @param[in] flag_op
   //!   Binary boolean flag predicate
-  template <int ITEMS_PER_THREAD, typename FlagT, typename FlagOp>
+  template <int ITEMS_PER_THREAD, class FlagT, class FlagOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void FlagHeadsAndTails(
     FlagT (&head_flags)[ITEMS_PER_THREAD],
     FlagT (&tail_flags)[ITEMS_PER_THREAD],
@@ -1051,7 +1051,7 @@ public:
   //!
   //! @param[in] flag_op
   //!   Binary boolean flag predicate
-  template <int ITEMS_PER_THREAD, typename FlagT, typename FlagOp>
+  template <int ITEMS_PER_THREAD, class FlagT, class FlagOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void FlagHeadsAndTails(
     FlagT (&head_flags)[ITEMS_PER_THREAD],
     T tile_predecessor_item,
@@ -1191,7 +1191,7 @@ public:
   //!
   //! @param[in] flag_op
   //!   Binary boolean flag predicate
-  template <int ITEMS_PER_THREAD, typename FlagT, typename FlagOp>
+  template <int ITEMS_PER_THREAD, class FlagT, class FlagOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void FlagHeadsAndTails(
     FlagT (&head_flags)[ITEMS_PER_THREAD],
     T tile_predecessor_item,

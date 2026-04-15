@@ -28,7 +28,7 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail::scan
 {
-template <typename ScanTileState, typename AccumT>
+template <class ScanTileState, class AccumT>
 union tile_state_kernel_arg_t
 {
   warpspeed::tile_state_t<AccumT>* lookahead;
@@ -53,11 +53,7 @@ union tile_state_kernel_arg_t
  * @param[in] num_tiles
  *   Number of tiles
  */
-template <typename PolicySelectorT,
-          typename InputIteratorT,
-          typename OutputIteratorT,
-          typename ScanTileState,
-          typename AccumT>
+template <class PolicySelectorT, class InputIteratorT, class OutputIteratorT, class ScanTileState, class AccumT>
 _CCCL_KERNEL_ATTRIBUTES __launch_bounds__(128) void DeviceScanInitKernel(
   tile_state_kernel_arg_t<ScanTileState, AccumT> tile_state, _CCCL_GRID_CONSTANT const int num_tiles)
 {
@@ -97,7 +93,7 @@ _CCCL_KERNEL_ATTRIBUTES __launch_bounds__(128) void DeviceScanInitKernel(
  *   Pointer to the total number of items selected
  *   (i.e., length of `d_selected_out`)
  */
-template <typename ScanTileStateT, typename NumSelectedIteratorT>
+template <class ScanTileStateT, class NumSelectedIteratorT>
 _CCCL_KERNEL_ATTRIBUTES void DeviceCompactInitKernel(
   ScanTileStateT tile_state, _CCCL_GRID_CONSTANT const int num_tiles, NumSelectedIteratorT d_num_selected_out)
 {
@@ -111,7 +107,7 @@ _CCCL_KERNEL_ATTRIBUTES void DeviceCompactInitKernel(
   }
 }
 
-template <typename PolicySelector>
+template <class PolicySelector>
 [[nodiscard]] _CCCL_API _CCCL_CONSTEVAL int get_device_scan_launch_bounds() noexcept
 {
   constexpr scan_policy policy = PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10});
@@ -126,7 +122,7 @@ template <typename PolicySelector>
 
 // need a variable template for clang in CUDA mode to avoid:
 // error: 'launch_bounds' attribute requires parameter 0 to be an integer constant
-template <typename PolicySelector>
+template <class PolicySelector>
 inline constexpr int device_scan_launch_bounds = get_device_scan_launch_bounds<PolicySelector>();
 
 /**
@@ -174,16 +170,16 @@ inline constexpr int device_scan_launch_bounds = get_device_scan_launch_bounds<P
  * @paramTotal num_items
  *   number of scan items for the entire problem
  */
-template <typename PolicySelector,
-          typename InputIteratorT,
-          typename OutputIteratorT,
-          typename ScanTileState,
-          typename ScanOpT,
-          typename InitValueT,
-          typename OffsetT,
-          typename AccumT,
+template <class PolicySelector,
+          class InputIteratorT,
+          class OutputIteratorT,
+          class ScanTileState,
+          class ScanOpT,
+          class InitValueT,
+          class OffsetT,
+          class AccumT,
           bool ForceInclusive,
-          typename RealInitValueT = typename InitValueT::value_type>
+          class RealInitValueT = typename InitValueT::value_type>
 __launch_bounds__(device_scan_launch_bounds<PolicySelector>, 1) _CCCL_KERNEL_ATTRIBUTES void DeviceScanKernel(
   _CCCL_GRID_CONSTANT const InputIteratorT d_in,
   _CCCL_GRID_CONSTANT const OutputIteratorT d_out,

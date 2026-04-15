@@ -56,7 +56,7 @@ CUB_NAMESPACE_BEGIN
     and only one of them is used, the sorting works correctly. For double, the
     same applies, but with 64-bit patterns.
 */
-template <typename KeyT, bool IsFP = ::cuda::is_floating_point_v<KeyT>>
+template <class KeyT, bool IsFP = ::cuda::is_floating_point_v<KeyT>>
 struct BaseDigitExtractor
 {
   using TraitsT      = Traits<KeyT>;
@@ -68,7 +68,7 @@ struct BaseDigitExtractor
   }
 };
 
-template <typename KeyT>
+template <class KeyT>
 struct BaseDigitExtractor<KeyT, true>
 {
   using TraitsT      = Traits<KeyT>;
@@ -85,7 +85,7 @@ struct BaseDigitExtractor<KeyT, true>
 
 /** \brief A wrapper type to extract digits. Uses the BFE intrinsic to extract a
  * key from a digit. */
-template <typename KeyT>
+template <class KeyT>
 struct BFEDigitExtractor : BaseDigitExtractor<KeyT>
 {
   using typename BaseDigitExtractor<KeyT>::UnsignedBits;
@@ -107,7 +107,7 @@ struct BFEDigitExtractor : BaseDigitExtractor<KeyT>
 
 /** \brief A wrapper type to extract digits. Uses a combination of shift and
  * bitwise and to extract digits. */
-template <typename KeyT>
+template <class KeyT>
 struct ShiftDigitExtractor : BaseDigitExtractor<KeyT>
 {
   using typename BaseDigitExtractor<KeyT>::UnsignedBits;
@@ -532,7 +532,7 @@ struct traits_t<T, false /* is_fundamental */>
 #endif // _CCCL_DOXYGEN_INVOKED
 
 //! Twiddling keys for radix sort
-template <bool IS_DESCENDING, typename KeyT>
+template <bool IS_DESCENDING, class KeyT>
 struct RadixSortTwiddle
 {
 private:

@@ -83,7 +83,7 @@ CUB_NAMESPACE_BEGIN
  *    First appears in CUDA Toolkit 12.3.
  * @endrst
  */
-template <CacheStoreModifier MODIFIER, typename ValueType, typename OffsetT = ptrdiff_t>
+template <CacheStoreModifier MODIFIER, class ValueType, class OffsetT = ptrdiff_t>
 class CacheModifiedOutputIterator
 {
 private:
@@ -136,7 +136,7 @@ public:
    * @param ptr
    *   Native pointer to wrap
    */
-  template <typename QualifiedValueType>
+  template <class QualifiedValueType>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE CacheModifiedOutputIterator(QualifiedValueType* ptr)
       : ptr(const_cast<::cuda::std::remove_cv_t<QualifiedValueType>*>(ptr))
   {}
@@ -163,7 +163,7 @@ public:
   }
 
   /// Addition
-  template <typename Distance>
+  template <class Distance>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE self_type operator+(Distance n) const
   {
     self_type retval(ptr + n);
@@ -171,7 +171,7 @@ public:
   }
 
   /// Addition assignment
-  template <typename Distance>
+  template <class Distance>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE self_type& operator+=(Distance n)
   {
     ptr += n;
@@ -179,7 +179,7 @@ public:
   }
 
   /// Subtraction
-  template <typename Distance>
+  template <class Distance>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE self_type operator-(Distance n) const
   {
     self_type retval(ptr - n);
@@ -187,7 +187,7 @@ public:
   }
 
   /// Subtraction assignment
-  template <typename Distance>
+  template <class Distance>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE self_type& operator-=(Distance n)
   {
     ptr -= n;
@@ -201,7 +201,7 @@ public:
   }
 
   /// Array subscript
-  template <typename Distance>
+  template <class Distance>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE reference operator[](Distance n) const
   {
     return Reference(ptr + n);

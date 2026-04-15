@@ -150,7 +150,7 @@ __launch_bounds__(int(PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).block
 // This function efficiently returns the extent at the given position, optimizing for static extents by returning
 // compile-time constants when possible. For dynamic extents, it returns the precomputed value to avoid runtime
 // computation overhead.
-template <int Position, typename ExtentType, typename FastDivModType>
+template <int Position, class ExtentType, class FastDivModType>
 _CCCL_DEVICE_API auto extent_at(ExtentType extents, FastDivModType dynamic_extent)
 {
   if constexpr (ExtentType::static_extent(Position) != ::cuda::std::dynamic_extent)
@@ -173,7 +173,7 @@ _CCCL_DEVICE_API auto extent_at(ExtentType extents, FastDivModType dynamic_exten
 // Performance characteristics:
 //  - Static extents in range: Product computed at compile-time, zero runtime cost
 //  - Dynamic extents present: Returns precomputed value, avoiding runtime multiplication
-template <int Start, int End, typename ExtentType, typename FastDivModType>
+template <int Start, int End, class ExtentType, class FastDivModType>
 _CCCL_DEVICE_API auto get_extents_sub_size(ExtentType extents, FastDivModType extent_sub_size)
 {
   if constexpr (cub::detail::are_extents_in_range_static<ExtentType>(Start, End))
@@ -201,7 +201,7 @@ _CCCL_DEVICE_API auto get_extents_sub_size(ExtentType extents, FastDivModType ex
 // - Left layout (column-major): index_i = (index / product(extent[j] for j in [0, i])) % extent[i]
 //
 // This function leverages precomputed fast division and modulo operations to minimize runtime arithmetic overhead.
-template <bool IsLayoutRight, int Position, typename IndexType, typename ExtentType, typename FastDivModType>
+template <bool IsLayoutRight, int Position, class IndexType, class ExtentType, class FastDivModType>
 _CCCL_DEVICE_API auto
 coordinate_at(IndexType index, ExtentType extents, FastDivModType extent_sub_size, FastDivModType dynamic_extent)
 {
@@ -220,7 +220,7 @@ coordinate_at(IndexType index, ExtentType extents, FastDivModType extent_sub_siz
 // where the number of coordinate parameters matches the rank of the extents object.
 //
 // This wrapper is used internally by DeviceFor::ForEachInLayout/ForEachInExtents
-template <typename OpT, typename ExtentsType, bool IsLayoutRight, typename FastDivModArrayT>
+template <class OpT, class ExtentsType, bool IsLayoutRight, class FastDivModArrayT>
 struct op_wrapper_extents_t
 {
   OpT op; ///< The user-provided operation to be called with coordinates
@@ -229,7 +229,7 @@ struct op_wrapper_extents_t
   FastDivModArrayT extents_mod_array; ///< Precomputed fast modulo values for individual extents
 
   // Internal implementation that converts linear index to coordinates and calls the user operation
-  template <typename IndexType, size_t... Positions>
+  template <class IndexType, size_t... Positions>
   _CCCL_DEVICE_API void impl(IndexType i, ::cuda::std::index_sequence<Positions...>)
   {
     using cub::detail::for_each::coordinate_at;
@@ -239,7 +239,7 @@ struct op_wrapper_extents_t
   }
 
   // Internal implementation that converts linear index to coordinates and calls the user operation
-  template <typename IndexType, size_t... Positions>
+  template <class IndexType, size_t... Positions>
   _CCCL_DEVICE_API void impl(IndexType i, ::cuda::std::index_sequence<Positions...>) const
   {
     using cub::detail::for_each::coordinate_at;
@@ -249,14 +249,14 @@ struct op_wrapper_extents_t
   }
 
   // Function call operator that processes a linear index by converting it to multi-dimensional coordinates
-  template <typename IndexType>
+  template <class IndexType>
   _CCCL_DEVICE_API void operator()(IndexType i)
   {
     impl(i, ::cuda::std::make_index_sequence<ExtentsType::rank()>{});
   }
 
   // Function call operator that processes a linear index by converting it to multi-dimensional coordinates
-  template <typename IndexType>
+  template <class IndexType>
   _CCCL_DEVICE_API void operator()(IndexType i) const
   {
     impl(i, ::cuda::std::make_index_sequence<ExtentsType::rank()>{});

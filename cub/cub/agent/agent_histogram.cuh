@@ -142,14 +142,14 @@ CUB_DETAIL_POLICY_WRAPPER_DEFINE(
 namespace detail::histogram
 {
 // Return a native pixel pointer (specialized for CacheModifiedInputIterator types)
-template <CacheLoadModifier Modifier, typename ValueT, typename OffsetT>
+template <CacheLoadModifier Modifier, class ValueT, class OffsetT>
 _CCCL_DEVICE _CCCL_FORCEINLINE auto NativePointer(CacheModifiedInputIterator<Modifier, ValueT, OffsetT> itr)
 {
   return itr.ptr;
 }
 
 // Return a native pixel pointer (specialized for other types)
-template <typename IteratorT>
+template <class IteratorT>
 _CCCL_DEVICE _CCCL_FORCEINLINE auto NativePointer(IteratorT itr)
 {
   return nullptr;
@@ -187,15 +187,15 @@ _CCCL_DEVICE _CCCL_FORCEINLINE auto NativePointer(IteratorT itr)
 //!
 //! @tparam OffsetT
 //!   Signed integer type for global offsets
-template <typename AgentHistogramPolicyT,
+template <class AgentHistogramPolicyT,
           int PrivatizedSmemBins,
           int NumChannels,
           int NumActiveChannels,
-          typename SampleIteratorT,
-          typename CounterT,
-          typename PrivatizedDecodeOpT,
-          typename OutputDecodeOpT,
-          typename OffsetT>
+          class SampleIteratorT,
+          class CounterT,
+          class PrivatizedDecodeOpT,
+          class OutputDecodeOpT,
+          class OffsetT>
 struct AgentHistogram
 {
   static constexpr int vec_size                    = AgentHistogramPolicyT::VEC_SIZE;
@@ -257,7 +257,7 @@ struct AgentHistogram
                                                    // channel
   bool prefer_smem; // for privatized counterss
 
-  template <typename TwoDimSubscriptableCounterT>
+  template <class TwoDimSubscriptableCounterT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ZeroBinCounters(TwoDimSubscriptableCounterT& privatized_histograms)
   {
     _CCCL_PRAGMA_UNROLL_FULL()
@@ -275,7 +275,7 @@ struct AgentHistogram
   }
 
   // Update final output histograms from privatized histograms
-  template <typename TwoDimSubscriptableCounterT>
+  template <class TwoDimSubscriptableCounterT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void StoreOutput(TwoDimSubscriptableCounterT& privatized_histograms)
   {
     // Barrier to make sure all threads are done updating counters
@@ -302,7 +302,7 @@ struct AgentHistogram
   }
 
   // Accumulate pixels.  Specialized for RLE compression.
-  template <typename TwoDimSubscriptableCounterT>
+  template <class TwoDimSubscriptableCounterT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void AccumulatePixels(
     SampleT samples[pixels_per_thread][NumChannels],
     bool is_valid[pixels_per_thread],
@@ -352,7 +352,7 @@ struct AgentHistogram
   }
 
   // Accumulate pixels.  Specialized for individual accumulation of each pixel.
-  template <typename TwoDimSubscriptableCounterT>
+  template <class TwoDimSubscriptableCounterT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void AccumulatePixels(
     SampleT samples[pixels_per_thread][NumChannels],
     bool is_valid[pixels_per_thread],

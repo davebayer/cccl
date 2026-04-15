@@ -35,7 +35,7 @@ constexpr cub::BlockHistogramMemoryPreference MEM_PREFERENCE = cub::BLEND;
 #    define TUNE_LOAD_ALGORITHM cub::BLOCK_LOAD_STRIPED
 #  endif // TUNE_LOAD_ALGORITHM_ID
 
-template <typename SampleT, int NUM_CHANNELS, int NUM_ACTIVE_CHANNELS>
+template <class SampleT, int NUM_CHANNELS, int NUM_ACTIVE_CHANNELS>
 struct policy_hub_t
 {
   struct policy_t : cub::ChainedPolicy<500, policy_t, policy_t>

@@ -43,11 +43,11 @@ namespace detail::radix_sort
  *   Signed integer type for global offsets
  */
 template <bool IsDescending,
-          typename SegmentedPolicyT,
-          typename KeyT,
-          typename ValueT,
-          typename OffsetT,
-          typename DecomposerT = identity_decomposer_t>
+          class SegmentedPolicyT,
+          class KeyT,
+          class ValueT,
+          class OffsetT,
+          class DecomposerT = identity_decomposer_t>
 struct AgentSegmentedRadixSort
 {
   OffsetT num_items;

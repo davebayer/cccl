@@ -71,7 +71,7 @@ template <int BlockThreads,
           BlockLoadAlgorithm LoadAlgorithm,
           CacheLoadModifier LoadModifier,
           BlockScanAlgorithm ScanAlgorithm,
-          typename DelayConstructorT = detail::fixed_delay_constructor_t<350, 450>>
+          class DelayConstructorT = detail::fixed_delay_constructor_t<350, 450>>
 struct AgentSelectIfPolicy
 {
   /// Threads per thread block
@@ -101,14 +101,13 @@ struct AgentSelectIfPolicy
 
 namespace detail::select
 {
-template <typename EqualityOpT>
+template <class EqualityOpT>
 struct guarded_inequality_op
 {
   EqualityOpT op;
   int num_remaining;
 
-  template <typename T,
-            ::cuda::std::enable_if_t<::cuda::std::__is_callable_v<EqualityOpT&, const T&, const T&>, int> = 0>
+  template <class T, ::cuda::std::enable_if_t<::cuda::std::__is_callable_v<EqualityOpT&, const T&, const T&>, int> = 0>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE bool operator()(const T& a, const T& b, int idx) noexcept(
     ::cuda::std::__is_nothrow_callable_v<EqualityOpT&, const T&, const T&>)
   {
@@ -121,7 +120,7 @@ struct guarded_inequality_op
     return true;
   }
 
-  template <typename T,
+  template <class T,
             ::cuda::std::enable_if_t<::cuda::std::__is_callable_v<const EqualityOpT&, const T&, const T&>, int> = 0>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE bool operator()(const T& a, const T& b, int idx) const
     noexcept(::cuda::std::__is_nothrow_callable_v<const EqualityOpT&, const T&, const T&>)
@@ -136,7 +135,7 @@ struct guarded_inequality_op
   }
 };
 
-template <typename SelectedOutputItT, typename RejectedOutputItT>
+template <class SelectedOutputItT, class RejectedOutputItT>
 struct partition_distinct_output_t
 {
   using selected_iterator_t = SelectedOutputItT;
@@ -146,11 +145,11 @@ struct partition_distinct_output_t
   rejected_iterator_t rejected_it;
 };
 
-template <typename OutputIterator>
+template <class OutputIterator>
 struct is_partition_distinct_output_t : ::cuda::std::false_type
 {};
 
-template <typename SelectedOutputItT, typename RejectedOutputItT>
+template <class SelectedOutputItT, class RejectedOutputItT>
 struct is_partition_distinct_output_t<partition_distinct_output_t<SelectedOutputItT, RejectedOutputItT>>
     : ::cuda::std::true_type
 {};
@@ -200,14 +199,14 @@ struct is_partition_distinct_output_t<partition_distinct_output_t<SelectedOutput
  *   SelectImpl indicating whether to partition, just selection or selection where the memory for the input and
  *   output may alias each other.
  */
-template <typename AgentSelectIfPolicyT,
-          typename InputIteratorT,
-          typename FlagsInputIteratorT,
-          typename OutputIteratorWrapperT,
-          typename SelectOpT,
-          typename EqualityOpT,
-          typename OffsetT,
-          typename StreamingContextT,
+template <class AgentSelectIfPolicyT,
+          class InputIteratorT,
+          class FlagsInputIteratorT,
+          class OutputIteratorWrapperT,
+          class SelectOpT,
+          class EqualityOpT,
+          class OffsetT,
+          class StreamingContextT,
           SelectImpl SelectionOpt>
 struct AgentSelectIf
 {
@@ -760,7 +759,7 @@ struct AgentSelectIf
    * @brief Second phase of scattering partitioned items to global memory. Specialized for partitioning to two
    * distinct partitions.
    */
-  template <bool IS_LAST_TILE, typename SelectedItT, typename RejectedItT>
+  template <bool IS_LAST_TILE, class SelectedItT, class RejectedItT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ScatterPartitionsToGlobal(
     int num_tile_items,
     int tile_num_rejections,
@@ -801,7 +800,7 @@ struct AgentSelectIf
    * iterator, where selected items are written in order from the beginning of the iterator and rejected items are
    * writtem from the iterators end backwards.
    */
-  template <bool IS_LAST_TILE, typename PartitionedOutputItT>
+  template <bool IS_LAST_TILE, class PartitionedOutputItT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ScatterPartitionsToGlobal(
     int num_tile_items,
     int tile_num_rejections,
@@ -1045,7 +1044,7 @@ struct AgentSelectIf
    * @tparam NumSelectedIteratorT
    *   Output iterator type for recording number of items selection_flags
    */
-  template <typename NumSelectedIteratorT>
+  template <class NumSelectedIteratorT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   ConsumeRange(int num_tiles, ScanTileStateT& tile_state, NumSelectedIteratorT d_num_selected_out)
   {

@@ -50,7 +50,7 @@ namespace detail
  * performance. On the contrary, this class swaps pointer, so all operations
  * can be performed in registers.
  */
-template <typename T>
+template <class T>
 class device_double_buffer
 {
   /// Pair of device buffer pointers

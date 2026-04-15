@@ -56,15 +56,14 @@ namespace detail::segmented_scan
 //! @tparam ScanAlgorithm
 //!   The BlockScan algorithm to use
 //!
-template <
-  int Nominal4ByteBlockThreads,
-  int Nominal4BytesItemsPerThread,
-  typename ComputeT,
-  BlockLoadAlgorithm LoadAlgorithm,
-  CacheLoadModifier LoadModifier,
-  BlockStoreAlgorithm StoreAlgorithm,
-  BlockScanAlgorithm ScanAlgorithm,
-  typename ScalingType = detail::MemBoundScaling<Nominal4ByteBlockThreads, Nominal4BytesItemsPerThread, ComputeT>>
+template <int Nominal4ByteBlockThreads,
+          int Nominal4BytesItemsPerThread,
+          class ComputeT,
+          BlockLoadAlgorithm LoadAlgorithm,
+          CacheLoadModifier LoadModifier,
+          BlockStoreAlgorithm StoreAlgorithm,
+          BlockScanAlgorithm ScanAlgorithm,
+          class ScalingType = detail::MemBoundScaling<Nominal4ByteBlockThreads, Nominal4BytesItemsPerThread, ComputeT>>
 struct agent_segmented_scan_policy_t : ScalingType
 {
   static constexpr BlockLoadAlgorithm load_algorithm   = LoadAlgorithm;
@@ -101,13 +100,13 @@ struct agent_segmented_scan_policy_t : ScalingType
 //! @tparam AccumT
 //!   The type of intermediate accumulator (according to P2322R6)
 //!
-template <typename AgentSegmentedScanPolicyT,
-          typename InputIteratorT,
-          typename OutputIteratorT,
-          typename OffsetT,
-          typename ScanOpT,
-          typename InitValueT,
-          typename AccumT,
+template <class AgentSegmentedScanPolicyT,
+          class InputIteratorT,
+          class OutputIteratorT,
+          class OffsetT,
+          class ScanOpT,
+          class InitValueT,
+          class AccumT,
           bool ForceInclusive = false>
 struct agent_segmented_scan
 {
@@ -234,7 +233,7 @@ struct agent_segmented_scan
   };
 
 private:
-  template <typename PrefixT, typename BinaryOpT>
+  template <class PrefixT, class BinaryOpT>
   struct block_prefix_callback_t
   {
     PrefixT& m_exclusive_prefix;
@@ -248,7 +247,7 @@ private:
     }
   };
 
-  template <typename _ItemT, typename _InitValueT, typename _ScanOpT, bool IsInclusive = is_inclusive>
+  template <class _ItemT, class _InitValueT, class _ScanOpT, bool IsInclusive = is_inclusive>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   scan_first_tile(_ItemT (&items)[items_per_thread], _InitValueT init_value, _ScanOpT scan_op, _ItemT& block_aggregate)
   {
@@ -272,7 +271,7 @@ private:
     }
   }
 
-  template <typename _ItemT, typename _ScanOpT, typename PrefixCallback, bool IsInclusive = is_inclusive>
+  template <class _ItemT, class _ScanOpT, class PrefixCallback, bool IsInclusive = is_inclusive>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   scan_later_tile(_ItemT (&items)[items_per_thread], _ScanOpT scan_op, PrefixCallback& prefix_op)
   {

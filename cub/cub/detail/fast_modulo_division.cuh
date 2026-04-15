@@ -42,19 +42,19 @@ namespace detail
  * larger_unsigned_type
  **********************************************************************************************************************/
 
-template <typename T, typename = void>
+template <class T, class = void>
 struct larger_unsigned_type
 {
   using type = void;
 };
 
-template <typename T>
+template <class T>
 struct larger_unsigned_type<T, ::cuda::std::enable_if_t<(sizeof(T) < 4)>>
 {
   using type = ::cuda::std::uint32_t;
 };
 
-template <typename T>
+template <class T>
 struct larger_unsigned_type<T, ::cuda::std::enable_if_t<(sizeof(T) == 4)>>
 {
   using type = ::cuda::std::uint64_t;
@@ -62,7 +62,7 @@ struct larger_unsigned_type<T, ::cuda::std::enable_if_t<(sizeof(T) == 4)>>
 
 #if _CCCL_HAS_INT128()
 
-template <typename T>
+template <class T>
 struct larger_unsigned_type<T, ::cuda::std::enable_if_t<(sizeof(T) == 8)>>
 {
   using type = __uint128_t;
@@ -70,13 +70,13 @@ struct larger_unsigned_type<T, ::cuda::std::enable_if_t<(sizeof(T) == 8)>>
 
 #endif // _CCCL_HAS_INT128()
 
-template <typename T>
+template <class T>
 using larger_unsigned_type_t = typename larger_unsigned_type<T>::type;
 
-template <typename T>
+template <class T>
 using unsigned_implicit_prom_t = ::cuda::std::make_unsigned_t<implicit_prom_t<T>>;
 
-template <typename T>
+template <class T>
 using supported_integral =
   ::cuda::std::bool_constant<::cuda::std::is_integral_v<T> && !::cuda::std::is_same_v<T, bool> && (sizeof(T) <= 8)>;
 
@@ -84,7 +84,7 @@ using supported_integral =
  * Extract higher bits after multiplication
  **********************************************************************************************************************/
 
-template <typename DivisorType, typename T, typename R>
+template <class DivisorType, class T, class R>
 [[nodiscard]] _CCCL_HOST_DEVICE _CCCL_FORCEINLINE unsigned_implicit_prom_t<DivisorType>
 multiply_extract_higher_bits(T value, R multiplier)
 {
@@ -119,7 +119,7 @@ multiply_extract_higher_bits(T value, R multiplier)
 _CCCL_DIAG_PUSH
 _CCCL_DIAG_SUPPRESS_MSVC(4127) /* conditional expression is constant */
 
-template <typename T1>
+template <class T1>
 class fast_div_mod
 {
   static_assert(supported_integral<T1>::value, "unsupported type");
@@ -129,7 +129,7 @@ class fast_div_mod
   using unsigned_t = unsigned_implicit_prom_t<T>;
 
 public:
-  template <typename R>
+  template <class R>
   struct result
   {
     using common_t = decltype(R{} / T{});
@@ -170,7 +170,7 @@ public:
 
   fast_div_mod(fast_div_mod&&) noexcept = default;
 
-  template <typename R>
+  template <class R>
   [[nodiscard]] _CCCL_HOST_DEVICE _CCCL_FORCEINLINE result<R> operator()(R dividend) const noexcept
   {
     static_assert(supported_integral<R>::value, "unsupported type");
@@ -200,13 +200,13 @@ public:
     return result_t{static_cast<common_t>(quotient), static_cast<common_t>(remainder)};
   }
 
-  template <typename R>
+  template <class R>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE friend implicit_prom_t<T> operator/(R dividend, fast_div_mod div) noexcept
   {
     return div(dividend).quotient;
   }
 
-  template <typename R>
+  template <class R>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE friend implicit_prom_t<T> operator%(R dividend, fast_div_mod div) noexcept
   {
     return div(dividend).remainder;

@@ -35,7 +35,7 @@ CUB_NAMESPACE_BEGIN
 /**
  * Bitfield-extract.
  */
-template <typename UnsignedBits, int BYTE_LEN>
+template <class UnsignedBits, int BYTE_LEN>
 //! deprecated [Since 3.0]
 CCCL_DEPRECATED_BECAUSE("Use cuda::bitfield_extract()") _CCCL_DEVICE _CCCL_FORCEINLINE unsigned int
 BFE(UnsignedBits source, unsigned int bit_start, unsigned int num_bits, detail::constant_t<BYTE_LEN> /*byte_len*/)
@@ -48,7 +48,7 @@ BFE(UnsignedBits source, unsigned int bit_start, unsigned int num_bits, detail::
 /**
  * Bitfield-extract for 64-bit types.
  */
-template <typename UnsignedBits>
+template <class UnsignedBits>
 //! deprecated [Since 3.0]
 CCCL_DEPRECATED_BECAUSE("Use cuda::bitfield_extract()") _CCCL_DEVICE _CCCL_FORCEINLINE unsigned int
 BFE(UnsignedBits source, unsigned int bit_start, unsigned int num_bits, detail::constant_t<8> /*byte_len*/)
@@ -61,7 +61,7 @@ BFE(UnsignedBits source, unsigned int bit_start, unsigned int num_bits, detail::
 /**
  * Bitfield-extract for 128-bit types.
  */
-template <typename UnsignedBits>
+template <class UnsignedBits>
 //! deprecated [Since 3.0]
 CCCL_DEPRECATED_BECAUSE("Use cuda::bitfield_extract()") _CCCL_DEVICE _CCCL_FORCEINLINE unsigned int
 BFE(UnsignedBits source, unsigned int bit_start, unsigned int num_bits, detail::constant_t<16> /*byte_len*/)
@@ -77,7 +77,7 @@ BFE(UnsignedBits source, unsigned int bit_start, unsigned int num_bits, detail::
  * \brief Bitfield-extract.  Extracts \p num_bits from \p source starting at bit-offset \p bit_start.  The input \p
  * source may be an 8b, 16b, 32b, or 64b unsigned integer type.
  */
-template <typename UnsignedBits>
+template <class UnsignedBits>
 //! deprecated [Since 3.0]
 CCCL_DEPRECATED_BECAUSE("Use cuda::bitfield_extract()") _CCCL_DEVICE _CCCL_FORCEINLINE unsigned int
 BFE(UnsignedBits source, unsigned int bit_start, unsigned int num_bits)
@@ -207,7 +207,7 @@ _CCCL_HOST_DEVICE _CCCL_FORCEINLINE unsigned int WarpMask([[maybe_unused]] unsig
  * @param[in] member_mask
  *   32-bit mask of participating warp lanes
  */
-template <int LOGICAL_WARP_THREADS, typename T>
+template <int LOGICAL_WARP_THREADS, class T>
 _CCCL_DEVICE _CCCL_FORCEINLINE T ShuffleUp(T input, int src_offset, int first_thread, unsigned int member_mask)
 {
   /// The 5-bit SHFL mask for logically splitting warps into sub-segments starts 8-bits up
@@ -285,7 +285,7 @@ _CCCL_DEVICE _CCCL_FORCEINLINE T ShuffleUp(T input, int src_offset, int first_th
  * @param[in] member_mask
  *   32-bit mask of participating warp lanes
  */
-template <int LOGICAL_WARP_THREADS, typename T>
+template <int LOGICAL_WARP_THREADS, class T>
 _CCCL_DEVICE _CCCL_FORCEINLINE T ShuffleDown(T input, int src_offset, int last_thread, unsigned int member_mask)
 {
   /// The 5-bit SHFL mask for logically splitting warps into sub-segments starts 8-bits up
@@ -362,7 +362,7 @@ _CCCL_DEVICE _CCCL_FORCEINLINE T ShuffleDown(T input, int src_offset, int last_t
  * @param[in] member_mask
  *   32-bit mask of participating warp lanes
  */
-template <int LOGICAL_WARP_THREADS, typename T>
+template <int LOGICAL_WARP_THREADS, class T>
 _CCCL_DEVICE _CCCL_FORCEINLINE T ShuffleIndex(T input, int src_lane, unsigned int member_mask)
 {
   using ShuffleWord = typename UnitWord<T>::ShuffleWord;

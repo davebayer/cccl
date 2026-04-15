@@ -22,7 +22,7 @@ using some_offset_types = nvbench::type_list<TUNE_OffsetT>;
 using some_offset_types = nvbench::type_list<int32_t>;
 #endif
 
-template <typename T, typename OffsetT>
+template <class T, class OffsetT>
 void variable_segmented_reduce(nvbench::state& state, nvbench::type_list<T, OffsetT>)
 {
   static constexpr bool is_argmin = std::is_same_v<op_t, cub::detail::arg_min>;

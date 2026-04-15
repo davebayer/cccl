@@ -35,7 +35,7 @@ CUB_NAMESPACE_BEGIN
 namespace detail::three_way_partition
 {
 // TODO(bgruber): drop in CCCL 4.0
-template <typename PolicyT, typename = void>
+template <class PolicyT, class = void>
 struct ThreeWayPartitionPolicyWrapper : PolicyT
 {
   _CCCL_HOST_DEVICE ThreeWayPartitionPolicyWrapper(PolicyT base)
@@ -44,7 +44,7 @@ struct ThreeWayPartitionPolicyWrapper : PolicyT
 };
 
 // TODO(bgruber): drop in CCCL 4.0
-template <typename StaticPolicyT>
+template <class StaticPolicyT>
 struct ThreeWayPartitionPolicyWrapper<StaticPolicyT, ::cuda::std::void_t<typename StaticPolicyT::ThreeWayPartitionPolicy>>
     : StaticPolicyT
 {
@@ -66,7 +66,7 @@ struct ThreeWayPartitionPolicyWrapper<StaticPolicyT, ::cuda::std::void_t<typenam
 };
 
 // TODO(bgruber): drop in CCCL 4.0
-template <typename PolicyT>
+template <class PolicyT>
 _CCCL_HOST_DEVICE ThreeWayPartitionPolicyWrapper<PolicyT> MakeThreeWayPartitionPolicyWrapper(PolicyT policy)
 {
   return ThreeWayPartitionPolicyWrapper<PolicyT>{policy};
@@ -356,7 +356,7 @@ struct sm100_tuning<Input, OffsetT, input_size::_8, offset_size::_8>
 template <class InputT, class OffsetT>
 struct policy_hub
 {
-  template <typename DelayConstructor>
+  template <class DelayConstructor>
   struct DefaultPolicy
   {
     using ThreeWayPartitionPolicy =
@@ -377,7 +377,7 @@ struct policy_hub
   {};
 
   // Use values from tuning if a specialization exists, otherwise pick DefaultPolicy
-  template <typename Tuning>
+  template <class Tuning>
   static _CCCL_HOST_DEVICE auto select_agent_policy(int)
     -> AgentThreeWayPartitionPolicy<Tuning::threads,
                                     Tuning::items,
@@ -386,7 +386,7 @@ struct policy_hub
                                     BLOCK_SCAN_WARP_SCANS,
                                     typename Tuning::delay_constructor>;
 
-  template <typename Tuning>
+  template <class Tuning>
   static _CCCL_HOST_DEVICE auto select_agent_policy(long) -> typename DefaultPolicy<
     default_delay_constructor_t<typename accumulator_pack_t<OffsetT>::pack_t>>::ThreeWayPartitionPolicy;
 
@@ -411,7 +411,7 @@ struct policy_hub
   struct Policy1000 : ChainedPolicy<1000, Policy1000, Policy900>
   {
     // Use values from tuning if a specialization exists, otherwise pick Policy900
-    template <typename Tuning>
+    template <class Tuning>
     static _CCCL_HOST_DEVICE auto select_agent_policy100(int)
       -> AgentThreeWayPartitionPolicy<Tuning::threads,
                                       Tuning::items,
@@ -420,7 +420,7 @@ struct policy_hub
                                       BLOCK_SCAN_WARP_SCANS,
                                       typename Tuning::delay_constructor>;
 
-    template <typename Tuning>
+    template <class Tuning>
     static _CCCL_HOST_DEVICE auto select_agent_policy100(long) -> typename Policy900::ThreeWayPartitionPolicy;
 
     using ThreeWayPartitionPolicy = decltype(select_agent_policy100<sm100_tuning<InputT, OffsetT>>(0));
@@ -465,7 +465,7 @@ struct three_way_partition_policy
 };
 
 #if _CCCL_HAS_CONCEPTS()
-template <typename T>
+template <class T>
 concept three_way_partition_policy_selector = policy_selector<T, three_way_partition_policy>;
 #endif // _CCCL_HAS_CONCEPTS()
 
@@ -723,7 +723,7 @@ struct policy_selector
 static_assert(three_way_partition_policy_selector<policy_selector>);
 #endif // _CCCL_HAS_CONCEPTS()
 
-template <typename InputT, typename OffsetT>
+template <class InputT, class OffsetT>
 struct policy_selector_from_types
 {
   [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::arch_id arch) const -> three_way_partition_policy

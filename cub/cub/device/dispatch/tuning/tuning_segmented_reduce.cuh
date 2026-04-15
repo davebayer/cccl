@@ -92,7 +92,7 @@ struct segmented_reduce_policy
 };
 
 #if _CCCL_HAS_CONCEPTS()
-template <typename T>
+template <class T>
 concept segmented_reduce_policy_selector = policy_selector<T, segmented_reduce_policy>;
 #endif // _CCCL_HAS_CONCEPTS()
 
@@ -124,7 +124,7 @@ static_assert(segmented_reduce_policy_selector<policy_selector>);
 #endif // _CCCL_HAS_CONCEPTS()
 
 // stateless version which can be passed to kernels
-template <typename AccumT, typename OffsetT, typename ReductionOpT>
+template <class AccumT, class OffsetT, class ReductionOpT>
 struct policy_selector_from_types
 {
   [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::arch_id arch) const -> segmented_reduce_policy
@@ -135,7 +135,7 @@ struct policy_selector_from_types
   }
 };
 
-template <typename AccumT, typename OffsetT, typename ReductionOpT>
+template <class AccumT, class OffsetT, class ReductionOpT>
 struct policy_hub
 {
   struct Policy500 : ChainedPolicy<500, Policy500, Policy500>

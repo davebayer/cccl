@@ -51,7 +51,7 @@ namespace detail
 //!
 //! @tparam IsDeterministic
 //!   Whether the reduction is deterministic
-template <typename T, int BlockDimX, int BlockDimY, int BlockDimZ, bool IsDeterministic = true>
+template <class T, int BlockDimX, int BlockDimY, int BlockDimZ, bool IsDeterministic = true>
 struct BlockReduceWarpReductions
 {
   /// The thread block size in threads
@@ -108,7 +108,7 @@ struct BlockReduceWarpReductions
   //!
   //! @param[in] warp_aggregate
   //!   **[**\ *lane*\ :sub:`0` **only]** Warp-wide aggregate reduction of input items
-  template <typename ReductionOp>
+  template <class ReductionOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE T ApplyWarpAggregatesNonDeterministic(ReductionOp reduction_op, T warp_aggregate)
   {
     if (linear_tid == 0)
@@ -141,7 +141,7 @@ struct BlockReduceWarpReductions
   //!
   //! @tparam ReductionOp
   //!   **[inferred]** Binary reduction operator type
-  template <bool FullTile, typename ReductionOp>
+  template <bool FullTile, class ReductionOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE T ApplyWarpAggregates(ReductionOp reduction_op, T warp_aggregate, int num_valid)
   {
     // Share lane aggregates
@@ -228,7 +228,7 @@ struct BlockReduceWarpReductions
   //!
   //! @param[in] reduction_op
   //!   Binary reduction operator
-  template <bool FullTile, typename ReductionOp>
+  template <bool FullTile, class ReductionOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE T Reduce(T input, int num_valid, ReductionOp reduction_op)
   {
     const int warp_offset = warp_id * logical_warp_size;

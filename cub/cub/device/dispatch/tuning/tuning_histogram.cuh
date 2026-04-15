@@ -184,7 +184,7 @@ struct policy_hub
   struct Policy900 : ChainedPolicy<900, Policy900, Policy500>
   {
     // Use values from tuning if a specialization exists, otherwise pick Policy500
-    template <typename Tuning>
+    template <class Tuning>
     _CCCL_API static auto select_agent_policy(int)
       -> AgentHistogramPolicy<Tuning::threads,
                               Tuning::items,
@@ -194,7 +194,7 @@ struct policy_hub
                               Tuning::mem_preference,
                               Tuning::work_stealing>;
 
-    template <typename Tuning>
+    template <class Tuning>
     _CCCL_API static auto select_agent_policy(long) -> typename Policy500::AgentHistogramPolicyT;
 
     using AgentHistogramPolicyT =
@@ -207,7 +207,7 @@ struct policy_hub
   struct Policy1000 : ChainedPolicy<1000, Policy1000, Policy900>
   {
     // Use values from tuning if a specialization exists, otherwise pick Policy900
-    template <typename Tuning>
+    template <class Tuning>
     _CCCL_API static auto select_agent_policy(int)
       -> AgentHistogramPolicy<Tuning::threads,
                               Tuning::items,
@@ -218,7 +218,7 @@ struct policy_hub
                               Tuning::work_stealing,
                               Tuning::vec_size>;
 
-    template <typename Tuning>
+    template <class Tuning>
     _CCCL_API static auto select_agent_policy(long) -> typename Policy900::AgentHistogramPolicyT;
 
     using AgentHistogramPolicyT =
@@ -274,7 +274,7 @@ struct histogram_policy
 };
 
 #if _CCCL_HAS_CONCEPTS()
-template <typename T>
+template <class T>
 concept histogram_policy_selector = policy_selector<T, histogram_policy>;
 #endif // _CCCL_HAS_CONCEPTS()
 

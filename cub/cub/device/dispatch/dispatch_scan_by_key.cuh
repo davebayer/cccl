@@ -109,17 +109,17 @@ namespace detail::scan_by_key
  * @param num_items
  *   Total number of scan items for the entire problem
  */
-template <typename ChainedPolicyT,
-          typename KeysInputIteratorT,
-          typename ValuesInputIteratorT,
-          typename ValuesOutputIteratorT,
-          typename ScanByKeyTileStateT,
-          typename EqualityOp,
-          typename ScanOpT,
-          typename InitValueT,
-          typename OffsetT,
-          typename AccumT,
-          typename KeyT = cub::detail::it_value_t<KeysInputIteratorT>>
+template <class ChainedPolicyT,
+          class KeysInputIteratorT,
+          class ValuesInputIteratorT,
+          class ValuesOutputIteratorT,
+          class ScanByKeyTileStateT,
+          class EqualityOp,
+          class ScanOpT,
+          class InitValueT,
+          class OffsetT,
+          class AccumT,
+          class KeyT = cub::detail::it_value_t<KeysInputIteratorT>>
 __launch_bounds__(int(ChainedPolicyT::ActivePolicy::ScanByKeyPolicyT::BLOCK_THREADS))
   _CCCL_KERNEL_ATTRIBUTES void DeviceScanByKeyKernel(
     _CCCL_GRID_CONSTANT const KeysInputIteratorT d_keys_in,
@@ -155,7 +155,7 @@ __launch_bounds__(int(ChainedPolicyT::ActivePolicy::ScanByKeyPolicyT::BLOCK_THRE
     .ConsumeRange(num_items, tile_state, start_tile);
 }
 
-template <typename ScanTileStateT, typename KeysInputIteratorT, typename OffsetT>
+template <class ScanTileStateT, class KeysInputIteratorT, class OffsetT>
 _CCCL_KERNEL_ATTRIBUTES void DeviceScanByKeyInitKernel(
   ScanTileStateT tile_state,
   _CCCL_GRID_CONSTANT const KeysInputIteratorT d_keys_in,
@@ -206,19 +206,19 @@ _CCCL_KERNEL_ATTRIBUTES void DeviceScanByKeyInitKernel(
  *
  */
 template <
-  typename KeysInputIteratorT,
-  typename ValuesInputIteratorT,
-  typename ValuesOutputIteratorT,
-  typename EqualityOp,
-  typename ScanOpT,
-  typename InitValueT,
-  typename OffsetT,
-  typename AccumT = ::cuda::std::__accumulator_t<
+  class KeysInputIteratorT,
+  class ValuesInputIteratorT,
+  class ValuesOutputIteratorT,
+  class EqualityOp,
+  class ScanOpT,
+  class InitValueT,
+  class OffsetT,
+  class AccumT = ::cuda::std::__accumulator_t<
     ScanOpT,
     cub::detail::it_value_t<ValuesInputIteratorT>,
     ::cuda::std::
       _If<::cuda::std::is_same_v<InitValueT, NullType>, cub::detail::it_value_t<ValuesInputIteratorT>, InitValueT>>,
-  typename PolicyHub =
+  class PolicyHub =
     detail::scan_by_key::policy_hub<KeysInputIteratorT, AccumT, cub::detail::it_value_t<ValuesInputIteratorT>, ScanOpT>>
 struct DispatchScanByKey
 {
@@ -331,7 +331,7 @@ struct DispatchScanByKey
       , ptx_version(ptx_version)
   {}
 
-  template <typename ActivePolicyT, typename InitKernel, typename ScanKernel>
+  template <class ActivePolicyT, class InitKernel, class ScanKernel>
   CUB_RUNTIME_FUNCTION _CCCL_HOST _CCCL_FORCEINLINE cudaError_t Invoke(InitKernel init_kernel, ScanKernel scan_kernel)
   {
     using Policy = typename ActivePolicyT::ScanByKeyPolicyT;
@@ -450,7 +450,7 @@ struct DispatchScanByKey
     return cudaSuccess;
   }
 
-  template <typename ActivePolicyT>
+  template <class ActivePolicyT>
   CUB_RUNTIME_FUNCTION _CCCL_HOST _CCCL_FORCEINLINE cudaError_t Invoke()
   {
     // Ensure kernels are instantiated.

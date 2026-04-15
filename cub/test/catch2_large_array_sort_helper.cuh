@@ -37,7 +37,7 @@
 
 namespace detail
 {
-template <typename KeyType>
+template <class KeyType>
 class key_sort_ref_key_transform
 {
   static constexpr double max_key = static_cast<double>(::cuda::std::numeric_limits<KeyType>::max());
@@ -59,7 +59,7 @@ public:
   }
 };
 
-template <typename KeyType>
+template <class KeyType>
 struct summary
 {
   std::size_t index;
@@ -67,7 +67,7 @@ struct summary
   KeyType key;
 };
 
-template <typename KeyType>
+template <class KeyType>
 struct index_to_summary
 {
   using summary_t = summary<KeyType>;
@@ -76,7 +76,7 @@ struct index_to_summary
   std::size_t num_summaries;
   bool is_descending;
 
-  template <typename index_type>
+  template <class index_type>
   __host__ __device__ summary_t operator()(index_type idx) const
   {
     constexpr KeyType max_key = ::cuda::std::numeric_limits<KeyType>::max();
@@ -93,7 +93,7 @@ struct index_to_summary
   }
 };
 
-template <typename KeyType>
+template <class KeyType>
 class pair_sort_ref_key_transform
 {
   static constexpr KeyType max_key = ::cuda::std::numeric_limits<KeyType>::max();
@@ -122,10 +122,10 @@ public:
   }
 };
 
-template <typename ValueType>
+template <class ValueType>
 struct index_to_value
 {
-  template <typename index_type>
+  template <class index_type>
   __host__ __device__ ValueType operator()(index_type index)
   {
     return static_cast<ValueType>(index);
@@ -133,7 +133,7 @@ struct index_to_value
 };
 } // namespace detail
 
-template <typename KeyType, typename ValueType = cub::NullType>
+template <class KeyType, class ValueType = cub::NullType>
 struct large_array_sort_helper
 {
   // Sorted keys/values in host memory

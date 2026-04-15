@@ -31,7 +31,7 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail
 {
-template <typename T>
+template <class T>
 using is_integral_or_enum =
   ::cuda::std::integral_constant<bool, ::cuda::std::is_integral_v<T> || ::cuda::std::is_enum_v<T>>;
 
@@ -42,7 +42,7 @@ using is_integral_or_enum =
  * Effectively performs `min((lhs + rhs), ::cuda::std::numeric_limits<OffsetT>::max())`, but is robust against the case
  * where `(lhs + rhs)` would overflow.
  */
-template <typename OffsetT>
+template <class OffsetT>
 _CCCL_HOST_DEVICE _CCCL_FORCEINLINE OffsetT safe_add_bound_to_max(OffsetT lhs, OffsetT rhs)
 {
   static_assert(::cuda::std::is_integral_v<OffsetT>, "OffsetT must be an integral type");
@@ -73,13 +73,13 @@ constexpr _CCCL_HOST_DEVICE int Nominal4BItemsToItemsCombined(int nominal_4b_ite
                              (::cuda::std::max) (1, nominal_4b_items_per_thread * 8 / combined_bytes));
 }
 
-template <typename T>
+template <class T>
 constexpr _CCCL_HOST_DEVICE int Nominal4BItemsToItems(int nominal_4b_items_per_thread)
 {
   return detail::nominal_4B_items_to_items(nominal_4b_items_per_thread, int{sizeof(T)});
 }
 
-template <typename ItemT>
+template <class ItemT>
 constexpr _CCCL_HOST_DEVICE int Nominal8BItemsToItems(int nominal_8b_items_per_thread)
 {
   return detail::nominal_8B_items_to_items(nominal_8b_items_per_thread, int{sizeof(ItemT)});
@@ -92,7 +92,7 @@ constexpr _CCCL_HOST_DEVICE int Nominal8BItemsToItems(int nominal_8b_items_per_t
  *
  * \return Half the sum of \p begin and \p end
  */
-template <typename T>
+template <class T>
 constexpr _CCCL_HOST_DEVICE T MidPoint(T begin, T end)
 {
   return begin + (end - begin) / 2;

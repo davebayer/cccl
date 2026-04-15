@@ -11,7 +11,7 @@
 
 struct benchmark_op_t
 {
-  template <typename T>
+  template <class T>
   __device__ __forceinline__ T operator()(T thread_data) const
   {
     using WarpReduce  = cub::WarpReduce<T>;
@@ -22,7 +22,7 @@ struct benchmark_op_t
   }
 };
 
-template <typename T>
+template <class T>
 void warp_reduce(nvbench::state& state, nvbench::type_list<T>)
 {
   constexpr int block_size    = 256;

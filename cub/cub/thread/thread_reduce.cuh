@@ -140,10 +140,10 @@ CUB_NAMESPACE_BEGIN
 //! href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2322r6.html#return-the-result-of-the-initial-invocation">P2322</a>
 //!
 
-template <typename Input,
-          typename ReductionOp,
-          typename ValueT = ::cuda::std::iter_value_t<Input>,
-          typename AccumT = ::cuda::std::__accumulator_t<ReductionOp, ValueT>>
+template <class Input,
+          class ReductionOp,
+          class ValueT = ::cuda::std::iter_value_t<Input>,
+          class AccumT = ::cuda::std::__accumulator_t<ReductionOp, ValueT>>
 [[nodiscard]] _CCCL_DEVICE _CCCL_FORCEINLINE AccumT ThreadReduce(const Input& input, ReductionOp reduction_op);
 // forward declaration
 
@@ -194,19 +194,19 @@ namespace detail
 //----------------------------------------------------------------------------------------------------------------------
 // SM90 SIMD
 
-template <typename T, typename ReductionOp, int Length>
+template <class T, class ReductionOp, int Length>
 inline constexpr bool enable_sm90_simd_reduction_v =
   is_one_of_v<T, int16_t, uint16_t> && is_cuda_minimum_maximum_v<ReductionOp, T> && Length >= 10;
 
 //----------------------------------------------------------------------------------------------------------------------
 // SM80 SIMD
 
-template <typename T, typename ReductionOp, int Length>
+template <class T, class ReductionOp, int Length>
 inline constexpr bool enable_sm80_simd_reduction_v = false;
 
 #  if _CCCL_HAS_NVFP16()
 
-template <typename ReductionOp, int Length>
+template <class ReductionOp, int Length>
 inline constexpr bool enable_sm80_simd_reduction_v<__half, ReductionOp, Length> =
   (is_cuda_minimum_maximum_v<ReductionOp, __half> || is_cuda_std_plus_mul_v<ReductionOp, __half>) && Length >= 4;
 
@@ -214,7 +214,7 @@ inline constexpr bool enable_sm80_simd_reduction_v<__half, ReductionOp, Length> 
 
 #  if _CCCL_HAS_NVBF16()
 
-template <typename ReductionOp, int Length>
+template <class ReductionOp, int Length>
 inline constexpr bool enable_sm80_simd_reduction_v<__nv_bfloat16, ReductionOp, Length> =
   (is_cuda_minimum_maximum_v<ReductionOp, __nv_bfloat16> || is_cuda_std_plus_mul_v<ReductionOp, __nv_bfloat16>)
   && Length >= 4;
@@ -226,13 +226,13 @@ inline constexpr bool enable_sm80_simd_reduction_v<__nv_bfloat16, ReductionOp, L
 
 #  if _CCCL_HAS_NVFP16()
 
-template <typename T, typename ReductionOp, int Length>
+template <class T, class ReductionOp, int Length>
 inline constexpr bool enable_sm70_simd_reduction_v =
   ::cuda::std::is_same_v<T, __half> && is_cuda_std_plus_mul_v<ReductionOp, T> && Length >= 4;
 
 #  else // _CCCL_HAS_NVFP16() ^^^^ / !_CCCL_HAS_NVFP16() vvvv
 
-template <typename T, typename ReductionOp, int Length>
+template <class T, class ReductionOp, int Length>
 inline constexpr bool enable_sm70_simd_reduction_v = false;
 
 #  endif // !_CCCL_HAS_NVFP16() ^^^^
@@ -241,13 +241,13 @@ inline constexpr bool enable_sm70_simd_reduction_v = false;
  * Enable Ternary Reduction (Trait)
  **********************************************************************************************************************/
 
-template <typename T, typename ReductionOp>
+template <class T, class ReductionOp>
 inline constexpr bool enable_ternary_reduction_sm90_v =
   is_one_of_v<T, int32_t, uint32_t> && is_cuda_minimum_maximum_v<ReductionOp, T>;
 
 #  if _CCCL_HAS_NVFP16()
 
-template <typename ReductionOp>
+template <class ReductionOp>
 inline constexpr bool enable_ternary_reduction_sm90_v<__half2, ReductionOp> =
   is_cuda_minimum_maximum_v<ReductionOp, __half2> || is_one_of_v<ReductionOp, SimdMin<__half>, SimdMax<__half>>;
 
@@ -255,14 +255,14 @@ inline constexpr bool enable_ternary_reduction_sm90_v<__half2, ReductionOp> =
 
 #  if _CCCL_HAS_NVBF16()
 
-template <typename ReductionOp>
+template <class ReductionOp>
 inline constexpr bool enable_ternary_reduction_sm90_v<__nv_bfloat162, ReductionOp> =
   is_cuda_minimum_maximum_v<ReductionOp, __nv_bfloat162>
   || is_one_of_v<ReductionOp, SimdMin<__nv_bfloat16>, SimdMax<__nv_bfloat16>>;
 
 #  endif // _CCCL_HAS_NVBF16()
 
-template <typename T, typename ReductionOp>
+template <class T, class ReductionOp>
 inline constexpr bool enable_ternary_reduction_sm50_v =
   ::cuda::std::is_integral_v<T> && sizeof(T) <= 4
   && (is_cuda_std_plus_v<ReductionOp, T> || is_cuda_std_bitwise_v<ReductionOp, T>);
@@ -271,7 +271,7 @@ inline constexpr bool enable_ternary_reduction_sm50_v =
  * Internal Reduction Algorithms: Sequential, Binary, Ternary
  **********************************************************************************************************************/
 
-template <typename AccumT, typename Input, typename ReductionOp>
+template <class AccumT, class Input, class ReductionOp>
 [[nodiscard]] _CCCL_DEVICE _CCCL_FORCEINLINE AccumT ThreadReduceSequential(const Input& input, ReductionOp reduction_op)
 {
   auto retval = static_cast<AccumT>(input[0]);
@@ -283,7 +283,7 @@ template <typename AccumT, typename Input, typename ReductionOp>
   return retval;
 }
 
-template <typename AccumT, typename Input, typename ReductionOp>
+template <class AccumT, class Input, class ReductionOp>
 [[nodiscard]] _CCCL_DEVICE _CCCL_FORCEINLINE AccumT ThreadReduceBinaryTree(const Input& input, ReductionOp reduction_op)
 {
   constexpr auto length = static_size_v<Input>;
@@ -300,7 +300,7 @@ template <typename AccumT, typename Input, typename ReductionOp>
   return array[0];
 }
 
-template <typename AccumT, typename Input, typename ReductionOp>
+template <class AccumT, class Input, class ReductionOp>
 [[nodiscard]] _CCCL_DEVICE _CCCL_FORCEINLINE AccumT ThreadReduceTernaryTree(const Input& input, ReductionOp reduction_op)
 {
   constexpr auto length = static_size_v<Input>;
@@ -318,7 +318,7 @@ template <typename AccumT, typename Input, typename ReductionOp>
   return array[0];
 }
 
-template <typename AccumT, typename Input, typename ReductionOp>
+template <class AccumT, class Input, class ReductionOp>
 [[nodiscard]] _CCCL_DEVICE _CCCL_FORCEINLINE AccumT
 ThreadReduceSequentialPartial(const Input& input, ReductionOp reduction_op, int valid_items)
 {
@@ -338,7 +338,7 @@ ThreadReduceSequentialPartial(const Input& input, ReductionOp reduction_op, int 
  * SIMD Reduction
  **********************************************************************************************************************/
 
-template <typename Input, typename ReductionOp>
+template <class Input, class ReductionOp>
 _CCCL_DEVICE _CCCL_FORCEINLINE auto ThreadReduceSimd(const Input& input, ReductionOp)
 {
   using cub::detail::unsafe_bitcast;
@@ -371,7 +371,7 @@ _CCCL_DEVICE _CCCL_FORCEINLINE auto ThreadReduceSimd(const Input& input, Reducti
   return unsafe_bitcast<UnpackedType>(result)[0];
 }
 
-template <typename ReductionOp, typename T>
+template <class ReductionOp, class T>
 inline constexpr bool enable_min_max_promotion_v =
   is_cuda_minimum_maximum_v<ReductionOp, T> && ::cuda::std::is_integral_v<T> && sizeof(T) <= 2;
 
@@ -379,10 +379,10 @@ inline constexpr bool enable_min_max_promotion_v =
  * Partial Reduction
  **********************************************************************************************************************/
 
-template <typename Input,
-          typename ReductionOp,
-          typename ValueT = ::cuda::std::iter_value_t<Input>,
-          typename AccumT = ::cuda::std::__accumulator_t<ReductionOp, ValueT>>
+template <class Input,
+          class ReductionOp,
+          class ValueT = ::cuda::std::iter_value_t<Input>,
+          class AccumT = ::cuda::std::__accumulator_t<ReductionOp, ValueT>>
 [[nodiscard]] _CCCL_DEVICE _CCCL_FORCEINLINE AccumT
 ThreadReducePartial(const Input& input, ReductionOp reduction_op, int valid_items)
 {
@@ -407,7 +407,7 @@ ThreadReducePartial(const Input& input, ReductionOp reduction_op, int valid_item
  * Reduction Interface/Dispatch (public)
  **********************************************************************************************************************/
 
-template <typename Input, typename ReductionOp, typename ValueT, typename AccumT>
+template <class Input, class ReductionOp, class ValueT, class AccumT>
 [[nodiscard]] _CCCL_DEVICE _CCCL_FORCEINLINE AccumT ThreadReduce(const Input& input, ReductionOp reduction_op)
 {
   using namespace cub::detail;
@@ -494,11 +494,11 @@ template <typename Input, typename ReductionOp, typename ValueT, typename AccumT
 //!
 //! @return Aggregate of type <tt>cuda::std::__accumulator_t<ReductionOp, ValueT, PrefixT></tt>
 //!
-template <typename Input,
-          typename ReductionOp,
-          typename PrefixT,
-          typename ValueT = ::cuda::std::iter_value_t<Input>,
-          typename AccumT = ::cuda::std::__accumulator_t<ReductionOp, ValueT, PrefixT>>
+template <class Input,
+          class ReductionOp,
+          class PrefixT,
+          class ValueT = ::cuda::std::iter_value_t<Input>,
+          class AccumT = ::cuda::std::__accumulator_t<ReductionOp, ValueT, PrefixT>>
 [[nodiscard]] _CCCL_DEVICE _CCCL_FORCEINLINE AccumT
 ThreadReduce(const Input& input, ReductionOp reduction_op, PrefixT prefix)
 {

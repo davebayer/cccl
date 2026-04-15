@@ -55,7 +55,7 @@ CUB_NAMESPACE_BEGIN
  *    First appears in CUDA Toolkit 12.3.
  * @endrst
  */
-template <typename OffsetT>
+template <class OffsetT>
 struct GridEvenShare
 {
 private:
@@ -196,7 +196,7 @@ public:
    * @param[in] block_end
    *   Threadblock end offset (exclusive)
    */
-  template <int TILE_ITEMS, typename OffsetT1 = OffsetT>
+  template <int TILE_ITEMS, class OffsetT1 = OffsetT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void BlockInit(OffsetT1 block_offset, OffsetT1 block_end)
   {
     this->block_offset = block_offset;

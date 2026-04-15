@@ -14,7 +14,7 @@
 
 namespace ptx_json
 {
-template <auto V, typename = cuda::std::make_index_sequence<V.Length>>
+template <auto V, class = cuda::std::make_index_sequence<V.Length>>
 const char reify[V.Length] = {};
 
 template <int N, string<N> V, cuda::std::size_t... Is>
@@ -23,7 +23,7 @@ __device__ const char reify<V, cuda::std::index_sequence<Is...>>[] = {V.str[Is].
 template <auto Tag>
 struct tagged_json
 {
-  template <typename V, typename = cuda::std::enable_if_t<is_object<V>::value || is_array<V>::value>>
+  template <class V, class = cuda::std::enable_if_t<is_object<V>::value || is_array<V>::value>>
   __device__ consteval auto& operator=(V v)
   {
     return reify<string(

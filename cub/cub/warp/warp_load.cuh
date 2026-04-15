@@ -216,7 +216,7 @@ inline ::std::ostream& operator<<(::std::ostream& os, WarpLoadAlgorithm algorith
 //!   targeted CUDA compute-capability (e.g., 32 threads for SM86). Must be a
 //!   power of two.
 //!
-template <typename InputT,
+template <class InputT,
           int ITEMS_PER_THREAD,
           WarpLoadAlgorithm ALGORITHM = WARP_LOAD_DIRECT,
           int LOGICAL_WARP_THREADS    = detail::warp_threads>
@@ -246,20 +246,20 @@ private:
         : linear_tid(linear_tid)
     {}
 
-    template <typename InputIteratorT>
+    template <class InputIteratorT>
     _CCCL_DEVICE _CCCL_FORCEINLINE void Load(InputIteratorT block_itr, InputT (&items)[ITEMS_PER_THREAD])
     {
       LoadDirectBlocked(linear_tid, block_itr, items);
     }
 
-    template <typename InputIteratorT>
+    template <class InputIteratorT>
     _CCCL_DEVICE _CCCL_FORCEINLINE void
     Load(InputIteratorT block_itr, InputT (&items)[ITEMS_PER_THREAD], int valid_items)
     {
       LoadDirectBlocked(linear_tid, block_itr, items, valid_items);
     }
 
-    template <typename InputIteratorT, typename DefaultT>
+    template <class InputIteratorT, class DefaultT>
     _CCCL_DEVICE _CCCL_FORCEINLINE void
     Load(InputIteratorT block_itr, InputT (&items)[ITEMS_PER_THREAD], int valid_items, DefaultT oob_default)
     {
@@ -278,20 +278,20 @@ private:
         : linear_tid(linear_tid)
     {}
 
-    template <typename InputIteratorT>
+    template <class InputIteratorT>
     _CCCL_DEVICE _CCCL_FORCEINLINE void Load(InputIteratorT block_itr, InputT (&items)[ITEMS_PER_THREAD])
     {
       LoadDirectStriped<LOGICAL_WARP_THREADS>(linear_tid, block_itr, items);
     }
 
-    template <typename InputIteratorT>
+    template <class InputIteratorT>
     _CCCL_DEVICE _CCCL_FORCEINLINE void
     Load(InputIteratorT block_itr, InputT (&items)[ITEMS_PER_THREAD], int valid_items)
     {
       LoadDirectStriped<LOGICAL_WARP_THREADS>(linear_tid, block_itr, items, valid_items);
     }
 
-    template <typename InputIteratorT, typename DefaultT>
+    template <class InputIteratorT, class DefaultT>
     _CCCL_DEVICE _CCCL_FORCEINLINE void
     Load(InputIteratorT block_itr, InputT (&items)[ITEMS_PER_THREAD], int valid_items, DefaultT oob_default)
     {
@@ -320,27 +320,27 @@ private:
       InternalLoadDirectBlockedVectorized<LOAD_DEFAULT>(linear_tid, block_ptr, items);
     }
 
-    template <CacheLoadModifier MODIFIER, typename ValueType, typename OffsetT>
+    template <CacheLoadModifier MODIFIER, class ValueType, class OffsetT>
     _CCCL_DEVICE _CCCL_FORCEINLINE void
     Load(CacheModifiedInputIterator<MODIFIER, ValueType, OffsetT> block_itr, InputT (&items)[ITEMS_PER_THREAD])
     {
       InternalLoadDirectBlockedVectorized<MODIFIER>(linear_tid, block_itr.ptr, items);
     }
 
-    template <typename _InputIteratorT>
+    template <class _InputIteratorT>
     _CCCL_DEVICE _CCCL_FORCEINLINE void Load(_InputIteratorT block_itr, InputT (&items)[ITEMS_PER_THREAD])
     {
       LoadDirectBlocked(linear_tid, block_itr, items);
     }
 
-    template <typename InputIteratorT>
+    template <class InputIteratorT>
     _CCCL_DEVICE _CCCL_FORCEINLINE void
     Load(InputIteratorT block_itr, InputT (&items)[ITEMS_PER_THREAD], int valid_items)
     {
       LoadDirectBlocked(linear_tid, block_itr, items, valid_items);
     }
 
-    template <typename InputIteratorT, typename DefaultT>
+    template <class InputIteratorT, class DefaultT>
     _CCCL_DEVICE _CCCL_FORCEINLINE void
     Load(InputIteratorT block_itr, InputT (&items)[ITEMS_PER_THREAD], int valid_items, DefaultT oob_default)
     {
@@ -368,14 +368,14 @@ private:
         , linear_tid(linear_tid)
     {}
 
-    template <typename InputIteratorT>
+    template <class InputIteratorT>
     _CCCL_DEVICE _CCCL_FORCEINLINE void Load(InputIteratorT block_itr, InputT (&items)[ITEMS_PER_THREAD])
     {
       LoadDirectStriped<LOGICAL_WARP_THREADS>(linear_tid, block_itr, items);
       WarpExchangeT(temp_storage).StripedToBlocked(items, items);
     }
 
-    template <typename InputIteratorT>
+    template <class InputIteratorT>
     _CCCL_DEVICE _CCCL_FORCEINLINE void
     Load(InputIteratorT block_itr, InputT (&items)[ITEMS_PER_THREAD], int valid_items)
     {
@@ -383,7 +383,7 @@ private:
       WarpExchangeT(temp_storage).StripedToBlocked(items, items);
     }
 
-    template <typename InputIteratorT, typename DefaultT>
+    template <class InputIteratorT, class DefaultT>
     _CCCL_DEVICE _CCCL_FORCEINLINE void
     Load(InputIteratorT block_itr, InputT (&items)[ITEMS_PER_THREAD], int valid_items, DefaultT oob_default)
     {
@@ -497,7 +497,7 @@ public:
   //!
   //! @param[in] block_itr The thread block's base input iterator for loading from
   //! @param[out] items Data to load
-  template <typename InputIteratorT>
+  template <class InputIteratorT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void Load(InputIteratorT block_itr, InputT (&items)[ITEMS_PER_THREAD])
   {
     InternalLoad(temp_storage, linear_tid).Load(block_itr, items);
@@ -552,7 +552,7 @@ public:
   //! @param[in] block_itr The thread block's base input iterator for loading from
   //! @param[out] items Data to load
   //! @param[in] valid_items Number of valid items to load
-  template <typename InputIteratorT>
+  template <class InputIteratorT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void Load(InputIteratorT block_itr, InputT (&items)[ITEMS_PER_THREAD], int valid_items)
   {
     InternalLoad(temp_storage, linear_tid).Load(block_itr, items, valid_items);
@@ -610,7 +610,7 @@ public:
   //! @param[out] items Data to load
   //! @param[in] valid_items Number of valid items to load
   //! @param[in] oob_default Default value to assign out-of-bound items
-  template <typename InputIteratorT, typename DefaultT>
+  template <class InputIteratorT, class DefaultT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   Load(InputIteratorT block_itr, InputT (&items)[ITEMS_PER_THREAD], int valid_items, DefaultT oob_default)
   {

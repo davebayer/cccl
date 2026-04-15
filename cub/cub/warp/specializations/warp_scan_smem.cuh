@@ -46,7 +46,7 @@ namespace detail
  * @tparam LOGICAL_WARP_THREADS
  *   Number of threads per logical warp
  */
-template <typename T, int LOGICAL_WARP_THREADS>
+template <class T, int LOGICAL_WARP_THREADS>
 struct WarpScanSmem
 {
   /******************************************************************************
@@ -100,7 +100,7 @@ struct WarpScanSmem
    ******************************************************************************/
 
   /// Basic inclusive scan iteration (template unrolled, inductive-case specialization)
-  template <bool HAS_IDENTITY, int STEP, typename ScanOp>
+  template <bool HAS_IDENTITY, int STEP, class ScanOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ScanStep(T& partial, ScanOp scan_op, constant_t<STEP> /*step*/)
   {
     constexpr int OFFSET = 1 << STEP;
@@ -122,7 +122,7 @@ struct WarpScanSmem
   }
 
   /// Basic inclusive scan iteration(template unrolled, base-case specialization)
-  template <bool HAS_IDENTITY, typename ScanOp>
+  template <bool HAS_IDENTITY, class ScanOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ScanStep(T& /*partial*/, ScanOp /*scan_op*/, constant_t<STEPS> /*step*/)
   {}
 
@@ -171,7 +171,7 @@ struct WarpScanSmem
    * @param[in] scan_op
    *   Binary scan operator
    */
-  template <typename ScanOp>
+  template <class ScanOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void InclusiveScan(T input, T& inclusive_output, ScanOp scan_op)
   {
     if constexpr (::cuda::has_identity_element_v<ScanOp, T>)
@@ -201,7 +201,7 @@ struct WarpScanSmem
    * @param[out] warp_aggregate
    *   Warp-wide aggregate reduction of input items.
    */
-  template <typename ScanOp>
+  template <class ScanOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void InclusiveScan(T input, T& inclusive_output, ScanOp scan_op, T& warp_aggregate)
   {
     InclusiveScan(input, inclusive_output, scan_op);
@@ -231,7 +231,7 @@ struct WarpScanSmem
    * @param[in] valid_items
    *   Number of valid items in warp
    */
-  template <typename ScanOp>
+  template <class ScanOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void InclusiveScanPartial(T input, T& inclusive_output, ScanOp scan_op, int valid_items)
   {
     // Avoid reading uninitialized memory
@@ -288,7 +288,7 @@ struct WarpScanSmem
    * @param[out] warp_aggregate
    *   Warp-wide aggregate reduction of input items.
    */
-  template <typename ScanOp>
+  template <class ScanOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   InclusiveScanPartial(T input, T& inclusive_output, ScanOp scan_op, int valid_items, T& warp_aggregate)
   {
@@ -321,7 +321,7 @@ struct WarpScanSmem
    *
    * @param[in] is_integer
    */
-  template <typename ScanOpT, typename IsIntegerT>
+  template <class ScanOpT, class IsIntegerT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   Update(T /*input*/, T& inclusive, T& exclusive, ScanOpT /*scan_op*/, IsIntegerT /*is_integer*/)
   {
@@ -348,7 +348,7 @@ struct WarpScanSmem
    * @brief Update inclusive and exclusive using initial value using input, inclusive, and initial
    *        value
    */
-  template <typename ScanOpT, typename IsIntegerT>
+  template <class ScanOpT, class IsIntegerT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   Update(T /*input*/, T& inclusive, T& exclusive, ScanOpT scan_op, T initial_value, IsIntegerT /*is_integer*/)
   {
@@ -383,7 +383,7 @@ struct WarpScanSmem
   /**
    * @brief Update inclusive, exclusive, and warp aggregate using input and inclusive
    */
-  template <typename ScanOpT, typename IsIntegerT>
+  template <class ScanOpT, class IsIntegerT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   Update(T /*input*/, T& inclusive, T& exclusive, T& warp_aggregate, ScanOpT /*scan_op*/, IsIntegerT /*is_integer*/)
   {
@@ -421,7 +421,7 @@ struct WarpScanSmem
    * @brief Update inclusive, exclusive, and warp aggregate using input, inclusive, and initial
    *        value
    */
-  template <typename ScanOpT, typename IsIntegerT>
+  template <class ScanOpT, class IsIntegerT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void Update(
     T /*input*/,
     T& inclusive,
@@ -474,7 +474,7 @@ struct WarpScanSmem
    * @param[in] valid_items
    *   Number of valid items in warp
    */
-  template <typename ScanOpT>
+  template <class ScanOpT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   UpdatePartial([[maybe_unused]] T input, T& inclusive, T& exclusive, [[maybe_unused]] ScanOpT scan_op, int valid_items)
   {
@@ -524,7 +524,7 @@ struct WarpScanSmem
    * @param[in] initial_value
    *   Initial value to seed the scan (uniform across warp)
    */
-  template <typename ScanOpT>
+  template <class ScanOpT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   UpdatePartial(T input, T& inclusive, T& exclusive, ScanOpT scan_op, int valid_items, T initial_value)
   {
@@ -565,7 +565,7 @@ struct WarpScanSmem
    * @param[in] valid_items
    *   Number of valid items in warp
    */
-  template <typename ScanOpT>
+  template <class ScanOpT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void UpdatePartial(
     [[maybe_unused]] T input,
     T& inclusive,
@@ -623,7 +623,7 @@ struct WarpScanSmem
    * @param[in] initial_value
    *   Initial value to seed the scan (uniform across warp)
    */
-  template <typename ScanOpT>
+  template <class ScanOpT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void UpdatePartial(
     T input, T& inclusive, T& exclusive, T& warp_aggregate, ScanOpT scan_op, int valid_items, T initial_value)
   {

@@ -36,7 +36,7 @@ enum WarpExchangeAlgorithm
 
 namespace detail
 {
-template <typename InputT, int ITEMS_PER_THREAD, int LOGICAL_WARP_THREADS, WarpExchangeAlgorithm WARP_EXCHANGE_ALGORITHM>
+template <class InputT, int ITEMS_PER_THREAD, int LOGICAL_WARP_THREADS, WarpExchangeAlgorithm WARP_EXCHANGE_ALGORITHM>
 using InternalWarpExchangeImpl =
   ::cuda::std::_If<WARP_EXCHANGE_ALGORITHM == WARP_EXCHANGE_SMEM,
                    WarpExchangeSmem<InputT, ITEMS_PER_THREAD, LOGICAL_WARP_THREADS>,
@@ -109,7 +109,7 @@ using InternalWarpExchangeImpl =
  * The corresponding output @p thread_data in those threads will be
  * <tt>{ [0,1,2,3], [4,5,6,7], [8,9,10,11], ..., [60,61,62,63] }</tt>.
  */
-template <typename InputT,
+template <class InputT,
           int ITEMS_PER_THREAD,
           int LOGICAL_WARP_THREADS                      = detail::warp_threads,
           WarpExchangeAlgorithm WARP_EXCHANGE_ALGORITHM = WARP_EXCHANGE_SMEM>
@@ -195,7 +195,7 @@ public:
    *   Items from exchange, converting between <em>striped</em> and
    *   <em>blocked</em> arrangements. May be aliased to @p input_items.
    */
-  template <typename OutputT>
+  template <class OutputT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   BlockedToStriped(const InputT (&input_items)[ITEMS_PER_THREAD], OutputT (&output_items)[ITEMS_PER_THREAD])
   {
@@ -255,7 +255,7 @@ public:
    * @param[out] output_items
    *   Items from exchange. May be aliased to @p input_items.
    */
-  template <typename OutputT>
+  template <class OutputT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   StripedToBlocked(const InputT (&input_items)[ITEMS_PER_THREAD], OutputT (&output_items)[ITEMS_PER_THREAD])
   {
@@ -317,7 +317,7 @@ public:
    * @param[in,out] items Items to exchange
    * @param[in] ranks Corresponding scatter ranks
    */
-  template <typename OffsetT>
+  template <class OffsetT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   ScatterToStriped(InputT (&items)[ITEMS_PER_THREAD], OffsetT (&ranks)[ITEMS_PER_THREAD])
   {
@@ -386,7 +386,7 @@ public:
    * @param[in] ranks
    *   Corresponding scatter ranks
    */
-  template <typename OutputT, typename OffsetT>
+  template <class OutputT, class OffsetT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ScatterToStriped(
     const InputT (&input_items)[ITEMS_PER_THREAD],
     OutputT (&output_items)[ITEMS_PER_THREAD],

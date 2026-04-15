@@ -17,7 +17,7 @@
 namespace detail
 {
 // Helper that concatenates two iterators into a single iterator
-template <typename FirstSegmentItT, typename SecondSegmentItT>
+template <class FirstSegmentItT, class SecondSegmentItT>
 struct concat_iterators_op
 {
   FirstSegmentItT first_it;
@@ -37,7 +37,7 @@ struct concat_iterators_op
   }
 };
 
-template <typename FirstSegmentItT, typename SecondSegmentItT>
+template <class FirstSegmentItT, class SecondSegmentItT>
 auto make_concat_iterators_op(FirstSegmentItT first_it, SecondSegmentItT second_it, ::cuda::std::int64_t num_first_items)
 {
   return cuda::make_transform_iterator(
@@ -45,14 +45,14 @@ auto make_concat_iterators_op(FirstSegmentItT first_it, SecondSegmentItT second_
     concat_iterators_op<FirstSegmentItT, SecondSegmentItT>{first_it, second_it, num_first_items});
 }
 
-template <typename ExpectedValuesItT>
+template <class ExpectedValuesItT>
 struct flag_correct_writes_op
 {
   ExpectedValuesItT expected_it;
   std::uint32_t* d_correctness_flags;
 
   static constexpr auto bits_per_element = 8 * sizeof(std::uint32_t);
-  template <typename OffsetT, typename T>
+  template <class OffsetT, class T>
   __host__ __device__ void operator()(OffsetT index, T val)
   {
     // Set bit-flag if the correct result has been written at the given index
@@ -65,7 +65,7 @@ struct flag_correct_writes_op
   }
 };
 
-template <typename ExpectedValuesItT>
+template <class ExpectedValuesItT>
 flag_correct_writes_op<ExpectedValuesItT> static make_checking_write_op(
   ExpectedValuesItT expected_it, std::uint32_t* d_correctness_flags)
 {
@@ -92,7 +92,7 @@ struct large_problem_test_helper
 
   // Prepares and returns a tabulate_output_iterator that checks whether the correct result has been written at each
   // index
-  template <typename ExpectedValuesItT>
+  template <class ExpectedValuesItT>
   cuda::tabulate_output_iterator<flag_correct_writes_op<ExpectedValuesItT>>
   get_flagging_output_iterator(ExpectedValuesItT expected_it)
   {
@@ -140,7 +140,7 @@ struct large_problem_test_helper
   }
 };
 
-template <typename Offset>
+template <class Offset>
 auto make_large_offset(::cuda::std::size_t num_extra_items = 2000000ULL) -> Offset
 {
   // Clamp 64-bit offset type problem sizes to just slightly larger than 2^32 items

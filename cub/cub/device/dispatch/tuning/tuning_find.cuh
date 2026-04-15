@@ -55,7 +55,7 @@ struct find_policy
 };
 
 #if _CCCL_HAS_CONCEPTS()
-template <typename T>
+template <class T>
 concept find_policy_selector = policy_selector<T, find_policy>;
 #endif // _CCCL_HAS_CONCEPTS()
 
@@ -76,7 +76,7 @@ static_assert(find_policy_selector<policy_selector>);
 #endif // _CCCL_HAS_CONCEPTS()
 
 // stateless version which can be passed to kernels
-template <typename InputType>
+template <class InputType>
 struct policy_selector_from_types
 {
   [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::arch_id arch) const -> find_policy

@@ -127,7 +127,7 @@ CUB_NAMESPACE_BEGIN
 //!   hardware warp threads).  Default is the warp size of the targeted CUDA compute-capability
 //!   (e.g., 32 threads for SM20).
 //!
-template <typename T, int LogicalWarpThreads = detail::warp_threads>
+template <class T, int LogicalWarpThreads = detail::warp_threads>
 class WarpReduce
 {
   static_assert(LogicalWarpThreads >= 1 && LogicalWarpThreads <= detail::warp_threads,
@@ -374,7 +374,7 @@ public:
   //!
   //! @param[in] head_flag
   //!   Head flag denoting whether or not `input` is the start of a new segment
-  template <typename FlagT>
+  template <class FlagT>
   [[nodiscard]] _CCCL_DEVICE _CCCL_FORCEINLINE T HeadSegmentedSum(T input, FlagT head_flag)
   {
     return HeadSegmentedReduce(input, head_flag, ::cuda::std::plus<>{});
@@ -431,7 +431,7 @@ public:
   //!
   //! @param[in] tail_flag
   //!   Head flag denoting whether or not `input` is the start of a new segment
-  template <typename FlagT>
+  template <class FlagT>
   [[nodiscard]] _CCCL_DEVICE _CCCL_FORCEINLINE T TailSegmentedSum(T input, FlagT tail_flag)
   {
     return TailSegmentedReduce(input, tail_flag, ::cuda::std::plus<>{});
@@ -493,7 +493,7 @@ public:
   //!
   //! @param[in] reduction_op
   //!   Binary reduction operator
-  template <typename ReductionOp>
+  template <class ReductionOp>
   [[nodiscard]] _CCCL_DEVICE _CCCL_FORCEINLINE T Reduce(T input, ReductionOp reduction_op)
   {
     return InternalWarpReduce{temp_storage}.template Reduce<true>(input, LogicalWarpThreads, reduction_op);
@@ -565,7 +565,7 @@ public:
   //! @param[in] valid_items
   //!   Total number of valid items in the calling thread's logical warp
   //!   (may be less than ``LogicalWarpThreads``)
-  template <typename ReductionOp>
+  template <class ReductionOp>
   [[nodiscard]] _CCCL_DEVICE _CCCL_FORCEINLINE T Reduce(T input, ReductionOp reduction_op, int valid_items)
   {
     return InternalWarpReduce{temp_storage}.template Reduce<false>(input, valid_items, reduction_op);
@@ -627,7 +627,7 @@ public:
   //!
   //! @param[in] reduction_op
   //!   Reduction operator
-  template <typename ReductionOp, typename FlagT>
+  template <class ReductionOp, class FlagT>
   [[nodiscard]] _CCCL_DEVICE _CCCL_FORCEINLINE T HeadSegmentedReduce(T input, FlagT head_flag, ReductionOp reduction_op)
   {
     return InternalWarpReduce{temp_storage}.template SegmentedReduce<true>(input, head_flag, reduction_op);
@@ -689,7 +689,7 @@ public:
   //!
   //! @param[in] reduction_op
   //!   Reduction operator
-  template <typename ReductionOp, typename FlagT>
+  template <class ReductionOp, class FlagT>
   [[nodiscard]] _CCCL_DEVICE _CCCL_FORCEINLINE T TailSegmentedReduce(T input, FlagT tail_flag, ReductionOp reduction_op)
   {
     return InternalWarpReduce{temp_storage}.template SegmentedReduce<false>(input, tail_flag, reduction_op);
@@ -699,7 +699,7 @@ public:
 };
 
 #ifndef _CCCL_DOXYGEN_INVOKED // Do not document
-template <typename T>
+template <class T>
 class WarpReduce<T, 1>
 {
 private:
@@ -713,14 +713,14 @@ public:
 
     _CCCL_DEVICE _CCCL_FORCEINLINE InternalWarpReduce(TempStorage& /*temp_storage */) {}
 
-    template <bool ALL_LANES_VALID, typename ReductionOp>
+    template <bool ALL_LANES_VALID, class ReductionOp>
     [[nodiscard]] _CCCL_DEVICE _CCCL_FORCEINLINE T
     Reduce(T input, int /* valid_items */, ReductionOp /* reduction_op */)
     {
       return input;
     }
 
-    template <bool HEAD_SEGMENTED, typename FlagT, typename ReductionOp>
+    template <bool HEAD_SEGMENTED, class FlagT, class ReductionOp>
     [[nodiscard]] _CCCL_DEVICE _CCCL_FORCEINLINE T
     SegmentedReduce(T input, FlagT /* flag */, ReductionOp /* reduction_op */)
     {
@@ -783,19 +783,19 @@ public:
     return input;
   }
 
-  template <typename FlagT>
+  template <class FlagT>
   [[nodiscard]] _CCCL_DEVICE _CCCL_FORCEINLINE T HeadSegmentedSum(T input, FlagT /* head_flag */)
   {
     return input;
   }
 
-  template <typename FlagT>
+  template <class FlagT>
   [[nodiscard]] _CCCL_DEVICE _CCCL_FORCEINLINE T TailSegmentedSum(T input, FlagT /* tail_flag */)
   {
     return input;
   }
 
-  template <typename ReductionOp>
+  template <class ReductionOp>
   [[nodiscard]] _CCCL_DEVICE _CCCL_FORCEINLINE T Reduce(T input, ReductionOp /* reduction_op */)
   {
     return input;
@@ -808,20 +808,20 @@ public:
     return cub::ThreadReduce(input, reduction_op);
   }
 
-  template <typename ReductionOp>
+  template <class ReductionOp>
   [[nodiscard]] _CCCL_DEVICE _CCCL_FORCEINLINE T Reduce(T input, ReductionOp /* reduction_op */, int /* valid_items */)
   {
     return input;
   }
 
-  template <typename ReductionOp, typename FlagT>
+  template <class ReductionOp, class FlagT>
   [[nodiscard]] _CCCL_DEVICE _CCCL_FORCEINLINE T
   HeadSegmentedReduce(T input, FlagT /* head_flag */, ReductionOp /* reduction_op */)
   {
     return input;
   }
 
-  template <typename ReductionOp, typename FlagT>
+  template <class ReductionOp, class FlagT>
   [[nodiscard]] _CCCL_DEVICE _CCCL_FORCEINLINE T
   TailSegmentedReduce(T input, FlagT /* tail_flag */, ReductionOp /* reduction_op */)
   {

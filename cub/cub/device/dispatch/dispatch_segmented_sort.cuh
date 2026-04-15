@@ -46,13 +46,13 @@ namespace detail::segmented_sort
 {
 // Continuation is called after the partitioning stage. It launches kernels to sort large and small segments using the
 // partitioning results. Separation of this stage is required to eliminate device-side synchronization in the CDP mode.
-template <typename LargeKernelT,
-          typename SmallKernelT,
-          typename KeyT,
-          typename ValueT,
-          typename BeginOffsetIteratorT,
-          typename EndOffsetIteratorT,
-          typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+template <class LargeKernelT,
+          class SmallKernelT,
+          class KeyT,
+          class ValueT,
+          class BeginOffsetIteratorT,
+          class EndOffsetIteratorT,
+          class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
 CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN cudaError_t device_segmented_sort_continuation(
   LargeKernelT large_kernel,
   SmallKernelT small_kernel,
@@ -175,13 +175,13 @@ CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN cudaError_t device_segmented_sort_c
  * Continuation kernel is used only in the CDP mode. It's used to
  * launch device_segmented_sort_continuation as a separate kernel.
  */
-template <typename LargeKernelT,
-          typename SmallKernelT,
-          typename KeyT,
-          typename ValueT,
-          typename BeginOffsetIteratorT,
-          typename EndOffsetIteratorT,
-          typename KernelLauncherFactory>
+template <class LargeKernelT,
+          class SmallKernelT,
+          class KeyT,
+          class ValueT,
+          class BeginOffsetIteratorT,
+          class EndOffsetIteratorT,
+          class KernelLauncherFactory>
 __launch_bounds__(1) _CCCL_KERNEL_ATTRIBUTES void DeviceSegmentedSortContinuationKernel(
   _CCCL_GRID_CONSTANT const LargeKernelT large_kernel,
   _CCCL_GRID_CONSTANT const SmallKernelT small_kernel,
@@ -236,13 +236,13 @@ __launch_bounds__(1) _CCCL_KERNEL_ATTRIBUTES void DeviceSegmentedSortContinuatio
 }
 #endif // CUB_RDC_ENABLED
 
-template <typename PolicySelector,
+template <class PolicySelector,
           SortOrder Order,
-          typename KeyT,
-          typename ValueT,
-          typename BeginOffsetIteratorT,
-          typename EndOffsetIteratorT,
-          typename OffsetT>
+          class KeyT,
+          class ValueT,
+          class BeginOffsetIteratorT,
+          class EndOffsetIteratorT,
+          class OffsetT>
 struct DeviceSegmentedSortKernelSource
 {
   CUB_DEFINE_KERNEL_GETTER(
@@ -285,7 +285,7 @@ struct DeviceSegmentedSortKernelSource
     return SmallSegmentsSelectorT(offset, begin_offset_iterator, end_offset_iterator);
   }
 
-  template <typename SelectorT>
+  template <class SelectorT>
   CUB_RUNTIME_FUNCTION static constexpr void
   SetSegmentOffset(SelectorT& selector, global_segment_offset_t base_segment_offset)
   {
@@ -294,7 +294,7 @@ struct DeviceSegmentedSortKernelSource
 };
 
 // TODO(bgruber): remove in CCCL 4.0
-template <typename PolicyHub>
+template <class PolicyHub>
 struct policy_selector_from_hub
 {
   using max_policy = typename PolicyHub::MaxPolicy;
@@ -341,13 +341,13 @@ static constexpr size_t num_selected_groups = 2;
 // TODO(bgruber): deprecate when we make the tuning API public and remove in CCCL 4.0
 template <
   SortOrder Order,
-  typename KeyT,
-  typename ValueT,
-  typename OffsetT,
-  typename BeginOffsetIteratorT,
-  typename EndOffsetIteratorT,
-  typename PolicyHub    = detail::segmented_sort::policy_hub<KeyT, ValueT>,
-  typename KernelSource = detail::segmented_sort::DeviceSegmentedSortKernelSource<
+  class KeyT,
+  class ValueT,
+  class OffsetT,
+  class BeginOffsetIteratorT,
+  class EndOffsetIteratorT,
+  class PolicyHub    = detail::segmented_sort::policy_hub<KeyT, ValueT>,
+  class KernelSource = detail::segmented_sort::DeviceSegmentedSortKernelSource<
     detail::segmented_sort::policy_selector_from_hub<PolicyHub>,
     Order,
     KeyT,
@@ -355,10 +355,10 @@ template <
     BeginOffsetIteratorT,
     EndOffsetIteratorT,
     OffsetT>,
-  typename PartitionPolicyHub = detail::three_way_partition::policy_hub<
+  class PartitionPolicyHub = detail::three_way_partition::policy_hub<
     cub::detail::it_value_t<THRUST_NS_QUALIFIER::counting_iterator<cub::detail::segmented_sort::local_segment_index_t>>,
     detail::three_way_partition::per_partition_offset_t>,
-  typename PartitionKernelSource = detail::three_way_partition::DeviceThreeWayPartitionKernelSource<
+  class PartitionKernelSource = detail::three_way_partition::DeviceThreeWayPartitionKernelSource<
     detail::three_way_partition::policy_selector_from_hub<PartitionPolicyHub>,
     THRUST_NS_QUALIFIER::counting_iterator<cub::detail::segmented_sort::local_segment_index_t>,
     cub::detail::segmented_sort::local_segment_index_t*,
@@ -371,7 +371,7 @@ template <
     detail::three_way_partition::per_partition_offset_t,
     detail::three_way_partition::streaming_context_t<cub::detail::segmented_sort::global_segment_offset_t>,
     detail::choose_signed_offset<cub::detail::segmented_sort::global_segment_offset_t>::type>,
-  typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+  class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
 struct DispatchSegmentedSort
 {
   using local_segment_index_t   = detail::segmented_sort::local_segment_index_t;
@@ -440,7 +440,7 @@ struct DispatchSegmentedSort
 
   typename PartitionPolicyHub::MaxPolicy partition_max_policy;
 
-  template <typename ActivePolicyT>
+  template <class ActivePolicyT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t Invoke(ActivePolicyT policy = {})
   {
     auto wrapped_policy = detail::segmented_sort::MakeSegmentedSortPolicyWrapper(policy);
@@ -660,8 +660,8 @@ struct DispatchSegmentedSort
     return error;
   }
 
-  template <typename MaxPolicyT          = typename PolicyHub::MaxPolicy,
-            typename PartitionMaxPolicyT = typename PartitionPolicyHub::MaxPolicy>
+  template <class MaxPolicyT          = typename PolicyHub::MaxPolicy,
+            class PartitionMaxPolicyT = typename PartitionPolicyHub::MaxPolicy>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t Dispatch(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -727,14 +727,14 @@ private:
     return (selector + GetNumPasses(radix_bits)) & 1;
   }
 
-  template <typename T>
+  template <class T>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE T* GetFinalOutput(int radix_bits, DoubleBuffer<T>& buffer)
   {
     const int final_selector = GetFinalSelector(buffer.selector, radix_bits);
     return buffer.d_buffers[final_selector];
   }
 
-  template <typename WrappedPolicyT, typename LargeKernelT, typename SmallKernelT>
+  template <class WrappedPolicyT, class LargeKernelT, class SmallKernelT>
   CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE cudaError_t SortWithPartitioning(
     LargeKernelT large_kernel,
     SmallKernelT small_kernel,
@@ -904,7 +904,7 @@ private:
     return cudaSuccess;
   }
 
-  template <typename WrappedPolicyT, typename FallbackKernelT>
+  template <class WrappedPolicyT, class FallbackKernelT>
   CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE cudaError_t SortWithoutPartitioning(
     FallbackKernelT fallback_kernel,
     cub::detail::device_double_buffer<KeyT>& d_keys_double_buffer,
@@ -950,17 +950,17 @@ private:
 
 namespace detail::segmented_sort
 {
-template <typename LargeKernelT,
-          typename SmallKernelT,
-          typename KeyT,
-          typename ValueT,
-          typename BeginOffsetIteratorT,
-          typename EndOffsetIteratorT,
-          typename KernelSource,
-          typename PartitionKernelSource,
-          typename KernelLauncherFactory,
-          typename PartitionPolicySelector,
-          typename GetFinalOutputOp>
+template <class LargeKernelT,
+          class SmallKernelT,
+          class KeyT,
+          class ValueT,
+          class BeginOffsetIteratorT,
+          class EndOffsetIteratorT,
+          class KernelSource,
+          class PartitionKernelSource,
+          class KernelLauncherFactory,
+          class PartitionPolicySelector,
+          class GetFinalOutputOp>
 CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE cudaError_t sort_with_partitioning(
   LargeKernelT large_kernel,
   SmallKernelT small_kernel,
@@ -1133,7 +1133,7 @@ CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE cudaError_t sort_
   return cudaSuccess;
 }
 
-template <bool KeysOnly, typename PolicyGetter>
+template <bool KeysOnly, class PolicyGetter>
 CUB_RUNTIME_FUNCTION void check_policy(PolicyGetter policy_getter)
 {
   [[maybe_unused]] CUB_DETAIL_CONSTEXPR_ISH segmented_sort_policy active_policy = policy_getter();
@@ -1150,13 +1150,13 @@ CUB_RUNTIME_FUNCTION void check_policy(PolicyGetter policy_getter)
                                "Striped stores will produce unsorted results");
 }
 
-template <typename KeyT,
-          typename ValueT,
-          typename FallbackKernelT,
-          typename BeginOffsetIteratorT,
-          typename EndOffsetIteratorT,
-          typename KernelLauncherFactory,
-          typename GetFinalOutputOp>
+template <class KeyT,
+          class ValueT,
+          class FallbackKernelT,
+          class BeginOffsetIteratorT,
+          class EndOffsetIteratorT,
+          class KernelLauncherFactory,
+          class GetFinalOutputOp>
 CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE cudaError_t sort_without_partitioning(
   FallbackKernelT fallback_kernel,
   global_segment_offset_t num_segments,
@@ -1211,18 +1211,18 @@ CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE cudaError_t sort_
 
 template <
   SortOrder Order,
-  typename OffsetT,
-  typename KeyT,
-  typename ValueT,
-  typename BeginOffsetIteratorT,
-  typename EndOffsetIteratorT,
-  typename PolicySelector = policy_selector_from_types<KeyT, ValueT>,
-  typename KernelSource =
+  class OffsetT,
+  class KeyT,
+  class ValueT,
+  class BeginOffsetIteratorT,
+  class EndOffsetIteratorT,
+  class PolicySelector = policy_selector_from_types<KeyT, ValueT>,
+  class KernelSource =
     DeviceSegmentedSortKernelSource<PolicySelector, Order, KeyT, ValueT, BeginOffsetIteratorT, EndOffsetIteratorT, OffsetT>,
-  typename PartitionPolicySelector = detail::three_way_partition::policy_selector_from_types<
+  class PartitionPolicySelector = detail::three_way_partition::policy_selector_from_types<
     cub::detail::it_value_t<THRUST_NS_QUALIFIER::counting_iterator<local_segment_index_t>>,
     three_way_partition::per_partition_offset_t>,
-  typename PartitionKernelSource = detail::three_way_partition::DeviceThreeWayPartitionKernelSource<
+  class PartitionKernelSource = detail::three_way_partition::DeviceThreeWayPartitionKernelSource<
     PartitionPolicySelector,
     THRUST_NS_QUALIFIER::counting_iterator<local_segment_index_t>,
     local_segment_index_t*,
@@ -1235,7 +1235,7 @@ template <
     three_way_partition::per_partition_offset_t,
     three_way_partition::streaming_context_t<global_segment_offset_t>,
     choose_signed_offset<global_segment_offset_t>::type>,
-  typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+  class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
 #if _CCCL_HAS_CONCEPTS()
   requires segmented_sort_policy_selector<PolicySelector>
         && three_way_partition::three_way_partition_policy_selector<PartitionPolicySelector>

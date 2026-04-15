@@ -155,15 +155,15 @@ struct accumulator_pack_t : accumulator_pack_base_t<OffsetT>
  * the second part. If both functors don't select an item, the algorithm places
  * it into the unselected part.
  */
-template <typename PolicyT,
-          typename InputIteratorT,
-          typename FirstOutputIteratorT,
-          typename SecondOutputIteratorT,
-          typename UnselectedOutputIteratorT,
-          typename SelectFirstPartOp,
-          typename SelectSecondPartOp,
-          typename OffsetT,
-          typename StreamingContextT>
+template <class PolicyT,
+          class InputIteratorT,
+          class FirstOutputIteratorT,
+          class SecondOutputIteratorT,
+          class UnselectedOutputIteratorT,
+          class SelectFirstPartOp,
+          class SelectSecondPartOp,
+          class OffsetT,
+          class StreamingContextT>
 struct AgentThreeWayPartition
 {
   //---------------------------------------------------------------------
@@ -545,7 +545,7 @@ struct AgentThreeWayPartition
    * @param d_num_selected_out
    *   Output total number selection_flags
    */
-  template <typename NumSelectedIteratorT>
+  template <class NumSelectedIteratorT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   ConsumeRange(int num_tiles, ScanTileStateT& tile_state, NumSelectedIteratorT d_num_selected_out)
   {

@@ -39,7 +39,7 @@ namespace detail::temporary_storage
 {
 class slot;
 
-template <typename T>
+template <class T>
 class alias;
 
 template <int SlotsCount>
@@ -90,7 +90,7 @@ public:
   /**
    * @brief Returns an array of type @p T and length @p elements
    */
-  template <typename T>
+  template <class T>
   _CCCL_HOST_DEVICE alias<T> create_alias(size_t elements = 0);
 
 private:
@@ -113,7 +113,7 @@ private:
     return m_pointer;
   }
 
-  template <typename T>
+  template <class T>
   friend class alias;
 
   template <int>
@@ -131,7 +131,7 @@ private:
  * @warning alias lifetime is defined by the lifetime of the associated slot
  *          It's impossible to grow the array if the layout is already mapped.
  */
-template <typename T>
+template <class T>
 class alias
 {
   slot& m_slot;
@@ -187,7 +187,7 @@ public:
   friend class slot;
 };
 
-template <typename T>
+template <class T>
 _CCCL_HOST_DEVICE alias<T> slot::create_alias(size_t elements)
 {
   return alias<T>(*this, elements);
@@ -346,7 +346,7 @@ private:
   }
 };
 
-template <typename MRT>
+template <class MRT>
 CUB_RUNTIME_FUNCTION cudaError_t
 allocate(::cuda::stream_ref stream, void*& d_temp_storage, size_t temp_storage_bytes, MRT& mr)
 {
@@ -360,7 +360,7 @@ allocate(::cuda::stream_ref stream, void*& d_temp_storage, size_t temp_storage_b
   return cudaSuccess;
 }
 
-template <typename MRT>
+template <class MRT>
 CUB_RUNTIME_FUNCTION cudaError_t
 deallocate(::cuda::stream_ref stream, void* d_temp_storage, size_t temp_storage_bytes, MRT& mr)
 {

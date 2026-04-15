@@ -32,7 +32,7 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail
 {
-template <typename Input>
+template <class Input>
 _CCCL_DEVICE _CCCL_FORCEINLINE auto split_integer(Input input)
 {
   using namespace ::cuda::std;
@@ -46,7 +46,7 @@ _CCCL_DEVICE _CCCL_FORCEINLINE auto split_integer(Input input)
   return array<output_t, 2>{high, low};
 }
 
-template <typename Input>
+template <class Input>
 _CCCL_DEVICE _CCCL_FORCEINLINE auto merge_integers(Input inputA, Input inputB)
 {
   using namespace ::cuda::std;
@@ -60,7 +60,7 @@ _CCCL_DEVICE _CCCL_FORCEINLINE auto merge_integers(Input inputA, Input inputB)
 
 // When it is not possible to use native functionalities to compare floating-point values, we can convert them to
 // an integer representation that preserves the order.
-template <typename MinMaxOp, typename T>
+template <class MinMaxOp, class T>
 _CCCL_DEVICE _CCCL_FORCEINLINE auto floating_point_to_comparable_int(MinMaxOp, T value)
 {
   using namespace ::cuda::std;
@@ -75,7 +75,7 @@ _CCCL_DEVICE _CCCL_FORCEINLINE auto floating_point_to_comparable_int(MinMaxOp, T
   return static_cast<signed_t>(value_int < 0 ? lowest - value_int : value_int);
 }
 
-template <typename FloatingPointType, typename IntegerType>
+template <class FloatingPointType, class IntegerType>
 _CCCL_DEVICE _CCCL_FORCEINLINE auto comparable_int_to_floating_point(IntegerType value)
 {
   static_assert(::cuda::std::__cccl_is_integer_v<IntegerType>);

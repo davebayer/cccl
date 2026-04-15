@@ -41,7 +41,7 @@ namespace detail
  * @param[in] scan_op
  *   Binary scan operator
  */
-template <int LENGTH, typename T, typename ScanOp>
+template <int LENGTH, class T, class ScanOp>
 _CCCL_DEVICE _CCCL_FORCEINLINE T ThreadScanExclusive(
   T inclusive, T exclusive, T* input, T* output, ScanOp scan_op, detail::constant_t<LENGTH> /*length*/)
 {
@@ -87,7 +87,7 @@ _CCCL_DEVICE _CCCL_FORCEINLINE T ThreadScanExclusive(
  *   If not, the first output element is undefined.
  *   (Handy for preventing thread-0 from applying a prefix.)
  */
-template <int LENGTH, typename T, typename ScanOp>
+template <int LENGTH, class T, class ScanOp>
 _CCCL_DEVICE _CCCL_FORCEINLINE T
 ThreadScanExclusive(T* input, T* output, ScanOp scan_op, T prefix, bool apply_prefix = true)
 {
@@ -132,7 +132,7 @@ ThreadScanExclusive(T* input, T* output, ScanOp scan_op, T prefix, bool apply_pr
  *   Whether or not the calling thread should apply its prefix.
  *   (Handy for preventing thread-0 from applying a prefix.)
  */
-template <int LENGTH, typename T, typename ScanOp>
+template <int LENGTH, class T, class ScanOp>
 _CCCL_DEVICE _CCCL_FORCEINLINE T
 ThreadScanExclusive(T (&input)[LENGTH], T (&output)[LENGTH], ScanOp scan_op, T prefix, bool apply_prefix = true)
 {
@@ -178,12 +178,12 @@ ThreadScanExclusive(T (&input)[LENGTH], T (&output)[LENGTH], ScanOp scan_op, T p
  *   Whether or not the calling thread should apply its prefix.
  *   (Handy for preventing thread-0 from applying a prefix.)
  */
-template <typename Input,
-          typename Output,
-          typename ScanOp,
-          typename PrefixT,
-          typename ValueT = ::cuda::std::iter_value_t<Input>,
-          typename AccumT = ::cuda::std::__accumulator_t<ScanOp, ValueT, PrefixT>>
+template <class Input,
+          class Output,
+          class ScanOp,
+          class PrefixT,
+          class ValueT = ::cuda::std::iter_value_t<Input>,
+          class AccumT = ::cuda::std::__accumulator_t<ScanOp, ValueT, PrefixT>>
 _CCCL_DEVICE _CCCL_FORCEINLINE void ThreadScanExclusivePartial(
   Input& input, Output& output, ScanOp scan_op, int valid_items, PrefixT prefix, bool apply_prefix = true)
 {
@@ -229,7 +229,7 @@ _CCCL_DEVICE _CCCL_FORCEINLINE void ThreadScanExclusivePartial(
  * @param[in] scan_op
  *   Binary scan operator
  */
-template <int LENGTH, typename T, typename ScanOp>
+template <int LENGTH, class T, class ScanOp>
 _CCCL_DEVICE _CCCL_FORCEINLINE T
 ThreadScanInclusive(T inclusive, T* input, T* output, ScanOp scan_op, detail::constant_t<LENGTH> /*length*/)
 {
@@ -266,7 +266,7 @@ ThreadScanInclusive(T inclusive, T* input, T* output, ScanOp scan_op, detail::co
  * @param[in] scan_op
  *   Binary scan operator
  */
-template <int LENGTH, typename T, typename ScanOp>
+template <int LENGTH, class T, class ScanOp>
 _CCCL_DEVICE _CCCL_FORCEINLINE T ThreadScanInclusive(T* input, T* output, ScanOp scan_op)
 {
   T inclusive = input[0];
@@ -299,7 +299,7 @@ _CCCL_DEVICE _CCCL_FORCEINLINE T ThreadScanInclusive(T* input, T* output, ScanOp
  * @param[in] scan_op
  *   Binary scan operator
  */
-template <int LENGTH, typename T, typename ScanOp>
+template <int LENGTH, class T, class ScanOp>
 _CCCL_DEVICE _CCCL_FORCEINLINE T ThreadScanInclusive(T (&input)[LENGTH], T (&output)[LENGTH], ScanOp scan_op)
 {
   return ThreadScanInclusive<LENGTH>((T*) input, (T*) output, scan_op);
@@ -336,7 +336,7 @@ _CCCL_DEVICE _CCCL_FORCEINLINE T ThreadScanInclusive(T (&input)[LENGTH], T (&out
  *   Whether or not the calling thread should apply its prefix.
  *   (Handy for preventing thread-0 from applying a prefix.)
  */
-template <int LENGTH, typename T, typename ScanOp>
+template <int LENGTH, class T, class ScanOp>
 _CCCL_DEVICE _CCCL_FORCEINLINE T
 ThreadScanInclusive(T* input, T* output, ScanOp scan_op, T prefix, bool apply_prefix = true)
 {
@@ -382,7 +382,7 @@ ThreadScanInclusive(T* input, T* output, ScanOp scan_op, T prefix, bool apply_pr
  *   Whether or not the calling thread should apply its prefix.
  *   (Handy for preventing thread-0 from applying a prefix.)
  */
-template <int LENGTH, typename T, typename ScanOp>
+template <int LENGTH, class T, class ScanOp>
 _CCCL_DEVICE _CCCL_FORCEINLINE T
 ThreadScanInclusive(T (&input)[LENGTH], T (&output)[LENGTH], ScanOp scan_op, T prefix, bool apply_prefix = true)
 {
@@ -428,12 +428,12 @@ ThreadScanInclusive(T (&input)[LENGTH], T (&output)[LENGTH], ScanOp scan_op, T p
  *   Whether or not the calling thread should apply its prefix.
  *   (Handy for preventing thread-0 from applying a prefix.)
  */
-template <typename Input,
-          typename Output,
-          typename ScanOp,
-          typename PrefixT,
-          typename ValueT = ::cuda::std::iter_value_t<Input>,
-          typename AccumT = ::cuda::std::__accumulator_t<ScanOp, ValueT, PrefixT>>
+template <class Input,
+          class Output,
+          class ScanOp,
+          class PrefixT,
+          class ValueT = ::cuda::std::iter_value_t<Input>,
+          class AccumT = ::cuda::std::__accumulator_t<ScanOp, ValueT, PrefixT>>
 _CCCL_DEVICE _CCCL_FORCEINLINE void ThreadScanInclusivePartial(
   Input& input, Output& output, ScanOp scan_op, int valid_items, PrefixT prefix, bool apply_prefix = true)
 {

@@ -28,7 +28,7 @@ using AccumPackHelperT = detail::three_way_partition::accumulator_pack_t<per_par
 using AccumPackT       = typename AccumPackHelperT::pack_t;
 using ScanTileStateT   = cub::ScanTileState<AccumPackT>;
 
-template <typename TotalNumItemsT>
+template <class TotalNumItemsT>
 class streaming_context_t
 {
 private:
@@ -77,7 +77,7 @@ public:
     ;
   };
 
-  template <typename NumSelectedIteratorT>
+  template <class NumSelectedIteratorT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void update_num_selected(
     NumSelectedIteratorT user_num_selected_out_it,
     TotalNumItemsT num_selected_first,
@@ -102,17 +102,17 @@ public:
 /******************************************************************************
  * Kernel entry points
  *****************************************************************************/
-template <typename PolicySelector,
-          typename InputIteratorT,
-          typename FirstOutputIteratorT,
-          typename SecondOutputIteratorT,
-          typename UnselectedOutputIteratorT,
-          typename NumSelectedIteratorT,
-          typename ScanTileStateT,
-          typename SelectFirstPartOp,
-          typename SelectSecondPartOp,
-          typename OffsetT,
-          typename StreamingContextT>
+template <class PolicySelector,
+          class InputIteratorT,
+          class FirstOutputIteratorT,
+          class SecondOutputIteratorT,
+          class UnselectedOutputIteratorT,
+          class NumSelectedIteratorT,
+          class ScanTileStateT,
+          class SelectFirstPartOp,
+          class SelectSecondPartOp,
+          class OffsetT,
+          class StreamingContextT>
 #if _CCCL_HAS_CONCEPTS()
   requires three_way_partition_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()
@@ -192,7 +192,7 @@ __launch_bounds__(PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).block_thr
  *   Pointer to the total number of items selected
  *   (i.e., length of @p d_selected_out)
  */
-template <typename ScanTileStateT, typename NumSelectedIteratorT>
+template <class ScanTileStateT, class NumSelectedIteratorT>
 _CCCL_KERNEL_ATTRIBUTES void DeviceThreeWayPartitionInitKernel(
   ScanTileStateT tile_state,
   _CCCL_GRID_CONSTANT const int num_tiles,

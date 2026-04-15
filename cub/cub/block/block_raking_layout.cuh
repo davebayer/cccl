@@ -44,7 +44,7 @@ CUB_NAMESPACE_BEGIN
 //! @tparam BlockThreads
 //!   The thread block size in threads.
 //!
-template <typename T, int BlockThreads>
+template <class T, int BlockThreads>
 struct BlockRakingLayout
 {
   //---------------------------------------------------------------------

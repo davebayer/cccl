@@ -338,7 +338,7 @@ template <> struct sm90_small_key_tuning<2, 16, 8> { static constexpr int thread
 
 // TODO(bgruber): remove for CCCL 4.0 when we drop the public radix sort dispatcher
 // sm100 default
-template <typename ValueT, size_t KeySize, size_t ValueSize, size_t OffsetSize>
+template <class ValueT, size_t KeySize, size_t ValueSize, size_t OffsetSize>
 struct sm100_small_key_tuning : sm90_small_key_tuning<KeySize, ValueSize, OffsetSize>
 {};
 
@@ -790,7 +790,7 @@ _CCCL_API constexpr auto get_sm100_tuning(int key_size, int value_size, int offs
 }
 
 // TODO(bgruber): remove in CCCL 4.0 when we drop the radix sort dispatcher after publishing the tuning API
-template <typename PolicyT, typename = void>
+template <class PolicyT, class = void>
 struct RadixSortPolicyWrapper : PolicyT
 {
   _CCCL_HOST_DEVICE RadixSortPolicyWrapper(PolicyT base)
@@ -803,7 +803,7 @@ using namespace radix_sort_runtime_policies;
 #endif
 
 // TODO(bgruber): remove in CCCL 4.0 when we drop the radix sort dispatcher after publishing the tuning API
-template <typename StaticPolicyT>
+template <class StaticPolicyT>
 struct RadixSortPolicyWrapper<
   StaticPolicyT,
   ::cuda::std::void_t<typename StaticPolicyT::SingleTilePolicy,
@@ -827,13 +827,13 @@ struct RadixSortPolicyWrapper<
     return StaticPolicyT::ONESWEEP;
   }
 
-  template <typename PolicyT>
+  template <class PolicyT>
   _CCCL_HOST_DEVICE static constexpr int RadixBits(PolicyT /*policy*/)
   {
     return PolicyT::RADIX_BITS;
   }
 
-  template <typename PolicyT>
+  template <class PolicyT>
   _CCCL_HOST_DEVICE static constexpr int BlockThreads(PolicyT /*policy*/)
   {
     return PolicyT::BLOCK_THREADS;
@@ -872,14 +872,14 @@ struct RadixSortPolicyWrapper<
 };
 
 // TODO(bgruber): remove in CCCL 4.0 when we drop the radix sort dispatcher after publishing the tuning API
-template <typename PolicyT>
+template <class PolicyT>
 _CCCL_HOST_DEVICE RadixSortPolicyWrapper<PolicyT> MakeRadixSortPolicyWrapper(PolicyT policy)
 {
   return RadixSortPolicyWrapper<PolicyT>{policy};
 }
 
 // TODO(bgruber): remove in CCCL 4.0 when we drop the radix sort dispatcher after publishing the tuning API
-template <typename LegacyActivePolicy>
+template <class LegacyActivePolicy>
 _CCCL_API constexpr auto convert_policy() -> radix_sort_policy
 {
   using active_policy = LegacyActivePolicy;
@@ -959,7 +959,7 @@ _CCCL_API constexpr auto convert_policy() -> radix_sort_policy
 }
 
 // TODO(bgruber): remove in CCCL 4.0 when we drop the radix sort dispatcher after publishing the tuning API
-template <typename LegacyActivePolicy>
+template <class LegacyActivePolicy>
 _CCCL_API _CCCL_FORCEINLINE constexpr auto convert_policy(RadixSortPolicyWrapper<LegacyActivePolicy> policy)
   -> radix_sort_policy
 {
@@ -967,7 +967,7 @@ _CCCL_API _CCCL_FORCEINLINE constexpr auto convert_policy(RadixSortPolicyWrapper
 }
 
 // TODO(bgruber): remove in CCCL 4.0 when we drop the radix sort dispatcher after publishing the tuning API
-template <typename PolicyHub>
+template <class PolicyHub>
 struct policy_selector_from_hub
 {
   _CCCL_DEVICE_API constexpr auto operator()(::cuda::arch_id /*arch*/) const -> radix_sort_policy
@@ -989,7 +989,7 @@ struct policy_selector_from_hub
  *   Signed integer type for global offsets
  */
 // TODO(bgruber): remove this in CCCL 4.0 when we remove the public radix sort dispatcher
-template <typename KeyT, typename ValueT, typename OffsetT>
+template <class KeyT, class ValueT, class OffsetT>
 struct policy_hub
 {
   //------------------------------------------------------------------------------
@@ -1545,7 +1545,7 @@ struct policy_hub
       SEGMENTED_RADIX_BITS - 1>;
   };
 
-  template <typename OnesweepSmallKeyPolicySizes>
+  template <class OnesweepSmallKeyPolicySizes>
   struct OnesweepSmallKeyTunedPolicy
   {
     static constexpr bool ONESWEEP           = true;
@@ -1685,7 +1685,7 @@ struct policy_hub
 }
 
 #if _CCCL_HAS_CONCEPTS()
-template <typename T>
+template <class T>
 concept radix_sort_policy_selector = detail::policy_selector<T, radix_sort_policy>;
 #endif // _CCCL_HAS_CONCEPTS()
 
@@ -2475,7 +2475,7 @@ struct policy_selector
 static_assert(radix_sort_policy_selector<policy_selector>);
 #endif // _CCCL_HAS_CONCEPTS()
 
-template <typename KeyT, typename ValueT, typename OffsetT>
+template <class KeyT, class ValueT, class OffsetT>
 struct policy_selector_from_types
 {
   [[nodiscard]] _CCCL_API constexpr auto operator()(cuda::arch_id arch) const -> radix_sort_policy

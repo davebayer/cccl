@@ -418,7 +418,7 @@ struct sm100_tuning<double, AccumT, OffsetT, op_kind_t::plus, primitive_accum::y
 #endif
 
 // TODO(griwes): remove this in CCCL 4.0 when we remove the public scan dispatcher
-template <typename InputValueT, typename OutputValueT, typename AccumT, typename OffsetT, typename ScanOpT>
+template <class InputValueT, class OutputValueT, class AccumT, class OffsetT, class ScanOpT>
 struct policy_hub
 {
   // For large values, use timesliced loads/stores to fit shared memory.
@@ -453,7 +453,7 @@ struct policy_hub
   {};
 
   // Use values from tuning if a specialization exists, otherwise pick DefaultPolicy
-  template <typename Tuning>
+  template <class Tuning>
   _CCCL_HOST_DEVICE static auto select_agent_policy(int)
     -> AgentScanPolicy<Tuning::threads,
                        Tuning::items,
@@ -464,14 +464,14 @@ struct policy_hub
                        BLOCK_SCAN_WARP_SCANS,
                        cub::detail::MemBoundScaling<Tuning::threads, Tuning::items, AccumT>,
                        typename Tuning::delay_constructor>;
-  template <typename Tuning>
+  template <class Tuning>
   _CCCL_HOST_DEVICE static auto select_agent_policy(long) -> typename DefaultPolicy::ScanPolicyT;
 
   struct Policy750 : ChainedPolicy<750, Policy750, Policy600>
   {
     // Use values from tuning if a specialization exists that matches a benchmark, otherwise pick Policy600
-    template <typename Tuning,
-              typename IVT,
+    template <class Tuning,
+              class IVT,
               // In the tuning benchmarks the Initial-, Input- and OutputType are the same. Let's check that the
               // accumulator type's size matches what we used during the benchmark since that has an impact (The
               // tunings also check later that it's a primitive type, so arithmetic impact is also comparable to the
@@ -490,7 +490,7 @@ struct policy_hub
                          BLOCK_SCAN_WARP_SCANS,
                          MemBoundScaling<Tuning::threads, Tuning::items, AccumT>,
                          typename Tuning::delay_constructor>;
-    template <typename Tuning, typename IVT>
+    template <class Tuning, class IVT>
     _CCCL_HOST_DEVICE static auto select_agent_policy750(long) -> typename Policy600::ScanPolicyT;
 
     using ScanPolicyT =
@@ -519,8 +519,8 @@ struct policy_hub
   struct Policy1000 : ChainedPolicy<1000, Policy1000, Policy900>
   {
     // Use values from tuning if a specialization exists that matches a benchmark, otherwise pick Policy900
-    template <typename Tuning,
-              typename IVT,
+    template <class Tuning,
+              class IVT,
               // In the tuning benchmarks the Initial-, Input- and OutputType are the same. Let's check that the
               // accumulator type's size matches what we used during the benchmark since that has an impact (The
               // tunings also check later that it's a primitive type, so arithmetic impact is also comparable to the
@@ -539,7 +539,7 @@ struct policy_hub
                          BLOCK_SCAN_WARP_SCANS,
                          MemBoundScaling<Tuning::threads, Tuning::items, AccumT>,
                          typename Tuning::delay_constructor>;
-    template <typename Tuning, typename IVT>
+    template <class Tuning, class IVT>
     _CCCL_HOST_DEVICE static auto select_agent_policy100(long) -> typename Policy900::ScanPolicyT;
 
     using ScanPolicyT =
@@ -664,7 +664,7 @@ struct scan_policy
 };
 
 #if _CCCL_HAS_CONCEPTS()
-template <typename T>
+template <class T>
 concept scan_policy_selector = policy_selector<T, scan_policy>;
 #endif // _CCCL_HAS_CONCEPTS()
 
@@ -768,7 +768,7 @@ struct ScanResourcesRaw
   warpspeed::SmemResourceRaw smemSumThreadAndWarp;
 };
 
-template <typename SmemInOutT, typename SmemNextBlockIdxT, typename SmemSumExclusiveCtaT, typename SmemSumThreadAndWarpT>
+template <class SmemInOutT, class SmemNextBlockIdxT, class SmemSumExclusiveCtaT, class SmemSumThreadAndWarpT>
 _CCCL_API constexpr void setup_scan_resources(
   const scan_warpspeed_policy& policy,
   warpspeed::SyncHandler& syncHandler,
@@ -1379,13 +1379,13 @@ struct policy_selector
 static_assert(scan_policy_selector<policy_selector>);
 #endif // _CCCL_HAS_CONCEPTS()
 
-template <typename ScanOpT, typename InputValueT, typename OutputValueT, typename AccumT, typename = void>
+template <class ScanOpT, class InputValueT, class OutputValueT, class AccumT, class = void>
 struct benchmark_match_for_policy_selector
 {
   static constexpr bool value = false;
 };
 
-template <typename ScanOpT, typename InputValueT, typename OutputValueT, typename AccumT>
+template <class ScanOpT, class InputValueT, class OutputValueT, class AccumT>
 struct benchmark_match_for_policy_selector<
   ScanOpT,
   InputValueT,
@@ -1399,7 +1399,7 @@ struct benchmark_match_for_policy_selector<
 };
 
 // stateless version which can be passed to kernels
-template <typename InputIteratorT, typename OutputIteratorT, typename AccumT, typename OffsetT, typename ScanOpT>
+template <class InputIteratorT, class OutputIteratorT, class AccumT, class OffsetT, class ScanOpT>
 struct policy_selector_from_types
 {
   [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::arch_id arch) const -> scan_policy

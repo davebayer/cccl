@@ -253,7 +253,7 @@ struct sm100_tuning<LengthT, double, primitive_length::yes, primitive_key::yes, 
 template <class LengthT, class KeyT>
 struct policy_hub
 {
-  template <BlockLoadAlgorithm BlockLoad, typename DelayConstructorKey, CacheLoadModifier LoadModifier>
+  template <BlockLoadAlgorithm BlockLoad, class DelayConstructorKey, CacheLoadModifier LoadModifier>
   struct DefaultPolicy
   {
     static constexpr int nominal_4B_items_per_thread = 15;
@@ -279,7 +279,7 @@ struct policy_hub
   {};
 
   // Use values from tuning if a specialization exists, otherwise pick the default
-  template <typename Tuning>
+  template <class Tuning>
   static auto select_agent_policy(int)
     -> AgentRlePolicy<Tuning::threads,
                       Tuning::items,
@@ -288,7 +288,7 @@ struct policy_hub
                       Tuning::store_with_time_slicing,
                       BLOCK_SCAN_WARP_SCANS,
                       typename Tuning::delay_constructor>;
-  template <typename Tuning>
+  template <class Tuning>
   static auto select_agent_policy(long) ->
     typename DefaultPolicy<BLOCK_LOAD_WARP_TRANSPOSE, LengthT, LOAD_DEFAULT>::RleSweepPolicyT;
 
@@ -314,7 +314,7 @@ struct policy_hub
   struct Policy1000 : ChainedPolicy<1000, Policy1000, Policy900>
   {
     // Use values from tuning if a specialization exists, otherwise pick Policy900
-    template <typename Tuning>
+    template <class Tuning>
     static auto select_agent_policy100(int)
       -> AgentRlePolicy<Tuning::threads,
                         Tuning::items,
@@ -323,7 +323,7 @@ struct policy_hub
                         Tuning::store_with_time_slicing,
                         BLOCK_SCAN_WARP_SCANS,
                         typename Tuning::delay_constructor>;
-    template <typename Tuning>
+    template <class Tuning>
     static auto select_agent_policy100(long) -> typename Policy900::RleSweepPolicyT;
 
     using RleSweepPolicyT = decltype(select_agent_policy100<sm100_tuning<LengthT, KeyT>>(0));
@@ -370,7 +370,7 @@ struct rle_non_trivial_runs_policy
 };
 
 #if _CCCL_HAS_CONCEPTS()
-template <typename T>
+template <class T>
 concept rle_non_trivial_runs_policy_selector = detail::policy_selector<T, rle_non_trivial_runs_policy>;
 #endif // _CCCL_HAS_CONCEPTS()
 

@@ -17,10 +17,10 @@
 #include <c2h/catch2_test_helper.h>
 #include <c2h/fill_striped.h>
 
-template <typename InputT, typename OutputT, int ItemsPerThread, cub::WarpExchangeAlgorithm Alg, typename = void>
+template <class InputT, class OutputT, int ItemsPerThread, cub::WarpExchangeAlgorithm Alg, class = void>
 struct exchange_data_t;
 
-template <typename InputT, typename OutputT, int ItemsPerThread, cub::WarpExchangeAlgorithm Alg>
+template <class InputT, class OutputT, int ItemsPerThread, cub::WarpExchangeAlgorithm Alg>
 struct exchange_data_t<InputT, OutputT, ItemsPerThread, Alg, std::enable_if_t<std::is_same_v<InputT, OutputT>>>
 {
   InputT input[ItemsPerThread];
@@ -34,7 +34,7 @@ struct exchange_data_t<InputT, OutputT, ItemsPerThread, Alg, std::enable_if_t<st
   }
 };
 
-template <typename InputT, typename OutputT, int ItemsPerThread, cub::WarpExchangeAlgorithm Alg>
+template <class InputT, class OutputT, int ItemsPerThread, cub::WarpExchangeAlgorithm Alg>
 struct exchange_data_t<InputT, OutputT, ItemsPerThread, Alg, std::enable_if_t<!std::is_same_v<InputT, OutputT>>>
 {
   InputT input[ItemsPerThread];
@@ -52,8 +52,8 @@ template <int LOGICAL_WARP_THREADS,
           int ITEMS_PER_THREAD,
           int TOTAL_WARPS,
           cub::WarpExchangeAlgorithm Alg,
-          typename InputT,
-          typename OutputT>
+          class InputT,
+          class OutputT>
 __global__ void scatter_kernel(const InputT* input_data, OutputT* output_data)
 {
   using warp_exchange_t = cub::WarpExchange<InputT, ITEMS_PER_THREAD, LOGICAL_WARP_THREADS, Alg>;
@@ -98,8 +98,8 @@ template <int LOGICAL_WARP_THREADS,
           int ITEMS_PER_THREAD,
           int TOTAL_WARPS,
           cub::WarpExchangeAlgorithm Alg,
-          typename InputT,
-          typename OutputT>
+          class InputT,
+          class OutputT>
 void warp_scatter_strided(c2h::device_vector<InputT>& in, c2h::device_vector<OutputT>& out)
 {
   scatter_kernel<LOGICAL_WARP_THREADS, ITEMS_PER_THREAD, TOTAL_WARPS, Alg, InputT, OutputT>
@@ -113,9 +113,9 @@ template <int LOGICAL_WARP_THREADS,
           int ITEMS_PER_THREAD,
           int TOTAL_WARPS,
           cub::WarpExchangeAlgorithm Alg,
-          typename InputT,
-          typename OutputT,
-          typename ActionT>
+          class InputT,
+          class OutputT,
+          class ActionT>
 __global__ void kernel(const InputT* input_data, OutputT* output_data, ActionT action)
 {
   using warp_exchange_t = cub::WarpExchange<InputT, ITEMS_PER_THREAD, LOGICAL_WARP_THREADS, Alg>;
@@ -154,9 +154,9 @@ template <int LOGICAL_WARP_THREADS,
           int ITEMS_PER_THREAD,
           int TOTAL_WARPS,
           cub::WarpExchangeAlgorithm Alg,
-          typename InputT,
-          typename OutputT,
-          typename ActionT>
+          class InputT,
+          class OutputT,
+          class ActionT>
 void warp_exchange(c2h::device_vector<InputT>& in, c2h::device_vector<OutputT>& out, ActionT action)
 {
   kernel<LOGICAL_WARP_THREADS, ITEMS_PER_THREAD, TOTAL_WARPS, Alg, InputT, OutputT, ActionT>
@@ -168,8 +168,8 @@ void warp_exchange(c2h::device_vector<InputT>& in, c2h::device_vector<OutputT>& 
 
 struct blocked_to_striped
 {
-  template <typename InputT,
-            typename OutputT,
+  template <class InputT,
+            class OutputT,
             int LogicalWarpThreads,
             int ItemsPerThread,
             int ITEMS_PER_THREAD,
@@ -184,8 +184,8 @@ struct blocked_to_striped
 
 struct striped_to_blocked
 {
-  template <typename InputT,
-            typename OutputT,
+  template <class InputT,
+            class OutputT,
             int LogicalWarpThreads,
             int ItemsPerThread,
             int ITEMS_PER_THREAD,
@@ -198,7 +198,7 @@ struct striped_to_blocked
   }
 };
 
-template <typename T>
+template <class T>
 c2h::host_vector<T> compute_host_reference(const c2h::device_vector<T>& d_input, int tile_size)
 {
   c2h::host_vector<T> input = d_input;

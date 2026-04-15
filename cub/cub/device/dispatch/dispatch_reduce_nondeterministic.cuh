@@ -39,14 +39,14 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail::reduce
 {
-template <typename MaxPolicyT,
-          typename InputIteratorT,
-          typename OutputIteratorT,
-          typename OffsetT,
-          typename ReductionOpT,
-          typename InitT,
-          typename AccumT,
-          typename TransformOpT>
+template <class MaxPolicyT,
+          class InputIteratorT,
+          class OutputIteratorT,
+          class OffsetT,
+          class ReductionOpT,
+          class InitT,
+          class AccumT,
+          class TransformOpT>
 struct DeviceReduceNondeterministicKernelSource
 {
   CUB_DEFINE_KERNEL_GETTER(
@@ -81,17 +81,17 @@ CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE void* get_device_ptr(void* ptr)
 struct nondeterministic_no_override
 {};
 
-template <typename InputIteratorT, typename InitT, typename ReductionOpT, typename TransformOpT>
+template <class InputIteratorT, class InitT, class ReductionOpT, class TransformOpT>
 _CCCL_API auto select_nondeterministic_accum_t(nondeterministic_no_override*)
   -> ::cuda::std::__accumulator_t<ReductionOpT,
                                   ::cuda::std::invoke_result_t<TransformOpT, ::cuda::std::iter_value_t<InputIteratorT>>,
                                   InitT>;
 
-template <typename InputIteratorT,
-          typename InitT,
-          typename ReductionOpT,
-          typename TransformOpT,
-          typename OverrideAccumT,
+template <class InputIteratorT,
+          class InitT,
+          class ReductionOpT,
+          class TransformOpT,
+          class OverrideAccumT,
           ::cuda::std::enable_if_t<!::cuda::std::is_same_v<OverrideAccumT, nondeterministic_no_override>, int> = 0>
 _CCCL_API auto select_nondeterministic_accum_t(OverrideAccumT*) -> OverrideAccumT;
 
@@ -139,17 +139,17 @@ _CCCL_API auto select_nondeterministic_accum_t(OverrideAccumT*) -> OverrideAccum
 //!
 //! @param[in] stream
 //!   CUDA stream to launch kernels within. Default is stream<sub>0</sub>.
-template <typename OverrideAccumT = nondeterministic_no_override,
-          typename InputIteratorT,
-          typename OutputIteratorT,
-          typename OffsetT,
-          typename ReductionOpT,
-          typename InitT        = non_void_value_t<OutputIteratorT, it_value_t<InputIteratorT>>,
-          typename TransformOpT = ::cuda::std::identity,
-          typename AccumT = decltype(select_nondeterministic_accum_t<InputIteratorT, InitT, ReductionOpT, TransformOpT>(
+template <class OverrideAccumT = nondeterministic_no_override,
+          class InputIteratorT,
+          class OutputIteratorT,
+          class OffsetT,
+          class ReductionOpT,
+          class InitT        = non_void_value_t<OutputIteratorT, it_value_t<InputIteratorT>>,
+          class TransformOpT = ::cuda::std::identity,
+          class AccumT = decltype(select_nondeterministic_accum_t<InputIteratorT, InitT, ReductionOpT, TransformOpT>(
             static_cast<OverrideAccumT*>(nullptr))),
-          typename PolicySelector = policy_selector_from_types<AccumT, OffsetT, ReductionOpT>,
-          typename KernelSource   = DeviceReduceNondeterministicKernelSource<
+          class PolicySelector = policy_selector_from_types<AccumT, OffsetT, ReductionOpT>,
+          class KernelSource   = DeviceReduceNondeterministicKernelSource<
               PolicySelector,
               InputIteratorT,
               OutputIteratorT,
@@ -158,7 +158,7 @@ template <typename OverrideAccumT = nondeterministic_no_override,
               InitT,
               AccumT,
               TransformOpT>,
-          typename KernelLauncherFactory = TripleChevronFactory>
+          class KernelLauncherFactory = TripleChevronFactory>
 #if _CCCL_HAS_CONCEPTS()
   requires reduce_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()

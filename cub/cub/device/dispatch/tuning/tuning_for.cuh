@@ -49,7 +49,7 @@ struct for_policy
 };
 
 #if _CCCL_HAS_CONCEPTS()
-template <typename T>
+template <class T>
 concept for_policy_selector = policy_selector<T, for_policy>;
 #endif // _CCCL_HAS_CONCEPTS()
 

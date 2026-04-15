@@ -31,7 +31,7 @@ CUB_NAMESPACE_BEGIN
 namespace detail::reduce
 {
 // @brief Functor to generate a key-value pair from an index and value
-template <typename Iterator, typename OutputValueT>
+template <class Iterator, class OutputValueT>
 struct generate_idx_value
 {
 private:
@@ -50,13 +50,13 @@ public:
   }
 };
 
-template <typename MaxPolicyT,
-          typename InputIteratorT,
-          typename OutputIteratorT,
-          typename OffsetT,
-          typename ReductionOpT,
-          typename InitT,
-          typename AccumT>
+template <class MaxPolicyT,
+          class InputIteratorT,
+          class OutputIteratorT,
+          class OffsetT,
+          class ReductionOpT,
+          class InitT,
+          class AccumT>
 struct DeviceFixedSizeSegmentedReduceKernelSource
 {
   CUB_DEFINE_KERNEL_GETTER(
@@ -75,14 +75,14 @@ struct DeviceFixedSizeSegmentedReduceKernelSource
   }
 };
 
-template <typename InputIteratorT,
-          typename OutputIteratorT,
-          typename OffsetT,
-          typename ReductionOpT,
-          typename InitT,
-          typename AccumT       = ::cuda::std::__accumulator_t<ReductionOpT, it_value_t<InputIteratorT>, InitT>,
-          typename PolicyHub    = segmented_reduce::policy_hub<AccumT, OffsetT, ReductionOpT>,
-          typename KernelSource = DeviceFixedSizeSegmentedReduceKernelSource<
+template <class InputIteratorT,
+          class OutputIteratorT,
+          class OffsetT,
+          class ReductionOpT,
+          class InitT,
+          class AccumT       = ::cuda::std::__accumulator_t<ReductionOpT, it_value_t<InputIteratorT>, InitT>,
+          class PolicyHub    = segmented_reduce::policy_hub<AccumT, OffsetT, ReductionOpT>,
+          class KernelSource = DeviceFixedSizeSegmentedReduceKernelSource<
             typename PolicyHub::MaxPolicy,
             InputIteratorT,
             OutputIteratorT,
@@ -90,7 +90,7 @@ template <typename InputIteratorT,
             ReductionOpT,
             InitT,
             AccumT>,
-          typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+          class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
 struct DispatchFixedSizeSegmentedReduce
 {
   //---------------------------------------------------------------------------
@@ -181,7 +181,7 @@ struct DispatchFixedSizeSegmentedReduce
    *   Kernel function pointer to parameterization of
    *   cub::DeviceFixedSizeSegmentedReduceKernel
    */
-  template <typename ActivePolicyT, typename DeviceFixedSizeSegmentedReduceKernelT>
+  template <class ActivePolicyT, class DeviceFixedSizeSegmentedReduceKernelT>
   CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE cudaError_t
   InvokePasses(DeviceFixedSizeSegmentedReduceKernelT fixed_size_segmented_reduce_kernel)
   {
@@ -255,9 +255,9 @@ struct DispatchFixedSizeSegmentedReduce
     return cudaSuccess;
   }
 
-  template <typename ActivePolicyT,
-            typename DeviceFixedSizeSegmentedReduceKernelPartialT,
-            typename DeviceFixedSizeSegmentedReduceKernelFinalT>
+  template <class ActivePolicyT,
+            class DeviceFixedSizeSegmentedReduceKernelPartialT,
+            class DeviceFixedSizeSegmentedReduceKernelFinalT>
   CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE cudaError_t
   InvokeTwoPhase(DeviceFixedSizeSegmentedReduceKernelPartialT fixed_size_segmented_reduce_kernel_partial,
                  DeviceFixedSizeSegmentedReduceKernelFinalT fixed_size_segmented_reduce_kernel_final)
@@ -392,7 +392,7 @@ struct DispatchFixedSizeSegmentedReduce
   }
 
   /// Invocation
-  template <typename ActivePolicyT>
+  template <class ActivePolicyT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t Invoke()
   {
     constexpr auto tile_size =
@@ -446,7 +446,7 @@ struct DispatchFixedSizeSegmentedReduce
    *   **[optional]** CUDA stream to launch kernels within.
    *   Default is stream<sub>0</sub>.
    */
-  template <typename MaxPolicyT = typename PolicyHub::MaxPolicy>
+  template <class MaxPolicyT = typename PolicyHub::MaxPolicy>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t Dispatch(
     void* d_temp_storage,
     size_t& temp_storage_bytes,

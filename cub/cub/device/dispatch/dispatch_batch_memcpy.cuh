@@ -56,7 +56,7 @@ using per_invocation_buffer_offset_t = ::cuda::std::uint32_t;
 /**
  * Initialization kernel for tile status initialization (multi-block)
  */
-template <typename BufferOffsetScanTileStateT, typename BlockOffsetScanTileStateT, typename TileOffsetT>
+template <class BufferOffsetScanTileStateT, class BlockOffsetScanTileStateT, class TileOffsetT>
 _CCCL_KERNEL_ATTRIBUTES void InitTileStateKernel(
   BufferOffsetScanTileStateT buffer_offset_scan_tile_state,
   BlockOffsetScanTileStateT block_offset_scan_tile_state,
@@ -71,14 +71,14 @@ _CCCL_KERNEL_ATTRIBUTES void InitTileStateKernel(
  * Kernel that copies buffers that need to be copied by at least one (and potentially many) thread
  * blocks.
  */
-template <typename PolicySelector,
-          typename BufferOffsetT,
-          typename InputBufferIt,
-          typename OutputBufferIt,
-          typename BufferSizeIteratorT,
-          typename BufferTileOffsetItT,
-          typename TileT,
-          typename TileOffsetT,
+template <class PolicySelector,
+          class BufferOffsetT,
+          class InputBufferIt,
+          class OutputBufferIt,
+          class BufferSizeIteratorT,
+          class BufferTileOffsetItT,
+          class TileT,
+          class TileOffsetT,
           CopyAlg MemcpyOpt>
 #if _CCCL_HAS_CONCEPTS()
   requires batch_memcpy_policy_selector<PolicySelector>
@@ -197,18 +197,18 @@ __launch_bounds__(int(PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).large
  * @param blev_block_scan_state [in,out] Tile states for the prefix sum over the number of thread
  * blocks getting assigned to each buffer that requires block-level collaboration
  */
-template <typename PolicySelector,
-          typename InputBufferIt,
-          typename OutputBufferIt,
-          typename BufferSizeIteratorT,
-          typename BufferOffsetT,
-          typename BlevBufferSrcsOutItT,
-          typename BlevBufferDstsOutItT,
-          typename BlevBufferSizesOutItT,
-          typename BlevBufferTileOffsetsOutItT,
-          typename BlockOffsetT,
-          typename BLevBufferOffsetTileState,
-          typename BLevBlockOffsetTileState,
+template <class PolicySelector,
+          class InputBufferIt,
+          class OutputBufferIt,
+          class BufferSizeIteratorT,
+          class BufferOffsetT,
+          class BlevBufferSrcsOutItT,
+          class BlevBufferDstsOutItT,
+          class BlevBufferSizesOutItT,
+          class BlevBufferTileOffsetsOutItT,
+          class BlockOffsetT,
+          class BLevBufferOffsetTileState,
+          class BLevBlockOffsetTileState,
           CopyAlg MemcpyOpt>
 #if _CCCL_HAS_CONCEPTS()
   requires batch_memcpy_policy_selector<PolicySelector>
@@ -289,11 +289,11 @@ __launch_bounds__(int(PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).small
 //! @tparam BufferSizeIteratorT **[inferred]** Random-access input iterator type providing the number of bytes to be
 //! copied for each pair of buffers
 template <CopyAlg MemcpyOpt = CopyAlg::Memcpy,
-          typename BlockOffsetT,
-          typename InputBufferIt,
-          typename OutputBufferIt,
-          typename BufferSizeIteratorT,
-          typename PolicySelectorT = policy_selector>
+          class BlockOffsetT,
+          class InputBufferIt,
+          class OutputBufferIt,
+          class BufferSizeIteratorT,
+          class PolicySelectorT = policy_selector>
 #if _CCCL_HAS_CONCEPTS()
   requires batch_memcpy_policy_selector<PolicySelectorT>
 #endif // _CCCL_HAS_CONCEPTS()

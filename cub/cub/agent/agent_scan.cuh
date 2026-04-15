@@ -72,13 +72,13 @@ CUB_NAMESPACE_BEGIN
  */
 template <int NominalBlockThreads4B,
           int NominalItemsPerThread4B,
-          typename ComputeT,
+          class ComputeT,
           BlockLoadAlgorithm LoadAlgorithm,
           CacheLoadModifier LoadModifier,
           BlockStoreAlgorithm StoreAlgorithm,
           BlockScanAlgorithm ScanAlgorithm,
-          typename ScalingType = detail::MemBoundScaling<NominalBlockThreads4B, NominalItemsPerThread4B, ComputeT>,
-          typename DelayConstructorT = detail::default_delay_constructor_t<ComputeT>>
+          class ScalingType       = detail::MemBoundScaling<NominalBlockThreads4B, NominalItemsPerThread4B, ComputeT>,
+          class DelayConstructorT = detail::default_delay_constructor_t<ComputeT>>
 struct AgentScanPolicy : ScalingType
 {
   static constexpr BlockLoadAlgorithm LOAD_ALGORITHM   = LoadAlgorithm;
@@ -143,13 +143,13 @@ namespace detail::scan
  * @tparam AccumT
  *   The type of intermediate accumulator (according to P2322R6)
  */
-template <typename AgentScanPolicyT,
-          typename InputIteratorT,
-          typename OutputIteratorT,
-          typename ScanOpT,
-          typename InitValueT,
-          typename OffsetT,
-          typename AccumT,
+template <class AgentScanPolicyT,
+          class InputIteratorT,
+          class OutputIteratorT,
+          class ScanOpT,
+          class InitValueT,
+          class OffsetT,
+          class AccumT,
           bool ForceInclusive = false,
           bool UsePDL         = false>
 struct AgentScan
@@ -267,7 +267,7 @@ struct AgentScan
     }
   }
 
-  template <typename PrefixCallback, bool Inclusive = IS_INCLUSIVE>
+  template <class PrefixCallback, bool Inclusive = IS_INCLUSIVE>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   ScanSubsequentTile(AccumT (&items)[ITEMS_PER_THREAD], ScanOpT scan_op, PrefixCallback& prefix_op)
   {

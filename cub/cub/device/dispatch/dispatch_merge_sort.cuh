@@ -35,13 +35,13 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail::merge_sort
 {
-template <typename PolicySelectorT,
-          typename KeyInputIteratorT,
-          typename ValueInputIteratorT,
-          typename KeyIteratorT,
-          typename ValueIteratorT,
-          typename OffsetT,
-          typename CompareOpT>
+template <class PolicySelectorT,
+          class KeyInputIteratorT,
+          class ValueInputIteratorT,
+          class KeyIteratorT,
+          class ValueIteratorT,
+          class OffsetT,
+          class CompareOpT>
 struct DeviceMergeSortKernelSource
 {
 #if _CCCL_HAS_CONCEPTS()
@@ -96,14 +96,14 @@ struct DeviceMergeSortKernelSource
  ******************************************************************************/
 
 // TODO(bgruber): deprecate this when we make the tuning API public and remove in CCCL 4.0
-template <typename KeyInputIteratorT,
-          typename ValueInputIteratorT,
-          typename KeyIteratorT,
-          typename ValueIteratorT,
-          typename OffsetT,
-          typename CompareOpT,
-          typename PolicyHub    = detail::merge_sort::policy_hub<KeyIteratorT>,
-          typename KernelSource = detail::merge_sort::DeviceMergeSortKernelSource<
+template <class KeyInputIteratorT,
+          class ValueInputIteratorT,
+          class KeyIteratorT,
+          class ValueIteratorT,
+          class OffsetT,
+          class CompareOpT,
+          class PolicyHub    = detail::merge_sort::policy_hub<KeyIteratorT>,
+          class KernelSource = detail::merge_sort::DeviceMergeSortKernelSource<
             detail::merge_sort::policy_selector_from_hub<PolicyHub>,
             KeyInputIteratorT,
             ValueInputIteratorT,
@@ -111,9 +111,9 @@ template <typename KeyInputIteratorT,
             ValueIteratorT,
             OffsetT,
             CompareOpT>,
-          typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY,
-          typename KeyT                  = cub::detail::it_value_t<KeyIteratorT>,
-          typename ValueT                = cub::detail::it_value_t<ValueIteratorT>>
+          class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY,
+          class KeyT                  = cub::detail::it_value_t<KeyIteratorT>,
+          class ValueT                = cub::detail::it_value_t<ValueIteratorT>>
 struct DispatchMergeSort
 {
   /// Whether or not there are values to be trucked along with keys
@@ -185,7 +185,7 @@ struct DispatchMergeSort
   {}
 
 private:
-  template <typename ActivePolicyT>
+  template <class ActivePolicyT>
   struct policy_getter
   {
     _CCCL_API constexpr auto operator()() -> detail::merge_sort::merge_sort_policy
@@ -197,7 +197,7 @@ private:
 
 public:
   // Invocation
-  template <typename ActivePolicyT>
+  template <class ActivePolicyT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t Invoke([[maybe_unused]] ActivePolicyT policy = {})
   {
     if (num_items == 0)
@@ -391,7 +391,7 @@ public:
     return cudaSuccess;
   }
 
-  template <typename MaxPolicyT = typename PolicyHub::MaxPolicy>
+  template <class MaxPolicyT = typename PolicyHub::MaxPolicy>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t Dispatch(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -440,23 +440,23 @@ public:
 
 namespace detail::merge_sort
 {
-template <typename KeyInputIteratorT,
-          typename ValueInputIteratorT,
-          typename KeyIteratorT,
-          typename ValueIteratorT,
-          typename OffsetT,
-          typename CompareOpT,
-          typename PolicySelector        = policy_selector_from_types<KeyIteratorT>,
-          typename KernelSource          = DeviceMergeSortKernelSource<PolicySelector,
-                                                                       KeyInputIteratorT,
-                                                                       ValueInputIteratorT,
-                                                                       KeyIteratorT,
-                                                                       ValueIteratorT,
-                                                                       OffsetT,
-                                                                       CompareOpT>,
-          typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY,
-          typename KeyT                  = it_value_t<KeyIteratorT>,
-          typename ValueT                = it_value_t<ValueIteratorT>>
+template <class KeyInputIteratorT,
+          class ValueInputIteratorT,
+          class KeyIteratorT,
+          class ValueIteratorT,
+          class OffsetT,
+          class CompareOpT,
+          class PolicySelector        = policy_selector_from_types<KeyIteratorT>,
+          class KernelSource          = DeviceMergeSortKernelSource<PolicySelector,
+                                                                    KeyInputIteratorT,
+                                                                    ValueInputIteratorT,
+                                                                    KeyIteratorT,
+                                                                    ValueIteratorT,
+                                                                    OffsetT,
+                                                                    CompareOpT>,
+          class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY,
+          class KeyT                  = it_value_t<KeyIteratorT>,
+          class ValueT                = it_value_t<ValueIteratorT>>
 #if _CCCL_HAS_CONCEPTS()
   requires merge_sort_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()

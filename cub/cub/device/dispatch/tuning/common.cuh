@@ -47,7 +47,7 @@ enum class type_t
   other
 };
 
-template <typename T>
+template <class T>
 inline constexpr auto classify_type = type_t::other;
 
 template <>
@@ -100,16 +100,16 @@ enum class op_kind_t
   other
 };
 
-template <typename T>
+template <class T>
 inline constexpr auto classify_op = op_kind_t::other;
 
-template <typename T>
+template <class T>
 inline constexpr auto classify_op<::cuda::std::plus<T>> = op_kind_t::plus;
 
-template <typename T>
+template <class T>
 inline constexpr auto classify_op<::cuda::minimum<T>> = op_kind_t::min;
 
-template <typename T>
+template <class T>
 inline constexpr auto classify_op<::cuda::maximum<T>> = op_kind_t::max;
 
 struct iterator_info
@@ -120,7 +120,7 @@ struct iterator_info
   bool is_contiguous;
 };
 
-template <typename It>
+template <class It>
 [[nodiscard]] _CCCL_API constexpr auto make_iterator_info() -> iterator_info
 {
   using vt = it_value_t<It>;

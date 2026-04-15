@@ -91,7 +91,7 @@ namespace detail
  *    First appears in CUDA Toolkit 12.3.
  * @endrst
  */
-template <typename T, typename OffsetT = ptrdiff_t>
+template <class T, class OffsetT = ptrdiff_t>
 class TexObjInputIterator
 {
 public:
@@ -150,7 +150,7 @@ public:
    * @param tex_offset
    *   OffsetT (in items) from @p ptr denoting the position of the iterator
    */
-  template <typename QualifiedT>
+  template <class QualifiedT>
   cudaError_t BindTexture(QualifiedT* ptr, size_t bytes, size_t tex_offset = 0)
   {
     this->ptr        = const_cast<::cuda::std::remove_cv_t<QualifiedT>*>(ptr);
@@ -198,7 +198,7 @@ public:
   }
 
   /// Addition
-  template <typename Distance>
+  template <class Distance>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE self_type operator+(Distance n) const
   {
     self_type retval;
@@ -209,7 +209,7 @@ public:
   }
 
   /// Addition assignment
-  template <typename Distance>
+  template <class Distance>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE self_type& operator+=(Distance n)
   {
     tex_offset += n;
@@ -217,7 +217,7 @@ public:
   }
 
   /// Subtraction
-  template <typename Distance>
+  template <class Distance>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE self_type operator-(Distance n) const
   {
     self_type retval;
@@ -228,7 +228,7 @@ public:
   }
 
   /// Subtraction assignment
-  template <typename Distance>
+  template <class Distance>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE self_type& operator-=(Distance n)
   {
     tex_offset -= n;
@@ -242,7 +242,7 @@ public:
   }
 
   /// Array subscript
-  template <typename Distance>
+  template <class Distance>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE reference operator[](Distance n) const
   {
     self_type offset = (*this) + n;
@@ -300,7 +300,7 @@ private:
 };
 } // namespace detail
 
-template <typename T, typename OffsetT = ptrdiff_t>
+template <class T, class OffsetT = ptrdiff_t>
 using TexObjInputIterator CCCL_DEPRECATED = detail::TexObjInputIterator<T, OffsetT>;
 
 CUB_NAMESPACE_END

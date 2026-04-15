@@ -124,7 +124,7 @@ struct batch_memcpy_policy
 };
 
 #if _CCCL_HAS_CONCEPTS()
-template <typename T>
+template <class T>
 concept batch_memcpy_policy_selector = policy_selector<T, batch_memcpy_policy>;
 #endif // _CCCL_HAS_CONCEPTS()
 

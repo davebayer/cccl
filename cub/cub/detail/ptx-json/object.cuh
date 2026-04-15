@@ -10,7 +10,7 @@
 
 namespace ptx_json
 {
-template <auto K, typename V>
+template <auto K, class V>
 struct keyed_value
 {
   __device__ consteval static auto emit()
@@ -19,15 +19,15 @@ struct keyed_value
   }
 };
 
-template <typename T>
+template <class T>
 struct is_keyed_value : cuda::std::false_type
 {};
 
-template <auto K, typename V>
+template <auto K, class V>
 struct is_keyed_value<keyed_value<K, V>> : cuda::std::true_type
 {};
 
-template <typename T>
+template <class T>
 concept a_keyed_value = is_keyed_value<T>::value;
 
 template <auto... KV>
@@ -51,7 +51,7 @@ struct object<First, KVs...>
   }
 };
 
-template <typename T>
+template <class T>
 struct is_object : cuda::std::false_type
 {};
 
@@ -62,7 +62,7 @@ struct is_object<object<KV...>> : cuda::std::true_type
 template <string V>
 struct key
 {
-  template <typename U>
+  template <class U>
   __device__ consteval keyed_value<V, U> operator=(U u)
   {
     return {};

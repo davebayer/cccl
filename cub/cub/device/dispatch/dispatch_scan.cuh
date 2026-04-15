@@ -61,13 +61,13 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail::scan
 {
-template <typename PolicySelector,
-          typename UnwrappedInputIteratorT,
-          typename UnwrappedOutputIteratorT,
-          typename ScanOpT,
-          typename InitValueT,
-          typename OffsetT,
-          typename AccumT,
+template <class PolicySelector,
+          class UnwrappedInputIteratorT,
+          class UnwrappedOutputIteratorT,
+          class ScanOpT,
+          class InitValueT,
+          class OffsetT,
+          class AccumT,
           ForceInclusive EnforceInclusive>
 struct DeviceScanKernelSource
 {
@@ -150,7 +150,7 @@ struct DeviceScanKernelSource
 };
 
 // TODO(griwes): remove in CCCL 4.0 when we drop the scan dispatcher after publishing the tuning API
-template <typename LegacyActivePolicy>
+template <class LegacyActivePolicy>
 _CCCL_API constexpr auto convert_policy() -> scan_policy
 {
   // this does not convert any warpspeed policy data, which is fine because we merged warpspeed scan during the CCCL 3.4
@@ -171,7 +171,7 @@ _CCCL_API constexpr auto convert_policy() -> scan_policy
 }
 
 // TODO(griwes): remove in CCCL 4.0 when we drop the scan dispatcher after publishing the tuning API
-template <typename PolicyHub>
+template <class PolicyHub>
 struct policy_selector_from_hub
 {
 private:
@@ -179,7 +179,7 @@ private:
   {
     scan_policy& policy;
 
-    template <typename ActivePolicyT>
+    template <class ActivePolicyT>
     _CCCL_API constexpr cudaError_t Invoke()
     {
       policy = convert_policy<ActivePolicyT>();
@@ -234,20 +234,20 @@ public:
  */
 // TODO(griwes): deprecate when we make the tuning API public and remove in CCCL 4.0
 template <
-  typename InputIteratorT,
-  typename OutputIteratorT,
-  typename ScanOpT,
-  typename InitValueT,
-  typename OffsetT,
-  typename AccumT                 = ::cuda::std::__accumulator_t<ScanOpT,
+  class InputIteratorT,
+  class OutputIteratorT,
+  class ScanOpT,
+  class InitValueT,
+  class OffsetT,
+  class AccumT                    = ::cuda::std::__accumulator_t<ScanOpT,
                                                                  cub::detail::it_value_t<InputIteratorT>,
                                                                  ::cuda::std::_If<::cuda::std::is_same_v<InitValueT, NullType>,
                                                                                   cub::detail::it_value_t<InputIteratorT>,
                                                                                   typename InitValueT::value_type>>,
   ForceInclusive EnforceInclusive = ForceInclusive::No,
-  typename PolicyHub              = detail::scan::
+  class PolicyHub                 = detail::scan::
     policy_hub<detail::it_value_t<InputIteratorT>, detail::it_value_t<OutputIteratorT>, AccumT, OffsetT, ScanOpT>,
-  typename KernelSource = detail::scan::DeviceScanKernelSource<
+  class KernelSource = detail::scan::DeviceScanKernelSource<
     detail::scan::policy_selector_from_hub<PolicyHub>,
     THRUST_NS_QUALIFIER::try_unwrap_contiguous_iterator_t<InputIteratorT>,
     THRUST_NS_QUALIFIER::try_unwrap_contiguous_iterator_t<OutputIteratorT>,
@@ -256,7 +256,7 @@ template <
     OffsetT,
     AccumT,
     EnforceInclusive>,
-  typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+  class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
 struct DispatchScan
 {
   static_assert(::cuda::std::is_unsigned_v<OffsetT> && sizeof(OffsetT) >= 4,
@@ -361,7 +361,7 @@ struct DispatchScan
       , launcher_factory(launcher_factory)
   {}
 
-  template <typename ActivePolicyT, typename InitKernelT, typename ScanKernelT>
+  template <class ActivePolicyT, class InitKernelT, class ScanKernelT>
   CUB_RUNTIME_FUNCTION _CCCL_HOST _CCCL_FORCEINLINE cudaError_t
   Invoke(InitKernelT init_kernel, ScanKernelT scan_kernel, ActivePolicyT policy = {})
   {
@@ -501,7 +501,7 @@ struct DispatchScan
                   "Single-stage warpspeed scan exceeds architecture independent SMEM (48KiB)");
   }
 
-  template <typename PolicyGetter>
+  template <class PolicyGetter>
   CUB_RUNTIME_FUNCTION _CCCL_HOST _CCCL_FORCEINLINE cudaError_t __invoke_lookahead_algorithm(PolicyGetter policy_getter)
   {
 #if __cccl_ptx_isa >= 860
@@ -673,7 +673,7 @@ struct DispatchScan
     return cudaSuccess;
   }
 
-  template <typename PolicyGetter>
+  template <class PolicyGetter>
   CUB_RUNTIME_FUNCTION _CCCL_HOST _CCCL_FORCEINLINE cudaError_t __invoke_lookback_algorithm(PolicyGetter policy_getter)
   {
     CUB_DETAIL_CONSTEXPR_ISH const detail::scan::scan_lookback_policy active_policy = policy_getter().lookback;
@@ -806,7 +806,7 @@ struct DispatchScan
     return cudaSuccess;
   }
 
-  template <typename PolicyGetter>
+  template <class PolicyGetter>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t __invoke(PolicyGetter policy_getter)
   {
     if CUB_DETAIL_CONSTEXPR_ISH (policy_getter().algorithm == detail::scan::scan_algorithm::warpspeed)
@@ -819,7 +819,7 @@ struct DispatchScan
     }
   }
 
-  template <typename ActivePolicyT>
+  template <class ActivePolicyT>
   CUB_RUNTIME_FUNCTION _CCCL_HOST _CCCL_FORCEINLINE cudaError_t Invoke(ActivePolicyT = {})
   {
     struct policy_getter
@@ -874,7 +874,7 @@ struct DispatchScan
    *   Struct encoding chain of algorithm tuning policies
    */
   // TODO(griwes): deprecate when we make the tuning API public and remove in CCCL 4.0
-  template <typename MaxPolicyT = typename PolicyHub::MaxPolicy>
+  template <class MaxPolicyT = typename PolicyHub::MaxPolicy>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t Dispatch(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -916,29 +916,28 @@ struct DispatchScan
 
 namespace detail::scan
 {
-template <
-  ForceInclusive EnforceInclusive = ForceInclusive::No,
-  typename InputIteratorT,
-  typename OutputIteratorT,
-  typename ScanOpT,
-  typename InitValueT,
-  typename OffsetT,
-  typename AccumT         = ::cuda::std::__accumulator_t<ScanOpT,
-                                                         cub::detail::it_value_t<InputIteratorT>,
-                                                         ::cuda::std::_If<::cuda::std::is_same_v<InitValueT, NullType>,
-                                                                          cub::detail::it_value_t<InputIteratorT>,
-                                                                          typename InitValueT::value_type>>,
-  typename PolicySelector = policy_selector_from_types<InputIteratorT, OutputIteratorT, AccumT, OffsetT, ScanOpT>,
-  typename KernelSource   = DeviceScanKernelSource<
-      PolicySelector,
-      THRUST_NS_QUALIFIER::try_unwrap_contiguous_iterator_t<InputIteratorT>,
-      THRUST_NS_QUALIFIER::try_unwrap_contiguous_iterator_t<OutputIteratorT>,
-      ScanOpT,
-      InitValueT,
-      OffsetT,
-      AccumT,
-      EnforceInclusive>,
-  typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+template <ForceInclusive EnforceInclusive = ForceInclusive::No,
+          class InputIteratorT,
+          class OutputIteratorT,
+          class ScanOpT,
+          class InitValueT,
+          class OffsetT,
+          class AccumT         = ::cuda::std::__accumulator_t<ScanOpT,
+                                                              cub::detail::it_value_t<InputIteratorT>,
+                                                              ::cuda::std::_If<::cuda::std::is_same_v<InitValueT, NullType>,
+                                                                               cub::detail::it_value_t<InputIteratorT>,
+                                                                               typename InitValueT::value_type>>,
+          class PolicySelector = policy_selector_from_types<InputIteratorT, OutputIteratorT, AccumT, OffsetT, ScanOpT>,
+          class KernelSource   = DeviceScanKernelSource<
+              PolicySelector,
+              THRUST_NS_QUALIFIER::try_unwrap_contiguous_iterator_t<InputIteratorT>,
+              THRUST_NS_QUALIFIER::try_unwrap_contiguous_iterator_t<OutputIteratorT>,
+              ScanOpT,
+              InitValueT,
+              OffsetT,
+              AccumT,
+              EnforceInclusive>,
+          class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
 #if _CCCL_HAS_CONCEPTS()
   requires scan_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()
@@ -1001,25 +1000,24 @@ CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE auto dispatch(
   });
 }
 
-template <
-  typename AccumT,
-  ForceInclusive EnforceInclusive = ForceInclusive::No,
-  typename InputIteratorT,
-  typename OutputIteratorT,
-  typename ScanOpT,
-  typename InitValueT,
-  typename OffsetT,
-  typename PolicySelector = policy_selector_from_types<InputIteratorT, OutputIteratorT, AccumT, OffsetT, ScanOpT>,
-  typename KernelSource   = DeviceScanKernelSource<
-      PolicySelector,
-      THRUST_NS_QUALIFIER::try_unwrap_contiguous_iterator_t<InputIteratorT>,
-      THRUST_NS_QUALIFIER::try_unwrap_contiguous_iterator_t<OutputIteratorT>,
-      ScanOpT,
-      InitValueT,
-      OffsetT,
-      AccumT,
-      EnforceInclusive>,
-  typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+template <class AccumT,
+          ForceInclusive EnforceInclusive = ForceInclusive::No,
+          class InputIteratorT,
+          class OutputIteratorT,
+          class ScanOpT,
+          class InitValueT,
+          class OffsetT,
+          class PolicySelector = policy_selector_from_types<InputIteratorT, OutputIteratorT, AccumT, OffsetT, ScanOpT>,
+          class KernelSource   = DeviceScanKernelSource<
+              PolicySelector,
+              THRUST_NS_QUALIFIER::try_unwrap_contiguous_iterator_t<InputIteratorT>,
+              THRUST_NS_QUALIFIER::try_unwrap_contiguous_iterator_t<OutputIteratorT>,
+              ScanOpT,
+              InitValueT,
+              OffsetT,
+              AccumT,
+              EnforceInclusive>,
+          class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
 CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE auto dispatch_with_accum(
   void* d_temp_storage,
   size_t& temp_storage_bytes,

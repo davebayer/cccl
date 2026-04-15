@@ -28,7 +28,7 @@ _CCCL_DIAG_PUSH
 _CCCL_DIAG_SUPPRESS_MSVC(4702) // unreachable code (even if there are no branches!)
 
 // Compute the submdspan size of a given rank
-template <typename IndexType, size_t... Extents>
+template <class IndexType, size_t... Extents>
 [[nodiscard]] _CCCL_API constexpr ::cuda::std::make_unsigned_t<IndexType>
 size_range(const ::cuda::std::extents<IndexType, Extents...>& ext, int start, int end)
 {
@@ -43,14 +43,14 @@ size_range(const ::cuda::std::extents<IndexType, Extents...>& ext, int start, in
 
 _CCCL_DIAG_POP // MSVC(4702)
 
-  template <typename IndexType, size_t... Extents>
+  template <class IndexType, size_t... Extents>
   [[nodiscard]] _CCCL_API constexpr ::cuda::std::make_unsigned_t<IndexType>
   size(const ::cuda::std::extents<IndexType, Extents...>& ext)
 {
   return cub::detail::size_range(ext, 0, static_cast<int>(ext.rank()));
 }
 
-template <bool IsLayoutRight, int Position, typename IndexType, size_t... E>
+template <bool IsLayoutRight, int Position, class IndexType, size_t... E>
 [[nodiscard]] _CCCL_API auto sub_size_fast_div_mod_impl(const ::cuda::std::extents<IndexType, E...>& ext)
 {
   using fast_mod_div_t = fast_div_mod<IndexType>;
@@ -60,7 +60,7 @@ template <bool IsLayoutRight, int Position, typename IndexType, size_t... E>
 }
 
 // precompute modulo/division for each submdspan size (by rank)
-template <bool IsLayoutRight, typename IndexType, size_t... E, size_t... Positions>
+template <bool IsLayoutRight, class IndexType, size_t... E, size_t... Positions>
 [[nodiscard]] _CCCL_API auto
 sub_sizes_fast_div_mod(const ::cuda::std::extents<IndexType, E...>& ext, ::cuda::std::index_sequence<Positions...> = {})
 {
@@ -70,7 +70,7 @@ sub_sizes_fast_div_mod(const ::cuda::std::extents<IndexType, E...>& ext, ::cuda:
 }
 
 // precompute modulo/division for each mdspan extent
-template <typename IndexType, size_t... E, size_t... Positions>
+template <class IndexType, size_t... E, size_t... Positions>
 [[nodiscard]] _CCCL_API auto
 extents_fast_div_mod(const ::cuda::std::extents<IndexType, E...>& ext, ::cuda::std::index_sequence<Positions...> = {})
 {
@@ -80,7 +80,7 @@ extents_fast_div_mod(const ::cuda::std::extents<IndexType, E...>& ext, ::cuda::s
 }
 
 // GCC <= 9 constexpr workaround: Extent must be passed as type only, even const Extent& doesn't work
-template <typename Extents>
+template <class Extents>
 [[nodiscard]] _CCCL_API constexpr bool are_extents_in_range_static(int start, int end)
 {
   for (auto i = start; i < end; i++)
@@ -93,7 +93,7 @@ template <typename Extents>
   return true;
 }
 
-template <typename MappingTypeLhs, typename MappingTypeRhs>
+template <class MappingTypeLhs, class MappingTypeRhs>
 [[nodiscard]] _CCCL_API bool have_same_strides(const MappingTypeLhs& mapping_lhs, const MappingTypeRhs& mapping_rhs)
 {
   auto extents_lhs = mapping_lhs.extents();

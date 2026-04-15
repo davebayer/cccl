@@ -58,23 +58,23 @@ static constexpr int max_privatized_smem_bins = 256;
 
 template <int NUM_CHANNELS,
           int NUM_ACTIVE_CHANNELS,
-          typename SampleIteratorT,
-          typename CounterT,
-          typename LevelT,
-          typename OffsetT,
-          typename SampleT>
+          class SampleIteratorT,
+          class CounterT,
+          class LevelT,
+          class OffsetT,
+          class SampleT>
 struct DeviceHistogramKernelSource
 {
   using TransformsT = detail::histogram::Transforms<LevelT, OffsetT, SampleT>;
 
-  template <typename PolicyT>
+  template <class PolicyT>
   _CCCL_HIDE_FROM_ABI CUB_RUNTIME_FUNCTION static constexpr auto HistogramInitKernel()
   {
     return &DeviceHistogramInitKernel<PolicyT, NUM_ACTIVE_CHANNELS, CounterT, OffsetT>;
   }
 
   /// Returns the default histogram sweep kernel that receives pre-initialized decode operators from the host.
-  template <typename PolicyT, int PRIVATIZED_SMEM_BINS, typename PrivatizedDecodeOpT, typename OutputDecodeOpT>
+  template <class PolicyT, int PRIVATIZED_SMEM_BINS, class PrivatizedDecodeOpT, class OutputDecodeOpT>
   _CCCL_HIDE_FROM_ABI CUB_RUNTIME_FUNCTION static constexpr auto HistogramSweepKernel()
   {
     return &DeviceHistogramSweepKernel<
@@ -90,10 +90,10 @@ struct DeviceHistogramKernelSource
   }
 
   /// Returns the device-init histogram sweep kernel that initializes decode operators from level arrays in the kernel.
-  template <typename PolicyT,
+  template <class PolicyT,
             int PRIVATIZED_SMEM_BINS,
-            typename FirstLevelArrayT,
-            typename SecondLevelArrayT,
+            class FirstLevelArrayT,
+            class SecondLevelArrayT,
             bool IsEven,
             bool IsByteSample>
   _CCCL_HIDE_FROM_ABI CUB_RUNTIME_FUNCTION static constexpr auto HistogramSweepKernelDeviceInit()
@@ -135,7 +135,7 @@ struct DeviceHistogramKernelSource
     return sizeof(CounterT);
   }
 
-  template <typename NumBinsT, typename UpperLevelArrayT, typename LowerLevelArrayT>
+  template <class NumBinsT, class UpperLevelArrayT, class LowerLevelArrayT>
   CUB_RUNTIME_FUNCTION static constexpr bool MayOverflow(
     [[maybe_unused]] NumBinsT num_bins,
     [[maybe_unused]] const UpperLevelArrayT& upper_level,
@@ -163,14 +163,14 @@ template <int NUM_CHANNELS,
           bool IsDeviceInit,
           bool IsEven,
           bool IsByteSample,
-          typename SampleIteratorT,
-          typename CounterT,
-          typename FirstLevelArrayT,
-          typename SecondLevelArrayT,
-          typename OffsetT,
-          typename PolicySelector,
-          typename KernelSource,
-          typename KernelLauncherFactory>
+          class SampleIteratorT,
+          class CounterT,
+          class FirstLevelArrayT,
+          class SecondLevelArrayT,
+          class OffsetT,
+          class PolicySelector,
+          class KernelSource,
+          class KernelLauncherFactory>
 #if _CCCL_HAS_CONCEPTS()
   requires histogram_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()
@@ -450,17 +450,17 @@ CUB_RUNTIME_FUNCTION _CCCL_VISIBILITY_HIDDEN _CCCL_FORCEINLINE auto dispatch(
 template <
   int NUM_CHANNELS,
   int NUM_ACTIVE_CHANNELS,
-  typename SampleIteratorT,
-  typename CounterT,
-  typename LevelT,
-  typename OffsetT,
-  typename PolicySelector,
-  typename SampleT = it_value_t<SampleIteratorT>, /// The sample value type of the input iterator
-  typename KernelSource =
+  class SampleIteratorT,
+  class CounterT,
+  class LevelT,
+  class OffsetT,
+  class PolicySelector,
+  class SampleT = it_value_t<SampleIteratorT>, /// The sample value type of the input iterator
+  class KernelSource =
     DeviceHistogramKernelSource<NUM_CHANNELS, NUM_ACTIVE_CHANNELS, SampleIteratorT, CounterT, LevelT, OffsetT, SampleT>,
-  typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY,
-  typename LowerLevelArrayT      = ::cuda::std::array<LevelT, NUM_ACTIVE_CHANNELS>,
-  typename UpperLevelArrayT      = ::cuda::std::array<LevelT, NUM_ACTIVE_CHANNELS>>
+  class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY,
+  class LowerLevelArrayT      = ::cuda::std::array<LevelT, NUM_ACTIVE_CHANNELS>,
+  class UpperLevelArrayT      = ::cuda::std::array<LevelT, NUM_ACTIVE_CHANNELS>>
 CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t __dispatch_even_device_init(
   void* d_temp_storage,
   size_t& temp_storage_bytes,
@@ -624,17 +624,17 @@ CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t __dispatch_even_device
 template <
   int NUM_CHANNELS,
   int NUM_ACTIVE_CHANNELS,
-  typename SampleIteratorT,
-  typename CounterT,
-  typename LevelT,
-  typename OffsetT,
-  typename PolicySelector,
-  typename SampleT = it_value_t<SampleIteratorT>, /// The sample value type of the input iterator
-  typename KernelSource =
+  class SampleIteratorT,
+  class CounterT,
+  class LevelT,
+  class OffsetT,
+  class PolicySelector,
+  class SampleT = it_value_t<SampleIteratorT>, /// The sample value type of the input iterator
+  class KernelSource =
     DeviceHistogramKernelSource<NUM_CHANNELS, NUM_ACTIVE_CHANNELS, SampleIteratorT, CounterT, LevelT, OffsetT, SampleT>,
-  typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY,
-  typename LowerLevelArrayT      = ::cuda::std::array<LevelT, NUM_ACTIVE_CHANNELS>,
-  typename UpperLevelArrayT      = ::cuda::std::array<LevelT, NUM_ACTIVE_CHANNELS>>
+  class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY,
+  class LowerLevelArrayT      = ::cuda::std::array<LevelT, NUM_ACTIVE_CHANNELS>,
+  class UpperLevelArrayT      = ::cuda::std::array<LevelT, NUM_ACTIVE_CHANNELS>>
 CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t __dispatch_even_device_init(
   void* d_temp_storage,
   size_t& temp_storage_bytes,
@@ -713,7 +713,7 @@ CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t __dispatch_even_device
 }
 
 // TODO(bgruber): drop in CCCL 4.0
-template <typename ActivePolicy>
+template <class ActivePolicy>
 _CCCL_API constexpr auto convert_pdl_trigger(int)
   -> decltype(ActivePolicy::pdl_trigger_next_launch_in_init_kernel_max_bin_count)
 {
@@ -721,14 +721,14 @@ _CCCL_API constexpr auto convert_pdl_trigger(int)
 }
 
 // TODO(bgruber): drop in CCCL 4.0
-template <typename ActivePolicy>
+template <class ActivePolicy>
 _CCCL_API constexpr auto convert_pdl_trigger(long)
 {
   return 0;
 }
 
 // TODO(bgruber): drop in CCCL 4.0
-template <typename ActivePolicy>
+template <class ActivePolicy>
 _CCCL_API constexpr auto convert_policy() -> histogram_policy
 {
   using ap = typename ActivePolicy::AgentHistogramPolicyT;
@@ -745,7 +745,7 @@ _CCCL_API constexpr auto convert_policy() -> histogram_policy
 }
 
 // TODO(bgruber): drop in CCCL 4.0
-template <typename MaxPolicy>
+template <class MaxPolicy>
 struct policy_selector_from_max_policy
 {
 private:
@@ -753,7 +753,7 @@ private:
   {
     histogram_policy& policy;
 
-    template <typename ActivePolicyT>
+    template <class ActivePolicyT>
     _CCCL_API constexpr cudaError_t Invoke()
     {
       policy = convert_policy<ActivePolicyT>();
@@ -776,7 +776,7 @@ public:
   }
 };
 
-template <typename PolicyHub>
+template <class PolicyHub>
 struct policy_selector_from_hub
 {
   [[nodiscard]] _CCCL_HOST_DEVICE constexpr auto operator()(::cuda::arch_id) const -> histogram_policy
@@ -788,16 +788,16 @@ struct policy_selector_from_hub
 template <
   int NUM_CHANNELS,
   int NUM_ACTIVE_CHANNELS,
-  typename SampleIteratorT,
-  typename CounterT,
-  typename LevelT,
-  typename OffsetT,
+  class SampleIteratorT,
+  class CounterT,
+  class LevelT,
+  class OffsetT,
   bool IsByteSample,
-  typename PolicySelector,
-  typename SampleT = it_value_t<SampleIteratorT>, /// The sample value type of the input iterator
-  typename KernelSource =
+  class PolicySelector,
+  class SampleT = it_value_t<SampleIteratorT>, /// The sample value type of the input iterator
+  class KernelSource =
     DeviceHistogramKernelSource<NUM_CHANNELS, NUM_ACTIVE_CHANNELS, SampleIteratorT, CounterT, LevelT, OffsetT, SampleT>,
-  typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+  class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
 CUB_RUNTIME_FUNCTION static cudaError_t dispatch_range(
   void* d_temp_storage,
   size_t& temp_storage_bytes,
@@ -970,16 +970,16 @@ CUB_RUNTIME_FUNCTION static cudaError_t dispatch_range(
 template <
   int NUM_CHANNELS,
   int NUM_ACTIVE_CHANNELS,
-  typename SampleIteratorT,
-  typename CounterT,
-  typename LevelT,
-  typename OffsetT,
+  class SampleIteratorT,
+  class CounterT,
+  class LevelT,
+  class OffsetT,
   bool IsByteSample,
-  typename PolicySelector,
-  typename SampleT = it_value_t<SampleIteratorT>, /// The sample value type of the input iterator
-  typename KernelSource =
+  class PolicySelector,
+  class SampleT = it_value_t<SampleIteratorT>, /// The sample value type of the input iterator
+  class KernelSource =
     DeviceHistogramKernelSource<NUM_CHANNELS, NUM_ACTIVE_CHANNELS, SampleIteratorT, CounterT, LevelT, OffsetT, SampleT>,
-  typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+  class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
 CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t dispatch_even(
   void* d_temp_storage,
   size_t& temp_storage_bytes,
@@ -1190,15 +1190,15 @@ CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t dispatch_even(
 template <
   int NUM_CHANNELS,
   int NUM_ACTIVE_CHANNELS,
-  typename SampleIteratorT,
-  typename CounterT,
-  typename LevelT,
-  typename OffsetT,
-  typename PolicyHub    = void, // if user passes a custom Policy this should not be void
-  typename SampleT      = cub::detail::it_value_t<SampleIteratorT>, /// The sample value type of the input iterator
-  typename KernelSource = detail::histogram::
+  class SampleIteratorT,
+  class CounterT,
+  class LevelT,
+  class OffsetT,
+  class PolicyHub    = void, // if user passes a custom Policy this should not be void
+  class SampleT      = cub::detail::it_value_t<SampleIteratorT>, /// The sample value type of the input iterator
+  class KernelSource = detail::histogram::
     DeviceHistogramKernelSource<NUM_CHANNELS, NUM_ACTIVE_CHANNELS, SampleIteratorT, CounterT, LevelT, OffsetT, SampleT>,
-  typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+  class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
 struct DispatchHistogram
 {
   static_assert(NUM_CHANNELS <= 4, "Histograms only support up to 4 channels");
@@ -1258,7 +1258,7 @@ struct DispatchHistogram
    * @param stream
    *   CUDA stream to launch kernels within. Default is stream<sub>0</sub>.
    */
-  template <typename MaxPolicyT = typename ::cuda::std::_If<
+  template <class MaxPolicyT = typename ::cuda::std::_If<
               ::cuda::std::is_void_v<PolicyHub>,
               /* fallback_policy_hub */
               detail::histogram::policy_hub<SampleT, CounterT, NUM_CHANNELS, NUM_ACTIVE_CHANNELS, /* isEven */ 0>,
@@ -1344,7 +1344,7 @@ struct DispatchHistogram
    *   CUDA stream to launch kernels within.  Default is stream<sub>0</sub>.
    *
    */
-  template <typename MaxPolicyT = typename ::cuda::std::_If<
+  template <class MaxPolicyT = typename ::cuda::std::_If<
               ::cuda::std::is_void_v<PolicyHub>,
               /* fallback_policy_hub */
               detail::histogram::policy_hub<SampleT, CounterT, NUM_CHANNELS, NUM_ACTIVE_CHANNELS, /* isEven */ 1>,

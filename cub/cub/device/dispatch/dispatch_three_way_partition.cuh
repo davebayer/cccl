@@ -39,18 +39,18 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail::three_way_partition
 {
-template <typename PolicySelector,
-          typename InputIteratorT,
-          typename FirstOutputIteratorT,
-          typename SecondOutputIteratorT,
-          typename UnselectedOutputIteratorT,
-          typename NumSelectedIteratorT,
-          typename ScanTileStateT,
-          typename SelectFirstPartOp,
-          typename SelectSecondPartOp,
-          typename per_partition_offset_t,
-          typename streaming_context_t,
-          typename OffsetT>
+template <class PolicySelector,
+          class InputIteratorT,
+          class FirstOutputIteratorT,
+          class SecondOutputIteratorT,
+          class UnselectedOutputIteratorT,
+          class NumSelectedIteratorT,
+          class ScanTileStateT,
+          class SelectFirstPartOp,
+          class SelectSecondPartOp,
+          class per_partition_offset_t,
+          class streaming_context_t,
+          class OffsetT>
 struct DeviceThreeWayPartitionKernelSource
 {
   CUB_DEFINE_KERNEL_GETTER(ThreeWayPartitionInitKernel,
@@ -73,7 +73,7 @@ struct DeviceThreeWayPartitionKernelSource
 };
 
 // TODO(bgruber): remove in CCCL 4.0
-template <typename PolicyHub>
+template <class PolicyHub>
 struct policy_selector_from_hub
 {
 private:
@@ -81,7 +81,7 @@ private:
   {
     three_way_partition_policy& policy;
 
-    template <typename ActivePolicyT>
+    template <class ActivePolicyT>
     _CCCL_API constexpr cudaError_t Invoke()
     {
       using active_policy = typename ActivePolicyT::ThreeWayPartitionPolicy;
@@ -130,17 +130,17 @@ public:
 
 // TODO(bgruber): deprecate when we make the tuning API public and remove in CCCL 4.0
 template <
-  typename InputIteratorT,
-  typename FirstOutputIteratorT,
-  typename SecondOutputIteratorT,
-  typename UnselectedOutputIteratorT,
-  typename NumSelectedIteratorT,
-  typename SelectFirstPartOp,
-  typename SelectSecondPartOp,
-  typename OffsetT,
-  typename PolicyHub    = detail::three_way_partition::policy_hub<cub::detail::it_value_t<InputIteratorT>,
-                                                                  detail::three_way_partition::per_partition_offset_t>,
-  typename KernelSource = detail::three_way_partition::DeviceThreeWayPartitionKernelSource<
+  class InputIteratorT,
+  class FirstOutputIteratorT,
+  class SecondOutputIteratorT,
+  class UnselectedOutputIteratorT,
+  class NumSelectedIteratorT,
+  class SelectFirstPartOp,
+  class SelectSecondPartOp,
+  class OffsetT,
+  class PolicyHub    = detail::three_way_partition::policy_hub<cub::detail::it_value_t<InputIteratorT>,
+                                                               detail::three_way_partition::per_partition_offset_t>,
+  class KernelSource = detail::three_way_partition::DeviceThreeWayPartitionKernelSource<
     detail::three_way_partition::policy_selector_from_hub<PolicyHub>,
     InputIteratorT,
     FirstOutputIteratorT,
@@ -153,7 +153,7 @@ template <
     detail::three_way_partition::per_partition_offset_t,
     detail::three_way_partition::streaming_context_t<OffsetT>,
     OffsetT>,
-  typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+  class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
 struct DispatchThreeWayPartitionIf
 {
   /*****************************************************************************
@@ -190,7 +190,7 @@ struct DispatchThreeWayPartitionIf
    * Dispatch entrypoints
    ****************************************************************************/
 
-  template <typename ScanInitKernelPtrT, typename SelectIfKernelPtrT>
+  template <class ScanInitKernelPtrT, class SelectIfKernelPtrT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t __invoke(
     int block_threads,
     int items_per_thread,
@@ -362,7 +362,7 @@ struct DispatchThreeWayPartitionIf
     return cudaSuccess;
   }
 
-  template <typename ActivePolicyT, typename ScanInitKernelPtrT, typename SelectIfKernelPtrT>
+  template <class ActivePolicyT, class ScanInitKernelPtrT, class SelectIfKernelPtrT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t
   Invoke(ActivePolicyT policy,
          ScanInitKernelPtrT three_way_partition_init_kernel,
@@ -373,7 +373,7 @@ struct DispatchThreeWayPartitionIf
     return __invoke(block_threads, items_per_thread, three_way_partition_init_kernel, three_way_partition_kernel);
   }
 
-  template <typename ActivePolicyT>
+  template <class ActivePolicyT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE cudaError_t Invoke(ActivePolicyT active_policy = {})
   {
     const auto wrapped_policy = detail::three_way_partition::MakeThreeWayPartitionPolicyWrapper(active_policy);
@@ -383,7 +383,7 @@ struct DispatchThreeWayPartitionIf
   /**
    * Internal dispatch routine
    */
-  template <typename MaxPolicyT = typename PolicyHub::MaxPolicy>
+  template <class MaxPolicyT = typename PolicyHub::MaxPolicy>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t Dispatch(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -428,16 +428,16 @@ struct DispatchThreeWayPartitionIf
 
 namespace detail::three_way_partition
 {
-template <typename InputIteratorT,
-          typename FirstOutputIteratorT,
-          typename SecondOutputIteratorT,
-          typename UnselectedOutputIteratorT,
-          typename NumSelectedIteratorT,
-          typename SelectFirstPartOp,
-          typename SelectSecondPartOp,
-          typename OffsetT,
-          typename PolicySelector = policy_selector_from_types<it_value_t<InputIteratorT>, per_partition_offset_t>,
-          typename KernelSource   = DeviceThreeWayPartitionKernelSource<
+template <class InputIteratorT,
+          class FirstOutputIteratorT,
+          class SecondOutputIteratorT,
+          class UnselectedOutputIteratorT,
+          class NumSelectedIteratorT,
+          class SelectFirstPartOp,
+          class SelectSecondPartOp,
+          class OffsetT,
+          class PolicySelector = policy_selector_from_types<it_value_t<InputIteratorT>, per_partition_offset_t>,
+          class KernelSource   = DeviceThreeWayPartitionKernelSource<
               PolicySelector,
               InputIteratorT,
               FirstOutputIteratorT,
@@ -450,7 +450,7 @@ template <typename InputIteratorT,
               per_partition_offset_t,
               streaming_context_t<OffsetT>,
               OffsetT>,
-          typename KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
+          class KernelLauncherFactory = CUB_DETAIL_DEFAULT_KERNEL_LAUNCHER_FACTORY>
 #if _CCCL_HAS_CONCEPTS()
   requires three_way_partition_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()

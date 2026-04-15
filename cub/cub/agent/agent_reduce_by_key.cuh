@@ -63,7 +63,7 @@ template <int BlockThreads,
           BlockLoadAlgorithm LoadAlgorithm,
           CacheLoadModifier LoadModifier,
           BlockScanAlgorithm ScanAlgorithm,
-          typename DelayConstructorT = detail::fixed_delay_constructor_t<350, 450>>
+          class DelayConstructorT = detail::fixed_delay_constructor_t<350, 450>>
 struct AgentReduceByKeyPolicy
 {
   ///< Threads per thread block
@@ -127,17 +127,17 @@ namespace detail::reduce_by_key
  * @tparam AccumT
  *   The type of intermediate accumulator (according to P2322R6)
  */
-template <typename AgentReduceByKeyPolicyT,
-          typename KeysInputIteratorT,
-          typename UniqueOutputIteratorT,
-          typename ValuesInputIteratorT,
-          typename AggregatesOutputIteratorT,
-          typename NumRunsOutputIteratorT,
-          typename EqualityOpT,
-          typename ReductionOpT,
-          typename OffsetT,
-          typename AccumT,
-          typename StreamingContextT>
+template <class AgentReduceByKeyPolicyT,
+          class KeysInputIteratorT,
+          class UniqueOutputIteratorT,
+          class ValuesInputIteratorT,
+          class AggregatesOutputIteratorT,
+          class NumRunsOutputIteratorT,
+          class EqualityOpT,
+          class ReductionOpT,
+          class OffsetT,
+          class AccumT,
+          class StreamingContextT>
 struct AgentReduceByKey
 {
   // Whether or not this is a streaming invocation (i.e., multiple kernel invocations over partitions of the input)
@@ -167,7 +167,7 @@ struct AgentReduceByKey
   using ScanTileStateT = ReduceByKeyScanTileState<AccumT, OffsetT>;
 
   // Guarded inequality functor
-  template <typename _EqualityOpT>
+  template <class _EqualityOpT>
   struct GuardedInequalityWrapper
   {
     /// Wrapped equality operator
@@ -183,7 +183,7 @@ struct AgentReduceByKey
     {}
 
     /// Boolean inequality operator, returns <tt>(a != b)</tt>
-    template <typename T>
+    template <class T>
     _CCCL_HOST_DEVICE _CCCL_FORCEINLINE bool operator()(const T& a, const T& b, int idx) const
     {
       if (idx < num_remaining)
@@ -350,7 +350,7 @@ struct AgentReduceByKey
    * @param streaming_context
    *   Streaming context providing context about this partition for streaming invocations
    */
-  template <typename StreamingContext>
+  template <class StreamingContext>
   _CCCL_DEVICE _CCCL_FORCEINLINE AgentReduceByKey(
     TempStorage& temp_storage,
     KeysInputIteratorT d_keys_in,

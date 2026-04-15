@@ -21,7 +21,7 @@
 CUB_NAMESPACE_BEGIN
 namespace detail::batched_topk
 {
-template <typename KeyT, typename ValueT, typename SegmentSizeT, ::cuda::std::int64_t MaxK>
+template <class KeyT, class ValueT, class SegmentSizeT, ::cuda::std::int64_t MaxK>
 struct policy_hub
 {
   struct Policy900 : ChainedPolicy<900, Policy900, Policy900>

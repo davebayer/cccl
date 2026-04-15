@@ -47,7 +47,7 @@ namespace detail
  * @tparam BlockDimZ
  *   The thread block length in threads along the Z dimension
  */
-template <typename T, int BlockDimX, int BlockDimY, int BlockDimZ>
+template <class T, int BlockDimX, int BlockDimY, int BlockDimZ>
 struct BlockReduceRakingCommutativeOnly
 {
   /// The thread block size in threads
@@ -168,7 +168,7 @@ struct BlockReduceRakingCommutativeOnly
    * @param[in] reduction_op
    *   Binary reduction operator
    */
-  template <bool FULL_TILE, typename ReductionOp>
+  template <bool FULL_TILE, class ReductionOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE T Reduce(T partial, int num_valid, ReductionOp reduction_op)
   {
     if (USE_FALLBACK || !FULL_TILE)

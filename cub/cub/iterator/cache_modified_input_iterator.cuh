@@ -84,7 +84,7 @@ CUB_NAMESPACE_BEGIN
  *    First appears in CUDA Toolkit 12.3.
  * @endrst
  */
-template <CacheLoadModifier MODIFIER, typename ValueType, typename OffsetT = ptrdiff_t>
+template <CacheLoadModifier MODIFIER, class ValueType, class OffsetT = ptrdiff_t>
 class CacheModifiedInputIterator
 {
 public:
@@ -120,7 +120,7 @@ public:
   ValueType* ptr;
 
   /// Constructor
-  template <typename QualifiedValueType>
+  template <class QualifiedValueType>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE CacheModifiedInputIterator(QualifiedValueType* ptr) ///< Native pointer to wrap
       : ptr(const_cast<::cuda::std::remove_cv_t<QualifiedValueType>*>(ptr))
   {}
@@ -147,7 +147,7 @@ public:
   }
 
   /// Addition
-  template <typename Distance>
+  template <class Distance>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE self_type operator+(Distance n) const
   {
     self_type retval(ptr + n);
@@ -155,7 +155,7 @@ public:
   }
 
   /// Addition assignment
-  template <typename Distance>
+  template <class Distance>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE self_type& operator+=(Distance n)
   {
     ptr += n;
@@ -163,7 +163,7 @@ public:
   }
 
   /// Subtraction
-  template <typename Distance>
+  template <class Distance>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE self_type operator-(Distance n) const
   {
     self_type retval(ptr - n);
@@ -171,7 +171,7 @@ public:
   }
 
   /// Subtraction assignment
-  template <typename Distance>
+  template <class Distance>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE self_type& operator-=(Distance n)
   {
     ptr -= n;
@@ -185,7 +185,7 @@ public:
   }
 
   /// Array subscript
-  template <typename Distance>
+  template <class Distance>
   _CCCL_DEVICE _CCCL_FORCEINLINE reference operator[](Distance n) const
   {
     return ThreadLoad<MODIFIER>(ptr + n);
@@ -220,13 +220,13 @@ public:
 
 namespace detail
 {
-template <typename Iterator>
+template <class Iterator>
 inline constexpr bool is_CacheModifiedInputIterator = false;
 
-template <CacheLoadModifier MODIFIER, typename ValueType, typename OffsetT>
+template <CacheLoadModifier MODIFIER, class ValueType, class OffsetT>
 inline constexpr bool is_CacheModifiedInputIterator<CacheModifiedInputIterator<MODIFIER, ValueType, OffsetT>> = true;
 
-template <CacheLoadModifier LoadModifier, typename Iterator>
+template <CacheLoadModifier LoadModifier, class Iterator>
 _CCCL_HOST_DEVICE _CCCL_FORCEINLINE auto try_make_cache_modified_iterator(Iterator it)
 {
   if constexpr (::cuda::std::contiguous_iterator<Iterator>)
@@ -240,7 +240,7 @@ _CCCL_HOST_DEVICE _CCCL_FORCEINLINE auto try_make_cache_modified_iterator(Iterat
   }
 }
 
-template <CacheLoadModifier LoadModifier, typename Iterator>
+template <CacheLoadModifier LoadModifier, class Iterator>
 using try_make_cache_modified_iterator_t =
   decltype(try_make_cache_modified_iterator<LoadModifier>(::cuda::std::declval<Iterator>()));
 } // namespace detail

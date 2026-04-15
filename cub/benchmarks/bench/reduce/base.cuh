@@ -23,7 +23,7 @@ struct policy_selector
 };
 #endif // !TUNE_BASE
 
-template <typename T, typename OffsetT>
+template <class T, class OffsetT>
 void reduce(nvbench::state& state, nvbench::type_list<T, OffsetT>)
 {
   using offset_t = cub::detail::choose_offset_t<OffsetT>;

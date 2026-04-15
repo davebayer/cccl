@@ -157,11 +157,11 @@ struct DeviceRunLengthEncode
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename UniqueOutputIteratorT,
-            typename LengthsOutputIteratorT,
-            typename NumRunsOutputIteratorT,
-            typename NumItemsT>
+  template <class InputIteratorT,
+            class UniqueOutputIteratorT,
+            class LengthsOutputIteratorT,
+            class NumRunsOutputIteratorT,
+            class NumItemsT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t Encode(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -278,12 +278,12 @@ struct DeviceRunLengthEncode
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename InputIteratorT,
-            typename UniqueOutputIteratorT,
-            typename LengthsOutputIteratorT,
-            typename NumRunsOutputIteratorT,
-            typename NumItemsT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class InputIteratorT,
+            class UniqueOutputIteratorT,
+            class LengthsOutputIteratorT,
+            class NumRunsOutputIteratorT,
+            class NumItemsT,
+            class EnvT = ::cuda::std::execution::env<>,
             ::cuda::std::enable_if_t<!::cuda::std::is_same_v<InputIteratorT, void*>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t Encode(
     InputIteratorT d_in,
@@ -420,11 +420,11 @@ struct DeviceRunLengthEncode
   //!   @rst
   //!   **[optional]** CUDA stream to launch kernels within. Default is stream\ :sub:`0`.
   //!   @endrst
-  template <typename InputIteratorT,
-            typename OffsetsOutputIteratorT,
-            typename LengthsOutputIteratorT,
-            typename NumRunsOutputIteratorT,
-            typename NumItemsT>
+  template <class InputIteratorT,
+            class OffsetsOutputIteratorT,
+            class LengthsOutputIteratorT,
+            class NumRunsOutputIteratorT,
+            class NumItemsT>
   CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t NonTrivialRuns(
     void* d_temp_storage,
     size_t& temp_storage_bytes,
@@ -524,12 +524,12 @@ struct DeviceRunLengthEncode
   //!
   //! @param[in] env
   //!   **[optional]** Execution environment. Default is ``cuda::std::execution::env{}``.
-  template <typename InputIteratorT,
-            typename OffsetsOutputIteratorT,
-            typename LengthsOutputIteratorT,
-            typename NumRunsOutputIteratorT,
-            typename NumItemsT,
-            typename EnvT = ::cuda::std::execution::env<>,
+  template <class InputIteratorT,
+            class OffsetsOutputIteratorT,
+            class LengthsOutputIteratorT,
+            class NumRunsOutputIteratorT,
+            class NumItemsT,
+            class EnvT = ::cuda::std::execution::env<>,
             ::cuda::std::enable_if_t<!::cuda::std::is_same_v<InputIteratorT, void*>, int> = 0>
   [[nodiscard]] CUB_RUNTIME_FUNCTION _CCCL_FORCEINLINE static cudaError_t NonTrivialRuns(
     InputIteratorT d_in,

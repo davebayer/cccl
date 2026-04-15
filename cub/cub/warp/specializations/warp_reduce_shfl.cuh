@@ -41,7 +41,7 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail
 {
-template <typename T, typename ReductionOp>
+template <class T, class ReductionOp>
 _CCCL_DEVICE _CCCL_FORCEINLINE T reduce_op_sync(T input, const uint32_t mask, ReductionOp)
 {
   static_assert(::cuda::std::is_integral_v<T>, "T must be an integral type");
@@ -88,7 +88,7 @@ _CCCL_DEVICE _CCCL_FORCEINLINE T reduce_op_sync(T input, const uint32_t mask, Re
  * @tparam LOGICAL_WARP_THREADS
  *   Number of threads per logical warp (must be a power-of-two)
  */
-template <typename T, int LOGICAL_WARP_THREADS>
+template <class T, int LOGICAL_WARP_THREADS>
 struct WarpReduceShfl
 {
   static_assert(::cuda::is_power_of_two(LOGICAL_WARP_THREADS), "LOGICAL_WARP_THREADS must be a power of two");
@@ -351,7 +351,7 @@ struct WarpReduceShfl
    * @param[in] offset
    *   Up-offset to pull from
    */
-  template <typename ValueT, typename KeyT>
+  template <class ValueT, class KeyT>
   _CCCL_DEVICE _CCCL_FORCEINLINE KeyValuePair<KeyT, ValueT> ReduceStep(
     KeyValuePair<KeyT, ValueT> input,
     SwizzleScanOp<ReduceByKeyOp<::cuda::std::plus<>>> /*reduction_op*/,
@@ -389,7 +389,7 @@ struct WarpReduceShfl
    * @param[in] offset
    *   Up-offset to pull from
    */
-  template <typename ValueT, typename OffsetT>
+  template <class ValueT, class OffsetT>
   _CCCL_DEVICE _CCCL_FORCEINLINE KeyValuePair<OffsetT, ValueT> ReduceStep(
     KeyValuePair<OffsetT, ValueT> input,
     SwizzleScanOp<ReduceBySegmentOp<::cuda::std::plus<>>> /*reduction_op*/,
@@ -424,7 +424,7 @@ struct WarpReduceShfl
    * @param[in] offset
    *   Up-offset to pull from
    */
-  template <typename _Tp, typename ReductionOp>
+  template <class _Tp, class ReductionOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE _Tp ReduceStep(_Tp input, ReductionOp reduction_op, int last_lane, int offset)
   {
     _Tp output = input;
@@ -454,7 +454,7 @@ struct WarpReduceShfl
    * @param[in] last_lane
    *   Index of last lane in segment
    */
-  template <typename ReductionOp, int STEP>
+  template <class ReductionOp, int STEP>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   ReduceStep(T& input, ReductionOp reduction_op, int last_lane, constant_t<STEP> /*step*/)
   {
@@ -472,7 +472,7 @@ struct WarpReduceShfl
    * @param[in] last_lane
    *   Index of last lane in segment
    */
-  template <typename ReductionOp>
+  template <class ReductionOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   ReduceStep(T& /*input*/, ReductionOp /*reduction_op*/, int /*last_lane*/, constant_t<STEPS> /*step*/)
   {}
@@ -496,7 +496,7 @@ struct WarpReduceShfl
    * @param[in] reduction_op
    *   Binary reduction operator
    */
-  template <bool ALL_LANES_VALID, typename ReductionOp>
+  template <bool ALL_LANES_VALID, class ReductionOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE T Reduce(T input, int valid_items, ReductionOp reduction_op)
   {
     // Dispatch to more efficient intrinsics when applicable
@@ -528,7 +528,7 @@ struct WarpReduceShfl
    * @param[in] reduction_op
    *   Binary reduction operator
    */
-  template <bool HEAD_SEGMENTED, typename FlagT, typename ReductionOp>
+  template <bool HEAD_SEGMENTED, class FlagT, class ReductionOp>
   _CCCL_DEVICE _CCCL_FORCEINLINE T SegmentedReduce(T input, FlagT flag, ReductionOp reduction_op)
   {
     // Get the start flags for each thread in the warp.

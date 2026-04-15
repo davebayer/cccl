@@ -742,7 +742,7 @@ struct sm100_tuning<KeyT, ValueT, primitive_key::yes, primitive_val::yes, key_si
 // };
 #endif
 
-template <typename PolicyT, typename = void>
+template <class PolicyT, class = void>
 struct UniqueByKeyPolicyWrapper : PolicyT
 {
   _CCCL_HOST_DEVICE UniqueByKeyPolicyWrapper(PolicyT base)
@@ -750,7 +750,7 @@ struct UniqueByKeyPolicyWrapper : PolicyT
   {}
 };
 
-template <typename StaticPolicyT>
+template <class StaticPolicyT>
 struct UniqueByKeyPolicyWrapper<StaticPolicyT,
                                 ::cuda::std::void_t<decltype(StaticPolicyT::UniqueByKeyPolicyT::LOAD_MODIFIER)>>
     : StaticPolicyT
@@ -775,7 +775,7 @@ struct UniqueByKeyPolicyWrapper<StaticPolicyT,
 #endif
 };
 
-template <typename PolicyT>
+template <class PolicyT>
 _CCCL_HOST_DEVICE UniqueByKeyPolicyWrapper<PolicyT> MakeUniqueByKeyPolicyWrapper(PolicyT policy)
 {
   return UniqueByKeyPolicyWrapper<PolicyT>{policy};
@@ -806,7 +806,7 @@ struct policy_hub
   {};
 
   // Use values from tuning if a specialization exists, otherwise pick the default
-  template <typename Tuning>
+  template <class Tuning>
   static _CCCL_HOST_DEVICE auto select_agent_policy(int)
     -> AgentUniqueByKeyPolicy<Tuning::threads,
                               Tuning::items,
@@ -814,7 +814,7 @@ struct policy_hub
                               Tuning::load_modifier,
                               BLOCK_SCAN_WARP_SCANS,
                               typename Tuning::delay_constructor>;
-  template <typename Tuning>
+  template <class Tuning>
   static _CCCL_HOST_DEVICE auto select_agent_policy(long) -> typename DefaultPolicy<11, 64>::UniqueByKeyPolicyT;
 
   // nvbug5935129: GCC-11.2 cannot directly use DefaultPolicy inside Policy520
@@ -846,7 +846,7 @@ struct policy_hub
   struct Policy1000 : ChainedPolicy<1000, Policy1000, Policy900>
   {
     // Use values from tuning if a specialization exists, otherwise pick Policy900
-    template <typename Tuning>
+    template <class Tuning>
     static _CCCL_HOST_DEVICE auto select_agent_policy100(int)
       -> AgentUniqueByKeyPolicy<Tuning::threads,
                                 Tuning::items,
@@ -854,7 +854,7 @@ struct policy_hub
                                 Tuning::load_modifier,
                                 BLOCK_SCAN_WARP_SCANS,
                                 typename Tuning::delay_constructor>;
-    template <typename Tuning>
+    template <class Tuning>
     static _CCCL_HOST_DEVICE auto select_agent_policy100(long) -> typename Policy900::UniqueByKeyPolicyT;
 
     using UniqueByKeyPolicyT = decltype(select_agent_policy100<sm100_tuning<KeyT, ValueT>>(0));

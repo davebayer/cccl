@@ -23,7 +23,7 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail
 {
-template <typename InputT, int ITEMS_PER_THREAD, int LOGICAL_WARP_THREADS = warp_threads>
+template <class InputT, int ITEMS_PER_THREAD, int LOGICAL_WARP_THREADS = warp_threads>
 class WarpExchangeShfl
 {
   static_assert(::cuda::is_power_of_two(LOGICAL_WARP_THREADS), "LOGICAL_WARP_THREADS must be a power of two");
@@ -37,7 +37,7 @@ class WarpExchangeShfl
   // Hide recursive template from Doxygen — it cannot handle self-referential inheritance.
 #ifndef _CCCL_DOXYGEN_INVOKED
   // concrete recursion class
-  template <typename OutputT, int IDX, int SIZE>
+  template <class OutputT, int IDX, int SIZE>
   class CompileTimeArray : protected CompileTimeArray<OutputT, IDX + 1, SIZE>
   {
   protected:
@@ -226,7 +226,7 @@ class WarpExchangeShfl
   };
 
   // terminating partial specialization
-  template <typename OutputT, int SIZE>
+  template <class OutputT, int SIZE>
   class CompileTimeArray<OutputT, SIZE, SIZE>
   {
   protected:
@@ -259,7 +259,7 @@ public:
       , member_mask(WarpMask<LOGICAL_WARP_THREADS>(warp_id))
   {}
 
-  template <typename OutputT>
+  template <class OutputT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   BlockedToStriped(const InputT (&input_items)[ITEMS_PER_THREAD], OutputT (&output_items)[ITEMS_PER_THREAD])
   {
@@ -267,7 +267,7 @@ public:
     arr.Transpose(lane_id, member_mask);
   }
 
-  template <typename OutputT>
+  template <class OutputT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   StripedToBlocked(const InputT (&input_items)[ITEMS_PER_THREAD], OutputT (&output_items)[ITEMS_PER_THREAD])
   {
@@ -276,13 +276,13 @@ public:
 
   // Trick to keep the compiler from inferring that the
   // condition in the static_assert is always false.
-  template <typename T>
+  template <class T>
   struct dependent_false
   {
     static constexpr bool value = false;
   };
 
-  template <typename OffsetT>
+  template <class OffsetT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void ScatterToStriped(InputT (&)[ITEMS_PER_THREAD], OffsetT (&)[ITEMS_PER_THREAD])
   {
     static_assert(dependent_false<OffsetT>::value,
@@ -291,7 +291,7 @@ public:
                   "                 OffsetT (&ranks)[ITEMS_PER_THREAD])");
   }
 
-  template <typename OutputT, typename OffsetT>
+  template <class OutputT, class OffsetT>
   _CCCL_DEVICE _CCCL_FORCEINLINE void
   ScatterToStriped(const InputT (&)[ITEMS_PER_THREAD], OutputT (&)[ITEMS_PER_THREAD], OffsetT (&)[ITEMS_PER_THREAD])
   {

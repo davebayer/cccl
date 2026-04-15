@@ -22,7 +22,7 @@
 CUB_NAMESPACE_BEGIN
 namespace detail::histogram
 {
-template <typename LevelT, typename OffsetT, typename SampleT>
+template <class LevelT, class OffsetT, class SampleT>
 struct Transforms
 {
   //---------------------------------------------------------------------
@@ -30,7 +30,7 @@ struct Transforms
   //---------------------------------------------------------------------
 
   // Searches for bin given a list of bin-boundary levels
-  template <typename LevelIteratorT>
+  template <class LevelIteratorT>
   struct SearchTransform
   {
     LevelIteratorT d_levels; // Pointer to levels array
@@ -47,7 +47,7 @@ struct Transforms
     }
 
     // Method for converting samples to bin-ids
-    template <CacheLoadModifier LOAD_MODIFIER, typename _SampleT>
+    template <CacheLoadModifier LOAD_MODIFIER, class _SampleT>
     _CCCL_HOST_DEVICE _CCCL_FORCEINLINE void BinSelect(_SampleT sample, int& bin, bool valid) const
     {
       /// Level iterator wrapper type
@@ -105,7 +105,7 @@ struct Transforms
 
   private:
     // Alias template that excludes __[u]int128 from the integral types
-    template <typename T>
+    template <class T>
     using is_integral_excl_int128 =
 #if _CCCL_HAS_INT128()
       ::cuda::std::_If<::cuda::std::is_same_v<T, __int128_t>&& ::cuda::std::is_same_v<T, __uint128_t>,
@@ -133,7 +133,7 @@ struct Transforms
     CommonT m_min; // Min sample level (inclusive)
     ScaleT m_scale; // Bin scaling
 
-    template <typename T>
+    template <class T>
     _CCCL_HOST_DEVICE _CCCL_FORCEINLINE ScaleT
     ComputeScale(int num_levels, T max_level, T min_level, ::cuda::std::true_type /* is_fp */)
     {
@@ -142,7 +142,7 @@ struct Transforms
       return result;
     }
 
-    template <typename T>
+    template <class T>
     _CCCL_HOST_DEVICE _CCCL_FORCEINLINE ScaleT
     ComputeScale(int num_levels, T max_level, T min_level, ::cuda::std::false_type /* is_fp */)
     {
@@ -152,7 +152,7 @@ struct Transforms
       return result;
     }
 
-    template <typename T>
+    template <class T>
     _CCCL_HOST_DEVICE _CCCL_FORCEINLINE ScaleT ComputeScale(int num_levels, T max_level, T min_level)
     {
       return this->ComputeScale(num_levels, max_level, min_level, ::cuda::std::is_floating_point<T>{});
@@ -185,7 +185,7 @@ struct Transforms
 #endif // _CCCL_HAS_NVBF16()
 
     // All types but __half:
-    template <typename T>
+    template <class T>
     _CCCL_HOST_DEVICE _CCCL_FORCEINLINE int SampleIsValid(T sample, T max_level, T min_level) const
     {
       return sample >= min_level && sample < max_level;
@@ -213,7 +213,7 @@ struct Transforms
 #endif // _CCCL_HAS_NVBF16()
 
     //! @brief Bin computation for floating point (and extended floating point) types
-    template <typename T>
+    template <class T>
     _CCCL_HOST_DEVICE _CCCL_FORCEINLINE int
     ComputeBin(T sample, T min_level, ScaleT scale, ::cuda::std::true_type /* is_fp */) const
     {
@@ -221,7 +221,7 @@ struct Transforms
     }
 
     //! @brief Bin computation for custom types and __[u]int128
-    template <typename T>
+    template <class T>
     _CCCL_HOST_DEVICE _CCCL_FORCEINLINE int
     ComputeBin(T sample, T min_level, ScaleT scale, ::cuda::std::false_type /* is_fp */) const
     {
@@ -229,7 +229,7 @@ struct Transforms
     }
 
     //! @brief Bin computation for integral types of up to 64-bit types
-    template <typename T, ::cuda::std::enable_if_t<is_integral_excl_int128<T>::value, int> = 0>
+    template <class T, ::cuda::std::enable_if_t<is_integral_excl_int128<T>::value, int> = 0>
     _CCCL_HOST_DEVICE _CCCL_FORCEINLINE int ComputeBin(T sample, T min_level, ScaleT scale) const
     {
       return static_cast<int>(
@@ -237,7 +237,7 @@ struct Transforms
         / static_cast<IntArithmeticT>(scale.fraction.range));
     }
 
-    template <typename T, ::cuda::std::enable_if_t<!is_integral_excl_int128<T>::value, int> = 0>
+    template <class T, ::cuda::std::enable_if_t<!is_integral_excl_int128<T>::value, int> = 0>
     _CCCL_HOST_DEVICE _CCCL_FORCEINLINE int ComputeBin(T sample, T min_level, ScaleT scale) const
     {
       return this->ComputeBin(sample, min_level, scale, ::cuda::std::is_floating_point<T>{});
@@ -286,17 +286,17 @@ struct Transforms
 #endif
 
     // No-op Init for uniformity with ScaleTransform
-    template <typename T>
+    template <class T>
     _CCCL_HOST_DEVICE _CCCL_FORCEINLINE void Init(int, T, T)
     {}
 
     // No-op Init for uniformity with SearchTransform
-    template <typename T>
+    template <class T>
     _CCCL_HOST_DEVICE _CCCL_FORCEINLINE void Init(T, int)
     {}
 
     // Method for converting samples to bin-ids
-    template <CacheLoadModifier LOAD_MODIFIER, typename _SampleT>
+    template <CacheLoadModifier LOAD_MODIFIER, class _SampleT>
     _CCCL_HOST_DEVICE _CCCL_FORCEINLINE void BinSelect(_SampleT sample, int& bin, bool valid) const
     {
       if (valid)
@@ -333,7 +333,7 @@ struct Transforms
 //!
 //! @param tile_queue
 //!   Drain queue descriptor for dynamically mapping tile data onto thread blocks
-template <typename PolicySelector, int NumActiveChannels, typename CounterT, typename OffsetT>
+template <class PolicySelector, int NumActiveChannels, class CounterT, class OffsetT>
 #if _CCCL_HAS_CONCEPTS()
   requires histogram_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()
@@ -440,15 +440,15 @@ _CCCL_KERNEL_ATTRIBUTES void DeviceHistogramInitKernel(
 //!
 //! @param tile_queue
 //!   Drain queue descriptor for dynamically mapping tile data onto thread blocks
-template <typename PolicySelector,
+template <class PolicySelector,
           int PrivatizedSmemBins,
           int NumChannels,
           int NumActiveChannels,
-          typename SampleIteratorT,
-          typename CounterT,
-          typename PrivatizedDecodeOpT,
-          typename OutputDecodeOpT,
-          typename OffsetT>
+          class SampleIteratorT,
+          class CounterT,
+          class PrivatizedDecodeOpT,
+          class OutputDecodeOpT,
+          class OffsetT>
 #if _CCCL_HAS_CONCEPTS()
   requires histogram_policy_selector<PolicySelector>
 #endif // _CCCL_HAS_CONCEPTS()
@@ -596,18 +596,18 @@ __launch_bounds__(int(PolicySelector{}(::cuda::arch_id{CUB_PTX_ARCH / 10}).block
 //!
 //! @param tile_queue
 //!   Drain queue descriptor for dynamically mapping tile data onto thread blocks
-template <typename PolicySelector,
+template <class PolicySelector,
           int PrivatizedSmemBins,
           int NumChannels,
           int NumActiveChannels,
-          typename SampleIteratorT,
-          typename CounterT,
-          typename FirstLevelArrayT, // Upper level array for DispatchEven; Number of output levels array for
-                                     // DispatchRange
-          typename SecondLevelArrayT, // Lower level array for DispatchEven; Levels array for DispatchRange
-          typename PrivatizedDecodeOpT,
-          typename OutputDecodeOpT,
-          typename OffsetT,
+          class SampleIteratorT,
+          class CounterT,
+          class FirstLevelArrayT, // Upper level array for DispatchEven; Number of output levels array for
+                                  // DispatchRange
+          class SecondLevelArrayT, // Lower level array for DispatchEven; Levels array for DispatchRange
+          class PrivatizedDecodeOpT,
+          class OutputDecodeOpT,
+          class OffsetT,
           bool IsEven>
 #if _CCCL_HAS_CONCEPTS()
   requires histogram_policy_selector<PolicySelector>

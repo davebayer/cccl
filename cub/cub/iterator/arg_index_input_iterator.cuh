@@ -84,9 +84,7 @@ CUB_NAMESPACE_BEGIN
  *    First appears in CUDA Toolkit 12.3.
  * @endrst
  */
-template <typename InputIteratorT,
-          typename OffsetT      = ptrdiff_t,
-          typename OutputValueT = detail::it_value_t<InputIteratorT>>
+template <class InputIteratorT, class OffsetT = ptrdiff_t, class OutputValueT = detail::it_value_t<InputIteratorT>>
 class ArgIndexInputIterator
 {
 public:
@@ -154,7 +152,7 @@ public:
   }
 
   /// Addition
-  template <typename Distance>
+  template <class Distance>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE self_type operator+(Distance n) const
   {
     self_type retval(itr, offset + n);
@@ -162,7 +160,7 @@ public:
   }
 
   /// Addition assignment
-  template <typename Distance>
+  template <class Distance>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE self_type& operator+=(Distance n)
   {
     offset += n;
@@ -170,7 +168,7 @@ public:
   }
 
   /// Subtraction
-  template <typename Distance>
+  template <class Distance>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE self_type operator-(Distance n) const
   {
     self_type retval(itr, offset - n);
@@ -178,7 +176,7 @@ public:
   }
 
   /// Subtraction assignment
-  template <typename Distance>
+  template <class Distance>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE self_type& operator-=(Distance n)
   {
     offset -= n;
@@ -192,7 +190,7 @@ public:
   }
 
   /// Array subscript
-  template <typename Distance>
+  template <class Distance>
   _CCCL_HOST_DEVICE _CCCL_FORCEINLINE reference operator[](Distance n) const
   {
     self_type offset = (*this) + n;

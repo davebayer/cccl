@@ -60,7 +60,7 @@ struct adjacent_difference_policy
 };
 
 #if _CCCL_HAS_CONCEPTS()
-template <typename T>
+template <class T>
 concept adjacent_difference_policy_selector = policy_selector<T, adjacent_difference_policy>;
 #endif // _CCCL_HAS_CONCEPTS()
 
@@ -85,7 +85,7 @@ static_assert(adjacent_difference_policy_selector<policy_selector>);
 #endif // _CCCL_HAS_CONCEPTS()
 
 // stateless version which can be passed to kernels
-template <typename InputIteratorT, bool MayAlias>
+template <class InputIteratorT, bool MayAlias>
 struct policy_selector_from_types
 {
   [[nodiscard]] _CCCL_API constexpr auto operator()(::cuda::arch_id arch) const -> adjacent_difference_policy
@@ -96,7 +96,7 @@ struct policy_selector_from_types
 };
 
 // TODO(bgruber): remove in CCCL 4.0 when we drop the adjacent difference dispatchers
-template <typename InputIteratorT, bool MayAlias>
+template <class InputIteratorT, bool MayAlias>
 struct policy_hub
 {
   using ValueT = it_value_t<InputIteratorT>;
