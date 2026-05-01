@@ -339,15 +339,21 @@ struct __cw_fixed_value_storage_array
   _Tp __data[sizeof...(_Values)]{_Values...};
 };
 
+template <auto _Value>
+_CCCL_GLOBAL_CONSTANT auto __cw_storage = _Value;
+
+template <class _Tp, _Tp... _Values>
+_CCCL_GLOBAL_CONSTANT _Tp __cw_storage_array[]{_Values...};
+
 template <auto _Value, size_t... _Is>
-[[nodiscard]] consteval auto __make_cw_fixed_value_storage_array_helper(index_sequence<_Is...>) noexcept
+[[nodiscard]] consteval const auto& __make_cw_fixed_value_storage_array_helper(index_sequence<_Is...>) noexcept
 {
   using _Tp = remove_cvref_t<remove_extent_t<decltype(_Value.__data[0])>>;
-  return __cw_fixed_value_storage_array<_Tp, _Value.__data[_Is]...>{};
+  return __cw_storage_array<_Tp, _Value.__data[_Is]...>;
 }
 
 template <auto _Value>
-[[nodiscard]] consteval auto __make_fixed_value_storage() noexcept
+[[nodiscard]] consteval const auto& __make_fixed_value_storage() noexcept
 {
   using _FixedValue = decltype(_Value);
   using _Tp         = typename _FixedValue::__type;
@@ -358,29 +364,33 @@ template <auto _Value>
   }
   else
   {
-    return __cw_fixed_value_storage<_Tp, _Value.__data>{};
+    return __cw_storage<_Value>;
   }
 }
 
-template <auto _Value>
-_CCCL_GLOBAL_CONSTANT auto __cw_storage = _Value;
+template <class _Tp, class _Up>
+consteval auto __cw_assign()
+{
+  return _Tp::value = _Up::value;
+}
 
 template <__cw_fixed_value _Xp, class>
 struct constant_wrapper : __cw_operators
 {
-  static constexpr const auto& value = __cw_storage<::cuda::std::__make_fixed_value_storage<_Xp>()>.__data;
+  static constexpr const auto& value = ::cuda::std::__make_fixed_value_storage<_Xp>();
   using type                         = constant_wrapper;
   using value_type                   = decltype(_Xp)::__type;
 
   template <__constexpr_param _Rp>
-  [[nodiscard]] _CCCL_API constexpr constant_wrapper<(value = _Rp::value)> operator=(_Rp) const noexcept
+  [[nodiscard]] _CCCL_API constexpr auto operator=(_Rp) const noexcept
+    -> constant_wrapper<__cw_assign<constant_wrapper, _Rp>>
   {
     return {};
   }
 
   _CCCL_API constexpr operator decltype(value)() const noexcept
   {
-    return __cw_storage<_Xp>.__data;
+    return value;
   }
 
   template <class... _Args>
