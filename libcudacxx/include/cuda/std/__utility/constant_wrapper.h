@@ -362,19 +362,6 @@ concept __constexpr_indexable = (__constexpr_param<remove_cvref_t<_Arg>>) && req
   typename constant_wrapper<_Obj[remove_cvref_t<_Arg>::value]>;
 };
 #  endif
-
-template <class _Tp, _Tp _Value>
-struct __cw_fixed_value_storage
-{
-  _Tp __data = _Value;
-};
-
-template <class _Tp, _Tp... _Values>
-struct __cw_fixed_value_storage_array
-{
-  _Tp __data[sizeof...(_Values)]{_Values...};
-};
-
 template <auto _Value>
 _CCCL_GLOBAL_CONSTANT auto __cw_storage = _Value;
 
@@ -400,14 +387,19 @@ template <auto _Value>
   }
   else
   {
-    return __cw_storage<_Value>;
+    return __cw_storage<_Value.__data>;
   }
 }
 
 template <__cw_fixed_value _Xp, class>
 struct constant_wrapper : __cw_operators
 {
-  static constexpr const auto& value = ::cuda::std::__make_fixed_value_storage<_Xp>().__data;
+  _CCCL_API static constexpr const auto& __get() noexcept
+  {
+    return ::cuda::std::__make_fixed_value_storage<_Xp>();
+  }
+
+  static constexpr const auto& value = __get();
   using type                         = constant_wrapper;
   using value_type                   = decltype(_Xp)::__type;
 
@@ -416,11 +408,6 @@ struct constant_wrapper : __cw_operators
   {
     constexpr auto __value = value = _Rp::value;
     return constant_wrapper<__value>{};
-  }
-
-  _CCCL_API static constexpr decltype(value) __get() noexcept
-  {
-    return ::cuda::std::__make_fixed_value_storage<_Xp>().__data;
   }
 
   _CCCL_API constexpr operator decltype(value)() const noexcept

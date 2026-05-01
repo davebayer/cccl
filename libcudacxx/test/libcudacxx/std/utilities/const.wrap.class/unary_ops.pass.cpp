@@ -36,6 +36,8 @@
 #include "helpers.h"
 #include "test_macros.h"
 
+TEST_NV_DIAG_SUPPRESS(20094) // a host member cannot be directly read in a __device__/__global__ function
+
 struct WithOps
 {
   int value;
