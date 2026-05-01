@@ -13,19 +13,21 @@
 // template<constexpr-param L, constexpr-param R>
 //   friend constexpr auto operator,(L, R) noexcept = delete;
 
-#include <cassert>
-#include <concepts>
-#include <utility>
+#include <cuda/std/cassert>
+#include <cuda/std/concepts>
+#include <cuda/std/utility>
+
+#include "test_macros.h"
 
 struct WithOps
 {
   int value;
 
-  constexpr WithOps(int v)
+  TEST_FUNC constexpr WithOps(int v)
       : value(v)
   {}
 
-  friend constexpr auto operator,(const WithOps& /*l*/, WithOps r)
+  TEST_FUNC friend constexpr auto operator,(const WithOps& /*l*/, WithOps r)
   {
     return WithOps{r.value};
   }
@@ -34,27 +36,33 @@ struct WithOps
 struct NoOps
 {};
 
+template <class L, class R, class = void>
+inline constexpr bool HasComma = false;
 template <class L, class R>
-concept HasComma = requires(L l, R r) {
-  { l, r };
-};
+inline constexpr bool HasComma<L, R, cuda::std::void_t<decltype(cuda::std::declval<L>(), cuda::std::declval<R>())>> =
+  true;
+
+// template <class L, class R>
+// concept HasComma = requires(L l, R r) {
+//   { l, r };
+// };
 
 // Comma operator is deleted for constant_wrapper operands
-static_assert(!HasComma<std::constant_wrapper<6>, std::constant_wrapper<3>>);
-static_assert(!HasComma<std::constant_wrapper<WithOps{6}>, std::constant_wrapper<WithOps{3}>>);
-static_assert(!HasComma<std::constant_wrapper<NoOps{}>, std::constant_wrapper<NoOps{}>>);
+static_assert(!HasComma<cuda::std::constant_wrapper<6>, cuda::std::constant_wrapper<3>>);
+static_assert(!HasComma<cuda::std::constant_wrapper<WithOps{6}>, cuda::std::constant_wrapper<WithOps{3}>>);
+static_assert(!HasComma<cuda::std::constant_wrapper<NoOps{}>, cuda::std::constant_wrapper<NoOps{}>>);
 
 // Mixed operands - one constant_wrapper, one runtime type (uses built-in operator)
-static_assert(HasComma<std::constant_wrapper<42>, int>);
-static_assert(HasComma<int, std::constant_wrapper<42>>);
+static_assert(HasComma<cuda::std::constant_wrapper<42>, int>);
+static_assert(HasComma<int, cuda::std::constant_wrapper<42>>);
 
 constexpr bool test()
 {
   {
     // only mixed with runtime parameters
-    std::constant_wrapper<42> cw42;
-    int i                                     = 0;
-    std::same_as<int&> decltype(auto) result1 = (cw42, i);
+    cuda::std::constant_wrapper<42> cw42;
+    int i                                           = 0;
+    cuda::std::same_as<int&> decltype(auto) result1 = (cw42, i);
     assert(result1 == 0);
   }
 
