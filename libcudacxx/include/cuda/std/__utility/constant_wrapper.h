@@ -37,7 +37,7 @@ template <class _Tp>
 struct __cw_fixed_value
 {
   using __type _CCCL_NODEBUG_ALIAS = _Tp;
-  consteval __cw_fixed_value(__type __v) noexcept
+  _CCCL_API constexpr __cw_fixed_value(__type __v) noexcept
       : __data(__v)
   {}
   _Tp __data;
@@ -49,13 +49,13 @@ struct __cw_fixed_value<_Tp[_Extent]>
   using __type _CCCL_NODEBUG_ALIAS = _Tp[_Extent];
   _Tp __data[_Extent];
 
-  consteval __cw_fixed_value(_Tp (&__arr)[_Extent]) noexcept
+  _CCCL_API constexpr __cw_fixed_value(_Tp (&__arr)[_Extent]) noexcept
       : __cw_fixed_value(__arr, make_index_sequence<_Extent>{})
   {}
 
 private:
   template <size_t... _Idxs>
-  consteval __cw_fixed_value(_Tp (&__arr)[_Extent], index_sequence<_Idxs...>) noexcept
+  _CCCL_API constexpr __cw_fixed_value(_Tp (&__arr)[_Extent], index_sequence<_Idxs...>) noexcept
       : __data{__arr[_Idxs]...}
   {}
 };
@@ -64,7 +64,7 @@ template <class _Tp, size_t _Extent>
 _CCCL_HOST_DEVICE __cw_fixed_value(_Tp (&)[_Extent]) -> __cw_fixed_value<_Tp[_Extent]>;
 
 template <__cw_fixed_value _Xp,
-#  if _CCCL_COMPILER(GCC)
+#  if _CCCL_COMPILER(GCC) || _CCCL_CUDA_COMPILER(NVCC)
           // gcc bug:  https://gcc.gnu.org/PR117392
           class = typename decltype(__cw_fixed_value(_Xp))::__type
 #  else
@@ -83,112 +83,126 @@ struct __cw_operators
 {
   // unary operators
   template <__constexpr_param _Tp>
-  [[nodiscard]] _CCCL_API friend constexpr auto operator+(_Tp) noexcept -> constant_wrapper<(+_Tp::value)>
+    requires requires { typename constant_wrapper<+_Tp::value>; }
+  [[nodiscard]] _CCCL_API friend constexpr auto operator+(_Tp) noexcept
   {
-    return {};
+    constexpr auto __value = +_Tp::__get();
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Tp>
-  [[nodiscard]] _CCCL_API friend constexpr auto operator-(_Tp) noexcept -> constant_wrapper<(-_Tp::value)>
+    requires requires { typename constant_wrapper<-_Tp::value>; }
+  [[nodiscard]] _CCCL_API friend constexpr auto operator-(_Tp) noexcept
   {
-    return {};
+    constexpr auto __value = -_Tp::__get();
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Tp>
-  [[nodiscard]] _CCCL_API friend constexpr auto operator~(_Tp) noexcept -> constant_wrapper<(~_Tp::value)>
+    requires requires { typename constant_wrapper<~_Tp::value>; }
+  [[nodiscard]] _CCCL_API friend constexpr auto operator~(_Tp) noexcept
   {
-    return {};
+    constexpr auto __value = ~_Tp::__get();
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Tp>
-  [[nodiscard]] _CCCL_API friend constexpr auto operator!(_Tp) noexcept -> constant_wrapper<(!_Tp::value)>
+    requires requires { typename constant_wrapper<!_Tp::value>; }
+  [[nodiscard]] _CCCL_API friend constexpr auto operator!(_Tp) noexcept
   {
-    return {};
+    constexpr auto __value = !_Tp::__get();
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Tp>
-  [[nodiscard]] _CCCL_API friend constexpr auto operator&(_Tp) noexcept -> constant_wrapper<(&_Tp::value)>
+    requires requires { typename constant_wrapper<&_Tp::value>; }
+  [[nodiscard]] _CCCL_API friend constexpr auto operator&(_Tp) noexcept
   {
-    return {};
+    constexpr const auto& __old = _Tp::__get();
+    constexpr auto __value      = &__old;
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Tp>
-  [[nodiscard]] _CCCL_API friend constexpr auto operator*(_Tp) noexcept -> constant_wrapper<(*_Tp::value)>
+    requires requires { typename constant_wrapper<*_Tp::value>; }
+  [[nodiscard]] _CCCL_API friend constexpr auto operator*(_Tp) noexcept
   {
-    return {};
+    constexpr auto __value = *_Tp::__get();
+    return constant_wrapper<__value>{};
   }
 
   // binary operators
   template <__constexpr_param _Lp, __constexpr_param _Rp>
+    requires requires { _Lp::value + _Rp::value; }
   [[nodiscard]] _CCCL_API friend constexpr auto operator+(_Lp, _Rp) noexcept
-    -> constant_wrapper<(_Lp::value + _Rp::value)>
   {
-    return {};
+    constexpr auto __value = (_Lp::value + _Rp::value);
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Lp, __constexpr_param _Rp>
   [[nodiscard]] _CCCL_API friend constexpr auto operator-(_Lp, _Rp) noexcept
-    -> constant_wrapper<(_Lp::value - _Rp::value)>
   {
-    return {};
+    constexpr auto __value = (_Lp::value - _Rp::value);
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Lp, __constexpr_param _Rp>
   [[nodiscard]] _CCCL_API friend constexpr auto operator*(_Lp, _Rp) noexcept
-    -> constant_wrapper<(_Lp::value * _Rp::value)>
   {
-    return {};
+    constexpr auto __value = (_Lp::value * _Rp::value);
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Lp, __constexpr_param _Rp>
   [[nodiscard]] _CCCL_API friend constexpr auto operator/(_Lp, _Rp) noexcept
-    -> constant_wrapper<(_Lp::value / _Rp::value)>
   {
-    return {};
+    constexpr auto __value = (_Lp::value / _Rp::value);
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Lp, __constexpr_param _Rp>
   [[nodiscard]] _CCCL_API friend constexpr auto operator%(_Lp, _Rp) noexcept
-    -> constant_wrapper<(_Lp::value % _Rp::value)>
   {
-    return {};
+    constexpr auto __value = (_Lp::value % _Rp::value);
+    return constant_wrapper<__value>{};
   }
 
   template <__constexpr_param _Lp, __constexpr_param _Rp>
   [[nodiscard]] _CCCL_API friend constexpr auto operator<<(_Lp, _Rp) noexcept
-    -> constant_wrapper<(_Lp::value << _Rp::value)>
   {
-    return {};
+    constexpr auto __value = (_Lp::value << _Rp::value);
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Lp, __constexpr_param _Rp>
   [[nodiscard]] _CCCL_API friend constexpr auto operator>>(_Lp, _Rp) noexcept
-    -> constant_wrapper<(_Lp::value >> _Rp::value)>
   {
-    return {};
+    constexpr auto __value = (_Lp::value >> _Rp::value);
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Lp, __constexpr_param _Rp>
   [[nodiscard]] _CCCL_API friend constexpr auto operator&(_Lp, _Rp) noexcept
-    -> constant_wrapper<(_Lp::value & _Rp::value)>
   {
-    return {};
+    constexpr auto __value = (_Lp::value & _Rp::value);
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Lp, __constexpr_param _Rp>
   [[nodiscard]] _CCCL_API friend constexpr auto operator|(_Lp, _Rp) noexcept
-    -> constant_wrapper<(_Lp::value | _Rp::value)>
   {
-    return {};
+    constexpr auto __value = (_Lp::value | _Rp::value);
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Lp, __constexpr_param _Rp>
   [[nodiscard]] _CCCL_API friend constexpr auto operator^(_Lp, _Rp) noexcept
-    -> constant_wrapper<(_Lp::value ^ _Rp::value)>
   {
-    return {};
+    constexpr auto __value = (_Lp::value ^ _Rp::value);
+    return constant_wrapper<__value>{};
   }
 
   template <__constexpr_param _Lp, __constexpr_param _Rp>
     requires(!is_constructible_v<bool, decltype(_Lp::value)> || !is_constructible_v<bool, decltype(_Rp::value)>)
   [[nodiscard]] _CCCL_API friend constexpr auto operator&&(_Lp, _Rp) noexcept
-    -> constant_wrapper<(_Lp::value && _Rp::value)>
   {
-    return {};
+    constexpr auto __value = _Lp::value && _Rp::value;
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Lp, __constexpr_param _Rp>
     requires(!is_constructible_v<bool, decltype(_Lp::value)> || !is_constructible_v<bool, decltype(_Rp::value)>)
   [[nodiscard]] _CCCL_API friend constexpr auto operator||(_Lp, _Rp) noexcept
-    -> constant_wrapper<(_Lp::value || _Rp::value)>
   {
-    return {};
+    constexpr auto __value = _Lp::value || _Rp::value;
+    return constant_wrapper<__value>{};
   }
 
   // comparisons
@@ -198,34 +212,40 @@ struct __cw_operators
   //   return {};
   // }
   template <__constexpr_param _Lp, __constexpr_param _Rp>
-  _CCCL_API friend constexpr auto operator<(_Lp, _Rp) noexcept -> constant_wrapper<(_Lp::value < _Rp::value)>
+  _CCCL_API friend constexpr auto operator<(_Lp, _Rp) noexcept
   {
-    return {};
+    constexpr auto __value = (_Lp::value < _Rp::value);
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Lp, __constexpr_param _Rp>
-  _CCCL_API friend constexpr auto operator<=(_Lp, _Rp) noexcept -> constant_wrapper<(_Lp::value <= _Rp::value)>
+  _CCCL_API friend constexpr auto operator<=(_Lp, _Rp) noexcept
   {
-    return {};
+    constexpr auto __value = (_Lp::value <= _Rp::value);
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Lp, __constexpr_param _Rp>
-  _CCCL_API friend constexpr auto operator==(_Lp, _Rp) noexcept -> constant_wrapper<(_Lp::value == _Rp::value)>
+  _CCCL_API friend constexpr auto operator==(_Lp, _Rp) noexcept
   {
-    return {};
+    constexpr auto __value = (_Lp::value == _Rp::value);
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Lp, __constexpr_param _Rp>
-  _CCCL_API friend constexpr auto operator!=(_Lp, _Rp) noexcept -> constant_wrapper<(_Lp::value != _Rp::value)>
+  _CCCL_API friend constexpr auto operator!=(_Lp, _Rp) noexcept
   {
-    return {};
+    constexpr auto __value = (_Lp::value != _Rp::value);
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Lp, __constexpr_param _Rp>
-  _CCCL_API friend constexpr auto operator>(_Lp, _Rp) noexcept -> constant_wrapper<(_Lp::value > _Rp::value)>
+  _CCCL_API friend constexpr auto operator>(_Lp, _Rp) noexcept
   {
-    return {};
+    constexpr auto __value = (_Lp::value > _Rp::value);
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Lp, __constexpr_param _Rp>
-  _CCCL_API friend constexpr auto operator>=(_Lp, _Rp) noexcept -> constant_wrapper<(_Lp::value >= _Rp::value)>
+  _CCCL_API friend constexpr auto operator>=(_Lp, _Rp) noexcept
   {
-    return {};
+    constexpr auto __value = (_Lp::value >= _Rp::value);
+    return constant_wrapper<__value>{};
   }
 
   template <__constexpr_param _Lp, __constexpr_param _Rp>
@@ -233,84 +253,96 @@ struct __cw_operators
 
   template <__constexpr_param _Lp, __constexpr_param _Rp>
   [[nodiscard]] _CCCL_API friend constexpr auto operator->*(_Lp, _Rp) noexcept
-    -> constant_wrapper<(_Lp::value->*_Rp::value)>
   {
-    return {};
+    constexpr auto __value = (_Lp::value->*_Rp::value);
+    return constant_wrapper<__value>{};
   }
 
   // pseudo-mutators
   template <__constexpr_param _Tp>
-  [[nodiscard]] _CCCL_API constexpr auto operator++() const noexcept -> constant_wrapper<(++_Tp::value)>
+  [[nodiscard]] _CCCL_API constexpr auto operator++() const noexcept
   {
-    return {};
+    constexpr auto __value = ++_Tp::value;
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Tp>
-  [[nodiscard]] _CCCL_API constexpr auto operator++(int) const noexcept -> constant_wrapper<(_Tp::value++)>
+  [[nodiscard]] _CCCL_API constexpr auto operator++(int) const noexcept
   {
-    return {};
+    constexpr auto __value = _Tp::value++;
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Tp>
-  [[nodiscard]] _CCCL_API constexpr auto operator--() const noexcept -> constant_wrapper<(--_Tp::value)>
+  [[nodiscard]] _CCCL_API constexpr auto operator--() const noexcept
   {
-    return {};
+    constexpr auto __value = --_Tp::value;
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Tp>
-  [[nodiscard]] _CCCL_API constexpr auto operator--(int) const noexcept -> constant_wrapper<(_Tp::value--)>
+  [[nodiscard]] _CCCL_API constexpr auto operator--(int) const noexcept
   {
-    return {};
+    constexpr auto __value = _Tp::value--;
+    return constant_wrapper<__value>{};
   }
 
   template <__constexpr_param _Tp, __constexpr_param _Rp>
-  [[nodiscard]] _CCCL_API constexpr auto operator+=(_Rp) const noexcept -> constant_wrapper<(_Tp::value += _Rp::value)>
+  [[nodiscard]] _CCCL_API constexpr auto operator+=(_Rp) const noexcept
   {
-    return {};
+    constexpr auto __value = _Tp::value += _Rp::value;
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Tp, __constexpr_param _Rp>
-  [[nodiscard]] _CCCL_API constexpr auto operator-=(_Rp) const noexcept -> constant_wrapper<(_Tp::value -= _Rp::value)>
+  [[nodiscard]] _CCCL_API constexpr auto operator-=(_Rp) const noexcept
   {
-    return {};
+    constexpr auto __value = _Tp::value -= _Rp::value;
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Tp, __constexpr_param _Rp>
-  [[nodiscard]] _CCCL_API constexpr auto operator*=(_Rp) const noexcept -> constant_wrapper<(_Tp::value *= _Rp::value)>
+  [[nodiscard]] _CCCL_API constexpr auto operator*=(_Rp) const noexcept
   {
-    return {};
+    constexpr auto __value = _Tp::value *= _Rp::value;
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Tp, __constexpr_param _Rp>
-  [[nodiscard]] _CCCL_API constexpr auto operator/=(_Rp) const noexcept -> constant_wrapper<(_Tp::value /= _Rp::value)>
+  [[nodiscard]] _CCCL_API constexpr auto operator/=(_Rp) const noexcept
   {
-    return {};
+    constexpr auto __value = _Tp::value /= _Rp::value;
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Tp, __constexpr_param _Rp>
-  [[nodiscard]] _CCCL_API constexpr auto operator%=(_Rp) const noexcept -> constant_wrapper<(_Tp::value %= _Rp::value)>
+  [[nodiscard]] _CCCL_API constexpr auto operator%=(_Rp) const noexcept
   {
-    return {};
+    constexpr auto __value = _Tp::value %= _Rp::value;
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Tp, __constexpr_param _Rp>
-  [[nodiscard]] _CCCL_API constexpr auto operator&=(_Rp) const noexcept -> constant_wrapper<(_Tp::value &= _Rp::value)>
+  [[nodiscard]] _CCCL_API constexpr auto operator&=(_Rp) const noexcept
   {
-    return {};
+    constexpr auto __value = _Tp::value &= _Rp::value;
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Tp, __constexpr_param _Rp>
-  [[nodiscard]] _CCCL_API constexpr auto operator|=(_Rp) const noexcept -> constant_wrapper<(_Tp::value |= _Rp::value)>
+  [[nodiscard]] _CCCL_API constexpr auto operator|=(_Rp) const noexcept
   {
-    return {};
+    constexpr auto __value = _Tp::value |= _Rp::value;
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Tp, __constexpr_param _Rp>
-  [[nodiscard]] _CCCL_API constexpr auto operator^=(_Rp) const noexcept -> constant_wrapper<(_Tp::value ^= _Rp::value)>
+  [[nodiscard]] _CCCL_API constexpr auto operator^=(_Rp) const noexcept
   {
-    return {};
+    constexpr auto __value = _Tp::value ^= _Rp::value;
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Tp, __constexpr_param _Rp>
   [[nodiscard]] _CCCL_API constexpr auto operator<<=(_Rp) const noexcept
-    -> constant_wrapper<(_Tp::value <<= _Rp::value)>
   {
-    return {};
+    constexpr auto __value = _Tp::value <<= _Rp::value;
+    return constant_wrapper<__value>{};
   }
   template <__constexpr_param _Tp, __constexpr_param _Rp>
   [[nodiscard]] _CCCL_API constexpr auto operator>>=(_Rp) const noexcept
-    -> constant_wrapper<(_Tp::value >>= _Rp::value)>
   {
-    return {};
+    constexpr auto __value = _Tp::value >>= _Rp::value;
+    return constant_wrapper<__value>{};
   }
 };
 
@@ -350,14 +382,14 @@ template <class _Tp, _Tp... _Values>
 _CCCL_GLOBAL_CONSTANT _Tp __cw_storage_array[]{_Values...};
 
 template <auto _Value, size_t... _Is>
-[[nodiscard]] consteval const auto& __make_cw_fixed_value_storage_array_helper(index_sequence<_Is...>) noexcept
+[[nodiscard]] _CCCL_API constexpr const auto& __make_cw_fixed_value_storage_array_helper(index_sequence<_Is...>) noexcept
 {
   using _Tp = remove_cvref_t<remove_extent_t<decltype(_Value.__data[0])>>;
   return __cw_storage_array<_Tp, _Value.__data[_Is]...>;
 }
 
 template <auto _Value>
-[[nodiscard]] consteval const auto& __make_fixed_value_storage() noexcept
+[[nodiscard]] _CCCL_API constexpr const auto& __make_fixed_value_storage() noexcept
 {
   using _FixedValue = decltype(_Value);
   using _Tp         = typename _FixedValue::__type;
@@ -372,38 +404,36 @@ template <auto _Value>
   }
 }
 
-template <class _Tp, class _Up>
-consteval auto __cw_assign()
-{
-  return _Tp::value = _Up::value;
-}
-
 template <__cw_fixed_value _Xp, class>
 struct constant_wrapper : __cw_operators
 {
-  static constexpr const auto& value = ::cuda::std::__make_fixed_value_storage<_Xp>();
+  static constexpr const auto& value = ::cuda::std::__make_fixed_value_storage<_Xp>().__data;
   using type                         = constant_wrapper;
   using value_type                   = decltype(_Xp)::__type;
 
   template <__constexpr_param _Rp>
   [[nodiscard]] _CCCL_API constexpr auto operator=(_Rp) const noexcept
-    -> constant_wrapper<__cw_assign<constant_wrapper, _Rp>>
   {
-    return {};
+    constexpr auto __value = value = _Rp::value;
+    return constant_wrapper<__value>{};
+  }
+
+  _CCCL_API static constexpr decltype(value) __get() noexcept
+  {
+    return ::cuda::std::__make_fixed_value_storage<_Xp>().__data;
   }
 
   _CCCL_API constexpr operator decltype(value)() const noexcept
   {
-    return value;
+    return __get();
   }
 
   template <class... _Args>
     requires __constexpr_callable<value, _Args...>
-  [[nodiscard]]
-  _CCCL_API constexpr constant_wrapper<::cuda::std::invoke(value, remove_cvref_t<_Args>::value...)>
-  operator()(_Args&&...) const noexcept
+  [[nodiscard]] _CCCL_API constexpr auto operator()(_Args&&...) const noexcept
   {
-    return {};
+    constexpr auto __value = ::cuda::std::invoke(value, remove_cvref_t<_Args>::value...);
+    return constant_wrapper<__value>{};
   }
 
   template <class... _Args>
@@ -416,10 +446,10 @@ struct constant_wrapper : __cw_operators
 #  if _CCCL_HAS_MULTIARG_OPERATOR_BRACKETS()
   template <class... _Args>
     requires __constexpr_indexable<value, _Args...>
-  [[nodiscard]]
-  _CCCL_API constexpr constant_wrapper<value[remove_cvref_t<_Args>::value...]> operator[](_Args&&...) const noexcept
+  [[nodiscard]] _CCCL_API constexpr operator[](_Args&&...) const noexcept
   {
-    return {};
+    constexpr auto __value = value[remove_cvref_t<_Args>::value...];
+    return constant_wrapper<__value>{};
   }
 
   template <class... _Args>
@@ -432,10 +462,10 @@ struct constant_wrapper : __cw_operators
 #  else
   template <class _Arg>
     requires __constexpr_indexable<value, _Arg>
-  [[nodiscard]]
-  _CCCL_API constexpr constant_wrapper<value[remove_cvref_t<_Arg>::value]> operator[](_Arg&&) const noexcept
+  [[nodiscard]] _CCCL_API constexpr auto operator[](_Arg&&) const noexcept
   {
-    return {};
+    constexpr auto __value = value[remove_cvref_t<_Arg>::value];
+    return constant_wrapper<__value>{};
   }
 
   template <class _Arg>

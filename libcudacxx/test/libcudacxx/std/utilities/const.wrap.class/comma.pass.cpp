@@ -19,6 +19,10 @@
 
 #include "test_macros.h"
 
+// Suppress warnings regarding value discard in (x, y)
+TEST_NV_DIAG_SUPPRESS(174) // expression has no effect
+TEST_DIAG_SUPPRESS_CLANG("-Wunused-value")
+
 struct WithOps
 {
   int value;
@@ -56,7 +60,7 @@ static_assert(!HasComma<cuda::std::constant_wrapper<NoOps{}>, cuda::std::constan
 static_assert(HasComma<cuda::std::constant_wrapper<42>, int>);
 static_assert(HasComma<int, cuda::std::constant_wrapper<42>>);
 
-constexpr bool test()
+TEST_FUNC constexpr bool test()
 {
   {
     // only mixed with runtime parameters

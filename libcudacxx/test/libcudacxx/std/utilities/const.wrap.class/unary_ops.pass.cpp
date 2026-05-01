@@ -211,7 +211,7 @@ static_assert(!HasNoexceptNot<cuda::std::constant_wrapper<OpsReturnNonStructural
 static_assert(!HasNoexceptBitAnd<cuda::std::constant_wrapper<OpsReturnNonStructural{42}>>);
 static_assert(!HasNoexceptDeref<cuda::std::constant_wrapper<OpsReturnNonStructural{42}>>);
 
-constexpr bool test()
+TEST_FUNC constexpr bool test()
 {
   {
     // int
@@ -237,22 +237,22 @@ constexpr bool test()
     // WithOps
     cuda::std::constant_wrapper<WithOps{42}> cwWithOps;
 
-    cuda::std::same_as<cuda::std::constant_wrapper<WithOps{42}>> decltype(auto) result = +cwWithOps;
+    [[maybe_unused]] cuda::std::same_as<cuda::std::constant_wrapper<WithOps{42}>> decltype(auto) result = +cwWithOps;
     static_assert(result.value.value == 42);
 
-    cuda::std::same_as<cuda::std::constant_wrapper<WithOps{-42}>> decltype(auto) result2 = -cwWithOps;
+    [[maybe_unused]] cuda::std::same_as<cuda::std::constant_wrapper<WithOps{-42}>> decltype(auto) result2 = -cwWithOps;
     static_assert(result2.value.value == -42);
 
-    cuda::std::same_as<cuda::std::constant_wrapper<WithOps{~42}>> decltype(auto) result3 = ~cwWithOps;
+    [[maybe_unused]] cuda::std::same_as<cuda::std::constant_wrapper<WithOps{~42}>> decltype(auto) result3 = ~cwWithOps;
     static_assert(result3.value.value == ~42);
 
-    cuda::std::same_as<cuda::std::constant_wrapper<WithOps{!42}>> decltype(auto) result4 = !cwWithOps;
+    [[maybe_unused]] cuda::std::same_as<cuda::std::constant_wrapper<WithOps{!42}>> decltype(auto) result4 = !cwWithOps;
     static_assert(result4.value.value == !42);
 
-    cuda::std::same_as<cuda::std::constant_wrapper<WithOps{84}>> decltype(auto) result5 = &cwWithOps;
+    [[maybe_unused]] cuda::std::same_as<cuda::std::constant_wrapper<WithOps{84}>> decltype(auto) result5 = &cwWithOps;
     static_assert(result5.value.value == 84);
 
-    cuda::std::same_as<cuda::std::constant_wrapper<WithOps{0}>> decltype(auto) result6 = *cwWithOps;
+    [[maybe_unused]] cuda::std::same_as<cuda::std::constant_wrapper<WithOps{0}>> decltype(auto) result6 = *cwWithOps;
     static_assert(result6.value.value == 0);
   }
 
