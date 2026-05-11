@@ -129,6 +129,11 @@ cudax_add_catch2_test(test_target algorithm
     algorithm/copy.cu
 )
 
+cudax_add_catch2_test(test_target group.mapping.binary_partition
+    group/mapping/binary_partition.cu
+)
+target_compile_definitions(${test_target} PUBLIC _CUDAX_GROUP)
+
 cudax_add_catch2_test(test_target group.mapping.composite_mapping
     group/mapping/composite_mapping.cu
 )
