@@ -117,8 +117,8 @@ public:
     return _MappingResult{
       __prev_mapping_result.group_count() * 2,
       __group_rank,
-      ::cuda::std::popcount(__match_mask),
-      ::cuda::std::popcount(__match_mask & ::cuda::ptx::get_sreg_lanemask_lt())};
+      static_cast<unsigned>(::cuda::std::popcount(__match_mask)),
+      static_cast<unsigned>(::cuda::std::popcount(__match_mask & ::cuda::ptx::get_sreg_lanemask_lt()))};
   }
 };
 
