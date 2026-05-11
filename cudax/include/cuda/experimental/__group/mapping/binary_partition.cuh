@@ -85,7 +85,7 @@ public:
       __mapping_result<__static_ngroups, ::cuda::std::dynamic_extent, _PrevMappingResult::is_always_exhaustive(), false>;
 
     bool __pred;
-    unsigned __group_rank = -1;
+    unsigned __group_rank = ~0u;
     if (__prev_mapping_result.is_valid())
     {
       __pred       = static_cast<bool>(__fn_(__prev_mapping_result));
