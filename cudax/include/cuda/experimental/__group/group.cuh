@@ -75,7 +75,7 @@ class group
   }
 
   using _ParentMappingResult = typename _ParentGroup::__mapping_result_type;
-  using _MappingResult       = decltype(::cuda::std::declval<const _Mapping&>().map(
+  using _MappingResult       = decltype(::cuda::std::declval<_Mapping>().map(
     ::cuda::std::declval<const _ParentGroup&>(),
     __get_initial_mapping_result(::cuda::std::declval<const _ParentGroup&>())));
   using _SynchronizerInstance =
