@@ -71,11 +71,61 @@ class barrier_synchronizer
 
   ::cuda::std::span<_Barrier, _Np> __barriers_;
 
+  template <class _MappingResult>
+  _CCCL_DEVICE_API static void __check_group_count(const _MappingResult& __mapping_result) noexcept
+  {
+    if constexpr (_MappingResult::static_group_count() != ::cuda::std::dynamic_extent
+                  && _Np != ::cuda::std::dynamic_extent)
+    {
+      static_assert(_MappingResult::static_group_count() <= _Np, "invalid number of barriers passed");
+    }
+    else if (__mapping_result.valid())
+    {
+      _CCCL_ASSERT(__mapping_result.group_count() <= __barriers_.size(), "invalid number of barriers passed");
+    }
+  }
+
 public:
   using barrier_type = _Barrier;
 
   struct __synchronizer_instance
   {
+    template <class _PrevMappingResult, class _MappingResult>
+    _CCCL_DEVICE_API void update(const _PrevMappingResult& __prev,
+                                 const _MappingResult& __curr,
+                                 const barrier_synchronizer& __synchronizer) noexcept
+    {
+      if (!__curr.valid())
+      {
+        if (__prev.valid())
+        {
+          __synchronizer.__barriers_[__prev.group_rank()].arrive_and_drop();
+        }
+        return;
+      }
+
+      if (__prev.group_count() == __curr.group_count())
+      {
+        return;
+      }
+
+      __check_group_count(__curr);
+
+      const bool __is_in_new_group = (__curr.group_rank() >= __prev.group_count());
+
+      if (__is_in_new_group && __curr.rank() == 0)
+      {
+        init(&__synchronizer.__barriers_[__curr.group_rank()], __curr.count());
+      }
+
+      __synchronizer.__barriers_[__prev.group_rank()].arrive_and_wait();
+
+      if (__is_in_new_group)
+      {
+        __synchronizer.__barriers_[__prev.group_rank()].arrive_and_drop();
+      }
+    }
+
     template <class _MappingResult>
     _CCCL_DEVICE_API void
     do_sync(const _MappingResult& __mapping_result, const barrier_synchronizer& __synchronizer) const noexcept
@@ -100,12 +150,9 @@ public:
     return __barriers_;
   }
 
-  template <class _Unit, class _ParentGroup, class _Mapping, class _MappingResult>
+  template <class _Unit, class _ParentGroup, class _InitMappingResult>
   [[nodiscard]] _CCCL_DEVICE_API __synchronizer_instance make_instance(
-    const _Unit&,
-    const _ParentGroup& __parent,
-    const _Mapping& __mapping,
-    const _MappingResult& __mapping_result) const noexcept
+    const _Unit&, const _ParentGroup& __parent, const _InitMappingResult& __init_mapping_result) const noexcept
   {
     using _Level = typename _ParentGroup::level_type;
 
@@ -113,19 +160,11 @@ public:
     static_assert(__barrier_scope_v<_Barrier> <= ::cuda::experimental::__minimum_required_scope_for<_Level>(),
                   "_Barrier's thread scope is insufficient for group synchronization in _Level");
 
-    if constexpr (_MappingResult::static_group_count() != ::cuda::std::dynamic_extent
-                  && _Np != ::cuda::std::dynamic_extent)
-    {
-      static_assert(_MappingResult::static_group_count() <= _Np, "invalid number of barriers passed");
-    }
-    else
-    {
-      _CCCL_ASSERT(__mapping_result.group_count() <= __barriers_.size(), "invalid number of barriers passed");
-    }
+    __check_group_count(__init_mapping_result);
 
-    if (__mapping_result.is_valid() && __mapping_result.rank() == 0)
+    if (__init_mapping_result.rank() == 0)
     {
-      init(&__barriers_[__mapping_result.group_rank()], static_cast<::cuda::std::ptrdiff_t>(__mapping_result.count()));
+      init(&__synchronizer.__barriers_[0], __init_mapping_result.count());
     }
 
     // todo(dabayer): How we can expose making this aligned?
