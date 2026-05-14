@@ -40,10 +40,10 @@ struct __variant_copy_base<false>
 };
 
 template <bool _CanCopy, bool _CanMove>
-struct __variant_move_base : __variant_copy_base<_CanCopy>
+struct _CCCL_DECLSPEC_EMPTY_BASES __variant_move_base : __variant_copy_base<_CanCopy>
 {};
 template <bool _CanCopy>
-struct __variant_move_base<_CanCopy, false> : __variant_copy_base<_CanCopy>
+struct _CCCL_DECLSPEC_EMPTY_BASES __variant_move_base<_CanCopy, false> : __variant_copy_base<_CanCopy>
 {
   _CCCL_HIDE_FROM_ABI __variant_move_base()                                      = default;
   _CCCL_HIDE_FROM_ABI __variant_move_base(__variant_move_base const&)            = default;
@@ -53,10 +53,11 @@ struct __variant_move_base<_CanCopy, false> : __variant_copy_base<_CanCopy>
 };
 
 template <bool _CanCopy, bool _CanMove, bool _CanCopyAssign>
-struct __variant_copy_assign_base : __variant_move_base<_CanCopy, _CanMove>
+struct _CCCL_DECLSPEC_EMPTY_BASES __variant_copy_assign_base : __variant_move_base<_CanCopy, _CanMove>
 {};
 template <bool _CanCopy, bool _CanMove>
-struct __variant_copy_assign_base<_CanCopy, _CanMove, false> : __variant_move_base<_CanCopy, _CanMove>
+struct _CCCL_DECLSPEC_EMPTY_BASES
+__variant_copy_assign_base<_CanCopy, _CanMove, false> : __variant_move_base<_CanCopy, _CanMove>
 {
   _CCCL_HIDE_FROM_ABI __variant_copy_assign_base()                                        = default;
   _CCCL_HIDE_FROM_ABI __variant_copy_assign_base(__variant_copy_assign_base const&)       = default;
@@ -66,10 +67,11 @@ struct __variant_copy_assign_base<_CanCopy, _CanMove, false> : __variant_move_ba
 };
 
 template <bool _CanCopy, bool _CanMove, bool _CanCopyAssign, bool _CanMoveAssign>
-struct __variant_move_assign_base : __variant_copy_assign_base<_CanCopy, _CanMove, _CanCopyAssign>
+struct _CCCL_DECLSPEC_EMPTY_BASES
+__variant_move_assign_base : __variant_copy_assign_base<_CanCopy, _CanMove, _CanCopyAssign>
 {};
 template <bool _CanCopy, bool _CanMove, bool _CanCopyAssign>
-struct __variant_move_assign_base<_CanCopy, _CanMove, _CanCopyAssign, false>
+struct _CCCL_DECLSPEC_EMPTY_BASES __variant_move_assign_base<_CanCopy, _CanMove, _CanCopyAssign, false>
     : __variant_copy_assign_base<_CanCopy, _CanMove, _CanCopyAssign>
 {
   _CCCL_HIDE_FROM_ABI __variant_move_assign_base()                                             = default;

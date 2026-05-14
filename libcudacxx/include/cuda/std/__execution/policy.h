@@ -53,7 +53,7 @@ _CCCL_BEGIN_NAMESPACE_CUDA_STD_EXECUTION
 //! @brief Base class for our execution policies.
 //! It takes an untagged uint32_t because we want to be able to store 3 different enumerations in it.
 template <uint32_t _Policy, class... _Envs>
-struct __execution_policy_base : env<__unwrap_reference_t<_Envs>...>
+struct _CCCL_DECLSPEC_EMPTY_BASES __execution_policy_base : env<__unwrap_reference_t<_Envs>...>
 {
   //! @brief Tag that identifies this and all derived classes as a CCCL execution policy
   static constexpr uint32_t __cccl_policy_ = _Policy;

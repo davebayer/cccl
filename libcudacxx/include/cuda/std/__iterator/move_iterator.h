@@ -106,7 +106,7 @@ inline constexpr bool __noexcept_move_iter_iter_move =
 _LIBCUDACXX_BEGIN_HIDDEN_FRIEND_NAMESPACE
 
 template <class _Iter>
-class _CCCL_TYPE_VISIBILITY_DEFAULT move_iterator : public __move_iter_category_base<_Iter>
+class _CCCL_TYPE_VISIBILITY_DEFAULT _CCCL_DECLSPEC_EMPTY_BASES move_iterator : public __move_iter_category_base<_Iter>
 {
 private:
   template <class _It2>

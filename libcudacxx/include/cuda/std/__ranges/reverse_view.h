@@ -52,7 +52,7 @@ template <view _View>
 #else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
 template <class _View, class = enable_if_t<view<_View>>, class = enable_if_t<bidirectional_range<_View>>>
 #endif // !_CCCL_HAS_CONCEPTS()
-class reverse_view : public view_interface<reverse_view<_View>>
+class _CCCL_DECLSPEC_EMPTY_BASES reverse_view : public view_interface<reverse_view<_View>>
 {
   // We cache begin() whenever ranges::next is not guaranteed O(1) to provide an
   // amortized O(1) begin() method.

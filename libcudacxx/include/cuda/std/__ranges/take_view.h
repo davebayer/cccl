@@ -62,7 +62,7 @@ template <view _View>
 #else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
 template <class _View, class = enable_if_t<view<_View>>>
 #endif // !_CCCL_HAS_CONCEPTS()
-class take_view : public view_interface<take_view<_View>>
+class _CCCL_DECLSPEC_EMPTY_BASES take_view : public view_interface<take_view<_View>>
 {
   _CCCL_NO_UNIQUE_ADDRESS _View __base_ = _View();
   range_difference_t<_View> __count_    = 0;

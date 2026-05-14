@@ -119,7 +119,7 @@ using __zv_iter_category_base =
 //! }
 //! @endcode
 template <class... _Iterators>
-class zip_iterator : public __zv_iter_category_base<_Iterators...>
+class _CCCL_DECLSPEC_EMPTY_BASES zip_iterator : public __zv_iter_category_base<_Iterators...>
 {
   ::cuda::std::tuple<_Iterators...> __current_;
 

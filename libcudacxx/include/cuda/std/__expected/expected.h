@@ -85,7 +85,7 @@ inline constexpr bool __can_swap<void, _Err> = is_swappable_v<_Err> && is_move_c
 } // namespace __expected
 
 template <class _Tp, class _Err>
-class expected : private __expected_move_assign<_Tp, _Err>
+class _CCCL_DECLSPEC_EMPTY_BASES expected : private __expected_move_assign<_Tp, _Err>
 {
   using __base = __expected_move_assign<_Tp, _Err>;
 
@@ -1154,7 +1154,7 @@ public:
 };
 
 template <class _Err>
-class expected<void, _Err> : private __expected_move_assign<void, _Err>
+class _CCCL_DECLSPEC_EMPTY_BASES expected<void, _Err> : private __expected_move_assign<void, _Err>
 {
   using __base = __expected_move_assign<void, _Err>;
   static_assert(__unexpected::__valid_unexpected<_Err>,

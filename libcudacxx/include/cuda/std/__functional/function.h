@@ -982,7 +982,7 @@ public:
 } // namespace __function
 
 template <class _Rp, class... _ArgTypes>
-class _CCCL_TYPE_VISIBILITY_DEFAULT function<_Rp(_ArgTypes...)>
+class _CCCL_TYPE_VISIBILITY_DEFAULT _CCCL_DECLSPEC_EMPTY_BASES function<_Rp(_ArgTypes...)>
     : public __function::__maybe_derive_from_unary_function<_Rp(_ArgTypes...)>
     , public __function::__maybe_derive_from_binary_function<_Rp(_ArgTypes...)>
 {

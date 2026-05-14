@@ -42,7 +42,7 @@ _CCCL_BEGIN_NAMESPACE_CUDA
 //!
 //! __iunknown: Logically, the root of all interfaces.
 //!
-struct __iunknown : __basic_interface<::cuda::std::__type_always<__iunknown>::__call>
+struct _CCCL_DECLSPEC_EMPTY_BASES __iunknown : __basic_interface<::cuda::std::__type_always<__iunknown>::__call>
 {};
 
 #if _CCCL_HAS_EXCEPTIONS()
@@ -73,7 +73,7 @@ struct __bad_any_cast : ::std::bad_cast
 }
 #endif // !_CCCL_HAS_EXCEPTIONS()
 
-struct __rtti_base : __immovable
+struct _CCCL_DECLSPEC_EMPTY_BASES __rtti_base : __immovable
 {
   _CCCL_HOST_DEVICE_API constexpr __rtti_base(
     __vtable_kind __kind, uint16_t __nbr_interfaces, ::cuda::std::__type_info_ref __self) noexcept

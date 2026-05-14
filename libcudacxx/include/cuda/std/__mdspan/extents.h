@@ -404,7 +404,8 @@ struct __extent_delegate_tag
 // Used by mdspan, mdarray and layout mappings.
 // See ISO C++ standard [mdspan.extents]
 template <class _IndexType, size_t... _Extents>
-class extents : private __mdspan_detail::__maybe_static_array<_IndexType, size_t, dynamic_extent, _Extents...>
+class _CCCL_DECLSPEC_EMPTY_BASES extents
+    : private __mdspan_detail::__maybe_static_array<_IndexType, size_t, dynamic_extent, _Extents...>
 {
 public:
   // typedefs for integral types used

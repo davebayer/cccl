@@ -83,7 +83,7 @@ template <class _View,
           enable_if_t<indirect_unary_predicate<_Pred, iterator_t<_View>>, int> = 0,
           enable_if_t<is_object_v<_Pred>, int>                                 = 0>
 #endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
-class filter_view : public view_interface<filter_view<_View, _Pred>>
+class _CCCL_DECLSPEC_EMPTY_BASES filter_view : public view_interface<filter_view<_View, _Pred>>
 {
   _View __base_;
   __movable_box<_Pred> __pred_;
@@ -101,7 +101,7 @@ public:
   // but that is wrong. You are allowed to decltype (or auto) private types, even if you cannot
   // spell them out explicitly. This also seems to fire when calling operator==(), so the only
   // workaround is to make these classes public for those compilers.
-  class __iterator : public __filter_iterator_category<_View>
+  class _CCCL_DECLSPEC_EMPTY_BASES __iterator : public __filter_iterator_category<_View>
   {
   public:
     iterator_t<_View> __current_;

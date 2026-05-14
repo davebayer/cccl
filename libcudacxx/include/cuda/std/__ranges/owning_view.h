@@ -49,7 +49,7 @@ template <class _Rp,
           enable_if_t<movable<_Rp>, int>                                         = 0,
           enable_if_t<!__is_cuda_std_initializer_list<remove_cvref_t<_Rp>>, int> = 0>
 #endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
-class owning_view : public view_interface<owning_view<_Rp>>
+class _CCCL_DECLSPEC_EMPTY_BASES owning_view : public view_interface<owning_view<_Rp>>
 {
   _Rp __r_ = _Rp();
 

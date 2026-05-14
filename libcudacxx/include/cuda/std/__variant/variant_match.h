@@ -95,7 +95,7 @@ struct __overload<bool const volatile, _Idx> : __overload_bool<bool const volati
 {};
 
 template <class... _Bases>
-struct __all_overloads : _Bases...
+struct _CCCL_DECLSPEC_EMPTY_BASES __all_overloads : _Bases...
 {
   _CCCL_API inline void operator()() const;
   using _Bases::operator()...;

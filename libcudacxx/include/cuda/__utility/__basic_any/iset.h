@@ -40,12 +40,12 @@ template <class... _Interfaces>
 struct __iset__
 {
   template <class...>
-  struct __interface_ : __basic_interface<__interface_, __extends<_Interfaces...>>
+  struct _CCCL_DECLSPEC_EMPTY_BASES __interface_ : __basic_interface<__interface_, __extends<_Interfaces...>>
   {};
 };
 
 template <class... _Interfaces>
-struct __iset_ : __iset__<_Interfaces...>::template __interface_<>
+struct _CCCL_DECLSPEC_EMPTY_BASES __iset_ : __iset__<_Interfaces...>::template __interface_<>
 {};
 
 // flatten any nested sets

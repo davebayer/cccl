@@ -63,7 +63,7 @@ struct __with_property
   }
 
   template <class...>
-  struct __iproperty : __basic_interface<__iproperty>
+  struct _CCCL_DECLSPEC_EMPTY_BASES __iproperty : __basic_interface<__iproperty>
   {
     _CCCL_HOST_API friend auto get_property([[maybe_unused]] const __iproperty& __obj, _Property)
       -> __property_result_t<_Property>
@@ -125,7 +125,7 @@ __deallocate_async(_Resource& __mr, ::cuda::stream_ref __stream, void* __pv, siz
 }
 
 template <class...>
-struct __ibasic_resource : __basic_interface<__ibasic_resource>
+struct _CCCL_DECLSPEC_EMPTY_BASES __ibasic_resource : __basic_interface<__ibasic_resource>
 {
   _CCCL_PUBLIC_HOST_API void* allocate_sync(size_t __bytes, size_t __alignment)
   {
@@ -156,7 +156,7 @@ struct __ibasic_resource : __basic_interface<__ibasic_resource>
 };
 
 template <class...>
-struct __ibasic_async_resource : __basic_interface<__ibasic_async_resource>
+struct _CCCL_DECLSPEC_EMPTY_BASES __ibasic_async_resource : __basic_interface<__ibasic_async_resource>
 {
   _CCCL_PUBLIC_HOST_API void* allocate(::cuda::stream_ref __stream, size_t __bytes, size_t __alignment)
   {

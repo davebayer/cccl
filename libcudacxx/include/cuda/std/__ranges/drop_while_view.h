@@ -58,7 +58,7 @@ template <class _View,
           ::cuda::std::enable_if_t<::cuda::std::is_object_v<_Pred>, int>                                       = 0,
           ::cuda::std::enable_if_t<::cuda::std::indirect_unary_predicate<const _Pred, iterator_t<_View>>, int> = 0>
 #endif // !_CCCL_HAS_CONCEPTS()
-class drop_while_view : public view_interface<drop_while_view<_View, _Pred>>
+class _CCCL_DECLSPEC_EMPTY_BASES drop_while_view : public view_interface<drop_while_view<_View, _Pred>>
 {
   _CCCL_NO_UNIQUE_ADDRESS _View __base_{};
   _CCCL_NO_UNIQUE_ADDRESS __movable_box<_Pred> __pred_{};

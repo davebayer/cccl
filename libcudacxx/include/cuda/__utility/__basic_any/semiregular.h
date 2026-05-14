@@ -121,7 +121,7 @@ template <class _From, class _To>
 //! semi-regular interfaces
 //!
 template <class...>
-struct __imovable : __basic_interface<__imovable>
+struct _CCCL_DECLSPEC_EMPTY_BASES __imovable : __basic_interface<__imovable>
 {
   template <class _Tp>
   using overrides _CCCL_NODEBUG_ALIAS = __overrides_for<_Tp, &::cuda::__try_move_fn<_Tp>, &::cuda::__move_fn<_Tp>>;
@@ -138,7 +138,7 @@ struct __imovable : __basic_interface<__imovable>
 };
 
 template <class...>
-struct __icopyable : __basic_interface<__icopyable, __extends<__imovable<>>>
+struct _CCCL_DECLSPEC_EMPTY_BASES __icopyable : __basic_interface<__icopyable, __extends<__imovable<>>>
 {
   template <class _Tp>
   using overrides _CCCL_NODEBUG_ALIAS = __overrides_for<_Tp, &::cuda::__copy_fn<_Tp>>;
@@ -155,7 +155,7 @@ _CCCL_CONCEPT __non_polymorphic = (!__is_basic_any<_Object>) && (!__is_interface
 template <class... _Super>
 struct __iequality_comparable;
 
-struct iequality_comparable_base : __basic_interface<__iequality_comparable>
+struct _CCCL_DECLSPEC_EMPTY_BASES iequality_comparable_base : __basic_interface<__iequality_comparable>
 {
   // These overloads are only necessary so that __iequality_comparable<> itself
   // satisfies the std::equality_comparable constraint that is used by the
@@ -248,7 +248,7 @@ struct iequality_comparable_base : __basic_interface<__iequality_comparable>
 };
 
 template <class... _Super>
-struct __iequality_comparable : iequality_comparable_base
+struct _CCCL_DECLSPEC_EMPTY_BASES __iequality_comparable : iequality_comparable_base
 {};
 
 struct __self; // a nice placeholder type
@@ -271,7 +271,7 @@ template <class _To>
 struct __iconvertible_to_<__self, _To>
 {
   template <class...>
-  struct __interface_ : __basic_interface<__interface_>
+  struct _CCCL_DECLSPEC_EMPTY_BASES __interface_ : __basic_interface<__interface_>
   {
     [[nodiscard]] _CCCL_HOST_DEVICE_API operator _To()
     {
@@ -287,7 +287,7 @@ template <class _To>
 struct __iconvertible_to_<__self&, _To>
 {
   template <class...>
-  struct __interface_ : __basic_interface<__interface_>
+  struct _CCCL_DECLSPEC_EMPTY_BASES __interface_ : __basic_interface<__interface_>
   {
     [[nodiscard]] _CCCL_HOST_DEVICE_API operator _To() &
     {
@@ -303,7 +303,7 @@ template <class _To>
 struct __iconvertible_to_<__self const&, _To>
 {
   template <class...>
-  struct __interface_ : __basic_interface<__interface_>
+  struct _CCCL_DECLSPEC_EMPTY_BASES __interface_ : __basic_interface<__interface_>
   {
     [[nodiscard]] _CCCL_HOST_DEVICE_API operator _To() const&
     {

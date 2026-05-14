@@ -61,7 +61,7 @@ template <class _View,
           class = enable_if_t<is_object_v<_Pred>>,
           class = enable_if_t<indirect_unary_predicate<const _Pred, iterator_t<_View>>>>
 #endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
-class take_while_view : public view_interface<take_while_view<_View, _Pred>>
+class _CCCL_DECLSPEC_EMPTY_BASES take_while_view : public view_interface<take_while_view<_View, _Pred>>
 {
   _CCCL_NO_UNIQUE_ADDRESS __movable_box<_Pred> __pred_;
   _CCCL_NO_UNIQUE_ADDRESS _View __base_ = _View();

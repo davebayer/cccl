@@ -97,7 +97,7 @@ template <class _View,
           class = enable_if_t<move_constructible<_Fn>>,
           class = enable_if_t<__transform_view_constraints<_View, _Fn>>>
 #endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
-class transform_view : public view_interface<transform_view<_View, _Fn>>
+class _CCCL_DECLSPEC_EMPTY_BASES transform_view : public view_interface<transform_view<_View, _Fn>>
 {
   _CCCL_NO_UNIQUE_ADDRESS _View __base_ = _View();
   _CCCL_NO_UNIQUE_ADDRESS __movable_box<_Fn> __func_;
@@ -107,7 +107,7 @@ public:
   class __sentinel;
 
   template <bool _Const>
-  class __iterator : public __transform_view_iterator_category_base<_View, _Fn>
+  class _CCCL_DECLSPEC_EMPTY_BASES __iterator : public __transform_view_iterator_category_base<_View, _Fn>
   {
     using _Parent = __maybe_const<_Const, transform_view>;
     using _Base   = __maybe_const<_Const, _View>;

@@ -65,7 +65,7 @@ template <class _Interface, int = __extension_of<_Interface, __imovable<>> + __e
 struct __basic_any_base;
 
 template <class _Interface>
-struct __basic_any_base<_Interface, 2> : __interface_of<_Interface> // copyable interfaces
+struct _CCCL_DECLSPEC_EMPTY_BASES __basic_any_base<_Interface, 2> : __interface_of<_Interface> // copyable interfaces
 {
   __basic_any_base() = default;
 

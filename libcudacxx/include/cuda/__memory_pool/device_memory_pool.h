@@ -62,7 +62,7 @@ _CCCL_DIAG_SUPPRESS_CLANG("-Wmissing-braces")
 //!    exceeds the lifetime of the ``device_memory_pool_ref``.
 //!
 //! @endrst
-class device_memory_pool_ref
+class _CCCL_DECLSPEC_EMPTY_BASES device_memory_pool_ref
     : public __memory_pool_base
     , public ::cuda::mr::memory_resource_base<device_memory_pool_ref>
 {

@@ -100,7 +100,7 @@ inline constexpr bool __opt_is_assignable_from_opt =
   && !__opt_check_assignable_from_opt<_Tp, _Up>::value;
 
 template <class _Tp>
-class optional : private __optional_move_assign_base<_Tp>
+class _CCCL_DECLSPEC_EMPTY_BASES optional : private __optional_move_assign_base<_Tp>
 {
   using __base = __optional_move_assign_base<_Tp>;
 

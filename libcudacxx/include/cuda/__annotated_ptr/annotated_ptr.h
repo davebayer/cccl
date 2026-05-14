@@ -33,7 +33,7 @@
 _CCCL_BEGIN_NAMESPACE_CUDA
 
 template <typename _Tp, typename _Property>
-class annotated_ptr : private ::cuda::__annotated_ptr_base<_Property>
+class _CCCL_DECLSPEC_EMPTY_BASES annotated_ptr : private ::cuda::__annotated_ptr_base<_Property>
 {
 public:
   using value_type      = _Tp;

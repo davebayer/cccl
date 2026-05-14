@@ -91,7 +91,7 @@ private:
 };
 
 template <class _Tp, int _Idx>
-struct __compressed_pair_elem<_Tp, _Idx, true> : private _Tp
+struct _CCCL_DECLSPEC_EMPTY_BASES __compressed_pair_elem<_Tp, _Idx, true> : private _Tp
 {
   using _ParamT         = _Tp;
   using reference       = _Tp&;
@@ -131,7 +131,7 @@ struct __compressed_pair_elem<_Tp, _Idx, true> : private _Tp
 };
 
 template <class _T1, class _T2>
-class __compressed_pair
+class _CCCL_DECLSPEC_EMPTY_BASES __compressed_pair
     : private __compressed_pair_elem<_T1, 0>
     , private __compressed_pair_elem<_T2, 1>
 {

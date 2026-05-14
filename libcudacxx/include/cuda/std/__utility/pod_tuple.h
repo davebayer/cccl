@@ -127,7 +127,8 @@ struct _CCCL_DECLSPEC_EMPTY_BASES __tupl_base<index_sequence<_Index...>, _Ts...>
 } // namespace __detail
 
 template <class... _Ts>
-struct __tuple : __detail::__tupl_base<index_sequence_for<_Ts...>, _Ts...>
+struct _CCCL_TYPE_VISIBILITY_DEFAULT
+_CCCL_DECLSPEC_EMPTY_BASES __tuple : __detail::__tupl_base<index_sequence_for<_Ts...>, _Ts...>
 {};
 
 template <>

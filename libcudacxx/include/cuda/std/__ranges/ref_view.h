@@ -59,7 +59,7 @@ template <range _Range>
 #else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
 template <class _Range, enable_if_t<range<_Range>, int> = 0, enable_if_t<is_object_v<_Range>, int> = 0>
 #endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
-class ref_view : public view_interface<ref_view<_Range>>
+class _CCCL_DECLSPEC_EMPTY_BASES ref_view : public view_interface<ref_view<_Range>>
 {
   _Range* __range_;
 

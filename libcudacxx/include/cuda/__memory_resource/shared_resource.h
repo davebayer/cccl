@@ -49,7 +49,7 @@ _CCCL_BEGIN_NAMESPACE_CUDA_MR
 //! @tparam _Resource The resource type to hold.
 //! @endrst
 template <class _Resource>
-struct shared_resource
+struct _CCCL_DECLSPEC_EMPTY_BASES shared_resource
     : ::cuda::mr::__copy_default_queries<_Resource>
     , ::cuda::forward_property<shared_resource<_Resource>, _Resource>
     , ::cuda::mr::memory_resource_base<shared_resource<_Resource>>

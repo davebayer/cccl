@@ -537,7 +537,7 @@ template <class _Is, class... _Ts>
 struct __type_tupl;
 
 template <size_t... _Is, class... _Ts>
-struct __type_tupl<index_sequence<_Is...>, _Ts...> : __type_tuple_elem<_Is, _Ts>...
+struct _CCCL_DECLSPEC_EMPTY_BASES __type_tupl<index_sequence<_Is...>, _Ts...> : __type_tuple_elem<_Is, _Ts>...
 {};
 
 template <class... _Ts>

@@ -42,7 +42,7 @@ enum class __determinism_t
 };
 
 template <__determinism_t _Guarantee>
-struct __determinism_holder_t : __requirement
+struct _CCCL_DECLSPEC_EMPTY_BASES __determinism_holder_t : __requirement
 {
   static constexpr __determinism_t value = _Guarantee;
 

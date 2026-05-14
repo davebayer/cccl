@@ -90,7 +90,7 @@ template <input_or_output_iterator _Iter>
 #else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
 template <class _Iter, enable_if_t<input_or_output_iterator<_Iter>, int> = 0>
 #endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
-class counted_iterator
+class _CCCL_DECLSPEC_EMPTY_BASES counted_iterator
     : public __counted_iterator_concept<_Iter>
     , public __counted_iterator_category<_Iter>
     , public __counted_iterator_value_type<_Iter>

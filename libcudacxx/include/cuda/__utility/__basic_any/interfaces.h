@@ -202,7 +202,7 @@ using __index_of_base _CCCL_NODEBUG_ALIAS =
   ::cuda::std::__type_apply<__find_index_of_base<_Interface>, __unique_interfaces<_Super>>;
 
 template <class...>
-struct __iempty : __basic_interface<__iempty>
+struct _CCCL_DECLSPEC_EMPTY_BASES __iempty : __basic_interface<__iempty>
 {};
 
 #if _CCCL_COMPILER(NVHPC)

@@ -71,7 +71,7 @@ struct __pool_destroyer
 //! Derived types supply constructors, ``get_property`` friend overloads, and
 //! ``default_queries``.
 template <class _Derived>
-class __shared_memory_pool_base
+class _CCCL_DECLSPEC_EMPTY_BASES __shared_memory_pool_base
     : public __memory_pool_base
     , public ::cuda::mr::memory_resource_base<_Derived>
 {

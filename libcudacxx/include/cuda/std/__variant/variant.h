@@ -49,7 +49,7 @@
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
 template <class... _Types>
-class _CCCL_TYPE_VISIBILITY_DEFAULT variant
+class _CCCL_TYPE_VISIBILITY_DEFAULT _CCCL_DECLSPEC_EMPTY_BASES variant
     : private __variant_base<__fold_and_v<is_copy_constructible_v<_Types>...>,
                              __fold_and_v<is_move_constructible_v<_Types>...>,
                              __fold_and_v<(is_copy_constructible_v<_Types> && is_copy_assignable_v<_Types>) ...>,

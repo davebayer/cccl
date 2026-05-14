@@ -76,7 +76,7 @@ template <
   enable_if_t<is_object_v<_Tp> && same_as<_Tp, remove_cv_t<_Tp>>, int> = 0,
   enable_if_t<(__integer_like_with_usable_difference_type<_Bound> || same_as<_Bound, unreachable_sentinel_t>), int> = 0>
 #endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
-class repeat_view : public view_interface<repeat_view<_Tp, _Bound>>
+class _CCCL_DECLSPEC_EMPTY_BASES repeat_view : public view_interface<repeat_view<_Tp, _Bound>>
 {
   friend ::cuda::std::ranges::views::__take::__fn;
   friend ::cuda::std::ranges::views::__drop::__fn;

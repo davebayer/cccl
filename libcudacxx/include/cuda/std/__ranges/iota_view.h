@@ -60,7 +60,7 @@ template <class _Start,
           enable_if_t<__weakly_equality_comparable_with<_Start, _BoundSentinel>, int> = 0,
           enable_if_t<copyable<_Start>, int>                                          = 0>
 #endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
-class iota_view : public view_interface<iota_view<_Start, _BoundSentinel>>
+class _CCCL_DECLSPEC_EMPTY_BASES iota_view : public view_interface<iota_view<_Start, _BoundSentinel>>
 {
 public:
   using __iterator = ::cuda::counting_iterator<_Start>;

@@ -61,7 +61,7 @@ struct __tupl<>
 };
 
 template <class _Ty, class... _Ts>
-struct __tupl<_Ty, _Ts...>
+struct _CCCL_DECLSPEC_EMPTY_BASES __tupl<_Ty, _Ts...>
     : type_identity<_Ty>
     , __tupl<_Ts...>
 {

@@ -49,7 +49,7 @@ _CCCL_BEGIN_NAMESPACE_CUDA
 //! @tparam _OffsetType The signed integer type for stride values (supports negative strides)
 //! @tparam _Strides... The stride values, where dynamic_stride indicates a runtime value
 template <class _OffsetType, ::cuda::std::ptrdiff_t... _Strides>
-class strides
+class _CCCL_DECLSPEC_EMPTY_BASES strides
     : private ::cuda::std::__mdspan_detail::
         __maybe_static_array<_OffsetType, ::cuda::std::ptrdiff_t, dynamic_stride, _Strides...>
 {

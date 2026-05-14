@@ -448,7 +448,7 @@ dynamic_shared_memory(::cuda::std::size_t __n, non_portable_t) noexcept
  * found in the CUDA programming guide `here
  * <https://docs.nvidia.com/cuda/cuda-c-programming-guide/#stream-priorities>`_
  */
-struct launch_priority : public __detail::launch_option
+struct _CCCL_DECLSPEC_EMPTY_BASES launch_priority : public __detail::launch_option
 {
   static constexpr bool needs_attribute_space        = true;
   static constexpr bool is_relevant_on_device        = false;

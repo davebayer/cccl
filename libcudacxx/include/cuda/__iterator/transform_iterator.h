@@ -156,7 +156,7 @@ inline constexpr bool __transform_iterator_nothrow_subscript<_Fn, _Iter, true> =
 //! }
 //! @endcode
 template <class _Fn, class _Iter>
-class transform_iterator : public __transform_iterator_category_base<_Fn, _Iter>
+class _CCCL_DECLSPEC_EMPTY_BASES transform_iterator : public __transform_iterator_category_base<_Fn, _Iter>
 {
   static_assert(::cuda::std::is_object_v<_Fn>, "cuda::transform_iterator requires that _Fn is a functor object");
   static_assert(::cuda::std::regular_invocable<_Fn&, ::cuda::std::iter_reference_t<_Iter>>,

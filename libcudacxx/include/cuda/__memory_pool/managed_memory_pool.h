@@ -60,7 +60,7 @@ _CCCL_DIAG_SUPPRESS_CLANG("-Wmissing-braces")
 //!    exceeds the lifetime of the ``managed_memory_pool_ref``.
 //!
 //! @endrst
-class managed_memory_pool_ref
+class _CCCL_DECLSPEC_EMPTY_BASES managed_memory_pool_ref
     : public __memory_pool_base
     , public ::cuda::mr::memory_resource_base<managed_memory_pool_ref>
 {

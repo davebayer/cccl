@@ -52,7 +52,7 @@ _CCCL_CONCEPT __has_member_deallocate = _CCCL_REQUIRES_EXPR(
 //! @note This adapter takes ownership of the contained resource.
 //! @tparam _Resource The type of the resource to be adapted
 template <class _Resource>
-struct synchronous_resource_adapter
+struct _CCCL_DECLSPEC_EMPTY_BASES synchronous_resource_adapter
     : ::cuda::mr::__copy_default_queries<_Resource>
     , ::cuda::forward_property<synchronous_resource_adapter<_Resource>, _Resource>
     , ::cuda::mr::memory_resource_base<synchronous_resource_adapter<_Resource>>

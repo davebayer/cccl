@@ -47,7 +47,7 @@ template <move_constructible _Tp>
 #else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
 template <class _Tp, enable_if_t<move_constructible<_Tp>, int> = 0, enable_if_t<is_object_v<_Tp>, int> = 0>
 #endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
-class single_view : public view_interface<single_view<_Tp>>
+class _CCCL_DECLSPEC_EMPTY_BASES single_view : public view_interface<single_view<_Tp>>
 {
   _CCCL_NO_UNIQUE_ADDRESS __movable_box<_Tp> __value_;
 

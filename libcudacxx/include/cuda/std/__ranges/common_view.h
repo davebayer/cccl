@@ -50,7 +50,7 @@ template <class _View,
           enable_if_t<!common_range<_View>, int>        = 0,
           enable_if_t<copyable<iterator_t<_View>>, int> = 0>
 #endif // !_CCCL_HAS_CONCEPTS()
-class common_view : public view_interface<common_view<_View>>
+class _CCCL_DECLSPEC_EMPTY_BASES common_view : public view_interface<common_view<_View>>
 {
   _View __base_{};
 

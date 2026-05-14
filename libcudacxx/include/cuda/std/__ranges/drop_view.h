@@ -62,7 +62,7 @@ template <view _View>
 #else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
 template <class _View, enable_if_t<view<_View>, int> = 0>
 #endif // !_CCCL_HAS_CONCEPTS()
-class drop_view : public view_interface<drop_view<_View>>
+class _CCCL_DECLSPEC_EMPTY_BASES drop_view : public view_interface<drop_view<_View>>
 {
   // We cache begin() whenever ::cuda::std::ranges::next is not guaranteed O(1) to provide an
   // amortized O(1) begin() method. If this is an input_range, then we cannot cache

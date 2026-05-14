@@ -41,7 +41,8 @@
 _CCCL_BEGIN_NAMESPACE_CUDA_MR
 
 //! @brief \c managed_memory_resource uses `cudaMallocManaged` / `cudaFree` for allocation / deallocation.
-class legacy_managed_memory_resource : public memory_resource_base<legacy_managed_memory_resource>
+class _CCCL_DECLSPEC_EMPTY_BASES
+legacy_managed_memory_resource : public memory_resource_base<legacy_managed_memory_resource>
 {
 private:
   unsigned int __flags_ = cudaMemAttachGlobal;
