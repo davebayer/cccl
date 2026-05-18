@@ -63,37 +63,40 @@ _CCCL_KERNEL_ATTRIBUTES void DeviceAdjacentDifferenceDifferenceKernel(
   _CCCL_GRID_CONSTANT const OffsetT num_items)
 {
   static_assert(::cuda::std::is_empty_v<PolicySelector>);
-  static constexpr adjacent_difference_policy policy = current_policy<PolicySelector>();
-  using AdjacentDifferencePolicyT =
-    AgentAdjacentDifferencePolicy<policy.threads_per_block,
-                                  policy.items_per_thread,
-                                  policy.load_algorithm,
-                                  policy.load_modifier,
-                                  policy.store_algorithm>;
 
-  // It is OK to introspect the return type or parameter types of the
-  // `operator()` function of `__device__` extended lambda within device code.
-  using OutputT = ::cuda::std::invoke_result_t<DifferenceOpT, InputT, InputT>;
+  device_dispatch_compute_cap([&](auto cc_constant) _CCCL_FORCEINLINE_LAMBDA {
+    static constexpr adjacent_difference_policy policy = select_policy<PolicySelector>(cc_constant);
+    using AdjacentDifferencePolicyT =
+      AgentAdjacentDifferencePolicy<policy.threads_per_block,
+                                    policy.items_per_thread,
+                                    policy.load_algorithm,
+                                    policy.load_modifier,
+                                    policy.store_algorithm>;
 
-  using Agent =
-    AgentDifference<AdjacentDifferencePolicyT,
-                    InputIteratorT,
-                    OutputIteratorT,
-                    DifferenceOpT,
-                    OffsetT,
-                    InputT,
-                    OutputT,
-                    MayAlias,
-                    ReadLeft>;
+    // It is OK to introspect the return type or parameter types of the
+    // `operator()` function of `__device__` extended lambda within device code.
+    using OutputT = ::cuda::std::invoke_result_t<DifferenceOpT, InputT, InputT>;
 
-  __shared__ typename Agent::TempStorage storage;
+    using Agent =
+      AgentDifference<AdjacentDifferencePolicyT,
+                      InputIteratorT,
+                      OutputIteratorT,
+                      DifferenceOpT,
+                      OffsetT,
+                      InputT,
+                      OutputT,
+                      MayAlias,
+                      ReadLeft>;
 
-  Agent agent(storage, input, first_tile_previous, result, difference_op, num_items);
+    __shared__ typename Agent::TempStorage storage;
 
-  int tile_idx      = static_cast<int>(blockIdx.x);
-  OffsetT tile_base = static_cast<OffsetT>(tile_idx) * AdjacentDifferencePolicyT::ITEMS_PER_TILE;
+    Agent agent(storage, input, first_tile_previous, result, difference_op, num_items);
 
-  agent.Process(tile_idx, tile_base);
+    int tile_idx      = static_cast<int>(blockIdx.x);
+    OffsetT tile_base = static_cast<OffsetT>(tile_idx) * AdjacentDifferencePolicyT::ITEMS_PER_TILE;
+
+    agent.Process(tile_idx, tile_base);
+  });
 }
 
 template <typename PolicyHub>

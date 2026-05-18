@@ -90,88 +90,90 @@ __launch_bounds__(int(current_policy<PolicySelector>().large_buffer.threads_per_
     TileT buffer_offset_tile,
     _CCCL_GRID_CONSTANT const TileOffsetT last_tile_offset)
 {
-  static constexpr large_buffer_policy policy = current_policy<PolicySelector>().large_buffer;
-  using StatusWord                            = typename TileT::StatusWord;
-  using BufferSizeT                           = it_value_t<BufferSizeIteratorT>;
-  /// Internal load/store type. For byte-wise memcpy, a single-byte type
-  using AliasT = typename ::cuda::std::conditional_t<MemcpyOpt == CopyAlg::Memcpy,
-                                                     ::cuda::std::type_identity<char>,
-                                                     lazy_trait<it_value_t, it_value_t<InputBufferIt>>>::type;
-  /// Types of the input and output buffers
-  using InputBufferT  = it_value_t<InputBufferIt>;
-  using OutputBufferT = it_value_t<OutputBufferIt>;
+  device_dispatch_compute_cap([&](auto cc_constant) _CCCL_FORCEINLINE_LAMBDA {
+    static constexpr large_buffer_policy policy = select_policy<PolicySelector>(cc_constant).large_buffer;
+    using StatusWord                            = typename TileT::StatusWord;
+    using BufferSizeT                           = it_value_t<BufferSizeIteratorT>;
+    /// Internal load/store type. For byte-wise memcpy, a single-byte type
+    using AliasT = typename ::cuda::std::conditional_t<MemcpyOpt == CopyAlg::Memcpy,
+                                                       ::cuda::std::type_identity<char>,
+                                                       lazy_trait<it_value_t, it_value_t<InputBufferIt>>>::type;
+    /// Types of the input and output buffers
+    using InputBufferT  = it_value_t<InputBufferIt>;
+    using OutputBufferT = it_value_t<OutputBufferIt>;
 
-  constexpr uint32_t BLOCK_THREADS    = static_cast<uint32_t>(policy.threads_per_block);
-  constexpr uint32_t ITEMS_PER_THREAD = static_cast<uint32_t>(policy.bytes_per_thread);
-  constexpr BufferSizeT TILE_SIZE     = static_cast<BufferSizeT>(BLOCK_THREADS * ITEMS_PER_THREAD);
+    constexpr uint32_t BLOCK_THREADS    = static_cast<uint32_t>(policy.threads_per_block);
+    constexpr uint32_t ITEMS_PER_THREAD = static_cast<uint32_t>(policy.bytes_per_thread);
+    constexpr BufferSizeT TILE_SIZE     = static_cast<BufferSizeT>(BLOCK_THREADS * ITEMS_PER_THREAD);
 
-  BufferOffsetT num_blev_buffers = buffer_offset_tile.LoadValid(last_tile_offset);
+    BufferOffsetT num_blev_buffers = buffer_offset_tile.LoadValid(last_tile_offset);
 
-  uint32_t tile_id = blockIdx.x;
+    uint32_t tile_id = blockIdx.x;
 
-  // No block-level buffers => we're done here
-  if (num_blev_buffers == 0)
-  {
-    return;
-  }
-
-  // While there's still tiles of bytes from block-level buffers to copied
-  do
-  {
-    __shared__ BufferOffsetT block_buffer_id;
-
-    // Make sure thread 0 does not overwrite the buffer id before other threads have finished with
-    // the prior iteration of the loop
-    __syncthreads();
-
-    // Binary search the buffer that this tile belongs to
-    if (threadIdx.x == 0)
-    {
-      block_buffer_id = UpperBound(buffer_tile_offsets, num_blev_buffers, tile_id) - 1;
-    }
-
-    // Make sure thread 0 has written the buffer this thread block is assigned to
-    __syncthreads();
-
-    const BufferOffsetT buffer_id = block_buffer_id;
-
-    // The relative offset of this tile within the buffer it's assigned to
-    BufferSizeT tile_offset_within_buffer =
-      static_cast<BufferSizeT>(tile_id - buffer_tile_offsets[buffer_id]) * TILE_SIZE;
-
-    // If the tile has already reached beyond the work of the end of the last buffer
-    if (buffer_id >= num_blev_buffers - 1 && tile_offset_within_buffer > buffer_sizes[buffer_id])
+    // No block-level buffers => we're done here
+    if (num_blev_buffers == 0)
     {
       return;
     }
 
-    // Tiny remainders are copied without vectorizing loads
-    if (buffer_sizes[buffer_id] - tile_offset_within_buffer <= 32)
+    // While there's still tiles of bytes from block-level buffers to copied
+    do
     {
-      BufferSizeT thread_offset = tile_offset_within_buffer + threadIdx.x;
-      for (int i = 0; i < ITEMS_PER_THREAD; i++)
-      {
-        if (thread_offset < buffer_sizes[buffer_id])
-        {
-          const auto value = read_item < MemcpyOpt == CopyAlg::Memcpy, AliasT,
-                     InputBufferT > (input_buffer_it[buffer_id], thread_offset);
-          write_item<MemcpyOpt == CopyAlg::Memcpy, AliasT, OutputBufferT>(
-            output_buffer_it[buffer_id], thread_offset, value);
-        }
-        thread_offset += BLOCK_THREADS;
-      }
-    }
-    else
-    {
-      copy_items<MemcpyOpt == CopyAlg::Memcpy, BLOCK_THREADS, InputBufferT, OutputBufferT, BufferSizeT>(
-        input_buffer_it[buffer_id],
-        output_buffer_it[buffer_id],
-        (::cuda::std::min) (buffer_sizes[buffer_id] - tile_offset_within_buffer, TILE_SIZE),
-        tile_offset_within_buffer);
-    }
+      __shared__ BufferOffsetT block_buffer_id;
 
-    tile_id += gridDim.x;
-  } while (true);
+      // Make sure thread 0 does not overwrite the buffer id before other threads have finished with
+      // the prior iteration of the loop
+      __syncthreads();
+
+      // Binary search the buffer that this tile belongs to
+      if (threadIdx.x == 0)
+      {
+        block_buffer_id = UpperBound(buffer_tile_offsets, num_blev_buffers, tile_id) - 1;
+      }
+
+      // Make sure thread 0 has written the buffer this thread block is assigned to
+      __syncthreads();
+
+      const BufferOffsetT buffer_id = block_buffer_id;
+
+      // The relative offset of this tile within the buffer it's assigned to
+      BufferSizeT tile_offset_within_buffer =
+        static_cast<BufferSizeT>(tile_id - buffer_tile_offsets[buffer_id]) * TILE_SIZE;
+
+      // If the tile has already reached beyond the work of the end of the last buffer
+      if (buffer_id >= num_blev_buffers - 1 && tile_offset_within_buffer > buffer_sizes[buffer_id])
+      {
+        return;
+      }
+
+      // Tiny remainders are copied without vectorizing loads
+      if (buffer_sizes[buffer_id] - tile_offset_within_buffer <= 32)
+      {
+        BufferSizeT thread_offset = tile_offset_within_buffer + threadIdx.x;
+        for (int i = 0; i < ITEMS_PER_THREAD; i++)
+        {
+          if (thread_offset < buffer_sizes[buffer_id])
+          {
+            const auto value = read_item < MemcpyOpt == CopyAlg::Memcpy, AliasT,
+                       InputBufferT > (input_buffer_it[buffer_id], thread_offset);
+            write_item<MemcpyOpt == CopyAlg::Memcpy, AliasT, OutputBufferT>(
+              output_buffer_it[buffer_id], thread_offset, value);
+          }
+          thread_offset += BLOCK_THREADS;
+        }
+      }
+      else
+      {
+        copy_items<MemcpyOpt == CopyAlg::Memcpy, BLOCK_THREADS, InputBufferT, OutputBufferT, BufferSizeT>(
+          input_buffer_it[buffer_id],
+          output_buffer_it[buffer_id],
+          (::cuda::std::min) (buffer_sizes[buffer_id] - tile_offset_within_buffer, TILE_SIZE),
+          tile_offset_within_buffer);
+      }
+
+      tile_id += gridDim.x;
+    } while (true);
+  });
 }
 
 /**

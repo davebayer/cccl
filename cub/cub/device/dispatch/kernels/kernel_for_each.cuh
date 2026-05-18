@@ -93,24 +93,26 @@ template <class PolicySelector, class OffsetT, class OpT>
 #endif // _CCCL_HAS_CONCEPTS()
 _CCCL_KERNEL_ATTRIBUTES void dynamic_kernel(_CCCL_GRID_CONSTANT const OffsetT num_items, OpT op)
 {
-  static constexpr for_policy policy = current_policy<PolicySelector>();
-  using agent_policy_t               = policy_t<policy.threads_per_block, policy.items_per_thread>;
-  using agent_t                      = agent_block_striped_t<agent_policy_t, OffsetT, OpT>;
+  device_dispatch_compute_cap([&](auto cc_constant) _CCCL_FORCEINLINE_LAMBDA {
+    static constexpr for_policy policy = select_policy<PolicySelector>(cc_constant);
+    using agent_policy_t               = policy_t<policy.threads_per_block, policy.items_per_thread>;
+    using agent_t                      = agent_block_striped_t<agent_policy_t, OffsetT, OpT>;
 
-  const auto threads_per_block = static_cast<OffsetT>(blockDim.x);
-  const auto items_per_tile    = policy.items_per_thread * threads_per_block;
-  const auto tile_base         = static_cast<OffsetT>(blockIdx.x) * items_per_tile;
-  const auto num_remaining     = num_items - tile_base;
-  const auto items_in_tile     = static_cast<OffsetT>(num_remaining < items_per_tile ? num_remaining : items_per_tile);
+    const auto threads_per_block = static_cast<OffsetT>(blockDim.x);
+    const auto items_per_tile    = policy.items_per_thread * threads_per_block;
+    const auto tile_base         = static_cast<OffsetT>(blockIdx.x) * items_per_tile;
+    const auto num_remaining     = num_items - tile_base;
+    const auto items_in_tile = static_cast<OffsetT>(num_remaining < items_per_tile ? num_remaining : items_per_tile);
 
-  if (items_in_tile == items_per_tile)
-  {
-    agent_t{tile_base, op}.template consume_tile<true>(items_per_tile, threads_per_block);
-  }
-  else
-  {
-    agent_t{tile_base, op}.template consume_tile<false>(items_in_tile, threads_per_block);
-  }
+    if (items_in_tile == items_per_tile)
+    {
+      agent_t{tile_base, op}.template consume_tile<true>(items_per_tile, threads_per_block);
+    }
+    else
+    {
+      agent_t{tile_base, op}.template consume_tile<false>(items_in_tile, threads_per_block);
+    }
+  });
 }
 
 // This kernel is used when the block size is known at compile time
@@ -122,24 +124,26 @@ _CCCL_KERNEL_ATTRIBUTES //
 __launch_bounds__(int(current_policy<PolicySelector>().threads_per_block)) //
   void static_kernel(_CCCL_GRID_CONSTANT const OffsetT num_items, OpT op)
 {
-  static constexpr for_policy policy = current_policy<PolicySelector>();
-  using agent_policy_t               = policy_t<policy.threads_per_block, policy.items_per_thread>;
-  using agent_t                      = agent_block_striped_t<agent_policy_t, OffsetT, OpT>;
+  device_dispatch_compute_cap([&](auto cc_constant) _CCCL_FORCEINLINE_LAMBDA {
+    static constexpr for_policy policy = select_policy<PolicySelector>(cc_constant);
+    using agent_policy_t               = policy_t<policy.threads_per_block, policy.items_per_thread>;
+    using agent_t                      = agent_block_striped_t<agent_policy_t, OffsetT, OpT>;
 
-  constexpr auto items_per_tile = policy.items_per_thread * policy.threads_per_block;
+    constexpr auto items_per_tile = policy.items_per_thread * policy.threads_per_block;
 
-  const auto tile_base     = static_cast<OffsetT>(blockIdx.x) * items_per_tile;
-  const auto num_remaining = num_items - tile_base;
-  const auto items_in_tile = static_cast<OffsetT>(num_remaining < items_per_tile ? num_remaining : items_per_tile);
+    const auto tile_base     = static_cast<OffsetT>(blockIdx.x) * items_per_tile;
+    const auto num_remaining = num_items - tile_base;
+    const auto items_in_tile = static_cast<OffsetT>(num_remaining < items_per_tile ? num_remaining : items_per_tile);
 
-  if (items_in_tile == items_per_tile)
-  {
-    agent_t{tile_base, op}.template consume_tile<true>(items_per_tile, policy.threads_per_block);
-  }
-  else
-  {
-    agent_t{tile_base, op}.template consume_tile<false>(items_in_tile, policy.threads_per_block);
-  }
+    if (items_in_tile == items_per_tile)
+    {
+      agent_t{tile_base, op}.template consume_tile<true>(items_per_tile, policy.threads_per_block);
+    }
+    else
+    {
+      agent_t{tile_base, op}.template consume_tile<false>(items_in_tile, policy.threads_per_block);
+    }
+  });
 }
 
 /***********************************************************************************************************************

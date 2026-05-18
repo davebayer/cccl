@@ -144,6 +144,31 @@ dispatch_compute_cap(PolicySelector policy_selector, ::cuda::compute_capability 
   });
 }
 #endif // !defined(CUB_DEFINE_RUNTIME_POLICIES) && !_CCCL_COMPILER(NVRTC)
+
+#if _CCCL_CUDA_COMPILER(NVHPC)
+template <class Fn, ::cuda::std::size_t... Is>
+_CCCL_DEVICE_API _CCCL_FORCEINLINE void
+device_dispatch_compute_cap_nvhpc_helper(Fn&& fn, ::cuda::std::index_sequence<Is...>)
+{
+  (..., [&](auto cc_constant) {
+    if target (nv::target::is_exactly(nv::target::detail::sm_selector{cc_constant.value}))
+    {
+      fn(cc_constant);
+    }
+  }(::cuda::std::integral_constant<int, ::cuda::__target_compute_capabilities()[Is]>{}));
+}
+#endif // _CCCL_CUDA_COMPILER(NVHPC)
+
+template <class Fn>
+_CCCL_DEVICE_API _CCCL_FORCEINLINE void device_dispatch_compute_cap(Fn&& fn)
+{
+#if _CCCL_CUDA_COMPILER(NVHPC)
+  device_dispatch_compute_cap_nvhpc_helper(
+    ::cuda::std::forward<Fn>(fn), ::cuda::std::make_index_sequence<::cuda::__target_compute_capabilities().size()>{});
+#else // ^^^ _CCCL_CUDA_COMPILER(NVHPC) ^^^ / vvv !_CCCL_CUDA_COMPILER(NVHPC) vvv
+  fn(::cuda::std::integral_constant<int, ::cuda::device::current_compute_capability()>{});
+#endif // ^^^ !_CCCL_CUDA_COMPILER(NVHPC) ^^^
+}
 } // namespace detail
 
 CUB_NAMESPACE_END

@@ -199,6 +199,13 @@ template <class PolicySelector>
   return PolicySelector{}(cc);
 }
 
+_CCCL_EXEC_CHECK_DISABLE
+template <class PolicySelector, int Cc>
+[[nodiscard]] _CCCL_HOST_DEVICE_API constexpr auto select_policy(::cuda::std::integral_constant<int, Cc>)
+{
+  return PolicySelector{}(Cc);
+}
+
 template <class PolicySelector>
 [[nodiscard]] _CCCL_DEVICE_API constexpr auto current_policy()
 {
