@@ -33,8 +33,14 @@ function(cccl_add_stdpar_test test_file)
   target_link_libraries(stdpar_test_${test_name} PUBLIC CCCL::CCCL)
 
   # Ensure that we are testing with GPU support
-  target_compile_options(stdpar_test_${test_name} PUBLIC -stdpar=gpu)
-  target_link_options(stdpar_test_${test_name} PUBLIC -stdpar=gpu)
+  target_compile_options(
+    stdpar_test_${test_name}
+    PUBLIC -stdpar=gpu -gpu=sm_120 -gpu=sm_100 -gpu=sm_80
+  )
+  target_link_options(
+    stdpar_test_${test_name}
+    PUBLIC -stdpar=gpu -gpu=sm_120 -gpu=sm_100 -gpu=sm_80
+  )
 
   # Ensure that we are indeed testing the same CCCL version
   target_compile_definitions(

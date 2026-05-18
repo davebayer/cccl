@@ -83,6 +83,19 @@ finalize_and_store_aggregate(OutputIteratorT d_out, ReductionOpT, empty_problem_
   *d_out = block_aggregate;
 }
 
+#if _CCCL_CUDA_COMPILER(NVHPC)
+template <int... Ccs, class Fn>
+_CCCL_DEVICE_API _CCCL_FORCEINLINE void nvhpc_device_cc_dispatch(Fn&& fn)
+{
+  (..., [&](auto cc) {
+    if target (nv::target::is_exactly(nv::target::detail::sm_selector{cc.value}))
+    {
+      fn(cc);
+    }
+  }(::cuda::std::integral_constant<int, Ccs>{}));
+}
+#endif // _CCCL_CUDA_COMPILER(NVHPC)
+
 /**
  * @brief Reduce region kernel entry point (multi-block). Computes privatized
  *        reductions, one per thread block.
@@ -140,35 +153,50 @@ __launch_bounds__(int(current_policy<PolicySelector>().reduce.threads_per_block)
   ReductionOpT reduction_op,
   TransformOpT transform_op)
 {
-  static constexpr agent_reduce_policy policy = current_policy<PolicySelector>().reduce;
-  // TODO(bgruber): pass policy directly as template argument to AgentReduce in C++20
-  using agent_policy_t =
-    AgentReducePolicy<policy.threads_per_block,
-                      policy.items_per_thread,
-                      AccumT,
-                      policy.vec_size,
-                      policy.block_algorithm,
-                      policy.load_modifier,
-                      NoScaling<policy.threads_per_block, policy.items_per_thread, AccumT>>;
+#if _CCCL_CUDA_COMPILER(NVHPC)
+  nvhpc_device_cc_dispatch<NV_TARGET_SM_INTEGER_LIST>(
+    [&](auto cc)
+#endif
+    {
+#if _CCCL_CUDA_COMPILER(NVHPC)
+      static constexpr agent_reduce_policy policy =
+        select_policy<PolicySelector>(::cuda::compute_capability{cc.value}).reduce;
+#else
+    static constexpr agent_reduce_policy policy = current_policy<PolicySelector>().reduce;
+#endif
 
-  // Thread block type for reducing input tiles
-  using AgentReduceT = AgentReduce<agent_policy_t, InputIteratorT, OffsetT, ReductionOpT, AccumT, TransformOpT>;
+      // TODO(bgruber): pass policy directly as template argument to AgentReduce in C++20
+      using agent_policy_t =
+        AgentReducePolicy<policy.threads_per_block,
+                          policy.items_per_thread,
+                          AccumT,
+                          policy.vec_size,
+                          policy.block_algorithm,
+                          policy.load_modifier,
+                          NoScaling<policy.threads_per_block, policy.items_per_thread, AccumT>>;
 
-  static_assert(sizeof(typename AgentReduceT::TempStorage) <= max_smem_per_block,
-                "cub::DeviceReduce ran out of CUDA shared memory, which we judged to be extremely unlikely. Please "
-                "file an issue at: https://github.com/NVIDIA/cccl/issues");
+      // Thread block type for reducing input tiles
+      using AgentReduceT = AgentReduce<agent_policy_t, InputIteratorT, OffsetT, ReductionOpT, AccumT, TransformOpT>;
 
-  // Shared memory storage
-  __shared__ typename AgentReduceT::TempStorage temp_storage;
+      static_assert(sizeof(typename AgentReduceT::TempStorage) <= max_smem_per_block,
+                    "cub::DeviceReduce ran out of CUDA shared memory, which we judged to be extremely unlikely. Please "
+                    "file an issue at: https://github.com/NVIDIA/cccl/issues");
 
-  // Consume input tiles
-  AccumT block_aggregate = AgentReduceT(temp_storage, d_in, reduction_op, transform_op).ConsumeTiles(even_share);
+      // Shared memory storage
+      __shared__ typename AgentReduceT::TempStorage temp_storage;
 
-  // Output result
-  if (threadIdx.x == 0)
-  {
-    detail::uninitialized_copy_single(d_out + blockIdx.x, block_aggregate);
-  }
+      // Consume input tiles
+      AccumT block_aggregate = AgentReduceT(temp_storage, d_in, reduction_op, transform_op).ConsumeTiles(even_share);
+
+      // Output result
+      if (threadIdx.x == 0)
+      {
+        detail::uninitialized_copy_single(d_out + blockIdx.x, block_aggregate);
+      }
+    }
+#if _CCCL_CUDA_COMPILER(NVHPC)
+  );
+#endif
 }
 
 /**
@@ -233,47 +261,61 @@ _CCCL_KERNEL_ATTRIBUTES __launch_bounds__(
                                        _CCCL_GRID_CONSTANT const InitT init,
                                        TransformOpT transform_op)
 {
-  static constexpr agent_reduce_policy policy = current_policy<PolicySelector>().single_tile;
-  // TODO(bgruber): pass policy directly as template argument to AgentReduce in C++20
-  using agent_policy_t =
-    AgentReducePolicy<policy.threads_per_block,
-                      policy.items_per_thread,
-                      AccumT,
-                      policy.vec_size,
-                      policy.block_algorithm,
-                      policy.load_modifier,
-                      NoScaling<policy.threads_per_block, policy.items_per_thread, AccumT>>;
-
-  // Thread block type for reducing input tiles
-  using AgentReduceT = AgentReduce<agent_policy_t, InputIteratorT, OffsetT, ReductionOpT, AccumT, TransformOpT>;
-
-  static_assert(sizeof(typename AgentReduceT::TempStorage) <= max_smem_per_block,
-                "cub::DeviceReduce ran out of CUDA shared memory, which we judged to be extremely unlikely. Please "
-                "file an issue at: https://github.com/NVIDIA/cccl/issues");
-
-  // Shared memory storage
-  __shared__ typename AgentReduceT::TempStorage temp_storage;
-
-  // Check if empty problem
-  if (num_items == 0)
-  {
-    if (threadIdx.x == 0)
+#if _CCCL_CUDA_COMPILER(NVHPC)
+  nvhpc_device_cc_dispatch<NV_TARGET_SM_INTEGER_LIST>(
+    [&](auto cc)
+#endif
     {
-      *d_out = detail::reduce::unwrap_empty_problem_init(init);
+#if _CCCL_CUDA_COMPILER(NVHPC)
+      static constexpr agent_reduce_policy policy =
+        select_policy<PolicySelector>(::cuda::compute_capability{cc.value}).single_tile;
+#else
+    static constexpr agent_reduce_policy policy = current_policy<PolicySelector>().single_tile;
+#endif
+      // TODO(bgruber): pass policy directly as template argument to AgentReduce in C++20
+      using agent_policy_t =
+        AgentReducePolicy<policy.threads_per_block,
+                          policy.items_per_thread,
+                          AccumT,
+                          policy.vec_size,
+                          policy.block_algorithm,
+                          policy.load_modifier,
+                          NoScaling<policy.threads_per_block, policy.items_per_thread, AccumT>>;
+
+      // Thread block type for reducing input tiles
+      using AgentReduceT = AgentReduce<agent_policy_t, InputIteratorT, OffsetT, ReductionOpT, AccumT, TransformOpT>;
+
+      static_assert(sizeof(typename AgentReduceT::TempStorage) <= max_smem_per_block,
+                    "cub::DeviceReduce ran out of CUDA shared memory, which we judged to be extremely unlikely. Please "
+                    "file an issue at: https://github.com/NVIDIA/cccl/issues");
+
+      // Shared memory storage
+      __shared__ typename AgentReduceT::TempStorage temp_storage;
+
+      // Check if empty problem
+      if (num_items == 0)
+      {
+        if (threadIdx.x == 0)
+        {
+          *d_out = detail::reduce::unwrap_empty_problem_init(init);
+        }
+
+        return;
+      }
+
+      // Consume input tiles
+      AccumT block_aggregate =
+        AgentReduceT(temp_storage, d_in, reduction_op, transform_op).ConsumeRange(OffsetT(0), num_items);
+
+      // Output result
+      if (threadIdx.x == 0)
+      {
+        detail::reduce::finalize_and_store_aggregate(d_out, reduction_op, init, block_aggregate);
+      }
     }
-
-    return;
-  }
-
-  // Consume input tiles
-  AccumT block_aggregate =
-    AgentReduceT(temp_storage, d_in, reduction_op, transform_op).ConsumeRange(OffsetT(0), num_items);
-
-  // Output result
-  if (threadIdx.x == 0)
-  {
-    detail::reduce::finalize_and_store_aggregate(d_out, reduction_op, init, block_aggregate);
-  }
+#if _CCCL_CUDA_COMPILER(NVHPC)
+  );
+#endif
 }
 
 template <typename PolicySelector,
@@ -299,11 +341,11 @@ _CCCL_KERNEL_ATTRIBUTES __launch_bounds__(int(
                                                                        TransformOpT transform_op)
 {
   // todo: This static_assert fails with nvc++ CUDA compilation.
-  NV_IF_ELSE_TARGET(
-    NV_PROVIDES_SM_60,
-    (),
-    (static_assert(!cuda::std::is_same_v<AccumT, double>,
-                   "NondeterministicDeviceReduceAtomicKernel is not supported with doubles on PTX < 600");))
+  // NV_IF_ELSE_TARGET(
+  //   NV_PROVIDES_SM_60,
+  //   (),
+  //   (static_assert(!cuda::std::is_same_v<AccumT, double>,
+  //                  "NondeterministicDeviceReduceAtomicKernel is not supported with doubles on PTX < 600");))
 
   static_assert(detail::is_cuda_std_plus_v<ReductionOpT>,
                 "Only plus is currently supported in nondeterministic reduce");
@@ -320,37 +362,52 @@ _CCCL_KERNEL_ATTRIBUTES __launch_bounds__(int(
   }
 
   // Thread block type for reducing input tiles
-  static constexpr agent_reduce_policy policy = current_policy<PolicySelector>().reduce;
-  // TODO(bgruber): pass policy directly as template argument to AgentReduce in C++20
-  using agent_policy_t =
-    AgentReducePolicy<policy.threads_per_block,
-                      policy.items_per_thread,
-                      AccumT,
-                      policy.vec_size,
-                      policy.block_algorithm,
-                      policy.load_modifier,
-                      NoScaling<policy.threads_per_block, policy.items_per_thread, AccumT>>;
-  using AgentReduceT = AgentReduce<agent_policy_t, InputIteratorT, OffsetT, ReductionOpT, AccumT, TransformOpT>;
+#if _CCCL_CUDA_COMPILER(NVHPC)
+  nvhpc_device_cc_dispatch<NV_TARGET_SM_INTEGER_LIST>(
+    [&](auto cc)
+#endif
+    {
+#if _CCCL_CUDA_COMPILER(NVHPC)
+      static constexpr agent_reduce_policy policy =
+        select_policy<PolicySelector>(::cuda::compute_capability{cc.value}).reduce;
+#else
+    static constexpr agent_reduce_policy policy = current_policy<PolicySelector>().reduce;
+#endif
+      // TODO(bgruber): pass policy directly as template argument to AgentReduce in C++20
+      using agent_policy_t =
+        AgentReducePolicy<policy.threads_per_block,
+                          policy.items_per_thread,
+                          AccumT,
+                          policy.vec_size,
+                          policy.block_algorithm,
+                          policy.load_modifier,
+                          NoScaling<policy.threads_per_block, policy.items_per_thread, AccumT>>;
+      using AgentReduceT = AgentReduce<agent_policy_t, InputIteratorT, OffsetT, ReductionOpT, AccumT, TransformOpT>;
 
-  // Shared memory storage
-  __shared__ typename AgentReduceT::TempStorage temp_storage;
+      // Shared memory storage
+      __shared__ typename AgentReduceT::TempStorage temp_storage;
 
-  // Consume input tiles
-  AccumT block_aggregate = AgentReduceT(temp_storage, d_in, reduction_op, transform_op).ConsumeTiles(even_share);
+      // Consume input tiles
+      AccumT block_aggregate = AgentReduceT(temp_storage, d_in, reduction_op, transform_op).ConsumeTiles(even_share);
 
-  // Output result
-  // only thread 0 has valid value in block aggregate
-  if (threadIdx.x == 0)
-  {
-    // TODO: replace this with other atomic operations when specified
-    NV_IF_ELSE_TARGET(NV_PROVIDES_SM_60,
-                      ({
-                        ::cuda::atomic_ref<AccumT, ::cuda::thread_scope_device> atomic_target(d_out[0]);
-                        atomic_target.fetch_add(blockIdx.x == 0 ? reduction_op(init, block_aggregate) : block_aggregate,
-                                                ::cuda::memory_order_relaxed);
-                      }),
-                      (atomicAdd(&d_out[0], blockIdx.x == 0 ? reduction_op(init, block_aggregate) : block_aggregate);));
-  }
+      // Output result
+      // only thread 0 has valid value in block aggregate
+      if (threadIdx.x == 0)
+      {
+        // TODO: replace this with other atomic operations when specified
+        NV_IF_ELSE_TARGET(
+          NV_PROVIDES_SM_60,
+          ({
+            ::cuda::atomic_ref<AccumT, ::cuda::thread_scope_device> atomic_target(d_out[0]);
+            atomic_target.fetch_add(blockIdx.x == 0 ? reduction_op(init, block_aggregate) : block_aggregate,
+                                    ::cuda::memory_order_relaxed);
+          }),
+          (atomicAdd(&d_out[0], blockIdx.x == 0 ? reduction_op(init, block_aggregate) : block_aggregate);));
+      }
+    }
+#if _CCCL_CUDA_COMPILER(NVHPC)
+  );
+#endif
 }
 } // namespace detail::reduce
 
