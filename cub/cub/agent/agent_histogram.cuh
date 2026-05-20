@@ -320,9 +320,14 @@ struct AgentHistogram
       // Last pixel
       if (bins[pixels_per_thread - 1] >= 0)
       {
-        NV_IF_ELSE_TARGET(NV_PROVIDES_SM_60,
-                          (atomicAdd_block(privatized_histograms[ch] + bins[pixels_per_thread - 1], accumulator);),
-                          (atomicAdd(privatized_histograms[ch] + bins[pixels_per_thread - 1], accumulator);));
+        _CCCL_IF_TARGET(nv::target::provides(nv::target::sm_60))
+        {
+          ::cuda::__intrin::atomicAdd_block(privatized_histograms[ch] + bins[pixels_per_thread - 1], accumulator);
+        }
+        else
+        {
+          ::cuda::__intrin::atomicAdd(privatized_histograms[ch] + bins[pixels_per_thread - 1], accumulator);
+        }
       }
     }
   }

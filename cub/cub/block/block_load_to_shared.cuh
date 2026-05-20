@@ -25,6 +25,7 @@
 
 #include <cuda/__cmath/round_down.h>
 #include <cuda/__cmath/round_up.h>
+#include <cuda/__intrin/sm_intrin.h>
 #include <cuda/__memory/address_space.h>
 #include <cuda/__memory/align_up.h>
 #include <cuda/__memory/is_aligned.h>
@@ -133,15 +134,17 @@ private:
 
   _CCCL_DEVICE_API _CCCL_FORCEINLINE void __init_mbarrier()
   {
+    _CCCL_IF_TARGET(::nv::target::provides(::nv::target::sm_90))
     {
-      NV_IF_TARGET(NV_PROVIDES_SM_90, ({
-                     if (elected)
-                     {
-                       ::cuda::ptx::mbarrier_init(&temp_storage.mbarrier_handle, 1);
-                     }
-                     // TODO The following sync was added to avoid a racecheck posititive. Is it really needed?
-                     __syncthreads();
-                   }));
+      if (elected)
+      {
+        ::cuda::ptx::mbarrier_init(&temp_storage.mbarrier_handle, 1);
+      }
+    }
+    else
+    {
+      // TODO The following sync was added to avoid a racecheck posititive. Is it really needed?
+      __syncthreads();
     }
   }
 
@@ -183,14 +186,14 @@ private:
       [[maybe_unused]] const auto thread_src = gmem_src + offset;
       [[maybe_unused]] const auto thread_dst = smem_dst + offset;
       // LDGSTS borrowed from cuda::memcpy_async, assumes 16 byte alignment to avoid L1 (.cg)
-      NV_IF_TARGET(
-        NV_PROVIDES_SM_80, ({
-          asm volatile(
-            "cp.async.cg.shared.global [%0], [%1], %2, %2;"
-            :
-            : "r"(static_cast<::cuda::std::uint32_t>(::__cvta_generic_to_shared(thread_dst))), "l"(thread_src), "n"(16)
-            : "memory");
-        }));
+      _CCCL_IF_TARGET(::nv::target::provides(::nv::target::sm_80))
+      {
+        asm volatile(
+          "cp.async.cg.shared.global [%0], [%1], %2, %2;"
+          :
+          : "r"(static_cast<::cuda::std::uint32_t>(::__cvta_generic_to_shared(thread_dst))), "l"(thread_src), "n"(16)
+          : "memory");
+      }
     }
   }
 
@@ -207,13 +210,18 @@ private:
 
   _CCCL_DEVICE_API _CCCL_FORCEINLINE void __copy_aligned(char* smem_dst, const char* gmem_src, int num_bytes)
   {
-    NV_DISPATCH_TARGET(
-      NV_PROVIDES_SM_90,
-      (__copy_aligned_async_bulk(smem_dst, gmem_src, num_bytes);),
-      NV_PROVIDES_SM_80,
-      (__copy_aligned_async(smem_dst, gmem_src, num_bytes);),
-      NV_IS_DEVICE,
-      (__copy_aligned_fallback(smem_dst, gmem_src, num_bytes);));
+    _CCCL_IF_TARGET(::nv::target::provides(::nv::target::sm_90))
+    {
+      __copy_aligned_async_bulk(smem_dst, gmem_src, num_bytes);
+    }
+    else _CCCL_IF_TARGET(::nv::target::provides(::nv::target::sm_80))
+    {
+      __copy_aligned_async(smem_dst, gmem_src, num_bytes);
+    }
+    else
+    {
+      __copy_aligned_fallback(smem_dst, gmem_src, num_bytes);
+    }
   }
 
   // Dispatch to fallback for waiting pre TMA/SM_90
