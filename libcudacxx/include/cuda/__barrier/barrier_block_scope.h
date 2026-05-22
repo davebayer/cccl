@@ -132,6 +132,15 @@ public:
     new (&__b->__barrier) __barrier_base(__expected);
   }
 
+  _CCCL_HOST_DEVICE_API inline friend void deinit(barrier* __b)
+  {
+    NV_IF_TARGET(NV_PROVIDES_SM_80,
+                 (if (::cuda::device::is_object_from(__b->__barrier, ::cuda::device::address_space::shared)) {
+                   ::cuda::ptx::mbarrier_inval(__b->__native_handle());
+                 }))
+    __b->~barrier();
+  }
+
 private:
 #if _CCCL_CUDA_COMPILATION()
   [[nodiscard]] _CCCL_DEVICE_API _CCCL_FORCEINLINE arrival_token __arrive_sm90(::cuda::std::ptrdiff_t __update)

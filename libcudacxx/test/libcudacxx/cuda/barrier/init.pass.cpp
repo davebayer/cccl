@@ -14,6 +14,7 @@
 // error: asm statement is unsupported in tile code
 
 #include <cuda/barrier>
+#include <cuda/std/utility>
 
 #include "cuda_space_selector.h"
 
@@ -25,8 +26,10 @@ TEST_FUNC void test()
   init(&b, 2);
 
   auto token = b.arrive();
+  b.wait(cuda::std::move(token));
   b.arrive_and_wait();
-  b.wait(std::move(token));
+
+  deinit(&b);
 }
 
 template <cuda::thread_scope Sco>

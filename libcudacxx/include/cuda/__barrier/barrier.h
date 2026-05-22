@@ -57,6 +57,11 @@ public:
     _CCCL_ASSERT(__expected >= 0, "Cannot initialize barrier with negative arrival count");
     new (__b) barrier(__expected, __completion);
   }
+
+  _CCCL_HOST_DEVICE_API inline friend void deinit(barrier* __b)
+  {
+    __b->~__barrier_base();
+  }
 };
 
 _CCCL_END_NAMESPACE_CUDA

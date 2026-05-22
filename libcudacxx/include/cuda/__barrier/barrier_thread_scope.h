@@ -47,6 +47,11 @@ public:
     init(static_cast<__base*>(__b), __expected, __completion);
   }
 
+  _CCCL_HOST_DEVICE_API inline friend void deinit(barrier* __b)
+  {
+    deinit(static_cast<__base*>(__b));
+  }
+
   using __base::arrive;
   using __base::arrive_and_drop;
   using __base::arrive_and_wait;
