@@ -40,21 +40,29 @@ template <class _Tp>
 {
   _CCCL_ASSERT(__lane_mask != lane_mask::none(), "lane_mask must be non-zero");
 
-  constexpr int __ratio = ::cuda::ceil_div(sizeof(_Tp), sizeof(uint32_t));
-  uint32_t __array[__ratio]{};
-  ::cuda::std::memcpy(__array, ::cuda::std::addressof(__data), sizeof(_Tp));
-
-  bool __ret = true;
-  _CCCL_PRAGMA_UNROLL_FULL()
-  for (int i = 0; i < __ratio; ++i)
+  if constexpr (::cuda::std::is_same_v<_Tp, bool>)
   {
-    int __pred = false;
-    NV_IF_ELSE_TARGET(NV_PROVIDES_SM_70,
-                      (::__match_all_sync(__lane_mask.value(), __array[i], &__pred);),
-                      (::cuda::device::__cuda__match_all_sync_is_not_supported_before_SM_70__();));
-    __ret = __ret && __pred;
+    const lane_mask __true_mask{::__ballot_sync(__lane_mask.value(), __data)};
+    return __true_mask == __lane_mask || __true_mask == lane_mask::none();
   }
-  return __ret;
+  else
+  {
+    constexpr int __ratio = ::cuda::ceil_div(sizeof(_Tp), sizeof(uint32_t));
+    uint32_t __array[__ratio]{};
+    ::cuda::std::memcpy(__array, ::cuda::std::addressof(__data), sizeof(_Tp));
+
+    bool __ret = true;
+    _CCCL_PRAGMA_UNROLL_FULL()
+    for (int i = 0; i < __ratio; ++i)
+    {
+      int __pred = false;
+      NV_IF_ELSE_TARGET(NV_PROVIDES_SM_70,
+                        (::__match_all_sync(__lane_mask.value(), __array[i], &__pred);),
+                        (::cuda::device::__cuda__match_all_sync_is_not_supported_before_SM_70__();));
+      __ret = __ret && __pred;
+    }
+    return __ret;
+  }
 }
 
 _CCCL_END_NAMESPACE_CUDA_DEVICE

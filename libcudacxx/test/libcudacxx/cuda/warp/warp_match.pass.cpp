@@ -36,6 +36,7 @@ TEST_DEVICE_FUNC void test_types(T valueA = T{}, T valueB = T{1})
 
 __global__ void test_kernel()
 {
+  test_types<bool>();
   test_types<uint8_t>();
   test_types<uint16_t>();
   test_types<uint32_t>();
