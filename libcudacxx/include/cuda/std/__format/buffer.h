@@ -53,7 +53,7 @@ _CCCL_BEGIN_NAMESPACE_CUDA_STD
 class __fmt_max_output_size
 {
 public:
-  [[nodiscard]] _CCCL_API explicit __fmt_max_output_size(size_t __max_size)
+  _CCCL_API explicit __fmt_max_output_size(size_t __max_size)
       : __max_size_{__max_size}
   {}
 
@@ -187,12 +187,11 @@ public:
   using value_type _CCCL_NODEBUG_ALIAS           = _CharT;
   using __prepare_write_type _CCCL_NODEBUG_ALIAS = void (*)(__fmt_output_buffer<_CharT>&, size_t);
 
-  [[nodiscard]]
   _CCCL_API explicit __fmt_output_buffer(_CharT* __ptr, size_t __capacity, __prepare_write_type __function)
       : __fmt_output_buffer{__ptr, __capacity, __function, nullptr}
   {}
 
-  [[nodiscard]] _CCCL_API explicit __fmt_output_buffer(
+  _CCCL_API explicit __fmt_output_buffer(
     _CharT* __ptr, size_t __capacity, __prepare_write_type __function, __fmt_max_output_size* __max_output_size)
       : __ptr_(__ptr)
       , __capacity_(__capacity)
@@ -382,11 +381,10 @@ public:
   __fmt_allocating_buffer(const __fmt_allocating_buffer&)            = delete;
   __fmt_allocating_buffer& operator=(const __fmt_allocating_buffer&) = delete;
 
-  [[nodiscard]] _CCCL_API __fmt_allocating_buffer()
+  _CCCL_API __fmt_allocating_buffer()
       : __fmt_allocating_buffer{nullptr}
   {}
 
-  [[nodiscard]]
   _CCCL_API explicit __fmt_allocating_buffer(__fmt_max_output_size* __max_output_size)
       : __fmt_output_buffer<_CharT>{__small_buffer_, __buffer_size_, __prepare_write, __max_output_size}
   {}
@@ -453,11 +451,10 @@ template <class _OutIt, class _CharT>
 class __fmt_direct_iterator_buffer : public __fmt_output_buffer<_CharT>
 {
 public:
-  [[nodiscard]] _CCCL_API explicit __fmt_direct_iterator_buffer(_OutIt __out_it)
+  _CCCL_API explicit __fmt_direct_iterator_buffer(_OutIt __out_it)
       : __fmt_direct_iterator_buffer{__out_it, nullptr}
   {}
 
-  [[nodiscard]]
   _CCCL_API explicit __fmt_direct_iterator_buffer(_OutIt __out_it, __fmt_max_output_size* __max_output_size)
       : __fmt_output_buffer<_CharT>{::cuda::std::__unwrap_iter(__out_it),
                                     __buffer_size,
@@ -492,11 +489,10 @@ template <class _OutIt, class _CharT>
 class __fmt_container_inserter_buffer : public __fmt_output_buffer<_CharT>
 {
 public:
-  [[nodiscard]] _CCCL_API explicit __fmt_container_inserter_buffer(_OutIt __out_it)
+  _CCCL_API explicit __fmt_container_inserter_buffer(_OutIt __out_it)
       : __fmt_container_inserter_buffer{__out_it, nullptr}
   {}
 
-  [[nodiscard]]
   _CCCL_API explicit __fmt_container_inserter_buffer(_OutIt __out_it, __fmt_max_output_size* __max_output_size)
       : __fmt_output_buffer<_CharT>{__small_buffer_, __buffer_size, __prepare_write, __max_output_size}
       , __container_{__out_it.__get_container()}
@@ -538,12 +534,12 @@ template <class _OutIt, class _CharT>
 class __fmt_iterator_buffer : public __fmt_allocating_buffer<_CharT>
 {
 public:
-  [[nodiscard]] _CCCL_API explicit __fmt_iterator_buffer(_OutIt __out_it)
+  _CCCL_API explicit __fmt_iterator_buffer(_OutIt __out_it)
       : __fmt_allocating_buffer<_CharT>{}
       , __out_it_{::cuda::std::move(__out_it)}
   {}
 
-  [[nodiscard]] _CCCL_API explicit __fmt_iterator_buffer(_OutIt __out_it, __fmt_max_output_size* __max_output_size)
+  _CCCL_API explicit __fmt_iterator_buffer(_OutIt __out_it, __fmt_max_output_size* __max_output_size)
       : __fmt_allocating_buffer<_CharT>{__max_output_size}
       , __out_it_{::cuda::std::move(__out_it)}
   {}
@@ -579,12 +575,12 @@ class __fmt_format_to_n_buffer : private __fmt_buffer_selector<_OutIt, _CharT>::
 public:
   using _Base _CCCL_NODEBUG_ALIAS = typename __fmt_buffer_selector<_OutIt, _CharT>::type;
 
-  [[nodiscard]] _CCCL_API __fmt_format_to_n_buffer(_OutIt __out_it, iter_difference_t<_OutIt> __n)
+  _CCCL_API __fmt_format_to_n_buffer(_OutIt __out_it, iter_difference_t<_OutIt> __n)
       : _Base{::cuda::std::move(__out_it), ::cuda::std::addressof(__max_output_size_)}
       , __max_output_size_{__n < 0 ? size_t{0} : static_cast<size_t>(__n)}
   {}
 
-  [[nodiscard]] _CCCL_API auto __make_output_iterator()
+  _CCCL_API auto __make_output_iterator()
   {
     return _Base::__make_output_iterator();
   }
