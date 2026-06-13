@@ -606,7 +606,7 @@ class __fmt_formatted_size_buffer : private __fmt_output_buffer<_CharT>
 public:
   using _Base _CCCL_NODEBUG_ALIAS = __fmt_output_buffer<_CharT>;
 
-  [[nodiscard]] _CCCL_API __fmt_formatted_size_buffer()
+  _CCCL_API __fmt_formatted_size_buffer()
       : _Base{nullptr, 0, __prepare_write, ::cuda::std::addressof(__max_output_size_)}
   {}
 
