@@ -80,7 +80,7 @@
 #if _CCCL_COMPILER(MSVC)
 #  define _CCCL_NOINLINE __declspec(noinline)
 #else // ^^^ _CCCL_COMPILER(MSVC) ^^^ / vvv _CCCL_COMPILER(MSVC) vvv
-#  define _CCCL_NOINLINE __attribute__((__noinline__))
+#  define _CCCL_NOINLINE __attribute__((noinline)) // We can't use __noinline__ because of CTK defining this macro.
 #endif // ^^^ !_CCCL_COMPILER(MSVC) ^^^
 
 #if _CCCL_HAS_ATTRIBUTE(__exclude_from_explicit_instantiation__)
