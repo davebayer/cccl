@@ -74,15 +74,14 @@ struct cuda::std::formatter<status, CharT>
 
   TEST_FUNC constexpr auto parse(basic_format_parse_context<CharT>& parse_ctx) -> decltype(parse_ctx.begin())
   {
-    auto begin = parse_ctx.begin();
-    auto end   = parse_ctx.end();
-    type       = 0;
-    if (begin == end)
+    auto it = parse_ctx.begin();
+    type    = 0;
+    if (it == parse_ctx.end())
     {
-      return begin;
+      return it;
     }
 
-    switch (*begin)
+    switch (*it)
     {
       case CharT('x'):
         break;
@@ -93,18 +92,18 @@ struct cuda::std::formatter<status, CharT>
         type = 2;
         break;
       case CharT('}'):
-        return begin;
+        return it;
       default:
         assert(false);
     }
 
-    ++begin;
-    if (begin != end && *begin != CharT('}'))
+    ++it;
+    if (it != parse_ctx.end() && *it != CharT('}'))
     {
       assert(false);
     }
 
-    return begin;
+    return it;
   }
 
   template <class Out>
@@ -112,27 +111,29 @@ struct cuda::std::formatter<status, CharT>
   {
     const char* names[] = {"foo", "bar", "foobar"};
     char buffer[7];
-    const char* begin = names[0];
-    const char* end   = names[0];
+    const char* result_begin = names[0];
+    const char* result_end   = names[0];
     switch (type)
     {
       case -1:
         assert(false);
 
       case 0:
-        begin     = buffer;
-        buffer[0] = '0';
-        buffer[1] = 'x';
-        end = cuda::std::to_chars(&buffer[2], cuda::std::end(buffer), static_cast<cuda::std::uint16_t>(s), 16).ptr;
+        result_begin = buffer;
+        buffer[0]    = '0';
+        buffer[1]    = 'x';
+        result_end =
+          cuda::std::to_chars(&buffer[2], cuda::std::end(buffer), static_cast<cuda::std::uint16_t>(s), 16).ptr;
         buffer[6] = '\0';
         break;
 
       case 1:
-        begin     = buffer;
-        buffer[0] = '0';
-        buffer[1] = 'X';
-        end = cuda::std::to_chars(&buffer[2], cuda::std::end(buffer), static_cast<cuda::std::uint16_t>(s), 16).ptr;
-        cuda::std::transform(static_cast<const char*>(&buffer[2]), end, &buffer[2], [](char c) {
+        result_begin = buffer;
+        buffer[0]    = '0';
+        buffer[1]    = 'X';
+        result_end =
+          cuda::std::to_chars(&buffer[2], cuda::std::end(buffer), static_cast<cuda::std::uint16_t>(s), 16).ptr;
+        cuda::std::transform(static_cast<const char*>(&buffer[2]), result_end, &buffer[2], [](char c) {
           if (c >= 'a' && c <= 'z')
           {
             return static_cast<char>(c - ('a' - 'A'));
@@ -146,20 +147,20 @@ struct cuda::std::formatter<status, CharT>
         switch (s)
         {
           case status::foo:
-            begin = names[0];
+            result_begin = names[0];
             break;
           case status::bar:
-            begin = names[1];
+            result_begin = names[1];
             break;
           case status::foobar:
-            begin = names[2];
+            result_begin = names[2];
             break;
         }
-        end = begin + cuda::std::strlen(begin);
+        result_end = result_begin + cuda::std::strlen(result_begin);
         break;
     }
 
-    return cuda::std::copy(begin, end, ctx.out());
+    return cuda::std::copy(result_begin, result_end, ctx.out());
   }
 };
 
@@ -190,11 +191,9 @@ struct cuda::std::formatter<parse_call_validator, CharT>
 
   TEST_FUNC constexpr auto parse(basic_format_parse_context<CharT>& parse_ctx) -> decltype(parse_ctx.begin())
   {
-    auto begin = parse_ctx.begin();
-    auto end   = parse_ctx.end();
-    assert(begin == end);
+    assert(parse_ctx.begin() == parse_ctx.end());
     parse_called = true;
-    return begin;
+    return parse_ctx.begin();
   }
 
   TEST_FUNC auto format(parse_call_validator, auto& ctx) const -> decltype(ctx.out())
