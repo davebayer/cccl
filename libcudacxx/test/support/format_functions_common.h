@@ -169,9 +169,9 @@ struct parse_call_validator
   struct parse_function_not_called
   {};
 
-  TEST_FUNC friend constexpr auto operator<=>(const parse_call_validator& lhs, const parse_call_validator& rhs)
+  TEST_FUNC friend constexpr auto operator==(const parse_call_validator& lhs, const parse_call_validator& rhs)
   {
-    return &lhs <=> &rhs;
+    return &lhs == &rhs;
   }
 };
 
