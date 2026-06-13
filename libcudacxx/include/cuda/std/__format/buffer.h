@@ -41,6 +41,7 @@
 #include <cuda/std/__memory/destruct_n.h>
 #include <cuda/std/__memory/uninitialized_algorithms.h>
 #include <cuda/std/__type_traits/conditional.h>
+#include <cuda/std/__utility/cmp.h>
 #include <cuda/std/__utility/exception_guard.h>
 #include <cuda/std/__utility/move.h>
 #include <cuda/std/string_view>
@@ -577,7 +578,7 @@ public:
 
   _CCCL_API __fmt_format_to_n_buffer(_OutIt __out_it, iter_difference_t<_OutIt> __n)
       : _Base{::cuda::std::move(__out_it), ::cuda::std::addressof(__max_output_size_)}
-      , __max_output_size_{__n < 0 ? size_t{0} : static_cast<size_t>(__n)}
+      , __max_output_size_{::cuda::std::cmp_less(__n, 0) ? size_t{0} : static_cast<size_t>(__n)}
   {}
 
   _CCCL_API auto __make_output_iterator()
