@@ -19,6 +19,7 @@
 #include <cuda/std/cstddef>
 #include <cuda/std/cstdint>
 #include <cuda/std/cstdlib>
+#include <cuda/std/cstring>
 #include <cuda/std/ranges>
 #include <cuda/std/string_view>
 
@@ -154,7 +155,7 @@ struct cuda::std::formatter<status, CharT>
             begin = names[2];
             break;
         }
-        end = begin + strlen(begin);
+        end = begin + cuda::std::strlen(begin);
         break;
     }
 
