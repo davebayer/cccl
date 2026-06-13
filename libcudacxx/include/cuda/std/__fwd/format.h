@@ -62,9 +62,9 @@ class _CCCL_TYPE_VISIBILITY_DEFAULT basic_format_arg;
 template <class _OutIt, class _CharT>
 class _CCCL_TYPE_VISIBILITY_DEFAULT basic_format_context;
 
-using format_context = basic_format_context<__back_insert_iterator<__fmt_output_buffer<char>>, char>;
+using format_context = basic_format_context<back_insert_iterator<__fmt_output_buffer<char>>, char>;
 #if _CCCL_HAS_WCHAR_T()
-using wformat_context = basic_format_context<__back_insert_iterator<__fmt_output_buffer<wchar_t>>, wchar_t>;
+using wformat_context = basic_format_context<back_insert_iterator<__fmt_output_buffer<wchar_t>>, wchar_t>;
 #endif // _CCCL_HAS_WCHAR_T()
 
 template <class _OutIt, class _CharT>
@@ -99,6 +99,9 @@ using format_string = basic_format_string<char, type_identity_t<_Args>...>;
 template <class... _Args>
 using wformat_string = basic_format_string<wchar_t, type_identity_t<_Args>...>;
 #endif // _CCCL_HAS_WCHAR_T()
+
+template <class _OutIt>
+struct _CCCL_TYPE_VISIBILITY_DEFAULT format_to_n_result;
 
 _CCCL_END_NAMESPACE_CUDA_STD
 

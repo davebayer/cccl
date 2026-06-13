@@ -38,7 +38,7 @@ TEST_FUNC void test_char_formatter(
   cuda::std::basic_string_view<CharT> expected)
 {
   using Container     = cuda::std::inplace_vector<CharT, 100>;
-  using OutIt         = cuda::std::__back_insert_iterator<Container>;
+  using OutIt         = cuda::std::back_insert_iterator<Container>;
   using ParseContext  = cuda::std::basic_format_parse_context<CharT>;
   using FormatContext = cuda::std::basic_format_context<OutIt, CharT>;
 
