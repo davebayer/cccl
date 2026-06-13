@@ -27,7 +27,7 @@
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
 template <class _Tp, size_t _Np>
-struct _CCCL_TYPE_VISIBILITY_DEFAULT inplace_vector;
+class _CCCL_TYPE_VISIBILITY_DEFAULT inplace_vector;
 
 _CCCL_END_NAMESPACE_CUDA_STD
 
