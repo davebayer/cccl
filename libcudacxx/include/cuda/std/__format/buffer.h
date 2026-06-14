@@ -567,6 +567,33 @@ using __fmt_buffer_select_t =
                               __fmt_direct_iterator_buffer<_OutIt, _CharT>,
                               __fmt_iterator_buffer<_OutIt, _CharT>>>;
 
+// A buffer that counts and limits the number of insertions.
+template <class _OutIt, class _CharT>
+class __fmt_format_to_n_buffer : __fmt_buffer_select_t<_OutIt, _CharT>
+{
+public:
+  using _Base _CCCL_NODEBUG_ALIAS = __fmt_buffer_select_t<_OutIt, _CharT>;
+
+  _CCCL_API __fmt_format_to_n_buffer(_OutIt __out_it, iter_difference_t<_OutIt> __n)
+      : _Base{::cuda::std::move(__out_it), ::cuda::std::addressof(__max_output_size_)}
+      , __max_output_size_{::cuda::std::cmp_less(__n, 0) ? size_t{0} : static_cast<size_t>(__n)}
+  {}
+
+  [[nodiscard]] _CCCL_API auto __make_output_iterator()
+  {
+    return _Base::__make_output_iterator();
+  }
+
+  [[nodiscard]] _CCCL_API format_to_n_result<_OutIt> __result() &&
+  {
+    return {static_cast<_Base&&>(*this).__out_it(),
+            static_cast<iter_difference_t<_OutIt>>(__max_output_size_.__code_units_written())};
+  }
+
+private:
+  __fmt_max_output_size __max_output_size_;
+};
+
 _CCCL_END_NAMESPACE_CUDA_STD
 
 #include <cuda/std/__cccl/epilogue.h>
