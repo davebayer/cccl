@@ -26,7 +26,7 @@
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
 template <class _Container>
-class _CCCL_TYPE_VISIBILITY_DEFAULT __back_insert_iterator;
+class _CCCL_TYPE_VISIBILITY_DEFAULT back_insert_iterator;
 
 template <class, class = void>
 struct _CCCL_TYPE_VISIBILITY_DEFAULT iterator_traits;

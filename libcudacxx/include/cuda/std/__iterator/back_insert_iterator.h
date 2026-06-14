@@ -33,64 +33,6 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
-template <class _Container>
-class _CCCL_TYPE_VISIBILITY_DEFAULT __back_insert_iterator
-{
-protected:
-  _Container* container;
-
-public:
-  using iterator_category = output_iterator_tag;
-  using value_type        = void;
-  using difference_type   = ptrdiff_t;
-  using pointer           = void;
-  using reference         = void;
-  using container_type    = _Container;
-
-  _CCCL_API constexpr explicit __back_insert_iterator(_Container& __x)
-      : container(::cuda::std::addressof(__x))
-  {}
-
-  _CCCL_EXEC_CHECK_DISABLE
-  _CCCL_API constexpr __back_insert_iterator& operator=(const typename _Container::value_type& __value)
-  {
-    container->push_back(__value);
-    return *this;
-  }
-
-  _CCCL_EXEC_CHECK_DISABLE
-  _CCCL_API constexpr __back_insert_iterator& operator=(typename _Container::value_type&& __value)
-  {
-    container->push_back(::cuda::std::move(__value));
-    return *this;
-  }
-
-  [[nodiscard]] _CCCL_API constexpr __back_insert_iterator& operator*() noexcept
-  {
-    return *this;
-  }
-
-  [[nodiscard]] _CCCL_API constexpr const __back_insert_iterator& operator*() const noexcept
-  {
-    return *this;
-  }
-
-  _CCCL_API constexpr __back_insert_iterator& operator++() noexcept
-  {
-    return *this;
-  }
-
-  _CCCL_API constexpr __back_insert_iterator operator++(int) noexcept
-  {
-    return *this;
-  }
-
-  [[nodiscard]] _CCCL_API constexpr _Container* __get_container() const noexcept
-  {
-    return container;
-  }
-};
-
 _CCCL_SUPPRESS_DEPRECATED_PUSH
 _CCCL_SUPPRESS_DEPRECATED_NVRTC_DIAG
 template <class _Container>

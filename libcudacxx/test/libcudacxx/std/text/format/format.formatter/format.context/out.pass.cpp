@@ -26,7 +26,7 @@ template <class CharT>
 TEST_FUNC void test_out()
 {
   using Container = cuda::std::inplace_vector<CharT, 3>;
-  using OutIt     = cuda::std::__back_insert_iterator<Container>;
+  using OutIt     = cuda::std::back_insert_iterator<Container>;
   using Context   = cuda::std::basic_format_context<OutIt, CharT>;
 
   Container container{};
