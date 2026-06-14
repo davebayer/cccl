@@ -17,11 +17,10 @@
 
 // Provided by the selected checker.
 template <class CharT, class... Args>
-TEST_FUNC constexpr bool
+TEST_FUNC bool
 check(cuda::std::basic_string_view<CharT> expected, cuda::std::basic_string_view<CharT> fmt, Args&&... args);
 template <class CharT, class... Args>
-TEST_FUNC constexpr bool
-check_exception(cuda::std::string_view what, cuda::std::basic_string_view<CharT> fmt, Args&&... args);
+TEST_FUNC bool check_exception(cuda::std::string_view what, cuda::std::basic_string_view<CharT> fmt, Args&&... args);
 
 // Using a const ref for world and universe so a string literal will be a character array.
 // When passed as character array W and U have different types.
