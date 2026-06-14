@@ -196,7 +196,8 @@ struct cuda::std::formatter<parse_call_validator, CharT>
     return parse_ctx.begin();
   }
 
-  TEST_FUNC auto format(parse_call_validator, auto& ctx) const -> decltype(ctx.out())
+  template <class Ctx>
+  TEST_FUNC auto format(parse_call_validator, Ctx& ctx) const -> decltype(ctx.out())
   {
     if (!parse_called)
     {
