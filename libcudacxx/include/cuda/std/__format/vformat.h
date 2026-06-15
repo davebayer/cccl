@@ -48,7 +48,7 @@ struct __fmt_replacement_field_visitor
   bool __parse_;
 
   template <class _Tp>
-  _CCCL_API constexpr void operator()(_Tp __arg)
+  _CCCL_API constexpr void operator()([[maybe_unused]] _Tp __arg)
   {
     if constexpr (is_same_v<_Tp, monostate>)
     {
