@@ -272,6 +272,7 @@ enum class __fmt_spec_type : uint8_t
   __fixed_upper_case,
   __general_lower_case,
   __general_upper_case,
+  __debug,
 };
 
 [[nodiscard]] _CCCL_HOST_DEVICE_API constexpr uint32_t __fmt_spec_make_type_mask(__fmt_spec_type __t)
@@ -1047,6 +1048,9 @@ private:
       case 'x':
         __type_ = __fmt_spec_type::__hexadecimal_lower_case;
         break;
+      case '?':
+        __type_ = __fmt_spec_type::__debug;
+        break;
       default:
         return;
     }
@@ -1086,6 +1090,7 @@ _CCCL_HOST_DEVICE_API constexpr void __fmt_process_display_type_str(__fmt_spec_t
   {
     case __fmt_spec_type::__default:
     case __fmt_spec_type::__string:
+    case __fmt_spec_type::__debug:
       break;
     default:
       ::cuda::std::__throw_format_error("The type option contains an invalid value for a string formatting argument");
@@ -1142,6 +1147,7 @@ _CCCL_HOST_DEVICE_API constexpr void __fmt_process_parsed_char(__fmt_spec_parser
   {
     case __fmt_spec_type::__default:
     case __fmt_spec_type::__char:
+    case __fmt_spec_type::__debug:
       ::cuda::std::__fmt_process_display_type_char(__parser, __id);
       break;
     case __fmt_spec_type::__binary_lower_case:

@@ -20,8 +20,8 @@
 #  pragma system_header
 #endif // no system header
 
-#include <cuda/std/__cstddef/types.h>
-#include <cuda/std/string_view>
+#include <cuda/std/__concepts/concept_macros.h>
+#include <cuda/std/__fwd/format.h>
 
 #include <cuda/std/__cccl/prologue.h>
 
@@ -48,9 +48,22 @@ struct __fmt_disabled_formatter
 //! - is_move_constructible_v<F>,
 //! - is_copy_assignable_v<F>, and
 //! - is_move_assignable_v<F>.
-template <class _Tp, class _CharT = char>
+template <class _Tp, class _CharT>
 struct _CCCL_TYPE_VISIBILITY_DEFAULT formatter : __fmt_disabled_formatter
 {};
+
+template <class _Formatter>
+_CCCL_CONCEPT __fmt_has_set_debug_format =
+  _CCCL_REQUIRES_EXPR((_Formatter), _Formatter& __formatter)(__formatter.set_debug_format());
+
+template <class _Tp>
+_CCCL_API constexpr void __set_debug_format(_Tp& __formatter)
+{
+  if constexpr (__fmt_has_set_debug_format<_Tp>)
+  {
+    __formatter.set_debug_format();
+  }
+}
 
 _CCCL_END_NAMESPACE_CUDA_STD
 

@@ -102,6 +102,26 @@ TEST_FUNC void test_termination_condition(
 }
 
 template <class CharT>
+TEST_FUNC constexpr bool test_set_debug_format()
+{
+  cuda::std::formatter<const CharT*, CharT> formatter;
+  assert(formatter.__parser_.__type_ == cuda::std::__fmt_spec_type::__default);
+
+  formatter.set_debug_format();
+  assert(formatter.__parser_.__type_ == cuda::std::__fmt_spec_type::__debug);
+
+  cuda::std::basic_string_view fmt = TEST_STRLIT(CharT, "s}");
+  cuda::std::basic_format_parse_context<CharT> parse_ctx{fmt};
+  formatter.parse(parse_ctx);
+  assert(formatter.__parser_.__type_ == cuda::std::__fmt_spec_type::__string);
+
+  formatter.set_debug_format();
+  assert(formatter.__parser_.__type_ == cuda::std::__fmt_spec_type::__debug);
+
+  return true;
+}
+
+template <class CharT>
 TEST_FUNC void test_type()
 {
   test_termination_condition<CharT>(
@@ -124,6 +144,9 @@ TEST_FUNC void test_type()
     TEST_STRLIT(CharT, "%^7.7}"), TEST_STRLIT(CharT, "world"), TEST_STRLIT(CharT, "%world%"));
   test_termination_condition<CharT>(
     TEST_STRLIT(CharT, "%^7.7}"), TEST_STRLIT(CharT, "universe"), TEST_STRLIT(CharT, "univers"));
+
+  test_set_debug_format<CharT>();
+  static_assert(test_set_debug_format<CharT>());
 }
 
 TEST_FUNC bool test()

@@ -49,6 +49,11 @@ template <class _CharT>
 template <class _CharT>
 class __fmt_formatter_str
 {
+  _CCCL_API constexpr void set_debug_format() noexcept
+  {
+    __parser_.__type_ = __fmt_spec_type::__debug;
+  }
+
   //!
   //! @brief Formats a C-string according to the parsed specifications.
   //!
@@ -90,7 +95,13 @@ class __fmt_formatter_str
   __format(basic_string_view<_CharT, _Traits> __str, _FmtCtx& __ctx) const
   {
     basic_string_view __str2{__str.data(), __str.size()};
-    return ::cuda::std::__fmt_write_string(__str2, __ctx.out(), __parser_.__get_parsed_std_spec(__ctx));
+    const auto __specs = __parser_.__get_parsed_std_spec(__ctx);
+
+    if (__parser_.__type_ == __format_spec::__type::__debug)
+    {
+      return ::cuda::std::__fmt_format_escaped_string(__str2, __ctx.out(), __specs);
+    }
+    return ::cuda::std::__fmt_write_string(__str2, __ctx.out(), __specs);
   }
 
 public:

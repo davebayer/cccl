@@ -39,6 +39,11 @@ _CCCL_BEGIN_NAMESPACE_CUDA_STD
 template <class _CharT>
 struct __fmt_formatter_char
 {
+  _CCCL_API constexpr void set_debug_format() noexcept
+  {
+    __parser_.__type_ = __fmt_spec_type::__debug;
+  }
+
   //!
   //! @brief Parses the formatting specifications for character types.
   //!
@@ -70,6 +75,11 @@ struct __fmt_formatter_char
     if (__parser_.__type_ == __fmt_spec_type::__default || __parser_.__type_ == __fmt_spec_type::__char)
     {
       return ::cuda::std::__fmt_format_char(__value, __ctx.out(), __specs);
+    }
+
+    if (__parser_.__type_ == __format_spec::__type::__debug)
+    {
+      return ::cuda::std:: ::__fmt_format_escaped_char(__value, __ctx.out(), __specs);
     }
 
     if constexpr (sizeof(_CharT) <= sizeof(unsigned))
