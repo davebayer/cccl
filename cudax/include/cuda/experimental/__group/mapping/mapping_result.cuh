@@ -37,7 +37,7 @@
 namespace cuda::experimental
 {
 template <::cuda::std::size_t _StaticGroupCount, ::cuda::std::size_t _StaticCount, bool _IsExhaustive, bool _IsContiguous>
-struct __mapping_result
+struct __mapping_result0
 {
   unsigned __group_count_;
   unsigned __group_rank_;
@@ -158,16 +158,16 @@ struct __mapping_result
 };
 
 template <::cuda::std::size_t _StaticGroupCount, class _StaticUnitCounts, bool _IsExhaustive, bool _IsContiguous>
-struct __mapping_result2;
+struct __mapping_result;
 
 template <::cuda::std::size_t _StaticGroupCount,
           ::cuda::std::size_t _StaticUnitCount,
           bool _IsExhaustive,
           bool _IsContiguous>
-struct __mapping_result2<_StaticGroupCount,
-                         ::cuda::std::integral_constant<::cuda::std::size_t, _StaticUnitCount>,
-                         _IsExhaustive,
-                         _IsContiguous>
+struct __mapping_result<_StaticGroupCount,
+                        ::cuda::std::integral_constant<::cuda::std::size_t, _StaticUnitCount>,
+                        _IsExhaustive,
+                        _IsContiguous>
 {
   unsigned __group_count_;
   unsigned __group_rank_;
@@ -282,6 +282,11 @@ struct __mapping_result2<_StaticGroupCount,
     }
   }
 
+  [[nodiscard]] _CCCL_DEVICE_API static constexpr bool has_uniform_static_unit_count() noexcept
+  {
+    return true;
+  }
+
   [[nodiscard]] _CCCL_DEVICE_API static constexpr bool is_always_exhaustive() noexcept
   {
     return _IsExhaustive;
@@ -297,7 +302,7 @@ template <::cuda::std::size_t _StaticGroupCount,
           ::cuda::std::size_t... _StaticUnitCounts,
           bool _IsExhaustive,
           bool _IsContiguous>
-struct __mapping_result2<_StaticGroupCount, ::cuda::std::index_sequence<_StaticUnitCounts...>, _IsExhaustive, _IsContiguous>
+struct __mapping_result<_StaticGroupCount, ::cuda::std::index_sequence<_StaticUnitCounts...>, _IsExhaustive, _IsContiguous>
 {
   static_assert(_StaticGroupCount == sizeof...(_StaticUnitCounts));
 
@@ -413,6 +418,18 @@ struct __mapping_result2<_StaticGroupCount, ::cuda::std::index_sequence<_StaticU
     {
       return __unit_rank_ != __invalid_count_or_rank;
     }
+  }
+
+  [[nodiscard]] _CCCL_DEVICE_API static constexpr bool has_uniform_static_unit_count() noexcept
+  {
+    for (::cuda::std::size_t __i = 1; __i < _StaticGroupCount; ++__i)
+    {
+      if (static_unit_count(__i) != static_unit_count(0))
+      {
+        return false;
+      }
+    }
+    return true;
   }
 
   [[nodiscard]] _CCCL_DEVICE_API static constexpr bool is_always_exhaustive() noexcept

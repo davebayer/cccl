@@ -68,7 +68,10 @@ public:
         : ::cuda::std::dynamic_extent;
 
     using _MappingResult =
-      __mapping_result<__static_ngroups, ::cuda::std::dynamic_extent, _PrevMappingResult::is_always_exhaustive(), false>;
+      __mapping_result<__static_ngroups,
+                       ::cuda::std::integral_constant<::cuda::std::size_t, ::cuda::std::dynamic_extent>,
+                       _PrevMappingResult::is_always_exhaustive(),
+                       false>;
 
     if (!__prev_mapping_result.is_valid())
     {

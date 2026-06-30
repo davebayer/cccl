@@ -79,26 +79,39 @@ public:
     return static_cast<unsigned>(_UnitCount);
   }
 
+  template <class _PrevMappingResult>
+  [[nodiscard]] _CCCL_DEVICE_API _CCCL_CONSTEVAL static auto __mapping_result_type_for() noexcept
+  {
+    constexpr auto __static_prev_ngroups = _PrevMappingResult::static_group_count();
+
+    if constexpr (_PrevMappingResult::has_uniform_static_unit_count())
+    {
+      // constexpr ::cuda::std::size_t __static_prev_nunits[]  = _PrevMappingResult::static_unit_count();
+    }
+    else
+    {
+      constexpr auto __static_prev_nunits = _PrevMappingResult::static_unit_count();
+      constexpr auto __static_curr_ngroups =
+        (__static_prev_nunits != ::cuda::std::dynamic_extent)
+          ? __static_prev_nunits / _UnitCount
+          : ::cuda::std::dynamic_extent;
+      constexpr auto __static_ngroups =
+        (__static_prev_ngroups != ::cuda::std::dynamic_extent && __static_curr_ngroups != ::cuda::std::dynamic_extent)
+          ? (__static_prev_ngroups * __static_curr_ngroups)
+          : ::cuda::std::dynamic_extent;
+
+      return __mapping_result<__static_ngroups,
+                              ::cuda::std::integral_constant<::cuda::std::size_t, _UnitCount>,
+                              _PrevMappingResult::is_always_exhaustive() && _IsExhaustive,
+                              _PrevMappingResult::is_always_contiguous()>{};
+    }
+  }
+
   template <class _Unit, class _ParentGroup, class _PrevMappingResult>
   [[nodiscard]] _CCCL_DEVICE_API auto
   map(const _Unit&, const _ParentGroup& __parent, const _PrevMappingResult& __prev_mapping_result) const noexcept
   {
-    constexpr auto __static_prev_ngroups = _PrevMappingResult::static_group_count();
-    constexpr auto __static_prev_nunits  = _PrevMappingResult::static_unit_count();
-    constexpr auto __static_curr_ngroups =
-      (__static_prev_nunits != ::cuda::std::dynamic_extent)
-        ? __static_prev_nunits / _UnitCount
-        : ::cuda::std::dynamic_extent;
-    constexpr auto __static_ngroups =
-      (__static_prev_ngroups != ::cuda::std::dynamic_extent && __static_curr_ngroups != ::cuda::std::dynamic_extent)
-        ? (__static_prev_ngroups * __static_curr_ngroups)
-        : ::cuda::std::dynamic_extent;
-
-    using _MappingResult =
-      __mapping_result<__static_ngroups,
-                       _UnitCount,
-                       _PrevMappingResult::is_always_exhaustive() && _IsExhaustive,
-                       _PrevMappingResult::is_always_contiguous()>;
+    using _MappingResult = decltype(__mapping_result_type_for<_PrevMappingResult>());
 
     if (!__prev_mapping_result.is_valid())
     {
