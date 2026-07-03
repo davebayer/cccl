@@ -42,6 +42,7 @@
 #include <cuda/std/__type_traits/is_nothrow_move_constructible.h>
 #include <cuda/std/__type_traits/remove_cvref.h>
 #include <cuda/std/__type_traits/type_identity.h>
+#include <cuda/std/__utility/cmp.h>
 #include <cuda/std/__utility/forward.h>
 #include <cuda/std/__utility/move.h>
 
@@ -200,9 +201,9 @@ public:
   {
     if constexpr (__integer_like<_Start> && __integer_like<_BoundSentinel>)
     {
-      if (__value_ < 0)
+      if (::cuda::std::cmp_less(__value_, 0))
       {
-        if (__bound_sentinel_ < 0)
+        if (::cuda::std::cmp_less(__bound_sentinel_, 0))
         {
           return ::cuda::std::__to_unsigned_like(-__value_) - ::cuda::std::__to_unsigned_like(-__bound_sentinel_);
         }

@@ -186,6 +186,10 @@ cudax_add_catch2_test(test_target group.invoke_one
     group/invoke_one.cu
 )
 
+cudax_add_catch2_test(test_target coop.load
+    coop/load/load.cu
+)
+
 cudax_add_catch2_test(test_target coop.reduce.this_thread
     coop/reduce/this_thread.cu
 )
