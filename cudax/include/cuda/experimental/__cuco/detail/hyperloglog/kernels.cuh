@@ -26,6 +26,8 @@
 #include <cuda/std/cstdint>
 #include <cuda/std/span>
 
+#include <cuda/experimental/group.cuh>
+
 #include <cooperative_groups.h>
 
 #include <cuda/std/__cccl/prologue.h>
@@ -53,15 +55,18 @@ namespace cuda::experimental::cuco::__hyperloglog_ns
   return static_cast<::cuda::std::int64_t>(gridDim.x) * blockDim.x;
 }
 
-template <class _RefType>
-_CCCL_KERNEL_ATTRIBUTES void __clear(_RefType __ref)
+struct __clear_kernel
 {
-  const auto __block = ::cooperative_groups::this_thread_block();
-  if (__block.group_index().x == 0)
+  template <class _Config, class _RefType>
+  _CCCL_DEVICE_API void operator()(_Config __config, _RefType __ref) const
   {
-    __ref.__clear(__block);
+    this_block __block{__config};
+    if (__block.rank(grid) == 0)
+    {
+      __ref.__clear(__block);
+    }
   }
-}
+};
 
 template <int _VectorSize, class _RefType>
 _CCCL_KERNEL_ATTRIBUTES void
@@ -149,28 +154,34 @@ _CCCL_KERNEL_ATTRIBUTES void __add_shmem(_InputIt __first, ::cuda::std::int64_t 
   __ref.__merge(__block, __local_ref);
 }
 
-template <class _InputIt, class _RefType>
-_CCCL_KERNEL_ATTRIBUTES void __add_gmem(_InputIt __first, ::cuda::std::int64_t __n, _RefType __ref)
+struct __add_gmem_kernel
 {
-  const auto __loop_stride = __grid_stride();
-  auto __idx               = __global_thread_id();
-
-  while (__idx < __n)
+  template <class _Config, class _InputIt, class _RefType>
+  _CCCL_DEVICE_API void operator()(_Config __config, _InputIt __first, ::cuda::std::int64_t __n, _RefType __ref) const
   {
-    __ref.__add(*(__first + __idx));
-    __idx += __loop_stride;
-  }
-}
+    const auto __loop_stride = __grid_stride();
+    auto __idx               = __global_thread_id();
 
-template <class _OtherRefType, class _RefType>
-_CCCL_KERNEL_ATTRIBUTES void __merge(_OtherRefType __other_ref, _RefType __ref)
+    while (__idx < __n)
+    {
+      __ref.__add(*(__first + __idx));
+      __idx += __loop_stride;
+    }
+  }
+};
+
+struct __merge_kernel
 {
-  const auto __block = ::cooperative_groups::this_thread_block();
-  if (__block.group_index().x == 0)
+  template <class _Config, class _OtherRefType, class _RefType>
+  _CCCL_DEVICE_API void operator()(_Config __config, _OtherRefType __other_ref, _RefType __ref) const
   {
-    __ref.__merge(__block, __other_ref);
+    this_block __block{__config};
+    if (__block.is_root_rank(grid))
+    {
+      __ref.__merge(__block, __other_ref);
+    }
   }
-}
+};
 } // namespace cuda::experimental::cuco::__hyperloglog_ns
 
 _CCCL_DIAG_POP

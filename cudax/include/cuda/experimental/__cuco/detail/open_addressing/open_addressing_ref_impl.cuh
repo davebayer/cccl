@@ -34,11 +34,14 @@
 #include <cuda/std/__utility/pair.h>
 #include <cuda/std/cstdint>
 
+#include <cuda/experimental/__coop/any_of.cuh>
+#include <cuda/experimental/__coop/shuffle.cuh>
 #include <cuda/experimental/__cuco/detail/bitwise_compare.cuh>
 #include <cuda/experimental/__cuco/detail/equal_wrapper.cuh>
 #include <cuda/experimental/__cuco/detail/utility/cuda.cuh>
 #include <cuda/experimental/__cuco/detail/utility/traits.cuh>
 #include <cuda/experimental/__cuco/probing_scheme.cuh>
+#include <cuda/experimental/group.cuh>
 
 #include <cooperative_groups.h>
 
@@ -344,16 +347,15 @@ public:
   //!
   //! @brief Inserts an element.
   //!
-  //! @tparam Value Input type which is convertible to '__value_type'
-  //! @tparam ParentCG Type of parent Cooperative Group
+  //! @tparam _Group Cooperative Group
+  //! @tparam _Value Input type which is convertible to '__value_type'
   //!
   //! @param __group The Cooperative Group used to perform group insert
   //! @param __value The element to insert
   //!
   //! @return True if the given element is successfully inserted
-  template <class _Value, class _ParentCG>
-  _CCCL_DEVICE_API bool
-  insert(::cooperative_groups::thread_block_tile<__cg_size, _ParentCG> __group, _Value __value) noexcept
+  template <class _Group, class _Value>
+  _CCCL_DEVICE_API bool insert(const _Group& __group, _Value __value) noexcept
   {
     const auto __val = __heterogeneous_value(__value);
     const auto __key = __extract_key(__val);
@@ -370,24 +372,26 @@ public:
       if constexpr (!__allows_duplicates)
       {
         // If the __key is already in the container, return false
-        if (__group.any(__state == detail::__equal_result::__equal))
+        if (::cuda::experimental::coop::any_of(broadcasted, __group, (__state == detail::__equal_result::__equal)))
         {
           return false;
         }
       }
 
-      const auto __group_contains_available = __group.ballot(__state == detail::__equal_result::__available);
+      // todo(dabayer): There is no simple way to do equivalent operation in new groups. Investigate what we can do.
+      auto __cg_group = ::cooperative_groups::tiled_partition<__cg_size>(::cooperative_groups::this_thread_block());
+      const auto __group_contains_available = __cg_group.ballot(__state == detail::__equal_result::__available);
       if (__group_contains_available)
       {
         const auto __src_lane = __ffs(__group_contains_available) - 1;
         auto __status         = __insert_result::__continue;
-        if (__group.thread_rank() == __src_lane)
+        if (gpu_thread.rank(__group) == __src_lane)
         {
           __status =
             __attempt_insert(__get_slot_ptr(*__probing_iter, __intra_bucket_index), empty_slot_sentinel(), __val);
         }
 
-        switch (__group.shfl(__status, __src_lane))
+        switch (::cuda::experimental::coop::shuffle(__group, __status, __src_lane))
         {
           case __insert_result::__success:
             return true;
@@ -466,16 +470,15 @@ public:
   //! @note If the probe __key `__key` was inserted into the container, returns true. Otherwise, returns
   //! false.
   //!
-  //! @tparam ProbeKey Probe __key type
-  //! @tparam ParentCG Type of parent Cooperative Group
+  //! @tparam _Group Cooperative Group
+  //! @tparam _ProbeKey Probe __key type
   //!
   //! @param __group The Cooperative Group used to perform group contains
   //! @param __key The __key to search for
   //!
   //! @return A boolean indicating whether the probe __key is present
-  template <class _ProbeKey, class _ParentCG>
-  [[nodiscard]] _CCCL_DEVICE_API bool
-  contains(::cooperative_groups::thread_block_tile<__cg_size, _ParentCG> __group, _ProbeKey __key) const noexcept
+  template <class _Group, class _ProbeKey>
+  [[nodiscard]] _CCCL_DEVICE_API bool contains(const _Group& __group, _ProbeKey __key) const noexcept
   {
     auto __probing_iter =
       __probing_scheme.template make_iterator<__bucket_size>(__group, __key, __storage_ref.capacity_extent());
@@ -487,11 +490,11 @@ public:
 
       const auto __state = __probe_bucket(__key, __bucket_slots);
 
-      if (__group.any(__state == detail::__equal_result::__equal))
+      if (::cuda::experimental::coop::any_of(broadcasted, __group, (__state == detail::__equal_result::__equal)))
       {
         return true;
       }
-      if (__group.any(__state == detail::__equal_result::__empty))
+      if (::cuda::experimental::coop::any_of(broadcasted, __group, (__state == detail::__equal_result::__empty)))
       {
         return false;
       }

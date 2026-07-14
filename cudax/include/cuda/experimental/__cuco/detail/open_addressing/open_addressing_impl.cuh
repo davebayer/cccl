@@ -29,6 +29,8 @@
 #include <cuda/__iterator/constant_iterator.h>
 #include <cuda/__runtime/api_wrapper.h>
 #include <cuda/__type_traits/is_bitwise_comparable.h>
+#include <cuda/hierarchy>
+#include <cuda/launch>
 #include <cuda/std/__exception/exception_macros.h>
 #include <cuda/std/__functional/identity.h>
 #include <cuda/std/__type_traits/is_base_of.h>
@@ -244,16 +246,19 @@ public:
 
     auto __counter = __make_counter(__stream);
 
-    const auto __grid_size = detail::__grid_size(__num_keys, __cg_size);
-
-    __open_addressing::__insert_if_n<__cg_size, detail::__default_block_size>
-      <<<static_cast<unsigned>(__grid_size), detail::__default_block_size, 0, __stream.get()>>>(
-        __first,
-        __num_keys,
-        ::cuda::constant_iterator<bool>{true},
-        ::cuda::std::identity{},
-        __counter.data(),
-        __container_ref);
+    constexpr auto __block_size = detail::__default_block_size;
+    const auto __grid_size      = detail::__grid_size(__num_keys, __cg_size);
+    const auto __config = ::cuda::make_config(::cuda::grid_dims(dim3{__grid_size}), ::cuda::block_dims<__block_size>());
+    ::cuda::launch(
+      __stream,
+      __config,
+      __open_addressing::__insert_if_n_kernel<__cg_size>{},
+      __first,
+      __num_keys,
+      ::cuda::constant_iterator<bool>{true},
+      ::cuda::std::identity{},
+      __counter.data(),
+      __container_ref);
 
     return __read_counter(__counter, __stream);
   }
@@ -278,11 +283,19 @@ public:
     }
     else
     {
-      const auto __grid_size = detail::__grid_size(__num_keys, __cg_size);
-
-      __open_addressing::__insert_if_n<__cg_size, detail::__default_block_size>
-        <<<static_cast<unsigned>(__grid_size), detail::__default_block_size, 0, __stream.get()>>>(
-          __first, __num_keys, ::cuda::constant_iterator<bool>{true}, ::cuda::std::identity{}, __container_ref);
+      constexpr auto __block_size = detail::__default_block_size;
+      const auto __grid_size      = detail::__grid_size(__num_keys, __cg_size);
+      const auto __config =
+        ::cuda::make_config(::cuda::grid_dims(dim3{__grid_size}), ::cuda::block_dims<__block_size>());
+      ::cuda::launch(
+        __stream,
+        __config,
+        __open_addressing::__insert_if_n_kernel<__cg_size>{},
+        __first,
+        __num_keys,
+        ::cuda::constant_iterator<bool>{true},
+        ::cuda::std::identity{},
+        __container_ref);
     }
   }
 
@@ -307,16 +320,20 @@ public:
     }
     else
     {
-      const auto __grid_size = detail::__grid_size(__num_keys, __cg_size);
-
-      __open_addressing::__contains_if_n<__cg_size, detail::__default_block_size>
-        <<<static_cast<unsigned>(__grid_size), detail::__default_block_size, 0, __stream.get()>>>(
-          __first,
-          __num_keys,
-          ::cuda::constant_iterator<bool>{true},
-          ::cuda::std::identity{},
-          __output_begin,
-          __container_ref);
+      constexpr auto __block_size = detail::__default_block_size;
+      const auto __grid_size      = static_cast<unsigned>(detail::__grid_size(__num_keys, __cg_size));
+      const auto __config =
+        ::cuda::make_config(::cuda::grid_dims(dim3{__grid_size}), ::cuda::block_dims<__block_size>());
+      ::cuda::launch(
+        __stream,
+        __config,
+        __open_addressing::__contains_if_n_kernel<__cg_size>{},
+        __first,
+        __num_keys,
+        ::cuda::constant_iterator<bool>{true},
+        ::cuda::std::identity{},
+        __output_begin,
+        __container_ref);
     }
   }
 

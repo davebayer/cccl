@@ -29,8 +29,7 @@
 
 #include <cuda/experimental/__cuco/detail/hyperloglog/hyperloglog_impl.cuh>
 #include <cuda/experimental/__cuco/hll_policies.cuh>
-
-#include <cooperative_groups.h>
+#include <cuda/experimental/group.cuh>
 
 #include <cuda/std/__cccl/prologue.h>
 
@@ -105,12 +104,12 @@ public:
 
   //! @brief Resets the estimator, i.e., clears the current count estimate.
   //!
-  //! @tparam _CG CUDA Cooperative Group type
+  //! @tparam _Group Cooperative Group type
   //!
   //! @param __group CUDA Cooperative group this operation is executed in
-  _CCCL_TEMPLATE(class _CG)
-  _CCCL_REQUIRES((!::cuda::std::is_convertible_v<_CG, ::cuda::stream_ref>) )
-  _CCCL_DEVICE_API constexpr void clear(_CG __group) noexcept
+  _CCCL_TEMPLATE(class _Group)
+  _CCCL_REQUIRES((!::cuda::std::is_convertible_v<_Group, ::cuda::stream_ref>) )
+  _CCCL_DEVICE_API constexpr void clear(const _Group& __group) noexcept
   {
     // The constraint above is to work around an incompatibility between host and device
     // overload preference for clang and NVCC. See
@@ -208,14 +207,14 @@ public:
   //!
   //! @throw If sketch_bytes() != __other.sketch_bytes(), then terminates execution with a device __trap()
   //!
-  //! @tparam _CG CUDA Cooperative Group type
+  //! @tparam _Group Cooperative Group type
   //! @tparam _OtherScope Thread scope of `other` estimator
   //!
-  //! @param __group CUDA Cooperative group this operation is executed in
+  //! @param __group Cooperative group this operation is executed in
   //! @param __other Other estimator reference to be merged into `*this`
-  _CCCL_TEMPLATE(class _CG, ::cuda::thread_scope _OtherScope)
-  _CCCL_REQUIRES((!::cuda::std::is_convertible_v<_CG, ::cuda::stream_ref>) )
-  _CCCL_DEVICE_API constexpr void merge(_CG __group, const hyperloglog_ref<_Tp, _OtherScope, _Policy>& __other)
+  _CCCL_TEMPLATE(class _Group, ::cuda::thread_scope _OtherScope)
+  _CCCL_REQUIRES((!::cuda::std::is_convertible_v<_Group, ::cuda::stream_ref>) )
+  _CCCL_DEVICE_API constexpr void merge(const _Group& __group, const hyperloglog_ref<_Tp, _OtherScope, _Policy>& __other)
   {
     // The constraint above works around the same host/device overload preference issue as
     // documented in `clear(_CG)`: `merge(_CG, ...)` would otherwise conflict with
@@ -259,11 +258,11 @@ public:
 
   //! @brief Compute the estimated distinct items count.
   //!
-  //! @param __group CUDA thread block group this operation is executed in
+  //! @param __group Thread block group this operation is executed in
   //!
   //! @return Approximate distinct items count
-  [[nodiscard]] _CCCL_DEVICE_API ::cuda::std::size_t
-  estimate(const ::cooperative_groups::thread_block& __group) const noexcept
+  template <class _Hierarchy>
+  [[nodiscard]] _CCCL_DEVICE_API ::cuda::std::size_t estimate(const this_block<_Hierarchy>& __group) const noexcept
   {
     return __impl.__estimate(__group);
   }

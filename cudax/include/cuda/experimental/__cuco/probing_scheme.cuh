@@ -30,8 +30,7 @@
 #include <cuda/std/__type_traits/decay.h>
 
 #include <cuda/experimental/__cuco/detail/probing_scheme_base.cuh>
-
-#include <cooperative_groups.h>
+#include <cuda/experimental/group.cuh>
 
 #include <cuda/std/__cccl/prologue.h>
 
@@ -97,26 +96,24 @@ public:
   //! @brief Returns a cooperative group based probing iterator.
   //!
   //! @tparam _BucketSize Size of the bucket
+  //! @tparam _Group Cooperative group
   //! @tparam _ProbeKey Type of probing key
   //! @tparam _Capacity Capacity extent type (total slots)
-  //! @tparam _ParentCG Type of parent cooperative group
   //!
   //! @param __group The cooperative group used to generate the probing iterator
   //! @param __probe_key The probing key
   //! @param __cap Capacity extent (total slots) bounding the iteration
   //!
   //! @return An iterator whose value_type is convertible to the slot index type
-  template <int _BucketSize, class _ProbeKey, class _Capacity, class _ParentCG>
+  template <int _BucketSize, class _Group, class _ProbeKey, class _Capacity>
   [[nodiscard]] _CCCL_HOST_DEVICE_API constexpr auto
-  make_iterator(::cooperative_groups::thread_block_tile<cg_size, _ParentCG> __group,
-                _ProbeKey __probe_key,
-                _Capacity __cap) const noexcept
+  make_iterator(const _Group& __group, _ProbeKey __probe_key, _Capacity __cap) const noexcept
   {
     using __size_type              = typename _Capacity::index_type;
     constexpr __size_type __stride = cg_size * _BucketSize;
     using __step_extent            = ::cuda::std::extents<__size_type, __stride>;
-    const __size_type __init =
-      __hash(__probe_key) % (__cap.extent(0) / __stride) * __stride + __size_type{__group.thread_rank() * _BucketSize};
+    const __size_type __init       = __hash(__probe_key) % (__cap.extent(0) / __stride) * __stride
+                             + __size_type{gpu_thread.rank(__group) * _BucketSize};
     return detail::__probing_iterator<_Capacity, __step_extent>{__init, __step_extent{}, __cap};
   }
 
@@ -214,20 +211,18 @@ public:
   //! @brief Returns a cooperative group based probing iterator.
   //!
   //! @tparam _BucketSize Size of the bucket
+  //! @tparam _Group Cooperative group
   //! @tparam _ProbeKey Type of probing key
   //! @tparam _Capacity Capacity extent type (total slots)
-  //! @tparam _ParentCG Type of parent cooperative group
   //!
   //! @param __group The cooperative group used to generate the probing iterator
   //! @param __probe_key The probing key
   //! @param __cap Capacity extent (total slots) bounding the iteration
   //!
   //! @return An iterator whose value_type is convertible to the slot index type
-  template <int _BucketSize, class _ProbeKey, class _Capacity, class _ParentCG>
+  template <int _BucketSize, class _Group, class _ProbeKey, class _Capacity>
   [[nodiscard]] _CCCL_HOST_DEVICE_API constexpr auto
-  make_iterator(::cooperative_groups::thread_block_tile<cg_size, _ParentCG> __group,
-                _ProbeKey __probe_key,
-                _Capacity __cap) const noexcept
+  make_iterator(const _Group& __group, _ProbeKey __probe_key, _Capacity __cap) const noexcept
   {
     using __size_type              = typename _Capacity::index_type;
     constexpr __size_type __stride = cg_size * _BucketSize;
@@ -235,7 +230,7 @@ public:
 
     return detail::__probing_iterator<_Capacity, __step_extent>{
       __size_type{__hash1(__probe_key)} % (__cap.extent(0) / __stride) * __stride
-        + __size_type{__group.thread_rank() * _BucketSize},
+        + __size_type{gpu_thread.rank(__group) * _BucketSize},
       __step_extent{__size_type{(__hash2(__probe_key) % (__cap.extent(0) / __stride - 1) + 1) * __stride}},
       __cap};
   }

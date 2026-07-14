@@ -32,8 +32,7 @@
 #include <cuda/experimental/__cuco/detail/open_addressing/slot_storage_ref.cuh>
 #include <cuda/experimental/__cuco/probing_scheme.cuh>
 #include <cuda/experimental/__cuco/types.cuh>
-
-#include <cooperative_groups.h>
+#include <cuda/experimental/group.cuh>
 
 #include <cuda/std/__cccl/prologue.h>
 
@@ -271,15 +270,14 @@ public:
 
   //! @brief Inserts a key-value pair using a cooperative group.
   //!
-  //! @tparam _ParentCG Parent cooperative group type
+  //! @tparam _Group The cooperative group type
   //!
   //! @param __group The cooperative group used for this operation
   //! @param __value The key-value pair to insert
   //!
   //! @return `true` if the pair was inserted, `false` if the key already exists
-  template <class _ParentCG>
-  _CCCL_DEVICE_API bool
-  insert(::cooperative_groups::thread_block_tile<cg_size, _ParentCG> __group, value_type __value) noexcept
+  template <class _Group>
+  _CCCL_DEVICE_API bool insert(const _Group& __group, value_type __value) noexcept
   {
     return __impl.insert(__group, __value);
   }
@@ -299,16 +297,15 @@ public:
 
   //! @brief Cooperative-group variant of `contains`.
   //!
-  //! @tparam _ParentCG Parent cooperative group type
+  //! @tparam _Group The cooperative group type
   //! @tparam _ProbeKey Probe key type (defaults to `key_type`)
   //!
   //! @param __group Cooperative group of size `cg_size` performing this lookup
   //! @param __key The key to search for
   //!
   //! @return `true` if the key is found
-  template <class _ParentCG, class _ProbeKey = key_type>
-  [[nodiscard]] _CCCL_DEVICE_API bool
-  contains(::cooperative_groups::thread_block_tile<cg_size, _ParentCG> __group, _ProbeKey __key) const noexcept
+  template <class _Group, class _ProbeKey = key_type>
+  [[nodiscard]] _CCCL_DEVICE_API bool contains(const _Group& __group, _ProbeKey __key) const noexcept
   {
     return __impl.contains(__group, __key);
   }

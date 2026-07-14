@@ -28,6 +28,8 @@
 #include <cuda/__stream/stream_ref.h>
 #include <cuda/__utility/in_range.h>
 #include <cuda/atomic>
+#include <cuda/hierarchy>
+#include <cuda/launch>
 #include <cuda/std/__algorithm/max.h>
 #include <cuda/std/__bit/countr.h>
 #include <cuda/std/__bit/integral.h>
@@ -41,6 +43,8 @@
 #include <cuda/experimental/__cuco/detail/hyperloglog/kernels.cuh>
 #include <cuda/experimental/__cuco/detail/utility/strong_type.cuh>
 #include <cuda/experimental/__cuco/hash_functions.cuh>
+#include <cuda/experimental/group.cuh>
+#include <cuda/experimental/memory_resource.cuh>
 
 #include <cooperative_groups.h>
 
@@ -120,11 +124,20 @@ public:
 
   //! @brief Resets the estimator, i.e., clears the current count estimate.
   //!
-  //! @tparam _CG CUDA Cooperative Group type
+  //! @tparam _Group Cooperative Group type
   //!
-  //! @param __group CUDA Cooperative group this operation is executed in
-  template <class _CG>
-  _CCCL_DEVICE_API constexpr void __clear(_CG __group) noexcept
+  //! @param __group CUDA group this operation is executed in
+  template <class _Group>
+  _CCCL_DEVICE_API constexpr void __clear(const _Group& __group) noexcept
+  {
+    for (auto __i = gpu_thread.rank_as<int>(__group); __i < __sketch.size(); __i += gpu_thread.count_as<int>(__group))
+    {
+      __sketch[__i] = 0;
+    }
+  }
+
+  template <class _Parent>
+  _CCCL_DEVICE_API constexpr void __clear(const ::cooperative_groups::thread_block& __group) noexcept
   {
     for (int __i = __group.thread_rank(); __i < __sketch.size(); __i += __group.size())
     {
@@ -149,8 +162,8 @@ public:
   //! @param __stream CUDA stream this operation is executed in
   _CCCL_HOST_API constexpr void __clear_async(::cuda::stream_ref __stream)
   {
-    constexpr auto __block_size = 1024;
-    ::cuda::experimental::cuco::__hyperloglog_ns::__clear<<<1, __block_size, 0, __stream.get()>>>(*this);
+    const auto __config = ::cuda::make_config(::cuda::grid_dims<1>(), ::cuda::block_dims<1024>());
+    ::cuda::launch(__stream, __config, __hyperloglog_ns::__clear_kernel{}, *this);
   }
 
   //! @brief Adds an item to the estimator.
@@ -323,20 +336,20 @@ public:
   //!
   //! @throw If __sketch_bytes() != other.__sketch_bytes(), then terminates execution with a device __trap()
   //!
-  //! @tparam _CG CUDA Cooperative Group type
+  //! @tparam _Group Cooperative group type
   //! @tparam _OtherScope Thread scope of `other` estimator
   //!
-  //! @param __group CUDA Cooperative group this operation is executed in
+  //! @param __group Cooperative group this operation is executed in
   //! @param __other Other estimator reference to be merged into `*this`
-  template <class _CG, ::cuda::thread_scope _OtherScope>
-  _CCCL_DEVICE_API constexpr void __merge(_CG __group, __hyperloglog_impl<_Tp, _OtherScope, _Policy>& __other)
+  template <class _Group, ::cuda::thread_scope _OtherScope>
+  _CCCL_DEVICE_API constexpr void __merge(const _Group& __group, __hyperloglog_impl<_Tp, _OtherScope, _Policy>& __other)
   {
     if (__other.__precision != __precision)
     {
       _CCCL_THROW(::std::invalid_argument, "Cannot merge estimators with different sketch sizes");
     }
 
-    for (int __i = __group.thread_rank(); __i < __sketch.size(); __i += __group.size())
+    for (auto __i = gpu_thread.rank_as<int>(__group); __i < __sketch.size(); __i += gpu_thread.rank_as<int>(__group))
     {
       __update_max(__i, __other.__sketch[__i]);
     }
@@ -360,8 +373,8 @@ public:
       _CCCL_THROW(::std::invalid_argument, "Cannot merge estimators with different sketch sizes");
     }
 
-    constexpr auto __block_size = 1024;
-    ::cuda::experimental::cuco::__hyperloglog_ns::__merge<<<1, __block_size, 0, __stream.get()>>>(__other, *this);
+    const auto __config = ::cuda::make_config(::cuda::grid_dims<1>(), ::cuda::block_dims<1024>());
+    ::cuda::launch(__stream, __config, __hyperloglog_ns::__merge_kernel{}, __other, *this);
   }
 
   //! @brief Merges the result of `other` estimator reference into `*this` estimator.
@@ -385,46 +398,45 @@ public:
 
   //! @brief Compute the estimated distinct items count.
   //!
-  //! @param __group CUDA thread block group this operation is executed in
+  //! @param __group Thread block group this operation is executed in
   //!
   //! @return Approximate distinct items count
-  [[nodiscard]] _CCCL_DEVICE_API ::cuda::std::size_t
-  __estimate(const ::cooperative_groups::thread_block& __group) const noexcept
+  template <class _Hierarchy>
+  [[nodiscard]] _CCCL_DEVICE_API ::cuda::std::size_t __estimate(const this_block<_Hierarchy>& __group) const noexcept
   {
     __shared__ ::cuda::atomic<__fp_type, ::cuda::std::thread_scope_block> __block_sum;
     __shared__ ::cuda::atomic<::cuda::std::int32_t, ::cuda::std::thread_scope_block> __block_zeroes;
     __shared__ ::cuda::std::size_t __estimate;
 
-    if (__group.thread_rank() == 0)
-    {
+    ::cuda::experimental::invoke_one(__group, [&]() {
       __block_sum.store(0);
       __block_zeroes.store(0);
-    }
+    });
     __group.sync();
 
     __fp_type __thread_sum               = 0;
     ::cuda::std::int32_t __thread_zeroes = 0;
-    for (int __i = __group.thread_rank(); __i < __sketch.size(); __i += __group.size())
+    for (auto __i = gpu_thread.rank_as<int>(__group); __i < __sketch.size(); __i += gpu_thread.count_as<int>(__group))
     {
       const auto __reg = __sketch[__i];
       __thread_sum += __fp_type{1} / static_cast<__fp_type>(1ull << __reg);
       __thread_zeroes += __reg == 0;
     }
 
+    // todo(dabayer): Use groups API for these reductions.
     // warp reduce Z and V
-    const auto __warp = ::cooperative_groups::tiled_partition<32, ::cooperative_groups::thread_block>(__group);
+    const auto __warp = ::cooperative_groups::tiled_partition<32>(::cooperative_groups::this_thread_block());
     ::cooperative_groups::reduce_update_async(
       __warp, __block_sum, __thread_sum, ::cooperative_groups::plus<__fp_type>());
     ::cooperative_groups::reduce_update_async(
       __warp, __block_zeroes, __thread_zeroes, ::cooperative_groups::plus<::cuda::std::int32_t>());
     __group.sync();
 
-    if (__group.thread_rank() == 0)
-    {
+    ::cuda::experimental::invoke_one(__group, [&]() {
       const auto __z = __block_sum.load(::cuda::std::memory_order_relaxed);
       const auto __v = __block_zeroes.load(::cuda::std::memory_order_relaxed);
       __estimate     = _Policy::finalize(__z, __v, __precision);
-    }
+    });
     __group.sync();
 
     return __estimate;
