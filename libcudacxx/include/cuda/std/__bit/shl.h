@@ -70,6 +70,38 @@ _CCCL_REQUIRES(__cccl_is_integer_v<_Tp> _CCCL_AND __cccl_is_integer_v<_Shift>)
                          using _Up = __make_nbit_int_t<sizeof(_Tp) < sizeof(int64_t) ? 32 : 64, is_signed_v<_Tp>>;
                          return static_cast<_Tp>(::cuda::ptx::shr(_Up{__v}, static_cast<uint32_t>(__ushift)));
                        }
+#  if _CCCL_HAS_INT128()
+                       else if constexpr (sizeof(_Tp) == sizeof(__int128_t))
+                       {
+                         const auto __cnt  = static_cast<uint32_t>(__ushift);
+                         const auto __uv   = static_cast<__uint128_t>(__v);
+                         const auto __fill = (is_signed_v<_Tp> && __v < _Tp{0}) ? ~uint32_t{0} : uint32_t{0};
+                         const auto __w0   = static_cast<uint32_t>(__uv);
+                         const auto __w1   = static_cast<uint32_t>(__uv >> 32);
+                         const auto __w2   = static_cast<uint32_t>(__uv >> 64);
+                         const auto __w3   = static_cast<uint32_t>(__uv >> 96);
+
+                         const auto __res_0 = ::__funnelshift_r(__w0, __w1, __cnt);
+                         const auto __res_1 = ::__funnelshift_r(__w1, __w2, __cnt);
+                         const auto __res_2 = ::__funnelshift_r(__w2, __w3, __cnt);
+                         const auto __res_3 = ::__funnelshift_r(__w3, __fill, __cnt);
+
+                         const auto __word_shift1 = (__cnt & __word_bits) != 0;
+                         const auto __word_shift2 = (__cnt & (2 * __word_bits)) != 0;
+                         const auto __fill_result = __ushift >= __width;
+
+                         const auto __tmp_0 = __word_shift1 ? __res_1 : __res_0;
+                         const auto __tmp_1 = __word_shift1 ? __res_2 : __res_1;
+                         const auto __tmp_2 = __word_shift1 ? __res_3 : __res_2;
+                         const auto __tmp_3 = __word_shift1 ? __fill : __res_3;
+
+                         const auto __out_0 = __fill_result ? __fill : (__word_shift2 ? __tmp_2 : __tmp_0);
+                         const auto __out_1 = __fill_result ? __fill : (__word_shift2 ? __tmp_3 : __tmp_1);
+                         const auto __out_2 = (__fill_result || __word_shift2) ? __fill : __tmp_2;
+                         const auto __out_3 = (__fill_result || __word_shift2) ? __fill : __tmp_3;
+                         return static_cast<_Tp>(::cuda::std::__shl_combine_words(__out_0, __out_1, __out_2, __out_3));
+                       }
+#  endif // _CCCL_HAS_INT128()
                      }))
       }
 #endif // !_CCCL_TILE_COMPILATION()
@@ -88,22 +120,24 @@ _CCCL_REQUIRES(__cccl_is_integer_v<_Tp> _CCCL_AND __cccl_is_integer_v<_Shift>)
                      return static_cast<_Tp>(::cuda::ptx::shl(_Up{__v}, static_cast<uint32_t>(__ushift)));
                    }
 #  if _CCCL_HAS_INT128()
-                   else if constexpr (sizeof(_Tp) == sizeof(__int128_t))
+                   else if constexpr (is_same_v<_Tp, __uint128_t> || is_same_v<_Tp, __int128_t>)
                    {
-                     const auto __uv = ::cuda::std::__to_unsigned_like(__v);
-                     const auto __w0 = static_cast<uint32_t>(__uv);
-                     const auto __w1 = static_cast<uint32_t>(__uv >> 32);
-                     const auto __w2 = static_cast<uint32_t>(__uv >> 64);
-                     const auto __w3 = static_cast<uint32_t>(__uv >> 96);
+                     constexpr auto __word_bits = uint32_t{32};
+                     const auto __cnt           = static_cast<uint32_t>(__ushift);
+                     const auto __uv            = ::cuda::std::__to_unsigned_like(__v);
+                     const auto __w0            = static_cast<uint32_t>(__uv);
+                     const auto __w1            = static_cast<uint32_t>(__uv >> 32);
+                     const auto __w2            = static_cast<uint32_t>(__uv >> 64);
+                     const auto __w3            = static_cast<uint32_t>(__uv >> 96);
 
-                     const auto __res_0 = ::__funnelshift_l(uint32_t{0}, __w0, __ushift);
-                     const auto __res_1 = ::__funnelshift_l(__w0, __w1, __ushift);
-                     const auto __res_2 = ::__funnelshift_l(__w1, __w2, __ushift);
-                     const auto __res_3 = ::__funnelshift_l(__w2, __w3, __ushift);
+                     const auto __res_0 = ::__funnelshift_l(uint32_t{0}, __w0, __cnt);
+                     const auto __res_1 = ::__funnelshift_l(__w0, __w1, __cnt);
+                     const auto __res_2 = ::__funnelshift_l(__w1, __w2, __cnt);
+                     const auto __res_3 = ::__funnelshift_l(__w2, __w3, __cnt);
 
-                     const auto __word_shift1 = (__ushift & 32) != 0;
-                     const auto __word_shift2 = (__ushift & 64) != 0;
-                     const auto __zero        = __ushift >= 128;
+                     const auto __word_shift1 = (__cnt & __word_bits) != 0;
+                     const auto __word_shift2 = (__cnt & (2 * __word_bits)) != 0;
+                     const auto __zero        = __ushift >= __width;
 
                      const auto __tmp_0 = __word_shift1 ? uint32_t{0} : __res_0;
                      const auto __tmp_1 = __word_shift1 ? __res_0 : __res_1;
@@ -114,8 +148,7 @@ _CCCL_REQUIRES(__cccl_is_integer_v<_Tp> _CCCL_AND __cccl_is_integer_v<_Shift>)
                      const auto __out_1 = (__zero || __word_shift2) ? uint32_t{0} : __tmp_1;
                      const auto __out_2 = __zero ? uint32_t{0} : (__word_shift2 ? __tmp_0 : __tmp_2);
                      const auto __out_3 = __zero ? uint32_t{0} : (__word_shift2 ? __tmp_1 : __tmp_3);
-                     return (__uint128_t{__out_3} << 96) | (__uint128_t{__out_2} << 64) | (__uint128_t{__out_1} << 32)
-                          | __out_0;
+                     return static_cast<_Tp>(::cuda::std::__shl_combine_words(__out_0, __out_1, __out_2, __out_3));
                    }
 #  endif // _CCCL_HAS_INT128()
                  }))
