@@ -24,6 +24,7 @@
 #include <cuda/__cmath/uabs.h>
 #include <cuda/std/__concepts/concept_macros.h>
 #include <cuda/std/__type_traits/is_integer.h>
+#include <cuda/std/__type_traits/is_same.h>
 #include <cuda/std/__type_traits/is_signed.h>
 #include <cuda/std/__type_traits/make_nbit_int.h>
 #include <cuda/std/__type_traits/make_unsigned.h>
@@ -39,6 +40,14 @@
 #include <cuda/std/__cccl/prologue.h>
 
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
+
+#if _CCCL_HAS_INT128()
+[[nodiscard]] _CCCL_API constexpr __uint128_t
+__shl_combine_words(const uint32_t __w0, const uint32_t __w1, const uint32_t __w2, const uint32_t __w3) noexcept
+{
+  return (__uint128_t{__w3} << 96) | (__uint128_t{__w2} << 64) | (__uint128_t{__w1} << 32) | __uint128_t{__w0};
+}
+#endif // _CCCL_HAS_INT128()
 
 _CCCL_TEMPLATE(class _Tp, class _Shift)
 _CCCL_REQUIRES(__cccl_is_integer_v<_Tp> _CCCL_AND __cccl_is_integer_v<_Shift>)
@@ -78,6 +87,37 @@ _CCCL_REQUIRES(__cccl_is_integer_v<_Tp> _CCCL_AND __cccl_is_integer_v<_Shift>)
                      using _Up = __make_nbit_int_t<sizeof(_Tp) < sizeof(int64_t) ? 32 : 64, is_signed_v<_Tp>>;
                      return static_cast<_Tp>(::cuda::ptx::shl(_Up{__v}, static_cast<uint32_t>(__ushift)));
                    }
+#  if _CCCL_HAS_INT128()
+                   else if constexpr (sizeof(_Tp) == sizeof(__int128_t))
+                   {
+                     const auto __uv = ::cuda::std::__to_unsigned_like(__v);
+                     const auto __w0 = static_cast<uint32_t>(__uv);
+                     const auto __w1 = static_cast<uint32_t>(__uv >> 32);
+                     const auto __w2 = static_cast<uint32_t>(__uv >> 64);
+                     const auto __w3 = static_cast<uint32_t>(__uv >> 96);
+
+                     const auto __res_0 = ::__funnelshift_l(uint32_t{0}, __w0, __ushift);
+                     const auto __res_1 = ::__funnelshift_l(__w0, __w1, __ushift);
+                     const auto __res_2 = ::__funnelshift_l(__w1, __w2, __ushift);
+                     const auto __res_3 = ::__funnelshift_l(__w2, __w3, __ushift);
+
+                     const auto __word_shift1 = (__ushift & 32) != 0;
+                     const auto __word_shift2 = (__ushift & 64) != 0;
+                     const auto __zero        = __ushift >= 128;
+
+                     const auto __tmp_0 = __word_shift1 ? uint32_t{0} : __res_0;
+                     const auto __tmp_1 = __word_shift1 ? __res_0 : __res_1;
+                     const auto __tmp_2 = __word_shift1 ? __res_1 : __res_2;
+                     const auto __tmp_3 = __word_shift1 ? __res_2 : __res_3;
+
+                     const auto __out_0 = (__zero || __word_shift2) ? uint32_t{0} : __tmp_0;
+                     const auto __out_1 = (__zero || __word_shift2) ? uint32_t{0} : __tmp_1;
+                     const auto __out_2 = __zero ? uint32_t{0} : (__word_shift2 ? __tmp_0 : __tmp_2);
+                     const auto __out_3 = __zero ? uint32_t{0} : (__word_shift2 ? __tmp_1 : __tmp_3);
+                     return (__uint128_t{__out_3} << 96) | (__uint128_t{__out_2} << 64) | (__uint128_t{__out_1} << 32)
+                          | __out_0;
+                   }
+#  endif // _CCCL_HAS_INT128()
                  }))
   }
 #endif // !_CCCL_TILE_COMPILATION()
