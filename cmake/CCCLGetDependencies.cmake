@@ -125,3 +125,43 @@ macro(cccl_get_nccl)
   find_package(NCCL ${ARGN})
   list(POP_BACK CMAKE_MODULE_PATH)
 endmacro()
+
+macro(cccl_get_filecheck)
+  find_program(
+    CCCL_FILECHECK_EXECUTABLE
+    DOC "Path to the LLVM FileCheck utility."
+    NAMES
+      FileCheck
+      FileCheck-22
+      FileCheck-21
+      FileCheck-20
+      FileCheck-19
+      FileCheck-18
+      FileCheck-17
+      FileCheck-16
+      FileCheck-15
+      FileCheck-14
+      FileCheck-13
+      FileCheck-12
+      FileCheck-11
+      FileCheck-10
+      FileCheck-9
+      FileCheck-8
+    REQUIRED
+  )
+  mark_as_advanced(CCCL_FILECHECK_EXECUTABLE)
+endmacro()
+
+macro(cccl_get_cuobjdump)
+  cccl_get_cudatoolkit()
+
+  find_program(
+    CCCL_CUOBJDUMP_EXECUTABLE
+    NAMES cuobjdump
+    HINTS "${CUDAToolkit_BIN_DIR}"
+    PATH_SUFFIXES bin
+    DOC "Path to the NVIDIA cuobjdump utility."
+    REQUIRED
+  )
+  mark_as_advanced(CCCL_CUOBJDUMP_EXECUTABLE)
+endmacro()

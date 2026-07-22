@@ -1,3 +1,5 @@
+// CODE: PTX
+
 #include <cuda/std/__simd/load.h>
 #include <cuda/std/__simd/store.h>
 #include <cuda/std/cstdint>

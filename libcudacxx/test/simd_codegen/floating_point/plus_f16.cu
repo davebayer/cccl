@@ -8,6 +8,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+// CODE: SASS
+
 #include <cuda/std/__simd_> // IWYU pragma: keep
 
 #if _CCCL_HAS_NVFP16()

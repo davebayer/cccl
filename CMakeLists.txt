@@ -51,6 +51,33 @@ option(CCCL_ENABLE_LIBCUDACXX "Enable the libcu++ developer build." OFF)
 option(CCCL_ENABLE_CUB "Enable the CUB developer build." OFF)
 option(CCCL_ENABLE_THRUST "Enable the Thrust developer build." OFF)
 option(CCCL_ENABLE_TESTING "Enable CUDA C++ Core Library tests." OFF)
+
+option(
+  CCCL_ENABLE_CODEGEN_TESTING
+  "Enable CUDA C++ Core Library codegen tests."
+  OFF
+)
+if (CCCL_ENABLE_CODEGEN_TESTING)
+  if ("${CMAKE_CUDA_COMPILER_ID}" STREQUAL "Clang")
+    message(
+      "-- Disabling codegen tests: clang-cuda CUDA compiler is unsupported"
+    )
+    set(CCCL_ENABLE_CODEGEN_TESTING OFF)
+  elseif (
+    ("${CMAKE_CUDA_COMPILER_ID}" STREQUAL "NVIDIA")
+    AND ("${CMAKE_CUDA_COMPILER_VERSION}" VERSION_GREATER_EQUAL "12.0")
+    AND ("${CMAKE_CUDA_COMPILER_VERSION}" VERSION_LESS "12.1")
+  )
+    message(
+      "-- Disabling codegen tests: nvcc < 12.1 CUDA compiler is unsupported"
+    )
+    set(CCCL_ENABLE_CODEGEN_TESTING OFF)
+  elseif ("${CMAKE_CUDA_COMPILER_ID}" STREQUAL "NVHPC")
+    message("-- Disabling codegen tests: nvc++ CUDA compiler is unsupported")
+    set(CCCL_ENABLE_CODEGEN_TESTING OFF)
+  endif()
+endif()
+
 option(CCCL_ENABLE_EXAMPLES "Enable CUDA C++ Core Library examples." OFF)
 option(CCCL_ENABLE_C_PARALLEL "Enable CUDA C Parallel Library." OFF)
 option(
@@ -108,6 +135,7 @@ if (CCCL_TOPLEVEL_PROJECT)
   include(cmake/CCCLUtilities.cmake) # include this before other CCCL helpers
 
   include(cmake/CCCLAddExecutable.cmake)
+  include(cmake/CCCLAddCodegenTest.cmake)
   include(cmake/CCCLBuildCompilerTargets.cmake)
   include(cmake/CCCLClangdCompileInfo.cmake)
   include(cmake/CCCLConfigureTarget.cmake)
