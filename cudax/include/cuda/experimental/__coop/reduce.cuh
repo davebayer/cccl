@@ -36,6 +36,7 @@
 #include <cuda/std/array>
 #include <cuda/std/optional>
 
+#include <cuda/experimental/__coop/scratch.cuh>
 #include <cuda/experimental/__coop/shuffle_down.cuh>
 #include <cuda/experimental/__utility/broadcasted.cuh>
 #include <cuda/experimental/group.cuh>
@@ -49,96 +50,45 @@
 
 namespace cuda::experimental::coop
 {
-template <bool _Dummy = false>
-_CCCL_DEVICE_API auto __reduce_impl(...)
+// this_cluster
+
+template <class _Hierarchy, class _Tp, class _RedOp, bool _Deterministic>
+struct __reduce_scratch_select<this_cluster<_Hierarchy>, _Tp, _RedOp, _Deterministic>
 {
-  static_assert(_Dummy, "cudax::coop::reduce is not supported for the group");
-}
+  using _ClusterExts = decltype(block.extents(cluster, __group.hierarchy()));
+  static_assert(_ClusterExts::rank_dynamic() == 0,
+                "cuda::coop::reduce requires the cluster level to have all static extents.");
 
-template <bool _Broadcasted, class _Hierarchy, class _Tp, ::cuda::std::size_t _Np, class _RedFn>
-[[nodiscard]] _CCCL_DEVICE_API auto __reduce_impl(
-  ::cuda::std::bool_constant<_Broadcasted>, this_thread<_Hierarchy>, _Tp (&__thread_data)[_Np], _RedFn __red_fn)
-{
-  const auto __result = ::cub::ThreadReduce(__thread_data, __red_fn);
-  if constexpr (_Broadcasted)
+  static constexpr auto __nblocks_in_cluster =
+    _ClusterExts::static_extent(0) * _ClusterExts::static_extent(1) * _ClusterExts::static_extent(2);
+
+  using _RootWarpReduce = ::cub::WarpReduce<_Tp>;
+  using _BlockReduceScratch =
+    typename __reduce_scratch_select<this_block<_Hierarchy>, _Tp, _RedOp, _Deterministic>::__smem_type;
+
+  union __smem_type
   {
-    return __result;
-  }
-  else
-  {
-    return ::cuda::std::optional{__result};
-  }
-}
-
-template <bool _Broadcasted, class _Hierarchy, class _Tp, ::cuda::std::size_t _Np, class _RedFn>
-[[nodiscard]] _CCCL_DEVICE_API auto __reduce_impl(
-  ::cuda::std::bool_constant<_Broadcasted>, this_warp<_Hierarchy> __group, _Tp (&__thread_data)[_Np], _RedFn __red_fn)
-{
-  using _BlockExts = decltype(gpu_thread.extents(block, __group.hierarchy()));
-  constexpr auto __nwarps_in_block =
-    ::cuda::ceil_div(_BlockExts::static_extent(0) * _BlockExts::static_extent(1) * _BlockExts::static_extent(2), 32);
-
-  using _WarpReduce = ::cub::WarpReduce<_Tp>;
-
-  union _Scratch
-  {
-    typename _WarpReduce::TempStorage __warp_reduce_[__nwarps_in_block];
-  };
-  __shared__ _Scratch __scratch;
-
-  const auto __warp_rank_in_block = __group.rank(block);
-  const auto __result = _WarpReduce{__scratch.__warp_reduce_[__warp_rank_in_block]}.Reduce(__thread_data, __red_fn);
-  if constexpr (_Broadcasted)
-  {
-    return ::cuda::device::warp_shuffle_idx(__result, 0).data;
-  }
-  else
-  {
-    return (gpu_thread.is_root_rank(__group)) ? ::cuda::std::optional{__result} : ::cuda::std::nullopt;
-  }
-}
-
-template <bool _Broadcasted, class _Hierarchy, class _Tp, cuda::std::size_t _Np, class _RedFn>
-[[nodiscard]] _CCCL_DEVICE_API auto __reduce_impl(
-  ::cuda::std::bool_constant<_Broadcasted>, this_block<_Hierarchy> __group, _Tp (&__thread_data)[_Np], _RedFn __red_fn)
-{
-  using _BlockExts = decltype(gpu_thread.extents(block, __group.hierarchy()));
-  static_assert(_BlockExts::rank_dynamic() == 0,
-                "cuda::coop::reduce requires the block level to have all static extents.");
-
-  using _BlockReduce =
-    ::cub::BlockReduce<_Tp,
-                       static_cast<int>(_BlockExts::static_extent(0)),
-                       ::cub::BLOCK_REDUCE_WARP_REDUCTIONS,
-                       static_cast<int>(_BlockExts::static_extent(1)),
-                       static_cast<int>(_BlockExts::static_extent(2))>;
-
-  union _Scratch
-  {
-    typename _BlockReduce::TempStorage __block_reduce_;
+    _BlockReduceScratch __block_reduce_;
     _Tp __bcast_;
   };
-  __shared__ _Scratch __scratch;
 
-  const auto __result = _BlockReduce{__scratch.__block_reduce_}.Reduce(__thread_data, __red_fn);
-  if constexpr (_Broadcasted)
-  {
-    if (gpu_thread.is_root_rank(__group))
-    {
-      __scratch.__bcast_ = __result;
-    }
-    __group.sync_aligned();
-    return __scratch.__bcast_;
-  }
-  else
-  {
-    return (gpu_thread.is_root_rank(__group)) ? ::cuda::std::optional{__result} : ::cuda::std::nullopt;
-  }
-}
+  using __gmem_type _CCCL_NODEBUG_ALIAS = __gmem_empty_scratch;
+};
 
-template <bool _Broadcasted, class _Hierarchy, class _Tp, cuda::std::size_t _Np, class _RedFn>
+template <bool _Broadcasted,
+          class _Hierarchy,
+          class _Tp,
+          cuda::std::size_t _Np,
+          class _RedFn,
+          class _SmemScratch,
+          class _GmemScratch>
 [[nodiscard]] _CCCL_DEVICE_API auto __reduce_impl(
-  ::cuda::std::bool_constant<_Broadcasted>, this_cluster<_Hierarchy> __group, _Tp (&__thread_data)[_Np], _RedFn __red_fn)
+  ::cuda::std::bool_constant<_Broadcasted>,
+  this_cluster<_Hierarchy> __group,
+  _Tp (&__thread_data)[_Np],
+  _RedFn __red_fn,
+  _SmemScratch& __smem_scratch,
+  _GmemScratch& __gmem_scratch)
 {
   using _ClusterExts = decltype(block.extents(cluster, __group.hierarchy()));
   static_assert(_ClusterExts::rank_dynamic() == 0,
@@ -405,6 +355,43 @@ template <class _Group, class _Tp, ::cuda::std::size_t _Np, class _RedFn>
 
   return ::cuda::experimental::coop::__reduce_impl(::cuda::std::true_type{}, __group, __thread_data, __red_fn);
 }
+
+struct __reduce
+{
+  _CCCL_HIDE_FROM_ABI explicit __reduce() = default;
+
+  template <class _Group, class _Tp, ::cuda::std::size_t _Np, class _RedOp, class _Env>
+  [[nodiscard]] _CCCL_DEVICE_API static _CCCL_CONSTEVAL auto __get_scratch_requirements(
+    broadcasted_t, const _Group& __group, _Tp (&__thread_data)[_Np], _RedOp __red_op, _Env __env) noexcept
+  {
+    using _ScratchSelect _CCCL_NODEBUG_ALIAS = __reduce_scratch_select<_Group, _Tp, _RedOp>;
+    return scratch_requirements<typename _ScratchSelect::__smem_type, typename _ScratchSelect::__gmem_type>{};
+  }
+
+  template <class _Group, class _Tp, ::cuda::std::size_t _Np, class _RedOp, class _Env>
+  [[nodiscard]] _CCCL_DEVICE_API static _CCCL_CONSTEVAL auto
+  __get_scratch_requirements(const _Group&, _Tp (&)[_Np], _RedOp, _Env) noexcept
+  {
+    // Reuse scratch for broadcasted reduce.
+    return __get_scratch_requirements(broadcasted, __group, __thread_data, ::cuda::std::move(__red_op), __env);
+  }
+
+  _CCCL_TEMPLATE(
+    class _Group, class _Tp, ::cuda::std::size_t _Np, class _RedOp, class _Env = ::cuda::std::execution::env<>)
+  _CCCL_REQUIRES(is_group<_Group>)
+  [[nodiscard]] _CCCL_DEVICE_API static auto
+  operator()(const _Group& __group, _Tp (&__thread_data)[_Np], _RedOp __red_op, _Env __env = {})
+  {}
+
+  _CCCL_TEMPLATE(
+    class _Group, class _Tp, ::cuda::std::size_t _Np, class _RedOp, class _Env = ::cuda::std::execution::env<>)
+  _CCCL_REQUIRES(is_group<_Group>)
+  [[nodiscard]] _CCCL_DEVICE_API static auto
+  operator()(broadcasted_t, const _Group& __group, _Tp (&__thread_data)[_Np], _RedOp __red_op, _Env __env = {})
+  {}
+};
+
+// _CCCL_GLOBAL_CONSTANT __reduce_fn reduce{};
 } // namespace cuda::experimental::coop
 
 #endif // !_CCCL_DOXYGEN_INVOKED
