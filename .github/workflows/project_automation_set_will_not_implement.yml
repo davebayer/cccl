@@ -1,0 +1,137 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Set Not Planned Issues to Will Not Implement
+
+on:
+  issues:
+    # Run this action when an issue is closed as not planned
+    types: [closed]
+
+env:
+ ORG: ${{ github.event.repository.owner.login }}
+ ISSUE_NUMBER: ${{ github.event.issue.number }}
+ REPO: ${{ github.event.repository.name }}
+
+ PROJECT_NUMBER: 299
+ STATUS_FIELD_NAME: "Status"
+ WILL_NOT_IMPLEMENT_STATUS: "Will Not Implement"
+
+jobs:
+  set_will_not_implement:
+    if: github.repository == 'NVIDIA/cccl' && github.event.issue.state_reason == 'not_planned'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Generate token
+        id: generate_token
+        uses: tibdex/github-app-token@v1.8.0
+        with:
+          app_id: ${{ secrets.CCCL_AUTH_APP_ID }}
+          private_key: ${{ secrets.CCCL_AUTH_APP_PEM }}
+
+      - name: Wait for Project Automation
+        run: sleep 10
+
+      - name: Set Issue Status
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+        run: |
+            # Query the standards conformance project and this issue's matching project item
+            gh api graphql -f query='
+              query {
+                organization(login: "${{ env.ORG }}") {
+                  projectV2(number: ${{ env.PROJECT_NUMBER }}) {
+                    id
+                    field(name: "${{ env.STATUS_FIELD_NAME }}") {
+                      ... on ProjectV2SingleSelectField {
+                        id
+                        options {
+                          id
+                          name
+                        }
+                      }
+                    }
+                  }
+                  repository(name: "${{ env.REPO }}") {
+                    issueOrPullRequest(number: ${{ env.ISSUE_NUMBER }}) {
+                      ... on Issue {
+                        projectItems(first: 20) {
+                          edges {
+                            node {
+                              id
+                              project {
+                                id
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }' > project_data.json
+
+            project_id=$(jq -r '.data.organization.projectV2.id // empty' project_data.json)
+            status_field_id=$(jq -r '.data.organization.projectV2.field.id // empty' project_data.json)
+            status_option_id=$(jq -r '(.data.organization.projectV2.field.options // [])[] |
+                                      select(.name == "${{ env.WILL_NOT_IMPLEMENT_STATUS }}") |
+                                      .id' project_data.json)
+
+            if [ -z "$project_id" ]; then
+              echo "::error::Could not find project #${{ env.PROJECT_NUMBER }} in ${{ env.ORG }}"
+              exit 1
+            fi
+
+            if [ -z "$status_field_id" ]; then
+              echo "::error::Could not find the ${{ env.STATUS_FIELD_NAME }} field in project #${{ env.PROJECT_NUMBER }}"
+              exit 1
+            fi
+
+            if [ -z "$status_option_id" ]; then
+              echo "::error::Could not find the ${{ env.WILL_NOT_IMPLEMENT_STATUS }} option in project #${{ env.PROJECT_NUMBER }}"
+              exit 1
+            fi
+
+            item_ids=$(jq -r --arg project_id "$project_id" \
+                        '.data.organization.repository.issueOrPullRequest.projectItems.edges[]? |
+                         select(.node.project.id == $project_id) |
+                         .node.id' project_data.json)
+
+            if [ -z "$item_ids" ]; then
+              echo "Issue #${{ env.ISSUE_NUMBER }} is not in project #${{ env.PROJECT_NUMBER }}; nothing to update."
+              exit 0
+            fi
+
+            # Update every matching item, although an issue should only appear once in a project
+            for item_id in $item_ids; do
+              QUERY="mutation {
+                updateProjectV2ItemFieldValue(
+                  input: {
+                    projectId: \"$project_id\"
+                    itemId: \"$item_id\"
+                    fieldId: \"$status_field_id\"
+                    value: {
+                      singleSelectOptionId: \"$status_option_id\"
+                    }
+                  }
+                ) {
+                  projectV2Item {
+                    id
+                  }
+                }
+              }"
+              gh api graphql --field query="$QUERY"
+            done
