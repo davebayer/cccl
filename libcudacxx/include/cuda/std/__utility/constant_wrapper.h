@@ -53,6 +53,11 @@ _CCCL_DIAG_SUPPRESS_NVHPC(static_member_operator_not_allowed)
 template <auto _Xp, class = remove_cvref_t<decltype(_Xp)>>
 struct __constant_wrapper;
 
+template <class _Tp>
+inline constexpr bool __is_cuda_std_constant_wrapper_v = false;
+template <auto _Xp, class _Tp>
+inline constexpr bool __is_cuda_std_constant_wrapper_v<__constant_wrapper<_Xp, _Tp>> = true;
+
 template <class _Tp, class = void>
 inline constexpr bool __is_constexpr_param_v = false;
 template <class _Tp>
@@ -109,28 +114,28 @@ struct __cw_operators
 
   // pseudo-mutators
   _CCCL_TEMPLATE(class _Tp)
-  _CCCL_REQUIRES(__is_constexpr_param_v<_Tp>)
+  _CCCL_REQUIRES(__is_cuda_std_constant_wrapper_v<_Tp> _CCCL_AND __is_constexpr_param_v<_Tp>)
   [[nodiscard]] _CCCL_HOST_DEVICE_API friend constexpr decltype(__constant_wrapper<_LIBCUDACXX_AUTO_CAST(++_Tp::value)>{})
   operator++(_Tp) noexcept
   {
     return {};
   }
   _CCCL_TEMPLATE(class _Tp)
-  _CCCL_REQUIRES(__is_constexpr_param_v<_Tp>)
+  _CCCL_REQUIRES(__is_cuda_std_constant_wrapper_v<_Tp> _CCCL_AND __is_constexpr_param_v<_Tp>)
   [[nodiscard]] _CCCL_HOST_DEVICE_API friend constexpr decltype(__constant_wrapper<_LIBCUDACXX_AUTO_CAST(_Tp::value++)>{})
   operator++(_Tp, int) noexcept
   {
     return {};
   }
   _CCCL_TEMPLATE(class _Tp)
-  _CCCL_REQUIRES(__is_constexpr_param_v<_Tp>)
+  _CCCL_REQUIRES(__is_cuda_std_constant_wrapper_v<_Tp> _CCCL_AND __is_constexpr_param_v<_Tp>)
   [[nodiscard]] _CCCL_HOST_DEVICE_API friend constexpr decltype(__constant_wrapper<_LIBCUDACXX_AUTO_CAST(--_Tp::value)>{})
   operator--(_Tp) noexcept
   {
     return {};
   }
   _CCCL_TEMPLATE(class _Tp)
-  _CCCL_REQUIRES(__is_constexpr_param_v<_Tp>)
+  _CCCL_REQUIRES(__is_cuda_std_constant_wrapper_v<_Tp> _CCCL_AND __is_constexpr_param_v<_Tp>)
   [[nodiscard]] _CCCL_HOST_DEVICE_API friend constexpr decltype(__constant_wrapper<_LIBCUDACXX_AUTO_CAST(_Tp::value--)>{})
   operator--(_Tp, int) noexcept
   {
