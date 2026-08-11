@@ -336,46 +336,33 @@ __reduce_impl(::cuda::std::bool_constant<_Broadcasted>, _Group __group, _Tp (&__
                 "cuda::coop::reduce requires the group to have statically known size");
 
   using _WarpReduce = ::cub::WarpReduce<_Tp>;
-  struct _AdditionalScratch
-  {
-    _Tp __partials_[__nwarps_in_group];
-    _Tp __bcast_;
-  };
 
-  union _Scratch
+  struct _Scratch
   {
     typename _WarpReduce::TempStorage __warp_reduce_[__nwarps_in_group];
-    _AdditionalScratch __additional_;
+    _Tp __partials_[__nwarps_in_group];
   };
   __shared__ _Scratch __scratch;
 
-  const auto __partial = _WarpReduce{__scratch.__warp_reduce_[warp.rank(__group)]}.Reduce(__thread_data, __red_fn);
-  __group.sync_aligned();
+  const auto __warp_rank = warp.rank(__group);
+
+  const auto __partial = _WarpReduce{__scratch.__warp_reduce_[__warp_rank]}.Reduce(__thread_data, __red_fn);
 
   this_warp __warp{__group.hierarchy()};
   if (gpu_thread.is_root_rank(__warp))
   {
-    __scratch.__additional_.__partials_[warp.rank(__group)] = __partial;
+    __scratch.__partials_[__warp_rank] = __partial;
   }
   __group.sync_aligned();
 
-  _Tp __result;
-  if (warp.is_root_rank(__group))
-  {
-    const auto __value = (gpu_thread.rank(__warp) < __nwarps_in_group)
-                         ? __scratch.__additional_.__partials_[gpu_thread.rank(__warp)]
-                         : ::cuda::identity_element<_RedFn, _Tp>();
-    __result           = _WarpReduce{__scratch.__warp_reduce_[0]}.Reduce(__value, __red_fn);
-  }
+  const auto __value  = (gpu_thread.rank(__warp) < __nwarps_in_group)
+                        ? __scratch.__partials_[gpu_thread.rank(__warp)]
+                        : ::cuda::identity_element<_RedFn, _Tp>();
+  const auto __result = _WarpReduce{__scratch.__warp_reduce_[__warp_rank]}.Reduce(__value, __red_fn);
 
   if constexpr (_Broadcasted)
   {
-    if (gpu_thread.is_root_rank(__group))
-    {
-      __scratch.__additional_.__bcast_ = __result;
-    }
-    __group.sync_aligned();
-    return __scratch.__additional_.__bcast_;
+    return ::cuda::device::warp_shuffle_idx(__result, 0).data;
   }
   else
   {

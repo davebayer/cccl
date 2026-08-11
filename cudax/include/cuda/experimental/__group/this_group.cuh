@@ -159,6 +159,11 @@ public:
     return __synchronizer_;
   }
 
+  [[nodiscard]] _CCCL_DEVICE_API const _SynchronizerInstance& __synchronizer_instance() const noexcept
+  {
+    return __synchronizer_instance_;
+  }
+
   _CCCL_DEVICE_API void sync() const noexcept
   {
     __synchronizer_instance_.do_sync(__mapping_result_, __synchronizer_, __hier_);

@@ -8,8 +8,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef _CUDA_EXPERIMENTAL___GROUP_GROUP_CUH
-#define _CUDA_EXPERIMENTAL___GROUP_GROUP_CUH
+#ifndef _CUDA_EXPERIMENTAL___GROUP_GROUP_VIEW_CUH
+#define _CUDA_EXPERIMENTAL___GROUP_GROUP_VIEW_CUH
 
 #include <cuda/std/detail/__config>
 
@@ -48,14 +48,13 @@
 
 namespace cuda::experimental
 {
-template <class _Unit, class _ParentGroup, class _Mapping, class _Synchronizer>
-class group
+template <class _Unit, class _ParentGroup, class _Mapping>
+class group_view
 {
+  using _Synchronizer = typename _ParentGroup::synchronizer_type;
+
   static_assert(__is_hierarchy_level_v<_Unit>);
   static_assert(is_group<_ParentGroup>);
-
-  // todo(dabayer): Allow groups stacking and remove this.
-  static_assert(__is_this_group_v<_ParentGroup>);
 
   // todo(dabayer): static_assert that _Unit is (under) typename _ParentGroup::unit_type
 
@@ -85,11 +84,11 @@ class group
     __group_synchronizer_instance_t<_Synchronizer, _Unit, _ParentGroup, _Mapping, _MappingResult>;
   static_assert(__group_mapping_result<_MappingResult>);
 
-  typename _ParentGroup::hierarchy_type __hier_;
+  const typename _ParentGroup::hierarchy_type& __hier_;
   _Mapping __mapping_;
   _MappingResult __mapping_result_;
-  _Synchronizer __synchronizer_;
-  _SynchronizerInstance __synchronizer_instance_;
+  const _Synchronizer& __synchronizer_;
+  const _SynchronizerInstance& __synchronizer_instance_;
 
   [[nodiscard]] _CCCL_DEVICE_API static _MappingResult
   __do_mapping(const _Unit& __unit, const _Mapping& __mapping, const _ParentGroup& __parent) noexcept
@@ -118,26 +117,6 @@ class group
     return __mapping_result;
   }
 
-  [[nodiscard]] _CCCL_DEVICE_API static _SynchronizerInstance __make_synchronizer_instance(
-    const _Unit& __unit,
-    const _Synchronizer& __synchronizer,
-    const _ParentGroup& __parent,
-    const _Mapping& __mapping,
-    const _MappingResult& __mapping_result) noexcept
-  {
-    // Do not invoke the synchronizer instance creation for threads that are not part of the parent group. On the other
-    // hand threads that are not part of this group must create the synchronizer instance, too, because the operation
-    // can synchronize the parent group.
-    if constexpr (!_ParentMappingResult::is_always_exhaustive())
-    {
-      if (!__parent.__mapping_result().is_valid())
-      {
-        return _SynchronizerInstance::invalid();
-      }
-    }
-    return __synchronizer.make_instance(__unit, __parent, __mapping, __mapping_result);
-  }
-
 public:
   using unit_type             = _Unit;
   using level_type            = typename _ParentGroup::level_type;
@@ -146,17 +125,34 @@ public:
   using __mapping_result_type = _MappingResult;
   using synchronizer_type     = _Synchronizer;
 
-  _CCCL_DEVICE_API explicit group(
-    const _Unit& __unit,
-    const _ParentGroup& __parent,
-    const _Mapping& __mapping,
-    const _Synchronizer& __synchronizer) noexcept
+  _CCCL_TEMPLATE(class _Unit2 = _Unit, class _Mapping2 = _Mapping)
+  _CCCL_REQUIRES(::cuda::std::is_same_v<_Unit2, typename _ParentGroup::unit_type>
+                   _CCCL_AND ::cuda::std::is_same_v<_Mapping2, identity_mapping>)
+  _CCCL_DEVICE_API group_view(const _ParentGroup& __parent) noexcept
+      : __hier_{__parent.hierarchy()}
+      , __mapping_{}
+      , __mapping_result_{__parent.__mapping_result()}
+      , __synchronizer_{__parent.synchronizer()}
+      , __synchronizer_instance_{__parent.__synchronizer_instance()}
+  {}
+
+  _CCCL_TEMPLATE(class _Mapping2 = _Mapping)
+  _CCCL_REQUIRES(::cuda::std::is_same_v<_Mapping2, identity_mapping>)
+  _CCCL_DEVICE_API explicit group_view(const _Unit& __unit, const _ParentGroup& __parent) noexcept
+      : __hier_{__parent.hierarchy()}
+      , __mapping_{}
+      , __mapping_result_{__do_mapping(__unit, __mapping_, __parent)}
+      , __synchronizer_{__parent.synchronizer()}
+      , __synchronizer_instance_{__parent.__synchronizer_instance()}
+  {}
+
+  _CCCL_DEVICE_API explicit group_view(
+    const _Unit& __unit, const _ParentGroup& __parent, const _Mapping& __mapping) noexcept
       : __hier_{__parent.hierarchy()}
       , __mapping_{__mapping}
       , __mapping_result_{__do_mapping(__unit, __mapping_, __parent)}
-      , __synchronizer_{__synchronizer}
-      , __synchronizer_instance_{
-          __make_synchronizer_instance(__unit, __synchronizer_, __parent, __mapping_, __mapping_result_)}
+      , __synchronizer_{__parent.synchronizer()}
+      , __synchronizer_instance_{__parent.__synchronizer_instance()}
   {}
 
   [[nodiscard]] _CCCL_DEVICE_API const hierarchy_type& hierarchy() const noexcept
@@ -164,27 +160,9 @@ public:
     return __hier_;
   }
 
-  // todo(dabayer): Do we want to expose mapping getter?
-  [[nodiscard]] _CCCL_DEVICE_API const mapping_type& mapping() const noexcept
-  {
-    return __mapping_;
-  }
-
-  // todo(dabayer): Do we want to expose mapping result getter?
   [[nodiscard]] _CCCL_DEVICE_API _MappingResult __mapping_result() const noexcept
   {
     return __mapping_result_;
-  }
-
-  [[nodiscard]] _CCCL_DEVICE_API const synchronizer_type& synchronizer() const noexcept
-  {
-    return __synchronizer_;
-  }
-
-  // todo(dabayer): Do we want to expose synchronizer instance getter?
-  [[nodiscard]] _CCCL_DEVICE_API const _SynchronizerInstance& __synchronizer_instance() const noexcept
-  {
-    return __synchronizer_instance_;
   }
 
   // todo(dabayer): Do we want to expose .arrive() and .wait()? Do we want to implement .sync() using them? Do we want
@@ -255,14 +233,24 @@ public:
   }
 };
 
-_CCCL_TEMPLATE(class _Unit, class _ParentGroup, class _Mapping, class _Synchronizer)
+_CCCL_TEMPLATE(class _ParentGroup)
+_CCCL_REQUIRES(is_group<_ParentGroup>)
+_CCCL_DEDUCTION_GUIDE_ATTRIBUTES group_view(const _ParentGroup&)
+  -> group_view<typename _ParentGroup::unit_type, _ParentGroup, identity_mapping>;
+
+_CCCL_TEMPLATE(class _Unit, class _ParentGroup)
 _CCCL_REQUIRES(__is_hierarchy_level_v<_Unit> _CCCL_AND is_group<_ParentGroup>)
-_CCCL_DEDUCTION_GUIDE_ATTRIBUTES group(const _Unit&, const _ParentGroup&, const _Mapping&, const _Synchronizer&)
-  -> group<_Unit, _ParentGroup, _Mapping, _Synchronizer>;
+_CCCL_DEDUCTION_GUIDE_ATTRIBUTES group_view(const _Unit&, const _ParentGroup&)
+  -> group_view<_Unit, _ParentGroup, identity_mapping>;
+
+_CCCL_TEMPLATE(class _Unit, class _ParentGroup, class _Mapping)
+_CCCL_REQUIRES(__is_hierarchy_level_v<_Unit> _CCCL_AND is_group<_ParentGroup>)
+_CCCL_DEDUCTION_GUIDE_ATTRIBUTES group_view(const _Unit&, const _ParentGroup&, const _Mapping&)
+  -> group_view<_Unit, _ParentGroup, _Mapping>;
 } // namespace cuda::experimental
 
 #endif // !_CCCL_DOXYGEN_INVOKED
 
 #include <cuda/std/__cccl/epilogue.h>
 
-#endif // _CUDA_EXPERIMENTAL___GROUP_GROUP_CUH
+#endif // _CUDA_EXPERIMENTAL___GROUP_GROUP_VIEW_CUH
