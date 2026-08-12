@@ -22,7 +22,11 @@
 #endif // no system header
 
 #include <cuda/experimental/__coop/any_of.cuh>
-#include <cuda/experimental/__coop/reduce.cuh>
+#include <cuda/experimental/__coop/reduce/entry.cuh>
+#include <cuda/experimental/__coop/reduce/this_block.cuh>
+#include <cuda/experimental/__coop/reduce/this_cluster.cuh>
+#include <cuda/experimental/__coop/reduce/this_thread.cuh>
+#include <cuda/experimental/__coop/reduce/this_warp.cuh>
 #include <cuda/experimental/__coop/scratch.cuh>
 #include <cuda/experimental/__coop/shuffle.cuh>
 #include <cuda/experimental/__coop/shuffle_down.cuh>
