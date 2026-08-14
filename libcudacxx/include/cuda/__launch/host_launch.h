@@ -25,6 +25,7 @@
 
 #  include <cuda/__driver/driver_api.h>
 #  include <cuda/__stream/stream_ref.h>
+#  include <cuda/std/__exception/exception_macros.h>
 #  include <cuda/std/__functional/reference_wrapper.h>
 #  include <cuda/std/__memory/addressof.h>
 #  include <cuda/std/__tuple_dir/apply.h>
@@ -104,9 +105,17 @@ _CCCL_HOST_API void host_launch(stream_ref __stream, _Callable __callable, _Args
     _CallbackData* __callback_data_ptr =
       new _CallbackData{::cuda::std::move(__callable), {::cuda::std::move(__args)...}};
 
-    // We use the callback here to have it execute even on stream error, because it needs to free the above allocation
-    ::cuda::__driver::__streamAddCallback(
-      __stream.get(), ::cuda::__stream_callback_launcher<_CallbackData>, __callback_data_ptr);
+    _CCCL_TRY
+    {
+      // We use the callback here to have it execute even on stream error, because it needs to free the above allocation
+      ::cuda::__driver::__streamAddCallback(
+        __stream.get(), ::cuda::__stream_callback_launcher<_CallbackData>, __callback_data_ptr);
+    }
+    _CCCL_CATCH_ALL
+    {
+      delete __callback_data_ptr;
+      _CCCL_RETHROW;
+    }
   }
 }
 
