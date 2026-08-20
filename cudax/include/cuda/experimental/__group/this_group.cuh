@@ -116,15 +116,15 @@ class __this_group_base
   using _SynchronizerInstance = level_synchronizer::__synchronizer_instance<_Level>;
 
 public:
-  using unit_type             = _Level;
-  using level_type            = _Level;
-  using __mapping_result_type = __this_mapping_result<_Level>;
-  using hierarchy_type        = _Hierarchy;
-  using synchronizer_type     = level_synchronizer;
+  using unit_type           = _Level;
+  using level_type          = _Level;
+  using mapping_result_type = __this_mapping_result<_Level>;
+  using hierarchy_type      = _Hierarchy;
+  using synchronizer_type   = level_synchronizer;
 
 private:
   _Hierarchy __hier_;
-  __mapping_result_type __mapping_result_{};
+  mapping_result_type __mapping_result_{};
   level_synchronizer __synchronizer_{};
   _SynchronizerInstance __synchronizer_instance_{};
 
@@ -145,7 +145,7 @@ public:
   }
 
   // todo(dabayer): Do we want to expose mapping result getter?
-  [[nodiscard]] _CCCL_DEVICE_API const __mapping_result_type& __mapping_result() const noexcept
+  [[nodiscard]] _CCCL_DEVICE_API const mapping_result_type& mapping_result() const noexcept
   {
     return __mapping_result_;
   }

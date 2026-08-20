@@ -78,14 +78,17 @@ public:
 
   _CCCL_HIDE_FROM_ABI explicit lane_synchronizer() = default;
 
-  template <class _Unit, class _ParentGroup, class _MappingResult>
-  [[nodiscard]] _CCCL_DEVICE_API __synchronizer_instance
-  make_instance(const _Unit&, const _ParentGroup&, const _MappingResult& __mapping_result) const noexcept
+  template <class _VGroup>
+  [[nodiscard]] _CCCL_DEVICE_API __synchronizer_instance make_instance(const _VGroup& __vgroup) const noexcept
   {
+    using _Unit = typename _VGroup::unit_type;
+
     static_assert(::cuda::std::is_same_v<_Unit, thread_level>, "_Unit must be cuda::thread_level");
     static_assert(__group_mapping_result<_MappingResult>);
-    if (__mapping_result.is_valid())
+
+    if (gpu_thread.is_part_of(__vgroup))
     {
+      const auto& __mapping_result = __vgroup.mapping_result();
       _CCCL_ASSERT(::cuda::std::popcount(__mapping_result.lane_mask().value()) == __mapping_result.unit_count(),
                    "lane_synchronizer can only synchronize units within the same warp");
     }

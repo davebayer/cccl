@@ -56,6 +56,21 @@ template <class _Level>
 inline constexpr bool __unit_same_as_or_below_v<_Level, _Level> = true;
 template <>
 inline constexpr bool __unit_same_as_or_below_v<thread_level, warp_level> = true;
+
+template <class _Tp>
+inline constexpr bool __is_group_v = false;
+template <class _Unit, class _ParentGroup, class _MappingResult, class _Synchronizer>
+inline constexpr bool __is_group_v<group<_Unit, _ParentGroup, _MappingResult, _Synchronizer>> = true;
+
+template <class _Tp>
+inline constexpr bool __is_virtual_group_v = false;
+template <class _Unit, class _ParentGroup, class _MappingResult>
+inline constexpr bool __is_virtual_group_v<virtual_group<_Unit, _ParentGroup, _MappingResult>> = true;
+
+template <class _Tp>
+inline constexpr bool __is_group_view_v = false;
+template <class _Unit, class _Group>
+inline constexpr bool __is_group_view_v<group_view<_Unit, _Group>> = true;
 } // namespace cuda::experimental
 
 #endif // !_CCCL_DOXYGEN_INVOKED

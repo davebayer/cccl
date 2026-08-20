@@ -121,7 +121,7 @@ template <class Group, class T, cuda::std::size_t N>
 __device__ cuda::std::optional<T> sum(Group group, T (&array)[N])
 {
   using Unit          = typename Group::unit_type;
-  using MappingResult = typename Group::__mapping_result_type;
+  using MappingResult = typename Group::mapping_result_type;
 
   constexpr auto ngroups = MappingResult::static_group_count();
   static_assert(ngroups != cuda::std::dynamic_extent, "group count must be statically known");
@@ -134,7 +134,7 @@ __device__ cuda::std::optional<T> sum(Group group, T (&array)[N])
   }
 
   // todo(dabayer): Replace by group.rank(level) once this query is available.
-  const auto group_rank = group.__mapping_result().group_rank();
+  const auto group_rank = group.mapping_result().group_rank();
 
   if (cuda::gpu_thread.is_root_rank(group))
   {

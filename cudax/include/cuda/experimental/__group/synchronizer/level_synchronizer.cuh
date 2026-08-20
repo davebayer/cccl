@@ -40,11 +40,10 @@ public:
 
   _CCCL_HIDE_FROM_ABI explicit level_synchronizer() = default;
 
-  template <class _Unit, class _ParentGroup, class _MappingResult>
-  [[nodiscard]] _CCCL_DEVICE_API auto
-  make_instance(const _Unit&, const _ParentGroup&, const _MappingResult&) const noexcept
+  template <class _VGroup>
+  [[nodiscard]] _CCCL_DEVICE_API auto make_instance(const _VGroup& __vgroup) const noexcept
   {
-    return __synchronizer_instance<typename _ParentGroup::level_type>{};
+    return __synchronizer_instance<typename _VGroup::level_type>{};
   }
 };
 

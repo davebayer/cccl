@@ -297,8 +297,8 @@ _CCCL_REQUIRES(::cuda::std::is_same_v<thread_level, typename _Group::unit_type>
 [[nodiscard]] _CCCL_DEVICE_API auto
 __reduce_impl(::cuda::std::bool_constant<_Broadcasted>, _Group __group, _Tp (&__thread_data)[_Np], _RedFn __red_fn)
 {
-  using _MappingResult         = typename _Group::__mapping_result_type;
-  const auto& __mapping_result = __group.__mapping_result();
+  using _MappingResult         = typename _Group::mapping_result_type;
+  const auto& __mapping_result = __group.mapping_result();
 
   const auto __lane_mask = __mapping_result.lane_mask();
   const auto __lane      = ::cuda::ptx::get_sreg_laneid();

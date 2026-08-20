@@ -31,6 +31,7 @@
 
 #include <cuda/experimental/__group/concepts.cuh>
 #include <cuda/experimental/__group/fwd.cuh>
+#include <cuda/experimental/__group/invoke_one.cuh>
 #include <cuda/experimental/__group/traits.cuh>
 
 #include <cuda/std/__cccl/prologue.h>
@@ -148,13 +149,15 @@ public:
     return __barriers_;
   }
 
-  template <class _Unit, class _ParentGroup, class _MappingResult>
-  [[nodiscard]] _CCCL_DEVICE_API __synchronizer_instance<_Unit>
-  make_instance(const _Unit&, const _ParentGroup& __parent, const _MappingResult& __mapping_result) const noexcept
+  template <class _VGroup>
+  [[nodiscard]] _CCCL_DEVICE_API auto make_instance(const _VGroup& __vgroup) const noexcept
   {
-    using _Level = typename _ParentGroup::level_type;
+    using _Unit          = typename _VGroup::unit_type;
+    using _Level         = typename _VGroup::level_type;
+    using _MappingResult = typename _VGroup::mapping_result_type;
 
-    // todo(dabayer): Relax this condition if all units in the group are within a level that is smaller than _Level.
+    const auto& __mapping_result = __vgroup.mapping_result();
+
     static_assert(__barrier_scope_v<_Barrier> <= ::cuda::experimental::__minimum_required_scope_for<_Level>(),
                   "_Barrier's thread scope is insufficient for group synchronization in _Level");
 
@@ -168,28 +171,15 @@ public:
       _CCCL_ASSERT(__mapping_result.group_count() <= __barriers_.size(), "invalid number of barriers passed");
     }
 
-    ::cuda::std::size_t __nthread_in_unit     = 1;
-    ::cuda::std::size_t __thread_rank_in_unit = 0;
-    if constexpr (!::cuda::std::is_same_v<thread_level, _Unit>)
-    {
-      __nthread_in_unit     = gpu_thread.count(_Unit{}, __parent.hierarchy());
-      __thread_rank_in_unit = gpu_thread.rank(_Unit{}, __parent.hierarchy());
-    }
+    const auto __group_barrier_ptr =
+      (gpu_thread.is_part_of(__vgroup)) ? (__barriers_.data() + __mapping_result.group_rank()) : nullptr;
 
-    _Barrier* __group_barrier_ptr = nullptr;
-    if (__mapping_result.is_valid())
-    {
-      __group_barrier_ptr = __barriers_.data() + __mapping_result.group_rank();
-      if (__mapping_result.unit_rank() == 0 && __thread_rank_in_unit == 0)
-      {
-        init(__group_barrier_ptr,
-             static_cast<::cuda::std::ptrdiff_t>(__mapping_result.unit_count() * __nthread_in_unit));
-      }
-    }
+    ::cuda::experimental::coop::invoke_one(__vgroup, [&]() {
+      init(__group_barrier_ptr, gpu_thread.count_as<::cuda::std::ptrdiff_t>(__vgroup));
+    });
+    __vgroup.sync();
 
-    // todo(dabayer): How we can expose making this aligned?
-    __parent.sync();
-    return __synchronizer_instance<_Unit>{__group_barrier_ptr};
+    return __synchronizer_instance<typename _VGroup::unit_level>{__group_barrier_ptr};
   }
 };
 

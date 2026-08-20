@@ -47,8 +47,8 @@ _CCCL_REQUIRES(is_group<_Group> _CCCL_AND ::cuda::std::is_same_v<typename _Group
 [[nodiscard]] _CCCL_DEVICE_API ::cuda::std::optional<_Tp>
 __shuffle_up_impl(const _Group& __group, const _Tp& __value, unsigned __offset) noexcept
 {
-  using _MappingResult         = typename _Group::__mapping_result_type;
-  const auto& __mapping_result = __group.__mapping_result();
+  using _MappingResult         = typename _Group::mapping_result_type;
+  const auto& __mapping_result = __group.mapping_result();
 
   const auto __lane_mask               = __mapping_result.lane_mask();
   const auto [__src_rank, __underflow] = ::cuda::sub_overflow(__mapping_result.unit_rank(), __offset);

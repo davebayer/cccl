@@ -60,7 +60,7 @@ class group
   static_assert(__is_this_group_v<_ParentGroup>);
 
   using _Hierarchy            = typename _ParentGroup::hierarchy_type;
-  using _ParentMappingResult  = typename _ParentGroup::__mapping_result_type;
+  using _ParentMappingResult  = typename _ParentGroup::mapping_result_type;
   using _SynchronizerInstance = __group_synchronizer_instance_t<_Synchronizer, _Unit, _ParentGroup, _MappingResult>;
   static_assert(__group_mapping_result<_MappingResult>);
 
@@ -80,7 +80,7 @@ class group
     // can synchronize the parent group.
     if constexpr (!_ParentMappingResult::is_always_exhaustive())
     {
-      if (!__parent.__mapping_result().is_valid())
+      if (!__parent.mapping_result().is_valid())
       {
         return _SynchronizerInstance::invalid();
       }
@@ -89,11 +89,11 @@ class group
   }
 
 public:
-  using unit_type             = _Unit;
-  using level_type            = typename _ParentGroup::level_type;
-  using hierarchy_type        = _Hierarchy;
-  using __mapping_result_type = _MappingResult;
-  using synchronizer_type     = _Synchronizer;
+  using unit_type           = _Unit;
+  using level_type          = typename _ParentGroup::level_type;
+  using hierarchy_type      = _Hierarchy;
+  using mapping_result_type = _MappingResult;
+  using synchronizer_type   = _Synchronizer;
 
   _CCCL_TEMPLATE(class _Mapping)
   _CCCL_REQUIRES(::cuda::std::is_same_v<_MappingResult, __group_mapping_result_t<_Unit, _ParentGroup, _Mapping>>)
@@ -130,7 +130,7 @@ public:
   }
 
   // todo(dabayer): Do we want to expose mapping result getter?
-  [[nodiscard]] _CCCL_DEVICE_API _MappingResult __mapping_result() const noexcept
+  [[nodiscard]] _CCCL_DEVICE_API _MappingResult mapping_result() const noexcept
   {
     return __mapping_result_;
   }

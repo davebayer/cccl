@@ -44,8 +44,8 @@ _CCCL_REQUIRES(is_group<_Group> _CCCL_AND ::cuda::std::is_same_v<typename _Group
                  _CCCL_AND ::cuda::std::is_same_v<typename _Group::level_type, warp_level>)
 [[nodiscard]] _CCCL_DEVICE_API _Tp __shuffle_impl(const _Group& __group, _Tp __value, unsigned __src_unit_rank) noexcept
 {
-  using _MappingResult         = typename _Group::__mapping_result_type;
-  const auto& __mapping_result = __group.__mapping_result();
+  using _MappingResult         = typename _Group::mapping_result_type;
+  const auto& __mapping_result = __group.mapping_result();
 
   _CCCL_ASSERT(__src_unit_rank < __mapping_result.unit_count(),
                "invalid __src_unit_rank - must be less than the number of units within the group");

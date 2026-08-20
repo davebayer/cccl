@@ -45,18 +45,18 @@ __do_group_view_mapping(const _Unit& __unit, const _Group& __group) noexcept
 {
   if constexpr (::cuda::std::is_same_v<_Unit, typename _Group::unit_type>)
   {
-    return __group.__mapping_result();
+    return __group.mapping_result();
   }
   else
   {
-    using _GroupMappingResult = typename _Group::__mapping_result_type;
+    using _GroupMappingResult = typename _Group::mapping_result_type;
     using _MappingResult =
       __mapping_result<_GroupMappingResult::static_group_count(),
                        ::cuda::experimental::__static_count_query_group<_Unit, _Group>(),
                        _GroupMappingResult::is_always_exhaustive(),
                        _GroupMappingResult::is_always_contiguous()>;
 
-    const auto& __group_mapping_result = __group.__mapping_result();
+    const auto& __group_mapping_result = __group.mapping_result();
     return _MappingResult{
       __group_mapping_result.group_count(),
       __group_mapping_result.group_rank(),
@@ -87,11 +87,11 @@ class group_view
   _SynchronizerInstance __synchronizer_instance_;
 
 public:
-  using unit_type             = _Unit;
-  using level_type            = typename _Group::level_type;
-  using hierarchy_type        = typename _Group::hierarchy_type;
-  using __mapping_result_type = _MappingResult;
-  using synchronizer_type     = typename _Group::synchronizer_type;
+  using unit_type           = _Unit;
+  using level_type          = typename _Group::level_type;
+  using hierarchy_type      = typename _Group::hierarchy_type;
+  using mapping_result_type = _MappingResult;
+  using synchronizer_type   = typename _Group::synchronizer_type;
 
   group_view() = delete;
 
@@ -126,7 +126,7 @@ public:
     return __hier_;
   }
 
-  [[nodiscard]] _CCCL_DEVICE_API _MappingResult __mapping_result() const noexcept
+  [[nodiscard]] _CCCL_DEVICE_API _MappingResult mapping_result() const noexcept
   {
     return __mapping_result_;
   }

@@ -37,7 +37,7 @@ template <class _Unit, class _Group>
 [[nodiscard]] _CCCL_DEVICE_API constexpr ::cuda::std::size_t __static_count_query_group() noexcept
 {
   using _GroupUnit          = typename _Group::unit_type;
-  using _GroupMappingResult = typename _Group::__mapping_result_type;
+  using _GroupMappingResult = typename _Group::mapping_result_type;
 
   constexpr auto __group_unit_count = _GroupMappingResult::static_unit_count();
 
@@ -78,7 +78,7 @@ template <class _Tp, class _Unit, class _Group>
   // }
   // else
   {
-    const auto __group_unit_count = static_cast<_Tp>(__group.__mapping_result().unit_count());
+    const auto __group_unit_count = static_cast<_Tp>(__group.mapping_result().unit_count());
     if constexpr (::cuda::std::is_same_v<_Unit, _GroupUnit>)
     {
       return __group_unit_count;
@@ -96,7 +96,7 @@ template <class _Tp, class _Unit, class _Group>
 {
   using _GroupUnit = typename _Group::unit_type;
 
-  const auto __group_unit_rank = static_cast<_Tp>(__group.__mapping_result().unit_rank());
+  const auto __group_unit_rank = static_cast<_Tp>(__group.mapping_result().unit_rank());
   if constexpr (::cuda::std::is_same_v<_Unit, _GroupUnit>)
   {
     return __group_unit_rank;
@@ -112,7 +112,7 @@ template <class _Tp, class _Unit, class _Group>
 template <class _Unit, class _Group>
 [[nodiscard]] _CCCL_DEVICE_API bool __is_part_of_group(const _Group& __group) noexcept
 {
-  return __group.__mapping_result().is_valid();
+  return __group.mapping_result().is_valid();
 }
 } // namespace cuda::experimental
 
