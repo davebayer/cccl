@@ -183,6 +183,15 @@
       }
     },
     {
+      "name": "libcudacxx-cpp26",
+      "displayName": "libcu++: C++26",
+      "inherits": "libcudacxx",
+      "cacheVariables": {
+        "CMAKE_CXX_STANDARD": "26",
+        "CMAKE_CUDA_STANDARD": "26"
+      }
+    },
+    {
       "name": "libcudacxx-nvrtc",
       "inherits": "libcudacxx",
       "cacheVariables": {
@@ -564,6 +573,16 @@
     {
       "name": "libcudacxx-cpp20",
       "configurePreset": "libcudacxx-cpp20",
+      "inherits": "libcudacxx"
+    },
+    {
+      "name": "libcudacxx-cpp23",
+      "configurePreset": "libcudacxx-cpp23",
+      "inherits": "libcudacxx"
+    },
+    {
+      "name": "libcudacxx-cpp26",
+      "configurePreset": "libcudacxx-cpp26",
       "inherits": "libcudacxx"
     },
     {

@@ -37,8 +37,10 @@
 #    define _CCCL_STD_VER 2017
 #  elif _MSVC_LANG <= 202002L
 #    define _CCCL_STD_VER 2020
+#  elif _MSVC_LANG <= 202302L
+#    define _CCCL_STD_VER 2023
 #  else
-#    define _CCCL_STD_VER 2023 // current year, or date of c++2b ratification
+#    define _CCCL_STD_VER 2024 // current year, or date of c++2c ratification
 #  endif
 #else // ^^^ _CCCL_COMPILER(MSVC) ^^^ / vvv !_CCCL_COMPILER(MSVC) vvv
 #  if __cplusplus <= 199711L
@@ -53,8 +55,10 @@
 #    define _CCCL_STD_VER 2020
 #  elif __cplusplus <= 202302L
 #    define _CCCL_STD_VER 2023
+#  elif __cplusplus <= 202603L
+#    define _CCCL_STD_VER 2026
 #  else
-#    define _CCCL_STD_VER 2024 // current year, or date of c++2c ratification
+#    define _CCCL_STD_VER 2027 // current year, or date of c++2d ratification
 #  endif
 #endif // !_CCCL_COMPILER(MSVC)
 
