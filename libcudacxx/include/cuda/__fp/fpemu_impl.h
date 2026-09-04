@@ -168,6 +168,7 @@ using __fpbits64 = uint64_t;
 //! form (separate sign, exponent, mantissa) for the *_unpacked builtins; not public.
 struct __fpbits64_unpacked
 {
+  // These should be __-prefixed if they are not public
   uint32_t sign;
   uint32_t exponent;
   uint64_t mantissa;
@@ -182,6 +183,7 @@ struct __fpbits64_unpacked
 //! - rd: Round toward negative infinity
 enum struct __fpemu_rounding
 {
+  // These should be __-prefixed if they are not public
   unset = -1,
   rn    = 0,
   rz    = 1,
@@ -255,6 +257,8 @@ enum struct __fpemu_rounding
 #  define _CCCL_FPEMU_SQRT_METHOD unset
 #endif
 
+// I'd like these to be removed and we should use ::cuda::std::__fp_xxx values instead. We can move them to just cuda::
+// namespace, so we needn't to type ::cuda::std:: all the time
 #define _CCCL_FP32_TOTAL_BITS  32
 #define _CCCL_FP32_BIAS        127
 #define _CCCL_FP32_MANT_BITS   23
@@ -333,6 +337,7 @@ inline constexpr uint32_t __fpemu_inf_zero       = 0x00007ff0 - __fpemu_bias - 2
 //! - denormal: Denormalized number with leading zeros
 enum struct __fpclass
 {
+  // Should be __-prefixed if they are not public
   normal   = 0,
   zero     = 1,
   inf      = 2,
@@ -363,6 +368,7 @@ enum struct __fpclass
 //!       producer and we don't want to pessimize the optimizer's SROA).
 struct __fp64emu_unpacked
 {
+  // Should be __-prefixed if they are not public
   uint64_t mantissa;
   int32_t exponent;
   uint32_t sign;
@@ -376,6 +382,7 @@ struct __fp64emu_unpacked
 //! but can be performed by 32-bit operations.
 struct __uint32x2
 {
+  // Should be __-prefixed if they are not public
   uint32_t x[2];
 };
 
@@ -386,6 +393,7 @@ struct __uint32x2
 //! but can be performed by 64-bit operations.
 struct __uint64x2
 {
+  // Should be __-prefixed if they are not public
   uint64_t x[2];
 };
 
@@ -396,6 +404,7 @@ struct __uint64x2
 //! but can be performed by 64-bit operations.
 struct __uint32x4
 {
+  // Should be __-prefixed if they are not public
   __uint32x2 lo;
   __uint32x2 hi;
 };
@@ -597,6 +606,8 @@ _CCCL_TRIVIAL_HOST_DEVICE_API uint32_t __mul_32(__uint32x2 __a, __uint32x2 __b) 
       __uint32x2 __a64 = ::cuda::std::bit_cast<__uint32x2>(__a);
       __uint32x2 __b64 = ::cuda::std::bit_cast<__uint32x2>(__b);
       uint32_t __res32;
+      // This can be a single line, no need for those extra variables. Also, shouldn't the device variant handle carries
+      // too?
       asm("{\n\t"
           ".reg .u32 r0, ahi, bhi;\n\t"
           "mov.b32         ahi, %1;   \n\t"
@@ -640,6 +651,7 @@ _CCCL_TRIVIAL_HOST_DEVICE_API __uint32x2 __mul_64(__uint32x2 __a, __uint32x2 __b
                  uint64_t __a64 = ::cuda::std::bit_cast<uint64_t>(__a);
                  uint64_t __b64 = ::cuda::std::bit_cast<uint64_t>(__b);
                  uint64_t __res64;
+                 // I have probably asked this before, but why don't we use mul.hi.u64 here?
                  asm("{\n\t"
                      ".reg .u32 r0, r1, r2, r3, alo, ahi, blo, bhi;\n\t"
                      "mov.b64         {alo,ahi}, %1;   \n\t"
@@ -740,7 +752,7 @@ _CCCL_TRIVIAL_HOST_DEVICE_API __uint32x4 __mul_128(__uint32x2 __a, __uint32x2 __
     ({
       uint64_t __a64   = ::cuda::std::bit_cast<uint64_t>(__a);
       uint64_t __b64   = ::cuda::std::bit_cast<uint64_t>(__b);
-      uint64_t __res64 = __umul64hi(__a64, __b64);
+      uint64_t __res64 = __umul64hi(__a64, __b64); // missing ::
       __res.hi         = ::cuda::std::bit_cast<__uint32x2>(__res64);
     }),
     ({
@@ -769,6 +781,7 @@ _CCCL_TRIVIAL_HOST_DEVICE_API __uint32x4 __mul_128(__uint32x2 __a, __uint32x2 __
 //! @return The shifted value as two 32-bit integers
 _CCCL_TRIVIAL_HOST_DEVICE_API __uint32x2 __shl_64(__uint32x2 __man, int __shift) noexcept
 {
+  // We should use cuda::std::shl
   uint64_t __man64 = ::cuda::std::bit_cast<uint64_t>(__man);
   __man64 <<= __shift;
   return ::cuda::std::bit_cast<__uint32x2>(__man64);
@@ -784,6 +797,7 @@ _CCCL_TRIVIAL_HOST_DEVICE_API __uint32x2 __shl_64(__uint32x2 __man, int __shift)
 //! @return The shifted value as two 32-bit integers
 _CCCL_TRIVIAL_HOST_DEVICE_API __uint32x2 __shr_64(__uint32x2 __man, int __shift) noexcept
 {
+  // We should use cuda::std::shr
   uint64_t __man64 = ::cuda::std::bit_cast<uint64_t>(__man);
   NV_IF_TARGET(NV_IS_HOST, ({ __shift = (__shift > 0) ? (__shift > 64) ? 64 : __shift : 0; }))
   __man64 = __man64 >> __shift;
@@ -808,6 +822,7 @@ _CCCL_TRIVIAL_HOST_DEVICE_API float __fmul_dir(float __x, float __y) noexcept
 {
   NV_IF_ELSE_TARGET(NV_IS_DEVICE,
                     ({
+                      // these builtins are missing ::
                       if constexpr (_Rm == __fpemu_rounding::rn)
                       {
                         return __fmul_rn(__x, __y);
@@ -836,6 +851,7 @@ _CCCL_TRIVIAL_HOST_DEVICE_API float __fadd_dir(float __x, float __y) noexcept
 {
   NV_IF_ELSE_TARGET(NV_IS_DEVICE,
                     ({
+                      // these builtins are missing ::
                       if constexpr (_Rm == __fpemu_rounding::rn)
                       {
                         return __fadd_rn(__x, __y);
@@ -867,6 +883,7 @@ _CCCL_TRIVIAL_HOST_DEVICE_API __uint32x2 __shr_64_rnd(__uint32x2 __man, int __sh
     return __man;
   }
 
+  // We should use cuda::bitmask here
   const uint64_t __discard_mask         = (__shift >= 64) ? ~0ULL : ((1ULL << __shift) - 1);
   [[maybe_unused]] const bool __inexact = (__man64 & __discard_mask) != 0;
   __man64 >>= __shift;
@@ -900,6 +917,7 @@ __shr_128_rnd(__fpemu_uint128 __man, int __shift, bool __sign = false) noexcept
     return __man;
   }
 
+  // We should use cuda::bitmask here
   const __fpemu_uint128 __discard_mask =
     (__shift >= 128) ? ~(__fpemu_uint128) 0 : ((((__fpemu_uint128) 1) << __shift) - 1);
   const bool __inexact = (__man & __discard_mask) != 0;
@@ -948,6 +966,7 @@ _CCCL_TRIVIAL_HOST_DEVICE_API __fpemu_uint128 __shr_128_jam(__fpemu_uint128 __ma
 template <fpemu_accuracy _Acc = fpemu_accuracy::high>
 _CCCL_TRIVIAL_HOST_DEVICE_API __uint32x2 __sar_64(__uint32x2 __man, int __shift) noexcept
 {
+  // Let's use cuda::std::shr
   NV_IF_TARGET(NV_IS_HOST, ({ __shift = (__shift > 0) ? (__shift > 63) ? 63 : __shift : 0; }))
 
   int64_t __man64  = ::cuda::std::bit_cast<int64_t>(__man);
@@ -971,6 +990,7 @@ _CCCL_TRIVIAL_HOST_DEVICE_API __uint32x2 __sar_64(__uint32x2 __man, int __shift)
 template <fpemu_accuracy _Acc = fpemu_accuracy::high, __fpemu_rounding _Rm = __fpemu_rounding::rn>
 _CCCL_TRIVIAL_HOST_DEVICE_API __uint32x2 __sar_64_rnd(__uint32x2 __man, int __shift, bool __sign = false) noexcept
 {
+  // Let's use cuda::std::shr
   NV_IF_TARGET(NV_IS_HOST, ({ __shift = (__shift > 0) ? (__shift > 63) ? 63 : __shift : 0; }))
 
   int64_t __man64     = ::cuda::std::bit_cast<int64_t>(__man);
@@ -1015,6 +1035,7 @@ _CCCL_TRIVIAL_HOST_DEVICE_API __uint32x2 __sar_64_rnd(__uint32x2 __man, int __sh
 //! @tparam _Acc Accuracy level (full-range special handling only for high)
 //! @param __v The input number as two 32-bit integers
 //! @return The extracted exponent value
+// Should use __fp_get_exp_biased
 template <fpemu_accuracy _Acc = fpemu_accuracy::high>
 _CCCL_TRIVIAL_HOST_DEVICE_API int32_t __unpack_exp(__uint32x2 __v) noexcept
 {
@@ -1060,6 +1081,7 @@ _CCCL_TRIVIAL_HOST_DEVICE_API int32_t __unpack_exp(__uint32x2 __v) noexcept
 //! @param __v The input number as two 32-bit integers
 //! @param is_zero_exp Whether the exponent is zero (denormal case)
 //! @return The extracted mantissa as two 32-bit integers
+// Should use cuda::std::__fp_get_mant
 template <fpemu_accuracy _Acc = fpemu_accuracy::high>
 _CCCL_TRIVIAL_HOST_DEVICE_API __uint32x2 __unpack_mant(bool* __sign, __uint32x2 __v, bool __is_zero_exp) noexcept
 {
@@ -1360,6 +1382,7 @@ _CCCL_TRIVIAL_HOST_DEVICE_API __uint32x2 __round(__uint32x2 __man, const int __s
 #  define _CCCL_FP64EMU_UNPACKED_OUTPUT_INF 0
 #endif
 
+// Must be _CCCL_SOMETHING_EXTRA_BITS
 #ifndef EXTRA_BITS
 #  define EXTRA_BITS 9
 #endif
