@@ -94,7 +94,10 @@ _CCCL_REQUIRES(__cccl_is_unsigned_integer_v<_Tp>)
 
   _CCCL_IF_NOT_CONSTEVAL_DEFAULT
   {
-    NV_IF_TARGET(NV_IS_DEVICE, ({ return ::cuda::std::__bit_repeat_impl_device(__v, __n); }))
+    if (!_CCCL_BUILTIN_CONSTANT_P(__v) || !_CCCL_BUILTIN_CONSTANT_P(__n))
+    {
+      NV_IF_TARGET(NV_IS_DEVICE, ({ return ::cuda::std::__bit_repeat_impl_device(__v, __n); }))
+    }
   }
   return ::cuda::std::__bit_repeat_impl_generic(__v, __n);
 }

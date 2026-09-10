@@ -203,9 +203,12 @@ _CCCL_REQUIRES(__cccl_is_unsigned_integer_v<_Tp>)
 #if !_CCCL_TILE_COMPILATION() // nvbug6085411: error: "call to non-tile function not supported!"
   _CCCL_IF_NOT_CONSTEVAL_DEFAULT
   {
-    NV_IF_ELSE_TARGET(NV_IS_HOST, ({ return ::cuda::std::__bit_reverse_impl_host(__v); }), ({
-                        return ::cuda::std::__bit_reverse_impl_device(__v);
-                      }))
+    if (!_CCCL_BUILTIN_CONSTANT_P(__v))
+    {
+      NV_IF_ELSE_TARGET(NV_IS_HOST, ({ return ::cuda::std::__bit_reverse_impl_host(__v); }), ({
+                          return ::cuda::std::__bit_reverse_impl_device(__v);
+                        }))
+    }
   }
 #endif // !_CCCL_TILE_COMPILATION()
   return ::cuda::std::__bit_reverse_impl_generic(__v);

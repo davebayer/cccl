@@ -120,6 +120,16 @@
 #  define _CCCL_BUILTIN_CONSTANT_P(...) __builtin_constant_p(__VA_ARGS__)
 #endif // _CCCL_CHECK_BUILTIN(builtin_constant_p)
 
+// nvcc < 13.4 doesn't support __builtin_constant_p in device code.
+#if _CCCL_CUDA_COMPILER(NVCC, <, 13, 4) && _CCCL_DEVICE_COMPILATION()
+#  undef _CCCL_BUILTIN_CONSTANT_P
+#endif // _CCCL_CUDA_COMPILER(NVCC, <, 13, 4) && _CCCL_DEVICE_COMPILATION()
+
+// If
+#if !defined(_CCCL_BUILTIN_CONSTANT_P)
+#  define _CCCL_BUILTIN_CONSTANT_P(...) false
+#endif // !_CCCL_BUILTIN_CONSTANT_P
+
 #if _CCCL_CHECK_BUILTIN(builtin_expect) || _CCCL_COMPILER(MSVC) || _CCCL_COMPILER(GCC)
 #  define _CCCL_BUILTIN_EXPECT(_EXPR, _VAL) __builtin_expect(_EXPR, _VAL)
 #else // ^^^ has __builtin_expect ^^^ / vvv no __builtin_expect vvv
