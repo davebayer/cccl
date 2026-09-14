@@ -35,6 +35,7 @@
 #include <cuda/experimental/__group/mapping/mapping_result.cuh>
 #include <cuda/experimental/__group/synchronizer/lane_synchronizer.cuh>
 #include <cuda/experimental/__group/traits.cuh>
+#include <cuda/experimental/__group/warp_mask.cuh>
 
 #include <cuda/std/__cccl/prologue.h>
 
@@ -47,13 +48,16 @@ class __coalesced_mapping_result
   ::cuda::device::lane_mask __lane_mask_;
   ::cuda::std::uint32_t __unit_count_;
   ::cuda::std::uint32_t __unit_rank_;
+  __warp_mask_t __warp_mask_;
 
 public:
-  _CCCL_DEVICE_API __coalesced_mapping_result() noexcept
+  template <class _Hierarchy>
+  _CCCL_DEVICE_API __coalesced_mapping_result(const _Hierarchy& __hier) noexcept
       : __lane_mask_{::cuda::device::lane_mask::all_active()}
       , __unit_count_{static_cast<::cuda::std::uint32_t>(::cuda::std::popcount(__lane_mask_.value()))}
       , __unit_rank_{static_cast<::cuda::std::uint32_t>(
           ::cuda::std::popcount((__lane_mask_ & ::cuda::device::lane_mask::all_less()).value()))}
+      , __warp_mask_{::cuda::experimental::__warp_mask_this(__hier)}
   {}
 
   [[nodiscard]] _CCCL_DEVICE_API static constexpr ::cuda::std::size_t static_group_count() noexcept
@@ -91,6 +95,11 @@ public:
     return __lane_mask_;
   }
 
+  [[nodiscard]] _CCCL_DEVICE_API ::cuda::std::uint32_t warp_mask() const noexcept
+  {
+    return __warp_mask_;
+  }
+
   [[nodiscard]] _CCCL_DEVICE_API bool is_valid() const noexcept
   {
     return true;
@@ -114,7 +123,7 @@ class coalesced_group
   using _SynchronizerInstance _CCCL_NODEBUG = lane_synchronizer::__synchronizer_instance;
 
   _Hierarchy __hier_;
-  _MappingResult __mapping_result_{};
+  _MappingResult __mapping_result_{__hier_};
   _SynchronizerInstance __synchronizer_instance_{};
 
 public:

@@ -45,8 +45,24 @@
 namespace cuda::experimental
 {
 template <class _Level>
-struct __this_mapping_result
+class __this_mapping_result
 {
+  __warp_mask_t __warp_mask_;
+
+public:
+  template <class _Hierarchy>
+  _CCCL_DEVICE_API __this_mapping_result(const _Hierarchy& __hier) noexcept
+  {
+    if constexpr (::cuda::std::is_same_v<_Level, thread_level> || ::cuda::std::is_same_v<_Level, warp_level>)
+    {
+      __warp_mask_ = ::cuda::experimental::__warp_mask_this(__hier);
+    }
+    else
+    {
+      __warp_mask_ = ::cuda::experimental::__warp_mask_all(__hier);
+    }
+  }
+
   [[nodiscard]] _CCCL_DEVICE_API static constexpr ::cuda::std::size_t static_group_count() noexcept
   {
     return 1;
@@ -89,6 +105,11 @@ struct __this_mapping_result
     }
   }
 
+  [[nodiscard]] _CCCL_DEVICE_API __warp_mask_t warp_mask() const noexcept
+  {
+    return __warp_mask_;
+  }
+
   [[nodiscard]] _CCCL_DEVICE_API bool is_valid() const noexcept
   {
     return true;
@@ -121,7 +142,7 @@ public:
 
 private:
   _Hierarchy __hier_;
-  __mapping_result_type __mapping_result_{};
+  __mapping_result_type __mapping_result_{__hier_};
   _SynchronizerInstance __synchronizer_instance_{};
 
 public:

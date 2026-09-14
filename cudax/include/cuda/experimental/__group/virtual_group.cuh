@@ -42,6 +42,7 @@
 #include <cuda/experimental/__group/mapping/mapping_result.cuh>
 #include <cuda/experimental/__group/this_group.cuh>
 #include <cuda/experimental/__group/traits.cuh>
+#include <cuda/experimental/__group/warp_mask.cuh>
 
 #include <cuda/std/__cccl/prologue.h>
 
@@ -59,12 +60,15 @@ __do_group_mapping(const _Unit& __unit, const _ParentGroup& __parent, _Mapping&&
                      ::cuda::experimental::__static_count_query_group<_Unit, _ParentGroup>(),
                      _ParentMappingResult::is_always_exhaustive(),
                      _ParentMappingResult::is_always_contiguous()>;
+
+  const auto __parent_warp_mask = __parent.__mapping_result().warp_mask();
   const _InitMappingResult __init_mapping_result{
     /*initial group count*/ 1,
     /*initial group rank*/ 0,
     ::cuda::experimental::__count_query_group<::cuda::std::uint32_t, _Unit>(__parent),
     ::cuda::experimental::__rank_query_group<::cuda::std::uint32_t, _Unit>(__parent),
-    __parent.__mapping_result().lane_mask()};
+    __parent.__mapping_result().lane_mask(),
+    __parent_warp_mask};
 
   const auto __mapping_result = __mapping.map(__unit, __parent, __init_mapping_result);
   if (__mapping_result.is_valid())
@@ -85,6 +89,22 @@ __do_group_mapping(const _Unit& __unit, const _ParentGroup& __parent, _Mapping&&
       _CCCL_ASSERT(__mapping_result.lane_mask() == ::cuda::device::lane_mask::all(),
                    "invalid lane mask - must be equal to cuda::device::lane_mask::all() when _Unit is not "
                    "cuda::thread_level");
+    }
+
+    using _Level = typename _ParentGroup::level_type;
+    if constexpr (::cuda::std::is_same_v<_Unit, thread_level> && ::cuda::std::is_same_v<_Level, warp_level>)
+    {
+      _CCCL_ASSERT(__mapping_result.warp_mask() == ::cuda::experimental::__warp_mask_this(__parent.hierarchy()),
+                   "invalid warp mask");
+    }
+    else if constexpr (::cuda::std::is_same_v<_Unit, thread_level> || ::cuda::std::is_same_v<_Unit, warp_level>)
+    {
+      _CCCL_ASSERT((__mapping_result.warp_mask() | __parent_warp_mask) == __parent_warp_mask, "invalid warp mask");
+    }
+    else
+    {
+      _CCCL_ASSERT(__mapping_result.warp_mask() == ::cuda::experimental::__warp_mask_all(__parent.hierarchy()),
+                   "invalid warp mask");
     }
   }
   return __mapping_result;

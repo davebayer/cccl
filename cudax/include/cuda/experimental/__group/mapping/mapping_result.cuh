@@ -29,6 +29,7 @@
 #include <cuda/std/cstdint>
 
 #include <cuda/experimental/__group/fwd.cuh>
+#include <cuda/experimental/__group/warp_mask.cuh>
 
 #include <cuda/std/__cccl/prologue.h>
 
@@ -46,6 +47,7 @@ struct __mapping_result
   ::cuda::std::uint32_t __unit_count_;
   ::cuda::std::uint32_t __unit_rank_;
   ::cuda::device::lane_mask __lane_mask_;
+  __warp_mask_t __warp_mask_;
 
   [[nodiscard]] _CCCL_DEVICE_API static constexpr __mapping_result __invalid() noexcept
   {
@@ -53,7 +55,8 @@ struct __mapping_result
             __invalid_count_or_rank,
             __invalid_count_or_rank,
             __invalid_count_or_rank,
-            ::cuda::device::lane_mask::none()};
+            ::cuda::device::lane_mask::none(),
+            0u};
   }
 
   [[nodiscard]] _CCCL_DEVICE_API static constexpr ::cuda::std::size_t static_group_count() noexcept
@@ -127,6 +130,15 @@ struct __mapping_result
     return __lane_mask_;
   }
 
+  [[nodiscard]] _CCCL_DEVICE_API __warp_mask_t warp_mask() const noexcept
+  {
+    if constexpr (!_IsExhaustive)
+    {
+      _CCCL_ASSERT(is_valid(), "getting warp mask of thread that is not part of the group is UB");
+    }
+    return __warp_mask_;
+  }
+
   [[nodiscard]] _CCCL_DEVICE_API bool is_valid() const noexcept
   {
     if constexpr (_IsExhaustive)
@@ -151,7 +163,7 @@ struct __mapping_result
 };
 
 template <bool _IsContiguous>
-[[nodiscard]] _CCCL_DEVICE_API inline ::cuda::device::lane_mask __make_lane_mask_for_n(
+[[nodiscard]] _CCCL_DEVICE_API ::cuda::device::lane_mask __make_lane_mask_for_n(
   ::cuda::device::lane_mask __prev_lane_mask, ::cuda::std::uint32_t __n, ::cuda::std::uint32_t __rank) noexcept
 {
   if constexpr (_IsContiguous)

@@ -63,7 +63,8 @@ __do_group_view_mapping(const _Unit& __unit, const _Group& __group) noexcept
       __group_mapping_result.group_rank(),
       ::cuda::experimental::__count_query_group<::cuda::std::uint32_t, _Unit>(__group),
       ::cuda::experimental::__rank_query_group<::cuda::std::uint32_t, _Unit>(__group),
-      __group_mapping_result.lane_mask()};
+      __group_mapping_result.lane_mask(),
+      __group_mapping_result.warp_mask()};
   }
 }
 
