@@ -25,7 +25,18 @@
 
 #include <cuda/std/__cccl/prologue.h>
 
+#if _CCCL_HAS_BUILTIN(__is_referenceable)
+#  define _CCCL_BUILTIN_IS_REFERENCEABLE(...) __is_referenceable(__VA_ARGS__)
+#endif // _CCCL_HAS_BUILTIN(__is_referenceable)
+
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
+
+#if defined(_CCCL_BUILTIN_IS_REFERENCEABLE)
+
+template <class _Tp>
+_CCCL_CONCEPT __referenceable = _CCCL_BUILTIN_IS_REFERENCEABLE(_Tp);
+
+#else // ^^^ _CCCL_BUILTIN_IS_REFERENCEABLE ^^^ / vvv !_CCCL_BUILTIN_IS_REFERENCEABLE vvv
 
 template <class _Tp, class = void>
 inline constexpr bool __is_referenceable_impl = false;
@@ -35,6 +46,8 @@ inline constexpr bool __is_referenceable_impl<_Tp, void_t<_Tp&>> = true;
 
 template <class _Tp>
 _CCCL_CONCEPT __referenceable = __is_referenceable_impl<_Tp>;
+
+#endif // ^^^ !_CCCL_BUILTIN_IS_REFERENCEABLE ^^^
 
 _CCCL_END_NAMESPACE_CUDA_STD
 
