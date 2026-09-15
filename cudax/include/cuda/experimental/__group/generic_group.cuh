@@ -155,27 +155,13 @@ public:
   //                aligned/unaligned variants?
   _CCCL_DEVICE_API void sync() const noexcept
   {
-    // Skip the synchronization for threads that are not part of this group.
-    if constexpr (!_MappingResult::is_always_exhaustive())
-    {
-      if (!__mapping_result_.is_valid())
-      {
-        return;
-      }
-    }
+    _CCCL_ASSERT(__mapping_result_.is_valid(), "Only units that are part of the group can synchronize.");
     __synchronizer_instance_.do_sync(__mapping_result_, __hier_);
   }
 
   _CCCL_DEVICE_API void sync_aligned() const noexcept
   {
-    // Skip the synchronization for threads that are not part of this group.
-    if constexpr (!_MappingResult::is_always_exhaustive())
-    {
-      if (!__mapping_result_.is_valid())
-      {
-        return;
-      }
-    }
+    _CCCL_ASSERT(__mapping_result_.is_valid(), "Only units that are part of the group can synchronize.");
     __synchronizer_instance_.do_sync_aligned(__mapping_result_, __hier_);
   }
 
@@ -188,6 +174,7 @@ public:
   [[nodiscard]] _CCCL_DEVICE_API static constexpr _Tp
   __count_as_impl(const _QueryMappingResult& __mapping_result, const _Hierarchy&, const _ParentGroup&) noexcept
   {
+    _CCCL_ASSERT(__mapping_result.is_valid(), "Only units that are part of the group can be used in queries.");
     return static_cast<_Tp>(__mapping_result.group_count());
   }
 
@@ -207,6 +194,7 @@ public:
   [[nodiscard]] _CCCL_DEVICE_API static constexpr _Tp
   __rank_as_impl(const _QueryMappingResult& __mapping_result, const _Hierarchy&, const _ParentGroup&) noexcept
   {
+    _CCCL_ASSERT(__mapping_result.is_valid(), "Only units that are part of the group can be used in queries.");
     return static_cast<_Tp>(__mapping_result.group_rank());
   }
 
