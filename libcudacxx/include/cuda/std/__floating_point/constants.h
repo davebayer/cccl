@@ -74,6 +74,10 @@ template <__fp_format _Fmt>
   {
     return _Storage(0x7fu);
   }
+  else if constexpr (_Fmt == __fp_format::__fp8_nv_ue5m3)
+  {
+    return _Storage(0xffu);
+  }
   else if constexpr (_Fmt == __fp_format::__fp8_nv_e8m0)
   {
     return _Storage(0xffu);
@@ -161,6 +165,10 @@ template <__fp_format _Fmt>
   {
     return _Storage(0x7eu);
   }
+  else if constexpr (_Fmt == __fp_format::__fp8_nv_ue5m3)
+  {
+    return _Storage(0xfeu);
+  }
   else
   {
     return ::cuda::std::__fp_set_exp<_Fmt>(__fp_mant_mask_v<_Fmt>, __fp_exp_max_v<_Fmt>);
@@ -207,7 +215,11 @@ template <__fp_format _Fmt>
 {
   using _Storage = __fp_storage_t<_Fmt>;
 
-  if constexpr (_Fmt == __fp_format::__fp8_nv_e8m0)
+  if constexpr (_Fmt == __fp_format::__fp8_nv_ue5m3)
+  {
+    return _Storage{0};
+  }
+  else if constexpr (_Fmt == __fp_format::__fp8_nv_e8m0)
   {
     return _Storage{0};
   }
@@ -296,7 +308,7 @@ template <class _Tp>
 template <__fp_format _Fmt>
 [[nodiscard]] _CCCL_API constexpr __fp_storage_t<_Fmt> __fp_lowest() noexcept
 {
-  if constexpr (_Fmt == __fp_format::__fp8_nv_e8m0)
+  if constexpr (_Fmt == __fp_format::__fp8_nv_ue5m3 || _Fmt == __fp_format::__fp8_nv_e8m0)
   {
     return ::cuda::std::__fp_min<_Fmt>();
   }

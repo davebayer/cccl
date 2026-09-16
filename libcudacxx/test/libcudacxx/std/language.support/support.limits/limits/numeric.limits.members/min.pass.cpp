@@ -81,6 +81,9 @@ int main(int, char**)
 #if _CCCL_HAS_NVFP8_E5M2()
   test<__nv_fp8_e5m2>(make_fp8_e5m2(0.000061035));
 #endif // _CCCL_HAS_NVFP8_E5M2()
+#if _CCCL_HAS_NVFP8_UE5M3()
+  test<__nv_fp8_e5m2>(make_fp8_e5m2(0.5));
+#endif // _CCCL_HAS_NVFP8_UE5M3()
 #if _CCCL_HAS_NVFP8_E8M0()
   test<__nv_fp8_e8m0>(make_fp8_e8m0(5.8774717541114375398436826861112283890933277838604376075437585313920e-39));
 #endif // _CCCL_HAS_NVFP8_E8M0()
