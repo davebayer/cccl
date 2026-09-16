@@ -688,6 +688,7 @@ _CCCL_TRIVIAL_HOST_DEVICE_API uint32_t __internal_fp64emu_fpbits64_unpacked_to_u
 template <__fpemu_rounding _Rm = __fpemu_rounding::def, fpemu_accuracy _Acc = fpemu_accuracy::def>
 _CCCL_TRIVIAL_HOST_DEVICE_API int64_t __internal_fp64emu_fpbits64_unpacked_to_ll(__fpbits64_unpacked __x) noexcept
 {
+  // I'd like us to use less magic constants and use cuda::std::__fp_xxx infrastructure instead.
   const bool __sign   = (__x.sign != 0);
   const int32_t __exp = (int32_t) __x.exponent;
   if (__exp == __fp64emu_cvt_nan_exp)

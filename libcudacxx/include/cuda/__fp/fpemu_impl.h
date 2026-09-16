@@ -1360,6 +1360,7 @@ _CCCL_TRIVIAL_HOST_DEVICE_API __uint32x2 __round(__uint32x2 __man, const int __s
 #  define _CCCL_FP64EMU_UNPACKED_OUTPUT_INF 0
 #endif
 
+// Must be _CCCL_EXTRA_BITS
 #ifndef EXTRA_BITS
 #  define EXTRA_BITS 9
 #endif
