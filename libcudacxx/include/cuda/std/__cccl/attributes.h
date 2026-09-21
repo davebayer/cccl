@@ -89,6 +89,22 @@
 #  define _CCCL_ASSUME(...)
 #endif // _CCCL_TILE_COMPILATION()
 
+// _CCCL_ALLOC_ALIGN
+
+#if _CCCL_HAS_ATTRIBUTE(__alloc_align__)
+#  define _CCCL_ALLOC_ALIGN(...) __attribute__((__alloc_align__(__VA_ARGS__)))
+#else // ^^^ has alloc_align attribute ^^^ / vvv no alloc_align attribute vvv
+#  define _CCCL_ALLOC_ALIGN(...)
+#endif // ^^^ no alloc_align attribute ^^^
+
+// _CCCL_ALLOC_SIZE
+
+#if _CCCL_HAS_ATTRIBUTE(__alloc_size__)
+#  define _CCCL_ALLOC_SIZE(...) __attribute__((__alloc_size__(__VA_ARGS__)))
+#else // ^^^ has alloc_size attribute ^^^ / vvv no alloc_size attribute vvv
+#  define _CCCL_ALLOC_SIZE(...)
+#endif // ^^^ no alloc_size attribute ^^^
+
 // _CCCL_CONST
 
 #if _CCCL_HAS_CPP_ATTRIBUTE(__gnu__::__const__)
@@ -133,6 +149,18 @@
 #else
 #  define _CCCL_PURE
 #endif
+
+// _CCCL_MALLOC
+
+#if _CCCL_HAS_CPP_ATTRIBUTE(__malloc__)
+#  define _CCCL_MALLOC(...) __attribute__((__malloc__(__VA_ARGS__)))
+#elif _CCCL_COMPILER(MSVC)
+// msvc doesn't implement malloc attribute but we can at least specify that the returned object is not aliased with any
+// other object.
+#  define _CCCL_MALLOC(...) __declspec(restrict)
+#else // ^^^ has malloc attribute ^^^ / vvv no malloc attribute vvv
+#  define _CCCL_MALLOC(...)
+#endif // ^^^ no malloc attribute ^^^
 
 // _CCCL_NO_CFI
 

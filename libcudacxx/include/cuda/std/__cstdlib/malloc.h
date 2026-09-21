@@ -59,7 +59,8 @@ using ::malloc;
 }
 #endif // _CCCL_CUDA_COMPILATION()
 
-[[nodiscard]] _CCCL_HOST_DEVICE_API inline void* calloc(size_t __n, size_t __size) noexcept
+[[nodiscard]] _CCCL_MALLOC(cuda::std::free, 2) _CCCL_ALLOC_SIZE(1, 2) _CCCL_HOST_DEVICE_API
+  inline void* calloc(size_t __n, size_t __size) noexcept
 {
   NV_IF_ELSE_TARGET(NV_IS_HOST, (return ::calloc(__n, __size);), (return ::cuda::std::__calloc_device(__n, __size);))
 }
