@@ -12,7 +12,7 @@ CUDA Experimental
    graph
    places
    stf
-   group
+   coop_groups
    API reference <api/index>
 
 ``CUDA Experimental`` (``cudax``) provides experimental new features that are still in development and subject to change.
