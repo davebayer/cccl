@@ -28,12 +28,18 @@
      auto map(const Unit&, const ParentGroup&, const PrevMappingResult&) const noexcept;
    };
 
+   template <typename T>
+   group_by(T) -> group_by</*maybe-static-ext*/<T>, true>;
+
+   template <typename T>
+   group_by(const non_exhaustive_t&, T) -> group_by</*maybe-static-ext*/<T>, false>;
+
    } // namespace cudax::coop
 
 Overview
 --------
 
-``cudax::coop::take`` is a mapping that splits every group from the previous mapping result into groups of ``unit_count`` units. The ``unit_count`` can be either static (when the type is ``/*integral_constant-like*/``) or dynamic otherwise.
+``cudax::coop::group_by`` is a mapping that splits every group from the previous mapping result into groups of ``unit_count`` units. The ``unit_count`` can be either static (when the type is ``/*integral_constant-like*/``) or dynamic otherwise.
 
 By default, the mapping is always exhaustive, so if the previous mapping result's ``unit_count`` is not divisible by ``unit_count`` without a remainder, the behaviour is undefined. This behaviour can be altered by passing the ``cudax::coop::non_exhaustive`` tag as the first parameter to the mapping. Then, all of the ranks that would not form a full group, will be left without a group.
 
@@ -42,4 +48,22 @@ The returned mapping result is always contiguous if the previous mapping result 
 Examples
 --------
 
-.. TODO: Add usage examples.
+.. code:: cuda
+
+   #include <cuda/std/utility>
+
+   #include <cuda/experimental/coop/group>
+
+   namespace cudax = cuda::experimental;
+
+   __global__ void kernel()
+   {
+     // Creates mapping that splits units from the previous mapping into subgroups of that consist of 32 units.
+     cudax::coop::group_by m1{32};
+
+     // Creates mapping that splits units from the previous mapping into subgroups of that consist of 4 units. The unit count will be statically known.
+     cudax::coop::group_by m2{cuda::std::cw<4>};
+
+     // Creates mapping that splits units from the previous mapping into subgroups of that consist of 64 units. The unit count will be statically known. If the number of units from the previous mapping is not divisible by 64 without a remainder, those units will be excluded and will return an invalid mapping result.
+     cudax::coop::group_by m3{cudax::coop::non_exhaustive, cuda::std::cw<64>};
+   }
