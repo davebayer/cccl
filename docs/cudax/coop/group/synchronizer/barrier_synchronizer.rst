@@ -32,7 +32,7 @@
 Overview
 --------
 
-``barrier_synchronizer`` is a synchronizer that uses a ``cuda::barrier`` object to synchronize the group. The type is constructible from a contiguous range of uninitialized ``cuda::barrier`` objects, which are sequentially assigned to each of the created groups during the synchronizer instance creation. It can be used with any group for which the barriers have a sufficient scope.
+``cudax::coop::barrier_synchronizer`` is a synchronizer that uses a ``cuda::barrier`` object to synchronize the group. The type is constructible from a contiguous range of uninitialized ``cuda::barrier`` objects, which are sequentially assigned to each of the created groups during the synchronizer instance creation. It can be used with any group for which the barriers have a sufficient scope.
 
 Users should always rely on template argument deduction and never set the template arguments themselves.
 

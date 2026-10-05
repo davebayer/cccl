@@ -22,6 +22,6 @@
 Overview
 --------
 
-``level_synchronizer`` is a synchronizer that uses ``__syncthreads(lane_mask)`` to synchronize a the group, where ``lane_mask`` is the group mapping result's lane mask. It can be only used to with groups that group threads within the warp level.
+``cudax::coop::level_synchronizer`` is a synchronizer that uses ``__syncthreads(lane_mask)`` to synchronize a the group, where ``lane_mask`` is the group mapping result's lane mask. It can be only used to with groups that group threads within the warp level.
 
 The type is empty and is explicitly default constructible.

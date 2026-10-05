@@ -38,7 +38,7 @@
 Overview
 --------
 
-``interwarp_synchronizer`` is a synchronizer that uses one of the 16 builtin warp barriers to synchronize the group. The type is constructible from a range of barrier ids, which are sequentially assigned to each of the created groups during the synchronizer instance creation. It can be only used to with groups that group warps within the block level.
+``cudax::coop::interwarp_synchronizer`` is a synchronizer that uses one of the 16 builtin warp barriers to synchronize the group. The type is constructible from a range of barrier ids, which are sequentially assigned to each of the created groups during the synchronizer instance creation. It can be only used to with groups that group warps within the block level.
 
 Users should always rely on template argument deduction and never set the template arguments themselves. All of the barrier IDs must be less than ``16`` and can't be repeated multiple times.
 

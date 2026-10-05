@@ -22,7 +22,7 @@
 Overview
 --------
 
-``level_synchronizer`` is a synchronizer that synchronizes all threads within the group's level. The synchronization behaviour is equivalent to:
+``cudax::coop::level_synchronizer`` is a synchronizer that synchronizes all threads within the group's level. The synchronization behaviour is equivalent to:
 
 +--------------+---------------------------------------------------------------------+-----------------------------------------------------------------+
 | Level        | ``.do_sync(...)``                                                   | ``.sync_aligned()``                                             |
