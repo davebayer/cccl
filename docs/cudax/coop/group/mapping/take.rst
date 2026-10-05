@@ -14,7 +14,7 @@
 
    public:
      __device__ explicit take(cuda::std::uint32_t unit_count) noexcept
-       : unit_count_{unit_count}
+       : /*unit_count_*/{unit_count}
      {}
 
      template <typename Unit, typename ParentGroup, typename PrevMappingResult>
@@ -30,7 +30,7 @@
 Overview
 --------
 
-``cudax::coop::take`` is a mapping that selects only first ``unit_count`` units from the previous mapping result, keeping the same group count. The ``unit_count`` can be either static (when the type is ``/*integral_constant-like*/`` or dynamic otherwise.
+``cudax::coop::take`` is a mapping that selects only first ``unit_count`` units from the previous mapping result, keeping the same group count. The ``unit_count`` can be either static (when the type is ``/*integral_constant-like*/``) or dynamic otherwise.
 
 The returned mapping result is always non-exhaustive apart from the case when both the ``unit_count`` and the previous mapping result's static unit count are statically known and have the same value.
 

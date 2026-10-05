@@ -6,6 +6,11 @@ CCCL Cooperative Groups
 .. contents::
    :depth: 2
 
+.. toctree::
+   :maxdepth: 2
+
+   coop/group/index
+
 CCCL Cooperative Groups is an implementation of a successor to CTK's Cooperative Groups available through ``<cooperative_groups.h>`` header. The goal is to provide a more capable API that provides better flexibility, performance and safety.
 
 Introduction to CCCL Cooperative Groups
