@@ -1,7 +1,7 @@
 .. _cudax-coop-group:
 
-Groups
-======
+CCCL Cooperative Groups
+=======================
 
 Group families
 --------------

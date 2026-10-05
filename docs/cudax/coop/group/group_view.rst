@@ -1,7 +1,7 @@
 .. _cudax-coop-group-group-view:
 
-group_view
-==========
+``cudax::coop::group_view``
+===========================
 
 Overview
 --------

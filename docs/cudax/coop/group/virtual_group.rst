@@ -1,7 +1,7 @@
 .. _cudax-coop-group-virtual-group:
 
-virtual_group
-=============
+``cudax::coop::virtual_group``
+==============================
 
 Overview
 --------

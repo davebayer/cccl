@@ -13,7 +13,7 @@ This groups
    template <typename Hierarchy> class this_cluster;
    template <typename Hierarchy> class this_grid;
 
-   template <typename Level, typename HierarchyLike>
+   template </*hierarchy-level-type*/ Level, /*hierarchy-like-type*/ HierarchyLike>
    [[nodiscard]] __device__
    auto make_this_group(const Level& level, const HierarchyLike& hierarchy_like) noexcept;
 
@@ -28,9 +28,7 @@ Because every this group is a separate type, the ``cudax::coop::make_this_group(
 
 *This* groups are always exhaustive and contiguous.
 
-*This* groups use the :ref:`cudax::coop::level_synchronizer <cudax-coop-group-synchronizer-level-synchronizer>` for synchronization.
-
-
+*This* groups use the :ref:`cudax::coop::level_synchronizer <cudax-coop-group-synchronizer-level-synchronizer>` synchronizer for synchronization.
 
 Queries
 -------

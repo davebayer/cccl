@@ -1,7 +1,7 @@
 .. _cudax-coop-group-generic-group:
 
-generic_group
-=============
+``cudax::coop::generic_group``
+==============================
 
 Overview
 --------
