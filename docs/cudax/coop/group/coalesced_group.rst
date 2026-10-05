@@ -1,7 +1,7 @@
 .. _cudax-coop-group-coalesced-group:
 
-coalesced_group
-===============
+``cudax::coop::coalesced_group``
+================================
 
 Overview
 --------

@@ -1,17 +1,14 @@
 .. _cudax-coop-group-mapping-group-as:
 
-group_as
-========
+``cudax::coop::group_as``
+=========================
+
+.. TODO: Add signature.
 
 Overview
 --------
 
 .. TODO: Describe group_as and its intended use.
-
-API
----
-
-.. TODO: Document construction, operations, and requirements.
 
 Examples
 --------
