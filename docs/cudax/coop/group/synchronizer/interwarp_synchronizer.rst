@@ -1,7 +1,7 @@
 .. _cudax-coop-group-synchronizer-interwarp-synchronizer:
 
-interwarp_synchronizer
-======================
+``cudax::coop::interwarp_synchronizer``
+=======================================
 
 .. code:: cuda
 

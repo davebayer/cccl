@@ -1,7 +1,7 @@
 .. _cudax-coop-group-synchronizer-level-synchronizer:
 
-level_synchronizer
-==================
+``cudax::coop::level_synchronizer``
+===================================
 
 .. code:: cuda
 

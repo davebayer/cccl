@@ -1,7 +1,7 @@
 .. _cudax-coop-group-synchronizer-barrier-synchronizer:
 
-barrier_synchronizer
-====================
+``cudax::coop::barrier_synchronizer``
+=====================================
 
 .. code:: cuda
 

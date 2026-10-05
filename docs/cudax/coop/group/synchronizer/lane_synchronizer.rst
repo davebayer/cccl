@@ -1,7 +1,7 @@
 .. _cudax-coop-group-synchronizer-lane-synchronizer:
 
-lane_synchronizer
-=================
+``cudax::coop::lane_synchronizer``
+==================================
 
 .. code:: cuda
 
