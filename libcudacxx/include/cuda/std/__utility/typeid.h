@@ -172,7 +172,7 @@ struct __pretty_name_begin
 template <class _Tp>
 [[nodiscard]] _CCCL_HOST_DEVICE_API constexpr string_view __pretty_nameof_helper() noexcept
 {
-#if _CCCL_COMPILER(GCC, <, 9) && !defined(__CUDA_ARCH__)
+#if _CCCL_COMPILER(GCC, <, 9) && _CCCL_HOST_COMPILATION()
   return ::cuda::std::__find_pretty_name(::cuda::std::__make_pretty_name<_Tp>(integral_constant<size_t, size_t(-1)>{}));
 #else // ^^^ gcc < 9 ^^^^/ vvv other compiler vvv
   return ::cuda::std::__find_pretty_name(_CCCL_BUILTIN_PRETTY_FUNCTION());
@@ -185,17 +185,11 @@ template <class _Tp>
   return ::cuda::std::__pretty_nameof_helper<typename __pretty_name_begin<_Tp>::__pretty_name_end>();
 }
 
-// In device code with old versions of gcc, we cannot have nice things.
-#if _CCCL_COMPILER(GCC, <, 9) && defined(__CUDA_ARCH__)
-#  define _CCCL_NO_CONSTEXPR_PRETTY_NAMEOF
-#endif
-
-#if !defined(_CCCL_NO_CONSTEXPR_PRETTY_NAMEOF) && !defined(_CCCL_BROKEN_MSVC_FUNCSIG) \
-  && defined(_CCCL_ENABLE_DEBUG_MODE)
+#if !defined(_CCCL_BROKEN_MSVC_FUNCSIG) && defined(_CCCL_ENABLE_DEBUG_MODE)
 // A quick smoke test to ensure that the pretty name extraction is working.
 static_assert(::cuda::std::__pretty_nameof<int>() == "int");
 static_assert(::cuda::std::__pretty_nameof<float>() < ::cuda::std::__pretty_nameof<int>());
-#endif // !_CCCL_NO_CONSTEXPR_PRETTY_NAMEOF && !_CCCL_BROKEN_MSVC_FUNCSIG && _CCCL_ENABLE_DEBUG_MODE
+#endif // !_CCCL_BROKEN_MSVC_FUNCSIG && _CCCL_ENABLE_DEBUG_MODE
 
 // We find the spelling of a non-type template parameter value _Vp as follows:
 // 1. Wrap the value in the class template __stringof_wrapper and obtain
@@ -256,8 +250,7 @@ template <auto _Vp>
   return __sv;
 }
 
-#if !defined(_CCCL_NO_CONSTEXPR_PRETTY_NAMEOF) && !defined(_CCCL_BROKEN_MSVC_FUNCSIG) \
-  && defined(_CCCL_ENABLE_DEBUG_MODE)
+#if !defined(_CCCL_BROKEN_MSVC_FUNCSIG) && defined(_CCCL_ENABLE_DEBUG_MODE)
 // A quick smoke test to ensure that the value spelling extraction is working.
 // An integer literal is spelled identically on every supported compiler.
 static_assert(::cuda::std::__stringof<42>() == "42");
@@ -268,7 +261,7 @@ static_assert(::cuda::std::__stringof<42>() != ::cuda::std::__stringof<43>());
 // namespace, whose spelling varies between compilers, so we only check that the
 // unqualified name is present rather than matching it exactly.
 static_assert(::cuda::std::__stringof<&::cuda::std::__find_stringof>().find("__find_stringof") != -1);
-#endif // !_CCCL_NO_CONSTEXPR_PRETTY_NAMEOF && !_CCCL_BROKEN_MSVC_FUNCSIG && _CCCL_ENABLE_DEBUG_MODE
+#endif // !_CCCL_BROKEN_MSVC_FUNCSIG && _CCCL_ENABLE_DEBUG_MODE
 
 // There are many complications with defining a unique constexpr global object
 // for each type in device code, particularly on Windows. So rather than try,
@@ -448,7 +441,16 @@ struct __type_info
   [[nodiscard]] _CCCL_HOST_API friend constexpr bool
   operator==(const __type_info& __lhs, const __type_info& __rhs) noexcept
   {
-    return &__lhs == &__rhs || __lhs.__name_ == __rhs.__name_;
+    // Older GCC versions cannot compare distinct inline variables' addresses
+    // in constant expressions. Compare their names during constant evaluation.
+    _CCCL_IF_CONSTEVAL_DEFAULT
+    {
+      return __lhs.__name_ == __rhs.__name_;
+    }
+    else
+    {
+      return &__lhs == &__rhs || __lhs.__name_ == __rhs.__name_;
+    }
   }
 
 #  if _CCCL_STD_VER <= 2017
@@ -483,11 +485,6 @@ template <class _Tp>
 #  define _CCCL_TYPEID_FALLBACK(...) ::cuda::std::__typeid<::cuda::std::remove_cv_t<__VA_ARGS__>>()
 
 #endif // !defined(__CUDA_ARCH__) && !_CCCL_BROKEN_MSVC_FUNCSIG
-
-// if `__pretty_nameof` is constexpr _CCCL_TYPEID_FALLBACK is also constexpr.
-#if !defined(_CCCL_NO_CONSTEXPR_PRETTY_NAMEOF) && (!defined(_CCCL_BROKEN_MSVC_FUNCSIG) || defined(__CUDA_ARCH__))
-#  define _CCCL_TYPEOF_CONSTEXPR _CCCL_TYPEOF_FALLBACK
-#endif
 
 _CCCL_END_NAMESPACE_CUDA_STD
 

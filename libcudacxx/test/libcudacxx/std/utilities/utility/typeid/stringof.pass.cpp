@@ -49,7 +49,7 @@ int an_overloaded_function(double);
 // checked exactly here; everything else uses distinctness or substring checks.
 
 // The smoke test in the header is guarded the same way; mirror that here.
-#if !defined(_CCCL_NO_CONSTEXPR_PRETTY_NAMEOF) && !defined(_CCCL_BROKEN_MSVC_FUNCSIG)
+#if !defined(_CCCL_BROKEN_MSVC_FUNCSIG)
 
 // Integer literals: spelled identically on every supported compiler.
 static_assert(cuda::std::__stringof<42>() == "42");
@@ -85,23 +85,28 @@ static_assert(cuda::std::__stringof<static_cast<int (*)(double)>(an_overloaded_f
               == "an_overloaded_function");
 #  endif // !__CUDACC__
 
-#endif // !_CCCL_NO_CONSTEXPR_PRETTY_NAMEOF && !_CCCL_BROKEN_MSVC_FUNCSIG
+#endif // !_CCCL_BROKEN_MSVC_FUNCSIG
+
+#if !defined(_CCCL_BROKEN_MSVC_FUNCSIG)
+TEST_FUNC constexpr bool test()
+{
+  assert(cuda::std::__stringof<42>() == "42");
+  assert(cuda::std::__stringof<-7>() == "-7");
+  assert(cuda::std::__stringof<0>() == "0");
+  assert(cuda::std::__stringof<42>() != cuda::std::__stringof<43>());
+  assert(cuda::std::__stringof<true>() != cuda::std::__stringof<false>());
+  assert(cuda::std::__stringof<a_free_function>().find("a_free_function") != npos);
+  assert(cuda::std::__stringof<&a_free_function>().find("a_free_function") != npos);
+  assert(cuda::std::__stringof<a_namespace::a_function_in_a_namespace>().find("a_function_in_a_namespace") != npos);
+  return true;
+}
+#endif // !_CCCL_BROKEN_MSVC_FUNCSIG
 
 int main(int, char**)
 {
 #if !defined(_CCCL_BROKEN_MSVC_FUNCSIG)
-  // Runtime checks on the host. The constexpr path is exercised by the
-  // static_asserts above (in both the host and device compilation passes).
-  NV_IF_TARGET(
-    NV_IS_HOST, ({
-      assert(cuda::std::__stringof<42>() == "42");
-      assert(cuda::std::__stringof<-7>() == "-7");
-      assert(cuda::std::__stringof<42>() != cuda::std::__stringof<43>());
-      assert(cuda::std::__stringof<true>() != cuda::std::__stringof<false>());
-      assert(cuda::std::__stringof<a_free_function>().find("a_free_function") != npos);
-      assert(cuda::std::__stringof<&a_free_function>().find("a_free_function") != npos);
-      assert(cuda::std::__stringof<a_namespace::a_function_in_a_namespace>().find("a_function_in_a_namespace") != npos);
-    }))
+  test();
+  static_assert(test());
 #endif // !_CCCL_BROKEN_MSVC_FUNCSIG
 
   return 0;
