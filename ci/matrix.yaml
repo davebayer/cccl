@@ -147,9 +147,9 @@ workflows:
     - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', ctk: '13.0', cxx: 'gcc15', codegen_target: ['atomics-ptx', 'atomics-sass', 'simd-ptx', 'simd-sass'], sm: [80, 90, 100, 120]}
     - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', ctk: '13.0', cxx: 'gcc15', codegen_target: ['atomics-ptx', 'atomics-sass'], sm: 75}
     - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', ctk: '13.0', cxx: 'gcc15', codegen_target: 'simd-sass', sm: [103, '120f']}
-    - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', cxx: 'gcc15', codegen_target: ['atomics-ptx', 'atomics-sass', 'simd-ptx', 'simd-sass'], sm: [80, 90, 100, 120]}
-    - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', cxx: 'gcc15', codegen_target: ['atomics-ptx', 'atomics-sass'], sm: 75}
-    - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', cxx: 'gcc15', codegen_target: 'simd-sass', sm: [103, '120f']}
+    - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', cxx: 'gcc16', codegen_target: ['atomics-ptx', 'atomics-sass', 'simd-ptx', 'simd-sass'], sm: [80, 90, 100, 120]}
+    - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', cxx: 'gcc16', codegen_target: ['atomics-ptx', 'atomics-sass'], sm: 75}
+    - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', cxx: 'gcc16', codegen_target: 'simd-sass', sm: [103, '120f']}
     # c.parallel -- pinned to gcc13 / msvc2022 to match python
     - {jobs: ['test'], project: 'cccl_c_parallel', ctk: '12.X', cxx: ['gcc13', 'msvc2022'], gpu: ['t4']}
     - {jobs: ['test'], project: 'cccl_c_parallel', ctk: '13.X', cxx: ['gcc13', 'msvc2022'], gpu: ['t4', 'l4', 'h100']}
@@ -289,7 +289,7 @@ workflows:
     - {jobs: ['build'], std: 'all', ctk: '13.0', cxx: ['clang15', 'clang16', 'clang17', 'clang18', 'clang19', 'clang20']}
     - {jobs: ['build'], std: 'all', ctk: '13.0', cxx: ['msvc2019', 'msvc2022']}
     # CTK '13.X' full matrix build: default projects
-    - {jobs: ['build'], std: 'all', ctk: '13.X', cxx: ['gcc11', 'gcc12', 'gcc13', 'gcc14', 'gcc15']}
+    - {jobs: ['build'], std: 'all', ctk: '13.X', cxx: ['gcc11', 'gcc12', 'gcc13', 'gcc14', 'gcc15', 'gcc16']}
     - {jobs: ['build'], std: 'all', ctk: '13.X', cxx: ['clang15', 'clang16', 'clang17', 'clang18', 'clang19', 'clang20', 'clang21']}
     - {jobs: ['build'], std: 'all', ctk: '13.X', cxx: ['msvc2019', 'msvc2022', 'msvc2026']}
     # CTK '13.X' full matrix build with tile support: default projects
@@ -308,7 +308,7 @@ workflows:
     - {jobs: ['build'], project: 'cudax', std: 'all', ctk: '13.0', cxx: ['clang15', 'clang16', 'clang17', 'clang18', 'clang19', 'clang20']}
     - {jobs: ['build'], project: 'cudax', std: 'all', ctk: '13.0', cxx: ['msvc2022']}
     # CTK '13.X' full matrix build: cudax
-    - {jobs: ['build'], project: 'cudax', std: 'all', ctk: '13.X', cxx: ['gcc11', 'gcc12', 'gcc13', 'gcc14', 'gcc15']}
+    - {jobs: ['build'], project: 'cudax', std: 'all', ctk: '13.X', cxx: ['gcc11', 'gcc12', 'gcc13', 'gcc14', 'gcc15', 'gcc16']}
     - {jobs: ['build'], project: 'cudax', std: 'all', ctk: '13.X', cxx: ['clang15', 'clang16', 'clang17', 'clang18', 'clang19', 'clang20', 'clang21']}
     - {jobs: ['build'], project: 'cudax', std: 'all', ctk: '13.X', cxx: ['msvc2022', 'msvc2026']}
     # CTK '13.X' full matrix build with tile support: cudax
@@ -357,9 +357,9 @@ workflows:
     - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', ctk: '13.0', cxx: ['gcc15', 'clang20'], codegen_target: ['atomics-ptx', 'atomics-sass', 'simd-ptx', 'simd-sass'], sm: [80, 90, 100, 120]}
     - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', ctk: '13.0', cxx: ['gcc15', 'clang20'], codegen_target: ['atomics-ptx', 'atomics-sass'], sm: 75}
     - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', ctk: '13.0', cxx: ['gcc15', 'clang20'], codegen_target: 'simd-sass', sm: [103, '120f']}
-    - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', cxx: ['gcc15', 'clang21'], codegen_target: ['atomics-ptx', 'atomics-sass', 'simd-ptx', 'simd-sass'], sm: [80, 90, 100, 120]}
-    - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', cxx: ['gcc15', 'clang21'], codegen_target: ['atomics-ptx', 'atomics-sass'], sm: 75}
-    - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', cxx: ['gcc15', 'clang21'], codegen_target: 'simd-sass', sm: [103, '120f']}
+    - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', cxx: ['gcc16', 'clang21'], codegen_target: ['atomics-ptx', 'atomics-sass', 'simd-ptx', 'simd-sass'], sm: [80, 90, 100, 120]}
+    - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', cxx: ['gcc16', 'clang21'], codegen_target: ['atomics-ptx', 'atomics-sass'], sm: 75}
+    - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', cxx: ['gcc16', 'clang21'], codegen_target: 'simd-sass', sm: [103, '120f']}
     # c.parallel -- pinned to gcc13 / msvc2022 to match python
     - {jobs: ['test'],  project: ['cccl_c_parallel'], ctk: '12.X', cxx: ['gcc13', 'msvc2022'], gpu: ['t4']}
     - {jobs: ['test'],  project: ['cccl_c_parallel'], ctk: '13.X', cxx: ['gcc13', 'msvc2022'], gpu: ['rtx2080', 'l4', 'h100']}
@@ -431,7 +431,7 @@ workflows:
     - {jobs: ['build'], std: 'all', ctk: '13.0', cxx: ['clang15', 'clang16', 'clang17', 'clang18', 'clang19', 'clang20']}
     - {jobs: ['build'], std: 'all', ctk: '13.0', cxx: ['msvc2019', 'msvc2022']}
     # CTK '13.X' full matrix build: default projects
-    - {jobs: ['build'], std: 'all', ctk: '13.X', cxx: ['gcc11', 'gcc12', 'gcc13', 'gcc14', 'gcc15']}
+    - {jobs: ['build'], std: 'all', ctk: '13.X', cxx: ['gcc11', 'gcc12', 'gcc13', 'gcc14', 'gcc15', 'gcc16']}
     - {jobs: ['build'], std: 'all', ctk: '13.X', cxx: ['clang15', 'clang16', 'clang17', 'clang18', 'clang19', 'clang20', 'clang21']}
     - {jobs: ['build'], std: 'all', ctk: '13.X', cxx: ['msvc2019', 'msvc2022', 'msvc2026']}
     # CTK 12.0 full matrix build: cudax
@@ -447,7 +447,7 @@ workflows:
     - {jobs: ['build'], project: 'cudax', std: 'all', ctk: '13.0', cxx: ['clang15', 'clang16', 'clang17', 'clang18', 'clang19', 'clang20']}
     - {jobs: ['build'], project: 'cudax', std: 'all', ctk: '13.0', cxx: ['msvc2022']}
     # CTK '13.X' full matrix build: cudax
-    - {jobs: ['build'], project: 'cudax', std: 'all', ctk: '13.X', cxx: ['gcc11', 'gcc12', 'gcc13', 'gcc14', 'gcc15']}
+    - {jobs: ['build'], project: 'cudax', std: 'all', ctk: '13.X', cxx: ['gcc11', 'gcc12', 'gcc13', 'gcc14', 'gcc15', 'gcc16']}
     - {jobs: ['build'], project: 'cudax', std: 'all', ctk: '13.X', cxx: ['clang15', 'clang16', 'clang17', 'clang18', 'clang19', 'clang20', 'clang21']}
     - {jobs: ['build'], project: 'cudax', std: 'all', ctk: '13.X', cxx: ['msvc2022', 'msvc2026']}
     # CTK 12.X testing:
@@ -486,9 +486,9 @@ workflows:
     - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', ctk: '13.0', cxx: ['gcc15', 'clang20'], codegen_target: ['atomics-ptx', 'atomics-sass', 'simd-ptx', 'simd-sass'], sm: [80, 90, 100, 120]}
     - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', ctk: '13.0', cxx: ['gcc15', 'clang20'], codegen_target: ['atomics-ptx', 'atomics-sass'], sm: 75}
     - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', ctk: '13.0', cxx: ['gcc15', 'clang20'], codegen_target: 'simd-sass', sm: [103, '120f']}
-    - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', cxx: ['gcc15', 'clang21'], codegen_target: ['atomics-ptx', 'atomics-sass', 'simd-ptx', 'simd-sass'], sm: [80, 90, 100, 120]}
-    - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', cxx: ['gcc15', 'clang21'], codegen_target: ['atomics-ptx', 'atomics-sass'], sm: 75}
-    - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', cxx: ['gcc15', 'clang21'], codegen_target: 'simd-sass', sm: [103, '120f']}
+    - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', cxx: ['gcc16', 'clang21'], codegen_target: ['atomics-ptx', 'atomics-sass', 'simd-ptx', 'simd-sass'], sm: [80, 90, 100, 120]}
+    - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', cxx: ['gcc16', 'clang21'], codegen_target: ['atomics-ptx', 'atomics-sass'], sm: 75}
+    - {jobs: ['codegen_filecheck'], project: 'libcudacxx', std: 'max', cxx: ['gcc16', 'clang21'], codegen_target: 'simd-sass', sm: [103, '120f']}
     # c.parallel -- pinned to gcc13 / msvc2022 to match python
     - {jobs: ['test'],  project: ['cccl_c_parallel'], ctk: '12.X', cxx: ['gcc13', 'msvc2022'], gpu: ['t4']}
     - {jobs: ['test'],  project: ['cccl_c_parallel'], ctk: '13.X', cxx: ['gcc13', 'msvc2022'], gpu: ['rtx2080', 'l4', 'h100']}
@@ -556,6 +556,7 @@ workflows:
     - {jobs: ['dc'],     ctk: ['12.0', '12.X', '13.0', '13.X'], cxx: ['gcc11', 'gcc12']}
     - {jobs: ['dc'],     ctk: [        '12.X', '13.0', '13.X'], cxx: ['gcc13', 'gcc14']}
     - {jobs: ['dc'],     ctk: [                '13.0', '13.X'], cxx: ['gcc15']}
+    - {jobs: ['dc'],     ctk: [                        '13.X'], cxx: ['gcc16']}
     - {jobs: ['dc'],     ctk: [        '12.X', '13.0', '13.X'], cxx: ['clang15', 'clang16', 'clang17', 'clang18', 'clang19']}
     - {jobs: ['dc_ext'], ctk: [        '12.X', '13.0', '13.X'], cxx: ['gcc14', 'clang20']}
     # Clang21+CTK12.9 is currently only used for cuda-clang testing. nvcc 12.9 doesn't support clang21.
@@ -644,7 +645,8 @@ ctk_versions:
   '12.9': { stds: [17, 20], alias: ['12.X', 'pybuild', 'clang-cuda', 'clang_preview-cuda'] }
   '13.0': { stds: [17, 20] }
   '13.2': { stds: [17, 20], alias: ['nvhpc-prev']}
-  '13.3': { stds: [17, 20, 23], alias: ['13.X', 'nvhpc'] }
+  '13.3': { stds: [17, 20, 23], alias: ['nvhpc'] }
+  '13.4': { stds: [17, 20, 23], alias: ['13.X'] }
 
 device_compilers:
   nvcc: # Version / stds are taken from CTK
@@ -669,6 +671,7 @@ host_compilers:
       13: { stds: [17, 20] }
       14: { stds: [17, 20, 23] }
       15: { stds: [17, 20, 23] }
+      16: { stds: [17, 20, 23] }
   clang:
     name: 'Clang'
     container_tag: 'llvm'
