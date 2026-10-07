@@ -8,7 +8,7 @@ This groups
    namespace cudax::coop {
 
    template <typename Level, typename Hierarchy>
-   class /*this-group*/ : public /*group-interface*/</*this-group*/>
+   class /*this-group*/ : public /*group-interface-for*/</*this-group*/>
    {
    public:
      /*this-group*/() = delete;

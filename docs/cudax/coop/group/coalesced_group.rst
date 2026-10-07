@@ -8,7 +8,7 @@
    namespace cudax::coop {
 
    template <typename Hierarchy>
-   class coalesced_group : public /*group-interface*/<coalesced_group>
+   class coalesced_group : public /*group-interface-for*/<coalesced_group>
    {
    public:
      coalesced_group() = delete;

@@ -8,7 +8,7 @@
    namespace cudax::coop {
 
    template <typename Unit, typename Group>
-   class group_view : public /*group-interface*/<group_view>
+   class group_view : public /*group-interface-for*/<group_view>
    {
    public:
      group_view() = delete;
