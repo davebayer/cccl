@@ -5,35 +5,35 @@
 
 .. code:: cuda
 
-   namespace cudax::coop {
+    namespace cudax::coop {
 
-   using /*interwarp-barrier-id-type*/ = int;
+    using /*interwarp-barrier-id-type*/ = int;
 
-   template <typename RangeView>
-   class interwarp_synchronizer
-   {
-     RangeView /*barrier_ids_*/; // exposition-only
+    template <typename RangeView>
+    class interwarp_synchronizer
+    {
+      RangeView /*barrier_ids_*/; // exposition-only
 
-   public:
-     template <typename Range>
-       requires cuda::std::same_as<RangeView, cuda::std::ranges::views::all_t<Range>>
-     __device__ interwarp_synchronizer(Range&& barrier_ids)
-       noexcept(cuda::std::ranges::views::all(cuda::std::forward<Range>(barrier_ids))))
-      : /*barrier_ids_*/{cuda::std::ranges::views::all(cuda::std::forward<Range>(barrier_ids))}
-     {}
+    public:
+      template <typename Range>
+        requires cuda::std::same_as<RangeView, cuda::std::ranges::views::all_t<Range>>
+      __device__ interwarp_synchronizer(Range&& barrier_ids)
+        noexcept(cuda::std::ranges::views::all(cuda::std::forward<Range>(barrier_ids))))
+        : /*barrier_ids_*/{cuda::std::ranges::views::all(cuda::std::forward<Range>(barrier_ids))}
+      {}
 
-     template <typename Unit, typename ParentGroup, typename MappingResult>
-     [[nodiscard]] __device__
-     auto make_instance(const Unit&, const ParentGroup&, const MappingResult&) const noexcept;
-   };
+      template <typename Unit, typename ParentGroup, typename MappingResult>
+      [[nodiscard]] __device__
+      auto make_instance(const Unit&, const ParentGroup&, const MappingResult&) const noexcept;
+    };
 
-   template <typename Range>
-     requires cuda::std::ranges::viewable_range<Range>
-       && cuda::std::is_convertible_v<cuda::std::ranges::range_value_t<_Range>, /*interwarp-barrier-id-type*/>
-   interwarp_synchronizer(Range&&)
-     -> interwarp_synchronizer<::cuda::std::ranges::views::all_t<_Range>>;
+    template <typename Range>
+      requires cuda::std::ranges::viewable_range<Range>
+        && cuda::std::is_convertible_v<cuda::std::ranges::range_value_t<_Range>, /*interwarp-barrier-id-type*/>
+    interwarp_synchronizer(Range&&)
+      -> interwarp_synchronizer<::cuda::std::ranges::views::all_t<_Range>>;
 
-   } // namespace cudax::coop
+    } // namespace cudax::coop
 
 Overview
 --------
@@ -42,7 +42,7 @@ Overview
 
 Users should always rely on template argument deduction and never set the template arguments themselves. All of the barrier IDs must be less than ``16`` and can't be repeated multiple times.
 
-.. warning:: The barrier ID ``0`` is also used by the ``__syncthreads()`` operation. It is recommended to avoid this barrier ID and start from barrier ID ``1``.
+.. warning:: The barrier ID ``0`` is also used by the ``__syncthreads()`` operation. It is recommended to avoid this barrier ID and start from barrier ID ``1`` instead.
 
 Examples
 --------

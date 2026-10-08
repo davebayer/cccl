@@ -5,19 +5,19 @@
 
 .. code:: cuda
 
-   namespace cudax::coop {
+    namespace cudax::coop {
 
-   class identity_mapping
-   {
-   public:
-     explicit identity_mapping() = default;
+    class identity_mapping
+    {
+    public:
+      explicit identity_mapping() = default;
 
-     template <typename Unit, typename ParentGroup, typename PrevMappingResult>
-     [[nodiscard]] __device__
-     auto map(const Unit&, const ParentGroup&, const PrevMappingResult&) const noexcept;
-   };
+      template <typename Unit, typename ParentGroup, typename PrevMappingResult>
+      [[nodiscard]] __device__
+      auto map(const Unit&, const ParentGroup&, const PrevMappingResult&) const noexcept;
+    };
 
-   } // namespace cudax::coop
+    } // namespace cudax::coop
 
 Overview
 --------

@@ -5,42 +5,42 @@
 
 .. code:: cuda
 
-   namespace cudax::coop {
+    namespace cudax::coop {
 
-   template <typename Unit, typename Group>
-   class group_view : public /*group-interface-for*/<group_view>
-   {
-   public:
-     group_view() = delete;
+    template <typename Unit, typename Group>
+    class group_view : public /*group-interface-for*/<group_view>
+    {
+    public:
+      group_view() = delete;
 
-     __device__ group_view(const Group& group) noexcept
-       requires cuda::std::same_as<Unit, typename Group::unit_type>;
+      __device__ group_view(const Group& group) noexcept
+        requires cuda::std::same_as<Unit, typename Group::unit_type>;
 
-    __device__ group_view(const Unit& unit, const Group& group) noexcept;
+      __device__ group_view(const Unit& unit, const Group& group) noexcept;
 
-    group_view(const group_view&) = default;
+      group_view(const group_view&) = default;
 
-    group_view(group_view&&) = delete;
+      group_view(group_view&&) = delete;
 
-    group_view& operator=(const group_view&) = default;
+      group_view& operator=(const group_view&) = default;
 
-    group_view& operator=(group_view&&) = delete;
-   };
+      group_view& operator=(group_view&&) = delete;
+    };
 
-   template <group Group>
-   group_view(const Group&) -> group_view<typename Group::unit_type, Group>;
+    template <group Group>
+    group_view(const Group&) -> group_view<typename Group::unit_type, Group>;
 
-   template <typename Unit, class Group>
-   group_view(const group_view<Unit, Group>&) -> group_view<Unit, Group>;
+    template <typename Unit, class Group>
+    group_view(const group_view<Unit, Group>&) -> group_view<Unit, Group>;
 
-   template </*hierarchy-level-type*/ Unit, group Group>
-   group_view(const Unit&, const Group&) -> group_view<Unit, Group>;
+    template </*hierarchy-level-type*/ Unit, group Group>
+    group_view(const Unit&, const Group&) -> group_view<Unit, Group>;
 
-   template </*hierarchy-level-type*/ Unit, class OtherUnit, class Group>
-     requires /*unit-same-as-or-below*/<Unit, OtherUnit>
-   group_view(const Unit&, const group_view<OtherUnit, Group>&) -> group_view<Unit, Group>;
+    template </*hierarchy-level-type*/ Unit, class OtherUnit, class Group>
+      requires /*unit-same-as-or-below*/<Unit, OtherUnit>
+    group_view(const Unit&, const group_view<OtherUnit, Group>&) -> group_view<Unit, Group>;
 
-   } // namespace cudax::coop
+    } // namespace cudax::coop
 
 Overview
 --------

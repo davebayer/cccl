@@ -5,31 +5,31 @@
 
 .. code:: cuda
 
-   namespace cudax::coop {
+    namespace cudax::coop {
 
-   template <typename Hierarchy>
-   class coalesced_group : public /*group-interface-for*/<coalesced_group>
-   {
-   public:
-     coalesced_group() = delete;
+    template <typename Hierarchy>
+    class coalesced_group : public /*group-interface-for*/<coalesced_group>
+    {
+    public:
+      coalesced_group() = delete;
 
-     template <typename HierarchyLike>
-       requires cuda::std::same_as<Hierarchy, /*hierarchy-type-of*/<HierarchyLike>>
-     __device__ coalesced_group(const HierarchyLike& hierarchy_like) noexcept;
+      template <typename HierarchyLike>
+        requires cuda::std::same_as<Hierarchy, /*hierarchy-type-of*/<HierarchyLike>>
+      __device__ coalesced_group(const HierarchyLike& hierarchy_like) noexcept;
 
-     coalesced_group(const coalesced_group&) = delete;
+      coalesced_group(const coalesced_group&) = delete;
 
-     coalesced_group(coalesced_group&&) = delete;
+      coalesced_group(coalesced_group&&) = delete;
 
-     coalesced_group& operator=(const coalesced_group&) = delete;
+      coalesced_group& operator=(const coalesced_group&) = delete;
 
-     coalesced_group& operator=(coalesced_group&&) = delete;
-   };
+      coalesced_group& operator=(coalesced_group&&) = delete;
+    };
 
-   template </*hierarchy-like-type*/ HierarchyLike>
-   coalesced_group(const HierarchyLike&) -> coalesced_group</*hierarchy-type-of*/<HierarchyLike>>;
+    template </*hierarchy-like-type*/ HierarchyLike>
+    coalesced_group(const HierarchyLike&) -> coalesced_group</*hierarchy-type-of*/<HierarchyLike>>;
 
-   } // namespace cudax::coop
+    } // namespace cudax::coop
 
 Overview
 --------

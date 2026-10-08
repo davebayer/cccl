@@ -5,19 +5,19 @@
 
 .. code:: cuda
 
-   namespace cudax::coop {
+    namespace cudax::coop {
 
-   class level_synchronizer
-   {
-   public:
-     explicit level_synchronizer() = default;
+    class level_synchronizer
+    {
+    public:
+      explicit level_synchronizer() = default;
 
-     template <typename Unit, typename ParentGroup, typename MappingResult>
-     [[nodiscard]] __device__
-     auto make_instance(const Unit&, const ParentGroup&, const MappingResult&) const noexcept;
-   };
+      template <typename Unit, typename ParentGroup, typename MappingResult>
+      [[nodiscard]] __device__
+      auto make_instance(const Unit&, const ParentGroup&, const MappingResult&) const noexcept;
+    };
 
-   } // namespace cudax::coop
+    } // namespace cudax::coop
 
 Overview
 --------

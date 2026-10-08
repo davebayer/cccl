@@ -5,29 +5,29 @@
 
 .. code:: cuda
 
-   namespace cudax::coop {
+    namespace cudax::coop {
 
-   template </*cuda-barrier-type*/ Barrier, ::cuda::std::size_t N>
-   class barrier_synchronizer
-   {
-     cuda::std::span<Barrier, N> /*barriers_*/; // exposition-only
+    template </*cuda-barrier-type*/ Barrier, ::cuda::std::size_t N>
+    class barrier_synchronizer
+    {
+      cuda::std::span<Barrier, N> /*barriers_*/; // exposition-only
 
-   public:
-     __device__ barrier_synchronizer(cuda::std::span<Barrier, N> barriers) noexcept
-       : /*barriers_*/{barriers}
-     {}
+    public:
+      __device__ barrier_synchronizer(cuda::std::span<Barrier, N> barriers) noexcept
+        : /*barriers_*/{barriers}
+      {}
 
-     template <typename Unit, typename ParentGroup, typename MappingResult>
-     [[nodiscard]] __device__
-     auto make_instance(const Unit&, const ParentGroup&, const MappingResult&) const noexcept;
-   };
+      template <typename Unit, typename ParentGroup, typename MappingResult>
+      [[nodiscard]] __device__
+      auto make_instance(const Unit&, const ParentGroup&, const MappingResult&) const noexcept;
+    };
 
-   template <typename Container>
-     requires /*is-spannable*/<Container>
-   barrier_synchronizer(Container&)
-     -> barrier_synchronizer</*span-element-type-of*/<Container>, /*span-element-extent-of*/<Container>>;
+    template <typename Container>
+      requires /*is-spannable*/<Container>
+    barrier_synchronizer(Container&)
+      -> barrier_synchronizer</*span-element-type-of*/<Container>, /*span-element-extent-of*/<Container>>;
 
-   } // namespace cudax::coop
+    } // namespace cudax::coop
 
 Overview
 --------

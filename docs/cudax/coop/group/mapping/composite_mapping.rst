@@ -5,55 +5,55 @@
 
 .. code:: cuda
 
-   namespace cudax::coop {
+    namespace cudax::coop {
 
-   template <typename... Mappings>
-   class composite_mapping
-   {
-     cuda::std::tuple<Mappings...> /*mappings_*/; // exposition-only
+    template <typename... Mappings>
+    class composite_mapping
+    {
+      cuda::std::tuple<Mappings...> /*mappings_*/; // exposition-only
 
-   public:
-     __device__ constexpr composite_mapping(const Mappings&... mappings)
-       noexcept((cuda::std::is_nothrow_copy_constructible_v<Mappings> && ...))
-       : /*mappings_*/{mappings}
-     {}
+    public:
+      __device__ constexpr composite_mapping(const Mappings&... mappings)
+        noexcept((cuda::std::is_nothrow_copy_constructible_v<Mappings> && ...))
+        : /*mappings_*/{mappings}
+      {}
 
-     template <typename Unit, typename ParentGroup, typename PrevMappingResult>
-     [[nodiscard]] __device__
-     auto map(const Unit&, const ParentGroup&, const PrevMappingResult&) const noexcept;
-   };
+      template <typename Unit, typename ParentGroup, typename PrevMappingResult>
+      [[nodiscard]] __device__
+      auto map(const Unit&, const ParentGroup&, const PrevMappingResult&) const noexcept;
+    };
 
-   template <typename... Mappings>
-   composite_mapping(const Mappings&...) -> composite_mapping<Mappings...>;
+    template <typename... Mappings>
+    composite_mapping(const Mappings&...) -> composite_mapping<Mappings...>;
 
-   template </*mapping-type*/ Lhs, /*mapping-type*/ Rhs)
-   [[nodiscard]] __device__ constexpr
-   composite_mapping<Lhs, Rhs> operator|(const Lhs& lhs, const Rhs& rhs)
-     noexcept(cuda::std::is_nothrow_constructible_v<composite_mapping<Lhs, Rhs>, const Lhs&, const Rhs&>);
+    template </*mapping-type*/ Lhs, /*mapping-type*/ Rhs)
+    [[nodiscard]] __device__ constexpr
+    composite_mapping<Lhs, Rhs> operator|(const Lhs& lhs, const Rhs& rhs)
+      noexcept(cuda::std::is_nothrow_constructible_v<composite_mapping<Lhs, Rhs>, const Lhs&, const Rhs&>);
 
-   template <typename... LhsMappings, /*mapping-type*/ Rhs>
-   [[nodiscard]] __device__ constexpr
-   composite_mapping<LhsMappings..., Rhs> operator|(const composite_mapping<LhsMappings...>& lhs, const Rhs& rhs)
-     noexcept(cuda::std::is_nothrow_constructible_v<composite_mapping<LhsMappings..., Rhs>,
-                                                    const LhsMappings&...,
-                                                    const Rhs&>);
+    template <typename... LhsMappings, /*mapping-type*/ Rhs>
+    [[nodiscard]] __device__ constexpr
+    composite_mapping<LhsMappings..., Rhs> operator|(const composite_mapping<LhsMappings...>& lhs, const Rhs& rhs)
+      noexcept(cuda::std::is_nothrow_constructible_v<composite_mapping<LhsMappings..., Rhs>,
+                                                     const LhsMappings&...,
+                                                     const Rhs&>);
 
-   template </*mapping-type*/ Lhs, typename... RhsMappings>
-   [[nodiscard]] __device__ constexpr
-   composite_mapping<Lhs, RhsMappings...> operator|(const Lhs& lhs, const composite_mapping<RhsMappings...>& rhs)
-     noexcept(cuda::std::is_nothrow_constructible_v<composite_mapping<Lhs, RhsMappings...>,
-                                                    const Lhs&,
-                                                    const RhsMappings&...>);
+    template </*mapping-type*/ Lhs, typename... RhsMappings>
+    [[nodiscard]] __device__ constexpr
+    composite_mapping<Lhs, RhsMappings...> operator|(const Lhs& lhs, const composite_mapping<RhsMappings...>& rhs)
+      noexcept(cuda::std::is_nothrow_constructible_v<composite_mapping<Lhs, RhsMappings...>,
+                                                     const Lhs&,
+                                                     const RhsMappings&...>);
 
-   template <typename... LhsMappings, typename... RhsMappings>
-   [[nodiscard]] __device__ constexpr
-   composite_mapping<LhsMappings..., RhsMappings...> operator|(const composite_mapping<LhsMappings...>& lhs,
-                                                               const composite_mapping<RhsMappings...>& rhs)
-     noexcept(cuda::std::is_nothrow_constructible_v<composite_mapping<LhsMappings..., RhsMappings...>,
-                                                    const LhsMappings&...,
-                                                    const RhsMappings&...>);
+    template <typename... LhsMappings, typename... RhsMappings>
+    [[nodiscard]] __device__ constexpr
+    composite_mapping<LhsMappings..., RhsMappings...> operator|(const composite_mapping<LhsMappings...>& lhs,
+                                                                const composite_mapping<RhsMappings...>& rhs)
+      noexcept(cuda::std::is_nothrow_constructible_v<composite_mapping<LhsMappings..., RhsMappings...>,
+                                                     const LhsMappings&...,
+                                                     const RhsMappings&...>);
 
-   } // namespace cudax::coop
+    } // namespace cudax::coop
 
 Overview
 --------

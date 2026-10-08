@@ -5,43 +5,43 @@ This groups
 
 .. code:: cuda
 
-   namespace cudax::coop {
+    namespace cudax::coop {
 
-   template <typename Level, typename Hierarchy>
-   class /*this-group*/ : public /*group-interface-for*/</*this-group*/>
-   {
-   public:
-     /*this-group*/() = delete;
+    template <typename Level, typename Hierarchy>
+    class /*this-group*/ : public /*group-interface-for*/</*this-group*/>
+    {
+    public:
+      /*this-group*/() = delete;
 
-     template <typename HierarchyLike>
-       requires cuda::std::same_as<Hierarchy, /*hierarchy-type-of*/<HierarchyLike>>
-     __device__ /*this-group*/(const HierarchyLike& hierarchy_like) noexcept;
+      template <typename HierarchyLike>
+        requires cuda::std::same_as<Hierarchy, /*hierarchy-type-of*/<HierarchyLike>>
+      __device__ /*this-group*/(const HierarchyLike& hierarchy_like) noexcept;
 
-     /*this-group*/(const /*this-group*/&) = delete;
+      /*this-group*/(const /*this-group*/&) = delete;
 
-     /*this-group*/(/*this-group*/&&) = delete;
+      /*this-group*/(/*this-group*/&&) = delete;
 
-     /*this-group*/& operator=(const /*this-group*/&) = delete;
+      /*this-group*/& operator=(const /*this-group*/&) = delete;
 
-     /*this-group*/& operator=(/*this-group*/&&) = delete;
-   };
+      /*this-group*/& operator=(/*this-group*/&&) = delete;
+    };
 
-   template <typename Hierarchy>
-   class this_thread : public /*this-group*/<thread_level> {};
-   template <typename Hierarchy>
-   class this_warp : public /*this-group*/<warp_level> {};
-   template <typename Hierarchy>
-   class this_block : public /*this-group*/<block_level> {};
-   template <typename Hierarchy>
-   class this_cluster : public /*this-group*/<cluster_level> {};
-   template <typename Hierarchy>
-   class this_grid : public /*this-group*/<grid_level> {};
+    template <typename Hierarchy>
+    class this_thread : public /*this-group*/<thread_level> {};
+    template <typename Hierarchy>
+    class this_warp : public /*this-group*/<warp_level> {};
+    template <typename Hierarchy>
+    class this_block : public /*this-group*/<block_level> {};
+    template <typename Hierarchy>
+    class this_cluster : public /*this-group*/<cluster_level> {};
+    template <typename Hierarchy>
+    class this_grid : public /*this-group*/<grid_level> {};
 
-   template </*hierarchy-level-type*/ Level, /*hierarchy-like-type*/ HierarchyLike>
-   [[nodiscard]] __device__
-   auto make_this_group(const Level& level, const HierarchyLike& hierarchy_like) noexcept;
+    template </*hierarchy-level-type*/ Level, /*hierarchy-like-type*/ HierarchyLike>
+    [[nodiscard]] __device__
+    auto make_this_group(const Level& level, const HierarchyLike& hierarchy_like) noexcept;
 
-   } // namespace cudax::coop
+    } // namespace cudax::coop
 
 Overview
 --------

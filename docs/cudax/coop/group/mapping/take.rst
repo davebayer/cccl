@@ -5,27 +5,27 @@
 
 .. code:: cuda
 
-   namespace cudax::coop {
+    namespace cudax::coop {
 
-   template <cuda::std::size_t StaticUnitCount>
-   class take
-   {
-     cuda::std::uint32_t /*unit_count_*/; // exposition-only
+    template <cuda::std::size_t StaticUnitCount>
+    class take
+    {
+      cuda::std::uint32_t /*unit_count_*/; // exposition-only
 
-   public:
-     __device__ explicit take(cuda::std::uint32_t unit_count) noexcept
-       : /*unit_count_*/{unit_count}
-     {}
+    public:
+      __device__ explicit take(cuda::std::uint32_t unit_count) noexcept
+        : /*unit_count_*/{unit_count}
+      {}
 
-     template <typename Unit, typename ParentGroup, typename PrevMappingResult>
-     [[nodiscard]] __device__
-     auto map(const Unit&, const ParentGroup&, const PrevMappingResult&) const noexcept;
-   };
+      template <typename Unit, typename ParentGroup, typename PrevMappingResult>
+      [[nodiscard]] __device__
+      auto map(const Unit&, const ParentGroup&, const PrevMappingResult&) const noexcept;
+    };
 
-   template <typename T>
-   take(T) -> take</*maybe-static-extent*/<T>>;
+    template <typename T>
+    take(T) -> take</*maybe-static-extent*/<T>>;
 
-   } // namespace cudax::coop
+    } // namespace cudax::coop
 
 Overview
 --------

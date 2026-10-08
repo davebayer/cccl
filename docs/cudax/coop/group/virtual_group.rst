@@ -5,31 +5,33 @@
 
 .. code:: cuda
 
-   namespace cudax::coop {
+    namespace cudax::coop {
 
-   template <typename Unit, typename ParentGroup, typename MappingResult>
-   class virtual_group : public /*group-interface-for*/<virtual_group>
-   {
-   public:
-     template <typename Mapping>
-       requires cuda::std::same_as</*mapping-result-of*/<Mapping>, MappingResult>
-     __device__ virtual_group(const Unit& unit, const ParentGroup& parent_group, const Mapping& mapping) noexcept
+    template <typename Unit, typename ParentGroup, typename MappingResult>
+    class virtual_group : public /*group-interface-for*/<virtual_group>
+    {
+    public:
+      template <typename Mapping>
+        requires cuda::std::same_as</*mapping-result-of*/<Mapping>, MappingResult>
+      __device__ virtual_group(const Unit& unit, const ParentGroup& parent_group, const Mapping& mapping) noexcept
 
-    virtual_group(const virtual_group&) = delete;
+      virtual_group(const virtual_group&) = delete;
 
-    virtual_group(virtual_group&&) = delete;
+      virtual_group(virtual_group&&) = delete;
 
-    virtual_group& operator=(const virtual_group&) = delete;
+      virtual_group& operator=(const virtual_group&) = delete;
 
-    virtual_group& operator=(virtual_group&&) = delete;
-   };
+      virtual_group& operator=(virtual_group&&) = delete;
+    };
 
-   template </*hierarchy-level-type*/ Unit, group ParentGroup, typename Mapping>
-     requires /*unit-same-as-or-below*/<Unit, typename ParentGroup::unit_type>
-   virtual_group(const Unit&, const ParentGroup&, const Mapping&)
-     -> virtual_group<Unit, ParentGroup, /*mapping-result-of*/<Mapping>>;
+    template </*hierarchy-level-type*/ Unit, group ParentGroup, typename Mapping>
+      requires /*unit-same-as-or-below*/<Unit, typename ParentGroup::unit_type>
+    virtual_group(const Unit&, const ParentGroup&, const Mapping&)
+      -> virtual_group<Unit,
+                       ParentGroup,
+                       /*mapping-result-of*/<Unit, ParentGroup, Mapping>>;
 
-   } // namespace cudax::coop
+    } // namespace cudax::coop
 
 Overview
 --------

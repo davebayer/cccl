@@ -5,36 +5,36 @@
 
 .. code:: cuda
 
-   namespace cudax::coop {
+    namespace cudax::coop {
 
-   template <cuda::std::size_t StaticUnitCount, bool IsAlwaysExhaustive>
-   class group_by
-   {
-     cuda::std::uint32_t /*unit_count_*/; // exposition-only
+    template <cuda::std::size_t StaticUnitCount, bool IsAlwaysExhaustive>
+    class group_by
+    {
+      cuda::std::uint32_t /*unit_count_*/; // exposition-only
 
-   public:
-     __device__ explicit group_by(cuda::std::uint32_t unit_count) noexcept
-       requires IsAlwaysExhaustive
-       : /*unit_count_*/{unit_count}
-     {}
+    public:
+      __device__ explicit group_by(cuda::std::uint32_t unit_count) noexcept
+        requires IsAlwaysExhaustive
+        : /*unit_count_*/{unit_count}
+      {}
 
-     __device__ explicit group_by(const cudax::coop::non_exhaustive_t&, cuda::std::uint32_t unit_count) noexcept
-       requires (!IsAlwaysExhaustive)
-       : /*unit_count_*/{unit_count}
-     {}
+      __device__ explicit group_by(const cudax::coop::non_exhaustive_t&, cuda::std::uint32_t unit_count) noexcept
+        requires (!IsAlwaysExhaustive)
+        : /*unit_count_*/{unit_count}
+      {}
 
-     template <typename Unit, typename ParentGroup, typename PrevMappingResult>
-     [[nodiscard]] __device__
-     auto map(const Unit&, const ParentGroup&, const PrevMappingResult&) const noexcept;
-   };
+      template <typename Unit, typename ParentGroup, typename PrevMappingResult>
+      [[nodiscard]] __device__
+      auto map(const Unit&, const ParentGroup&, const PrevMappingResult&) const noexcept;
+    };
 
-   template <typename T>
-   group_by(T) -> group_by</*maybe-static-ext*/<T>, true>;
+    template <typename T>
+    group_by(T) -> group_by</*maybe-static-ext*/<T>, true>;
 
-   template <typename T>
-   group_by(const non_exhaustive_t&, T) -> group_by</*maybe-static-ext*/<T>, false>;
+    template <typename T>
+    group_by(const non_exhaustive_t&, T) -> group_by</*maybe-static-ext*/<T>, false>;
 
-   } // namespace cudax::coop
+    } // namespace cudax::coop
 
 Overview
 --------
