@@ -49,19 +49,19 @@ Examples
 
 .. code:: cuda
 
-   #include <cuda/std/array>
-   #include <cuda/std/ranges>
+    #include <cuda/std/array>
+    #include <cuda/std/ranges>
 
-   #include <cuda/experimental/coop/group>
+    #include <cuda/experimental/coop/group>
 
-   namespace cudax = cuda::experimental;
+    namespace cudax = cuda::experimental;
 
-   __global__ void kernel()
-   {
-     // Interwarp synchronizer from a list of barrier IDs.
-     cuda::std::array array{1, 3, 5, 7};
-     cudax::coop::interwarp_synchronizer s1{array};
+    __global__ void kernel()
+    {
+      // Interwarp synchronizer from a list of barrier IDs.
+      cuda::std::array array{1, 3, 5, 7};
+      cudax::coop::interwarp_synchronizer s1{array};
 
-     // Interwarp synchronizer from an infinite iota range.
-     cudax::coop::interwarp_synchronizer s2{cuda::std::ranges::views::iota(1)};
-   }
+      // Interwarp synchronizer from an infinite iota range.
+      cudax::coop::interwarp_synchronizer s2{cuda::std::ranges::views::iota(1)};
+    }

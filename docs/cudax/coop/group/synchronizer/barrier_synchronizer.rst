@@ -41,20 +41,20 @@ Examples
 
 .. code:: cuda
 
-   #include <cuda/barrier>
+    #include <cuda/barrier>
 
-   #include <cuda/experimental/coop/group>
+    #include <cuda/experimental/coop/group>
 
-   namespace cudax = cuda::experimental;
+    namespace cudax = cuda::experimental;
 
-   __device__ cuda::barrier<cuda::thread_scope_device> device_barriers[128];
+    __device__ cuda::barrier<cuda::thread_scope_device> device_barriers[128];
 
-   __global__ void kernel()
-   {
-     // Barrier synchronizer that uses an array of block-scope barriers placed in shared memory.
-     __shared__ cuda::barrier<cuda::thread_scope_block> block_barriers[8]
-     cudax::coop::barrier_synchronizer s1{block_barriers};
+    __global__ void kernel()
+    {
+      // Barrier synchronizer that uses an array of block-scope barriers placed in shared memory.
+      __shared__ cuda::barrier<cuda::thread_scope_block> block_barriers[8]
+      cudax::coop::barrier_synchronizer s1{block_barriers};
 
-     // Barrier synchronizer that uses an array of device-scope barriers placed in global memory.
-     cudax::coop::barrier_synchronizer s2{device_barriers};
-   }
+      // Barrier synchronizer that uses an array of device-scope barriers placed in global memory.
+      cudax::coop::barrier_synchronizer s2{device_barriers};
+    }

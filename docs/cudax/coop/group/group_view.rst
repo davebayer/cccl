@@ -20,11 +20,11 @@
 
       group_view(const group_view&) = default;
 
-      group_view(group_view&&) = delete;
+      group_view(group_view&&) = default;
 
       group_view& operator=(const group_view&) = default;
 
-      group_view& operator=(group_view&&) = delete;
+      group_view& operator=(group_view&&) = default;
     };
 
     template <group Group>
@@ -45,7 +45,7 @@
 Overview
 --------
 
-``cudax::coop::group_view`` provides a non-owning view over another group that also allows you to view a group as if it had the ``unit_type`` changed. These properties can be useful when you need to pass a group by value or a more fine-grained rank addressing is needed. The type is copyable and copy assignable, however it's not movable, nor move assignable.
+``cudax::coop::group_view`` provides a non-owning view over another group that also allows you to view a group as if it had the ``unit_type`` changed. These properties can be useful when you need to pass a group by value or a more fine-grained rank addressing is needed.
 
 ``cudax::coop::group_view`` has the same mapping-related properties as the viewed group, unless the unit type was changed. In that case, the (static) unit count and unit rank are recalculated.
 
@@ -80,8 +80,8 @@ Examples
       requires cuda::std::same_as<typename Group::unit_type, typename Group::level_type>
     __device__ int shuffle(const Group& group, int value, cuda::std::uint32_t src_rank)
     {
-        assert(src_rank == 0);
-        return value;
+      assert(src_rank == 0);
+      return value;
     }
 
     // What we need is an overload that takes a group whose unit and level types are not the same.
@@ -91,63 +91,65 @@ Examples
         && cuda::std::same_as<typename Group::level_type, cuda::warp_level>
     __device__ int shuffle(const Group& group, int value, cuda::std::uint32_t src_rank)
     {
-        // Because this overload takes the group as const&, we can't use it in a constant expressions
-        // before C++23. This is when group_view can be handy. We can create a view over the group
-        // that can be used in a constant expression.
-        const cudax::coop::group_view view{group};
-        constexpr auto unit_count = cuda::gpu_thread.static_count(view);
+      // Because this overload takes the group as const&, we can't use it in a constant expressions
+      // before C++23. This is when group_view can be handy. We can create a view over the group
+      // that can be used in a constant expression.
+      const cudax::coop::group_view view{group};
+      constexpr auto unit_count = cuda::gpu_thread.static_count(view);
 
-        // Allocate shared memory for data exchange.
-        __shared__ int smem[unit_count];
+      // Allocate shared memory for data exchange.
+      __shared__ int smem[unit_count];
 
-        // Write the unit's data to the shared memory.
-        smem[cuda::gpu_thread.rank(view)] = value;
+      // Write the unit's data to the shared memory.
+      smem[cuda::gpu_thread.rank(view)] = value;
 
-        // Wait until the write is done.
-        group.sync_aligned();
+      // Wait until the write is done.
+      group.sync_aligned();
 
-        // Return the result.
-        return smem[src_rank];
+      // Return the result.
+      return smem[src_rank];
     }
 
     __device__ void demo(auto config)
     {
-        // Create a group that holds a warp.
-        cudax::coop::this_warp g{config};
+      // Create a group that holds a warp.
+      cudax::coop::this_warp g{config};
 
-        // Using g directly in the shuffle algorithm doesn't give us what we need. Only rank 0 can
-        // be passed as the source rank.
-        const auto result1 = shuffle(g, /*value*/ 0xabcdef, /*src_rank*/ 0);
-        assert(result1 == 0xabcdef);
+      // Using g directly in the shuffle algorithm doesn't give us what we need. Only rank 0 can
+      // be passed as the source rank.
+      const auto result1 = shuffle(g, /*value*/ 0xabcdef, /*src_rank*/ 0);
+      assert(result1 == 0xabcdef);
 
 
-        // What we need is to treat g as a group of threads. That's where group_view can save us. We
-        // needn't to create another group that could require new synchronization resources, we can
-        // just change the unit type.
-        const auto result2 = shuffle(cudax::coop::group_view{cuda::gpu_thread, g},
-                        /*value*/     cuda::gpu_thread.rank(g) * 200,
-                        /*src_rank*/ (cuda::gpu_thread.rank(g) + 10) % cuda::gpu_thread.count(g));
-        assert(result2 == ((cuda::gpu_thread.rank(g) + 10) % cuda::gpu_thread.count(g)) * 200);
+      // What we need is to treat g as a group of threads. That's where group_view can save us. We
+      // needn't to create another group that could require new synchronization resources, we can
+      // just change the unit type.
+      const auto result2 = shuffle(cudax::coop::group_view{cuda::gpu_thread, g},
+                    /*value*/     cuda::gpu_thread.rank(g) * 200,
+                      /*src_rank*/ (cuda::gpu_thread.rank(g) + 10) % cuda::gpu_thread.count(g));
+      assert(result2 == ((cuda::gpu_thread.rank(g) + 10) % cuda::gpu_thread.count(g)) * 200);
     }
 
     struct Kernel
     {
-        __device__ void operator()(auto config) const
-        {
-            demo(config);
-        }
+      __device__ void operator()(auto config) const
+      {
+        demo(config);
+      }
     };
 
     int main()
     {
-        // Select device and create a stream for it.
-        const auto device = cuda::devices[0];
-        cuda::stream stream{device};
+      // Select device and create a stream for it.
+      const auto device = cuda::devices[0];
+      cuda::stream stream{device};
 
-        // Launch the test kernel on stream.
-        const auto config = cuda::make_config(cuda::grid_dims(1), cuda::block_dims<32>());
-        cuda::launch(stream, config, Kernel{});
+      // Launch the test kernel on stream.
+      const auto config = cuda::make_config(cuda::grid_dims(1), cuda::block_dims<32>());
+      cuda::launch(stream, config, Kernel{});
 
-        // Wait until the kernel finishes.
-        stream.sync();
+      // Wait until the kernel finishes.
+      stream.sync();
     }
+
+`See it on Godbolt 🔗 <https://godbolt.org/z/qPPb887zf>`__

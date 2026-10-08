@@ -41,18 +41,18 @@ Examples
 
 .. code:: cuda
 
-   #include <cuda/std/utility>
+    #include <cuda/std/utility>
 
-   #include <cuda/experimental/coop/group>
+    #include <cuda/experimental/coop/group>
 
-   namespace cudax = cuda::experimental;
+    namespace cudax = cuda::experimental;
 
-   __global__ void kernel()
-   {
-     // Creates mapping that selects only first 32 units from the previous mapping result.
-     cudax::coop::take m1{32};
+    __global__ void kernel()
+    {
+      // Creates mapping that selects only first 32 units from the previous mapping result.
+      cudax::coop::take m1{32};
 
-     // Creates mapping that selects only first 8 units from the previous mapping result. The unit count will be
-     // statically known.
-     cudax::coop::take m2{cuda::std::cw<8>};
-   }
+      // Creates mapping that selects only first 8 units from the previous mapping result. The unit count will be
+      // statically known.
+      cudax::coop::take m2{cuda::std::cw<8>};
+    }

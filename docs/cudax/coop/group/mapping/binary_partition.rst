@@ -42,12 +42,12 @@ Examples
 
 .. code:: cuda
 
-   #include <cuda/experimental/coop/group>
+    #include <cuda/experimental/coop/group>
 
-   namespace cudax = cuda::experimental;
+    namespace cudax = cuda::experimental;
 
-   __global__ void kernel()
-   {
-     // Creates mapping that splits units into even/odd groups.
-     cudax::coop::binary_partition m{[](const auto& prev_mapping_result){ return prev_mapping_result.unit_rank() % 2 == 1; };
-   }
+    __global__ void kernel()
+    {
+      // Creates mapping that splits units into even/odd groups.
+      cudax::coop::binary_partition m{[](const auto& prev_mapping_result){ return prev_mapping_result.unit_rank() % 2 == 1; };
+    }

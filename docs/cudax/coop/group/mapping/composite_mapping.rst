@@ -65,13 +65,13 @@ Examples
 
 .. code:: cuda
 
-   #include <cuda/experimental/coop/group>
+    #include <cuda/experimental/coop/group>
 
-   namespace cudax = cuda::experimental;
+    namespace cudax = cuda::experimental;
 
-   __global__ void kernel()
-   {
-     // Creates a mapping that groups units from the previous mapping results by 4 and then selects only 3 of those
-     // threads to return a valid mapping result.
-     auto m = cudax::coop::group_by{4} | cudax::coop::take{3};
-   }
+    __global__ void kernel()
+    {
+      // Creates a mapping that groups units from the previous mapping results by 4 and then selects only 3 of those
+      // threads to return a valid mapping result.
+      auto m = cudax::coop::group_by{4} | cudax::coop::take{3};
+    }

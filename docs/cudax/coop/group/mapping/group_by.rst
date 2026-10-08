@@ -50,20 +50,23 @@ Examples
 
 .. code:: cuda
 
-   #include <cuda/std/utility>
+    #include <cuda/std/utility>
 
-   #include <cuda/experimental/coop/group>
+    #include <cuda/experimental/coop/group>
 
-   namespace cudax = cuda::experimental;
+    namespace cudax = cuda::experimental;
 
-   __global__ void kernel()
-   {
-     // Creates mapping that splits units from the previous mapping into subgroups of that consist of 32 units.
-     cudax::coop::group_by m1{32};
+    __global__ void kernel()
+    {
+      // Creates mapping that splits units from the previous mapping into subgroups of that consist of 32 units.
+      cudax::coop::group_by m1{32};
 
-     // Creates mapping that splits units from the previous mapping into subgroups of that consist of 4 units. The unit count will be statically known.
-     cudax::coop::group_by m2{cuda::std::cw<4>};
+      // Creates mapping that splits units from the previous mapping into subgroups of that consist of 4 units. The unit count
+      // will be statically known.
+      cudax::coop::group_by m2{cuda::std::cw<4>};
 
-     // Creates mapping that splits units from the previous mapping into subgroups of that consist of 64 units. The unit count will be statically known. If the number of units from the previous mapping is not divisible by 64 without a remainder, those units will be excluded and will return an invalid mapping result.
-     cudax::coop::group_by m3{cudax::coop::non_exhaustive, cuda::std::cw<64>};
+      // Creates mapping that splits units from the previous mapping into subgroups of that consist of 64 units. The unit count
+      // will be statically known. If the number of units from the previous mapping is not divisible by 64 without a remainder,
+      // those units will be excluded and will return an invalid mapping result.
+      cudax::coop::group_by m3{cudax::coop::non_exhaustive, cuda::std::cw<64>};
    }

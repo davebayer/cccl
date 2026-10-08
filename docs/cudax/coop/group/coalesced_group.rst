@@ -50,63 +50,63 @@ Examples
 
 .. code:: cuda
 
-   #include <cuda/devices>
-   #include <cuda/stream>
-   #include <cuda/hierarchy>
-   #include <cuda/launch>
-   #include <cuda/std/cassert>
+    #include <cuda/devices>
+    #include <cuda/stream>
+    #include <cuda/hierarchy>
+    #include <cuda/launch>
+    #include <cuda/std/cassert>
 
-   #include <cuda/experimental/coop/group>
+    #include <cuda/experimental/coop/group>
 
-   namespace cudax = cuda::experimental;
+    namespace cudax = cuda::experimental;
 
-   __device__ void demo(auto config)
-   {
-       cudax::coop::this_warp warp{config};
+    __device__ void demo(auto config)
+    {
+      cudax::coop::this_warp warp{config};
 
-       // When the whole warp takes the same path, coalesced_group and this_warp contain the same threads in the same order.
-       {
-           cudax::coop::coalesced_group coalesced{config};
+      // When the whole warp takes the same path, coalesced_group and this_warp contain the same threads in the same order.
+      {
+        cudax::coop::coalesced_group coalesced{config};
 
-           assert(cuda::gpu_thread.count(coalesced) == cuda::gpu_thread.count(warp));
-           assert(cuda::gpu_thread.rank(coalesced) == cuda::gpu_thread.rank(warp));
+        assert(cuda::gpu_thread.count(coalesced) == cuda::gpu_thread.count(warp));
+        assert(cuda::gpu_thread.rank(coalesced) == cuda::gpu_thread.rank(warp));
 
-           coalesced.sync();
-           warp.sync();
-       }
+        coalesced.sync();
+        warp.sync();
+      }
 
-       // When we split the warp in half, coaleced group shall only contain half of the threads
-       if (cuda::gpu_thread.rank(warp) < 16)
-       {
-           cudax::coop::coalesced_group coalesced{config};
+      // When we split the warp in half, coaleced group shall only contain half of the threads
+      if (cuda::gpu_thread.rank(warp) < 16)
+      {
+        cudax::coop::coalesced_group coalesced{config};
 
-           assert(cuda::gpu_thread.count(coalesced) == 16);
-           assert(cuda::gpu_thread.rank(coalesced) < 16);
+        assert(cuda::gpu_thread.count(coalesced) == 16);
+        assert(cuda::gpu_thread.rank(coalesced) < 16);
 
-           coalesced.sync();
-       }
-   }
+        coalesced.sync();
+      }
+    }
 
-   struct Kernel
-   {
-       __device__ void operator()(auto config) const
-       {
-           demo(config);
-       }
-   };
+    struct Kernel
+    {
+      __device__ void operator()(auto config) const
+      {
+        demo(config);
+      }
+    };
 
-   int main()
-   {
-       // Select device and create a stream for it.
-       const auto device = cuda::devices[0];
-       cuda::stream stream{device};
+    int main()
+    {
+      // Select device and create a stream for it.
+      const auto device = cuda::devices[0];
+      cuda::stream stream{device};
 
-       // Launch the test kernel on stream.
-       const auto config = cuda::make_config(cuda::grid_dims(1), cuda::block_dims<32>());
-       cuda::launch(stream, config, Kernel{});
+      // Launch the test kernel on stream.
+      const auto config = cuda::make_config(cuda::grid_dims(1), cuda::block_dims<32>());
+      cuda::launch(stream, config, Kernel{});
 
-       // Wait until the kernel finishes.
-       stream.sync();
-   }
+      // Wait until the kernel finishes.
+      stream.sync();
+    }
 
-`See it on Godbolt 🔗 <https://godbolt.org/z/a46h3rr8c>`__
+`See it on Godbolt 🔗 <https://godbolt.org/z/Kn17f5hbd>`__
