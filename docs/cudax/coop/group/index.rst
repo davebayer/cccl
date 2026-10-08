@@ -15,19 +15,6 @@ Group families
    coalesced_group
    group_view
 
-Mappings
---------
-
-.. toctree::
-   :maxdepth: 1
-
-   mapping/identity_mapping
-   mapping/group_by
-   mapping/group_as
-   mapping/take
-   mapping/binary_partition
-   mapping/composite_mapping
-
 Synchronizers
 -------------
 
