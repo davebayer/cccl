@@ -42,6 +42,8 @@ Synchronizers
 Introduction to CCCL Cooperative Groups
 ---------------------------------------
 
+CCCL Cooperative Groups is an implementation of a successor to CTK's Cooperative Groups (``<cooperative_groups.h>``). The goal is to provide a more capable API that provides better flexibility, performance and safety.
+
 Concerning Groups
 ^^^^^^^^^^^^^^^^^
 
