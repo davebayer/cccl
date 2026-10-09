@@ -84,7 +84,7 @@ Where:
 - ``ParentGroup`` is the parent group of the newly created group. It can be used to synchronize all units.
 - ``PrevMappingResult`` is the input mapping result being transformed.
 
-The design of
+The design of group mappings as transformers allows chain multiple mappings together, so they behave as one. This is implemented by the :ref:`cudax::coop::composite_mapping <cudax-coop-group-mapping-composite-mapping>`.
 
 Predefined Mappings
 -------------------
