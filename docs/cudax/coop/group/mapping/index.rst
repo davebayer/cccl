@@ -18,21 +18,22 @@ Group Mapping Result Concept
     requires(cuda::std::is_copy_constructible_v<T>);
 
     // Group in the parent group info.
-    { T::static_group_count() } -> cuda::std::size_t; // must be constexpr
-    { t.group_count() } -> cuda::std::uint32_t;
-    { t.group_rank() } -> cuda::std::uint32_t;
+    { T::static_group_count() } -> cuda::std::same_as<cuda::std::size_t>; // must be constexpr
+    { t.group_count() } -> cuda::std::same_as<cuda::std::uint32_t>;
+    { t.group_rank() } -> cuda::std::same_as<cuda::std::uint32_t>;
 
     // Units in the group info.
-    { T::static_unit_count() } -> cuda::std::size_t; // must be constexpr
-    { t.unit_count() } -> cuda::std::uint32_t;
-    { t.unit_rank() } -> cuda::std::uint32_t;
+    { T::static_unit_count() } -> cuda::std::same_as<cuda::std::size_t>; // must be constexpr
+    { t.unit_count() } -> cuda::std::same_as<cuda::std::uint32_t>;
+    { t.unit_rank() } -> cuda::std::same_as<cuda::std::uint32_t>;
 
     // Properties of the mapping result.
-    { T::is_always_exhaustive() } -> bool; // must be constexpr
-    { T::is_always_contiguous() } -> bool; // must be constexpr
+    { T::is_always_exhaustive() } -> cuda::std::same_as<bool>; // must be constexpr
+    { T::is_always_contiguous() } -> cuda::std::same_as<bool>; // must be constexpr
+    { t.is_valid() } -> cuda::std::same_as<bool>;
 
     // Other group related info.
-    { t.lane_mask() } -> cuda::device::lane_mask;
+    { t.lane_mask() } -> cuda::std::same_as<cuda::device::lane_mask>;
   };
 
 Where:
@@ -45,7 +46,10 @@ Where:
 - ``unit_rank()`` is the unit's rank.
 - ``is_always_exhaustive()`` is a compile-time known property that specifies whether all units are part of a group.
 - ``is_always_contiguous()`` is a compile-time known property that specifies whether all units within the group are mapped to a contiguous block of hardware resources.
+- ``is_valid()`` is a property that defines whether the mapping result is valid for the current unit. If not, it means that the unit won't be part of the newly created group.
 - ``lane_mask()`` is the mask of threads within this warp that are part of this group.
+
+.. note:: When a mapping result is not valid (``.is_valid() == false``), calling any other non-static methods is undefined behaviour.
 
 Group Mapping Process
 ---------------------
@@ -61,15 +65,26 @@ The key idea is that a mapping tries to provide as many information as compile-t
 Group Mapping Interface
 -----------------------
 
-Every group mapping type must implement the group mapping interface that can be defined as:
+Every group mapping type must implement the group mapping interface which can be defined as *group-mapping* concept:
 
-.. .. code:: c++
-..
-..   template <typename T, typename Unit, typename ParentGroup>
-..   concept /*group-mapping-interface*/ = requires (T& t, const Unit& unit, const ParentGroup& parent_group)
-..   {
-..     t.map(unit, parent_group, )
-..   };
+.. code:: c++
+
+  template <typename T, typename Unit, typename ParentGroup, typename PrevMappingResult>
+  concept /*group-mapping*/ = requires (T& t,
+                                        const Unit& unit,
+                                        const ParentGroup& parent_group,
+                                        const PrevMappingResult& prev_mapping_result)
+  {
+    { t.map(unit, parent_group, prev_mapping_result) } -> /*group-mapping-result*/;
+  };
+
+Where:
+
+- ``Unit`` is the unit level type of the newly created group.
+- ``ParentGroup`` is the parent group of the newly created group. It can be used to synchronize all units.
+- ``PrevMappingResult`` is the input mapping result being transformed.
+
+The design of
 
 Predefined Mappings
 -------------------
