@@ -7,15 +7,15 @@ Group families
 --------------
 
 .. toctree::
-   :maxdepth: 1
+  :maxdepth: 1
 
-   this_group
-   generic_group
-   virtual_group
-   coalesced_group
-   group_view
-   mapping/index
-   synchronizer/index
+  this_group
+  generic_group
+  virtual_group
+  coalesced_group
+  group_view
+  mapping/index
+  synchronizer/index
 
 Introduction to CCCL Cooperative Groups
 ---------------------------------------
@@ -32,3 +32,33 @@ CTK's Cooperative Groups solve this issue by adding an upper boundary within whi
 Even though this design solves the synchronization efficiency issue, the design could be improved even further. When writing a collective algorithm, often you can do an operation more efficiently when you know how the threads are actually grouped within the upper boundary. For example, when you have a group of threads within a block and you know that the threads always form a full warp, you could use this information to implement the algorithm more efficiently. However, CTK's Cooperative Groups don't store this information inside the group.
 
 CCCL Cooperative Groups address this problem by changing the group definition again. In this new design, a group is a collection of units within an upper boundary that can synchronize, where the unit can be any CUDA hierarchy level below or same as the upper boundary. This means that when writing a cooperative algorithm, you what is the biggest building block of the group and optimize the algorithm accordingly.
+
+Group Concept
+^^^^^^^^^^^^^
+
+.. code:: cpp
+
+  namespace cudax::coop
+  {
+
+  template <typename T>
+  concept group = requires (const T& t)
+  {
+    // Member types.
+    requires /*is-hierarchy-level*/<typename T::unit_type>;
+    requires /*is-hierarchy-level*/<typename T::level_type>;
+    requires /*is-hierarchy*/<typename T::hierarchy_type>;
+
+    // Getters.
+    { t.hierarchy() } noexcept -> cuda::std::same_as<typename _Group::hierarchy_type&>;
+
+    // Synchronization.
+    { t.sync() } noexcept -> cuda::std::same_as<void>;
+    { t.sync_aligned() } noexcept -> cuda::std::same_as<void>;
+
+    // Properties.
+    { T::is_always_exhaustive() } noexcept -> cuda::std::same_as<bool>; // must be constexpr
+    { T::is_always_contiguous() } noexcept -> cuda::std::same_as<bool>; // must be constexpr
+  };
+
+  } // namespace cudax::coop

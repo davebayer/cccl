@@ -20,11 +20,11 @@ Group Synchronizer Instance Concept
   {
     // Lifetime-related methods.
     { t.deinit(mapping_result, hierarchy) } -> cuda::std::same_as<void>;
-    { ct.view() } -> /*group-synchronizer-instance*/<MappingResult, Hierarchy>;
+    { ct.view() } noexcept -> /*group-synchronizer-instance*/<MappingResult, Hierarchy>;
 
     // Synchronization interface.
-    { ct.do_sync(mapping_result, hierarchy) } -> cuda::std::same_as<void>;
-    { ct.do_sync_aligned(mapping_result, hierarchy) } -> cuda::std::same_as<void>;
+    { ct.do_sync(mapping_result, hierarchy) } noexcept -> cuda::std::same_as<void>;
+    { ct.do_sync_aligned(mapping_result, hierarchy) } noexcept -> cuda::std::same_as<void>;
   };
 
 Where:
