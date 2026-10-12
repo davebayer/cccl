@@ -19,7 +19,6 @@ Group Synchronizer Instance Concept
                                                       const Hierarchy& hierarchy)
   {
     // Lifetime-related methods.
-    { T::invalid() } -> cuda::std::same_as<T>;
     { t.deinit(mapping_result, hierarchy) } -> cuda::std::same_as<void>;
     { ct.view() } -> /*group-synchronizer-instance*/<MappingResult, Hierarchy>;
 
@@ -30,7 +29,6 @@ Group Synchronizer Instance Concept
 
 Where:
 
-- ``invalid()`` is a static method that creates an invalid synchronizer instance. This is used by threads that are not part of the newly created group.
 - ``deinit(...)`` is a method that deinitializes the synchronizer instance.
 - ``view()`` is a method that creates a non-owning view over the synchronizer instance resources. It must also satisfy the *group-synchronizer-instance* concept.
 - ``do_sync(...)`` is a method that triggers the synchronization. It doesn't require the units to be contextually-aligned.
