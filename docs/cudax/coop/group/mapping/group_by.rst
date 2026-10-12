@@ -5,36 +5,36 @@
 
 .. code:: cuda
 
-    namespace cudax::coop {
+  namespace cudax::coop {
 
-    template <cuda::std::size_t StaticUnitCount, bool IsAlwaysExhaustive>
-    class group_by
-    {
-      cuda::std::uint32_t /*unit_count_*/; // exposition-only
+  template <cuda::std::size_t StaticUnitCount, bool IsAlwaysExhaustive>
+  class group_by
+  {
+    cuda::std::uint32_t /*unit_count_*/; // exposition-only
 
-    public:
-      __device__ explicit group_by(cuda::std::uint32_t unit_count) noexcept
-        requires IsAlwaysExhaustive
-        : /*unit_count_*/{unit_count}
-      {}
+  public:
+    __device__ explicit group_by(cuda::std::uint32_t unit_count) noexcept
+      requires IsAlwaysExhaustive
+      : /*unit_count_*/{unit_count}
+    {}
 
-      __device__ explicit group_by(const cudax::coop::non_exhaustive_t&, cuda::std::uint32_t unit_count) noexcept
-        requires (!IsAlwaysExhaustive)
-        : /*unit_count_*/{unit_count}
-      {}
+    __device__ explicit group_by(const cudax::coop::non_exhaustive_t&, cuda::std::uint32_t unit_count) noexcept
+      requires (!IsAlwaysExhaustive)
+      : /*unit_count_*/{unit_count}
+    {}
 
-      template <typename Unit, typename ParentGroup, typename PrevMappingResult>
-      [[nodiscard]] __device__
-      auto map(const Unit&, const ParentGroup&, const PrevMappingResult&) const noexcept;
-    };
+    template <typename Unit, typename ParentGroup, typename PrevMappingResult>
+    [[nodiscard]] __device__
+    auto map(const Unit&, const ParentGroup&, const PrevMappingResult&) const noexcept;
+  };
 
-    template <typename T>
-    group_by(T) -> group_by</*maybe-static-ext*/<T>, true>;
+  template <typename T>
+  group_by(T) -> group_by</*maybe-static-ext*/<T>, true>;
 
-    template <typename T>
-    group_by(const non_exhaustive_t&, T) -> group_by</*maybe-static-ext*/<T>, false>;
+  template <typename T>
+  group_by(const non_exhaustive_t&, T) -> group_by</*maybe-static-ext*/<T>, false>;
 
-    } // namespace cudax::coop
+  } // namespace cudax::coop
 
 Overview
 --------
@@ -50,23 +50,23 @@ Examples
 
 .. code:: cuda
 
-    #include <cuda/std/utility>
+  #include <cuda/std/utility>
 
-    #include <cuda/experimental/coop/group>
+  #include <cuda/experimental/coop/group>
 
-    namespace cudax = cuda::experimental;
+  namespace cudax = cuda::experimental;
 
-    __global__ void kernel()
-    {
-      // Creates mapping that splits units from the previous mapping into subgroups of that consist of 32 units.
-      cudax::coop::group_by m1{32};
+  __global__ void kernel()
+  {
+    // Creates mapping that splits units from the previous mapping into subgroups of that consist of 32 units.
+    cudax::coop::group_by m1{32};
 
-      // Creates mapping that splits units from the previous mapping into subgroups of that consist of 4 units. The unit count
-      // will be statically known.
-      cudax::coop::group_by m2{cuda::std::cw<4>};
+    // Creates mapping that splits units from the previous mapping into subgroups of that consist of 4 units. The unit count
+    // will be statically known.
+    cudax::coop::group_by m2{cuda::std::cw<4>};
 
-      // Creates mapping that splits units from the previous mapping into subgroups of that consist of 64 units. The unit count
-      // will be statically known. If the number of units from the previous mapping is not divisible by 64 without a remainder,
-      // those units will be excluded and will return an invalid mapping result.
-      cudax::coop::group_by m3{cudax::coop::non_exhaustive, cuda::std::cw<64>};
-   }
+    // Creates mapping that splits units from the previous mapping into subgroups of that consist of 64 units. The unit count
+    // will be statically known. If the number of units from the previous mapping is not divisible by 64 without a remainder,
+    // those units will be excluded and will return an invalid mapping result.
+    cudax::coop::group_by m3{cudax::coop::non_exhaustive, cuda::std::cw<64>};
+  }

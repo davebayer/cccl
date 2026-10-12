@@ -36,8 +36,8 @@ Where:
 
 .. note:: When a mapping result is not valid (``.is_valid() == false``), any of the synchronization interfaces is undefined behaviour.
 
-Group Mapping Process
----------------------
+Group Synchronizer Instantiation Process
+----------------------------------------
 
 The group mapping process has 3 steps:
 
@@ -47,39 +47,35 @@ The group mapping process has 3 steps:
 
 The key idea is that a mapping tries to provide as many information as compile-time constants as possible. This information can be used to better optimize queries and cooperative algorithms.
 
-Group Mapping Interface
------------------------
+Group Synchronizer Interface
+----------------------------
 
-Every group mapping type must implement the group mapping interface which can be defined as *group-mapping* concept:
+Every group mapping type must implement the group synchronizer interface which can be defined as *group-synchronizer* concept:
 
 .. code:: c++
 
-  template <typename T, typename Unit, typename ParentGroup, typename PrevMappingResult>
-  concept /*group-mapping*/ = requires (T& t,
-                                        const Unit& unit,
-                                        const ParentGroup& parent_group,
-                                        const PrevMappingResult& prev_mapping_result)
+  template <typename T, typename Unit, typename ParentGroup, typename MappingResult>
+  concept /*group-synchronizer*/ = requires (T& t,
+                                             const Unit& unit,
+                                             const ParentGroup& parent_group,
+                                             const PrevMappingResult& prev_mapping_result)
   {
-    { t.map(unit, parent_group, prev_mapping_result) } -> /*group-mapping-result*/;
+    { t.make_instance(unit, parent_group, mapping_result) } -> /*group-synchronizer-instance*/;
   };
 
 Where:
 
 - ``Unit`` is the unit level type of the newly created group.
 - ``ParentGroup`` is the parent group of the newly created group. It can be used to synchronize all units.
-- ``PrevMappingResult`` is the input mapping result being transformed.
+- ``MappingResult`` is the final mapping result that describes the newly created group.
 
-The design of group mappings as transformers allows to chain multiple mappings together, so they behave as one. This is implemented by the :ref:`cudax::coop::composite_mapping <cudax-coop-group-mapping-composite-mapping>`.
-
-Predefined Mappings
--------------------
+Predefined Synchronizers
+------------------------
 
 .. toctree::
-    :maxdepth: 1
+  :maxdepth: 1
 
-    identity_mapping
-    group_by
-    group_as
-    take
-    binary_partition
-    composite_mapping
+  level_synchronizer
+  lane_synchronizer
+  interwarp_synchronizer
+  barrier_synchronizer

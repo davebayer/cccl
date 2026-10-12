@@ -5,28 +5,28 @@
 
 .. code:: cuda
 
-    namespace cudax::coop {
+  namespace cudax::coop {
 
-    template <typename Fn>
-    class binary_partition
-    {
-      Fn /*fn_*/; // exposition-only
+  template <typename Fn>
+  class binary_partition
+  {
+    Fn /*fn_*/; // exposition-only
 
-    public:
-      __device__ explicit binary_partition(Fn fn) noexcept(cuda::std::is_nothrow_move_constructible_v<Fn>)
-        : /*fn_*/(cuda::std::move(fn))
-      {}
+  public:
+    __device__ explicit binary_partition(Fn fn) noexcept(cuda::std::is_nothrow_move_constructible_v<Fn>)
+      : /*fn_*/(cuda::std::move(fn))
+    {}
 
-      template <typename Unit, typename ParentGroup, typename PrevMappingResult>
-      [[nodiscard]] __device__
-      auto map(const Unit&, const ParentGroup&, const PrevMappingResult&)
-        noexcept(cuda::std::is_nothrow_invocable_v<Fn&, const PrevMappingResult&>)
-    };
+    template <typename Unit, typename ParentGroup, typename PrevMappingResult>
+    [[nodiscard]] __device__
+    auto map(const Unit&, const ParentGroup&, const PrevMappingResult&)
+      noexcept(cuda::std::is_nothrow_invocable_v<Fn&, const PrevMappingResult&>)
+  };
 
-    template <typename Fn>
-    binary_partition(Fn) -> binary_partition<Fn>;
+  template <typename Fn>
+  binary_partition(Fn) -> binary_partition<Fn>;
 
-    } // namespace cudax::coop
+  } // namespace cudax::coop
 
 Overview
 --------
@@ -42,12 +42,12 @@ Examples
 
 .. code:: cuda
 
-    #include <cuda/experimental/coop/group>
+  #include <cuda/experimental/coop/group>
 
-    namespace cudax = cuda::experimental;
+  namespace cudax = cuda::experimental;
 
-    __global__ void kernel()
-    {
-      // Creates mapping that splits units into even/odd groups.
-      cudax::coop::binary_partition m{[](const auto& prev_mapping_result){ return prev_mapping_result.unit_rank() % 2 == 1; };
-    }
+  __global__ void kernel()
+  {
+    // Creates mapping that splits units into even/odd groups.
+    cudax::coop::binary_partition m{[](const auto& prev_mapping_result){ return prev_mapping_result.unit_rank() % 2 == 1; };
+  }

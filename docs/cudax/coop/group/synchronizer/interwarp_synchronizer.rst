@@ -5,35 +5,35 @@
 
 .. code:: cuda
 
-    namespace cudax::coop {
+  namespace cudax::coop {
 
-    using /*interwarp-barrier-id-type*/ = int;
+  using /*interwarp-barrier-id-type*/ = int;
 
-    template <typename RangeView>
-    class interwarp_synchronizer
-    {
-      RangeView /*barrier_ids_*/; // exposition-only
+  template <typename RangeView>
+  class interwarp_synchronizer
+  {
+    RangeView /*barrier_ids_*/; // exposition-only
 
-    public:
-      template <typename Range>
-        requires cuda::std::same_as<RangeView, cuda::std::ranges::views::all_t<Range>>
-      __device__ interwarp_synchronizer(Range&& barrier_ids)
-        noexcept(cuda::std::ranges::views::all(cuda::std::forward<Range>(barrier_ids))))
-        : /*barrier_ids_*/{cuda::std::ranges::views::all(cuda::std::forward<Range>(barrier_ids))}
-      {}
-
-      template <typename Unit, typename ParentGroup, typename MappingResult>
-      [[nodiscard]] __device__
-      auto make_instance(const Unit&, const ParentGroup&, const MappingResult&) const noexcept;
-    };
-
+  public:
     template <typename Range>
-      requires cuda::std::ranges::viewable_range<Range>
-        && cuda::std::is_convertible_v<cuda::std::ranges::range_value_t<_Range>, /*interwarp-barrier-id-type*/>
-    interwarp_synchronizer(Range&&)
-      -> interwarp_synchronizer<::cuda::std::ranges::views::all_t<_Range>>;
+      requires cuda::std::same_as<RangeView, cuda::std::ranges::views::all_t<Range>>
+    __device__ interwarp_synchronizer(Range&& barrier_ids)
+      noexcept(cuda::std::ranges::views::all(cuda::std::forward<Range>(barrier_ids))))
+      : /*barrier_ids_*/{cuda::std::ranges::views::all(cuda::std::forward<Range>(barrier_ids))}
+    {}
 
-    } // namespace cudax::coop
+    template <typename Unit, typename ParentGroup, typename MappingResult>
+    [[nodiscard]] __device__
+    auto make_instance(const Unit&, const ParentGroup&, const MappingResult&) const noexcept;
+  };
+
+  template <typename Range>
+    requires cuda::std::ranges::viewable_range<Range>
+      && cuda::std::is_convertible_v<cuda::std::ranges::range_value_t<_Range>, /*interwarp-barrier-id-type*/>
+  interwarp_synchronizer(Range&&)
+    -> interwarp_synchronizer<::cuda::std::ranges::views::all_t<_Range>>;
+
+  } // namespace cudax::coop
 
 Overview
 --------
@@ -49,19 +49,19 @@ Examples
 
 .. code:: cuda
 
-    #include <cuda/std/array>
-    #include <cuda/std/ranges>
+  #include <cuda/std/array>
+  #include <cuda/std/ranges>
 
-    #include <cuda/experimental/coop/group>
+  #include <cuda/experimental/coop/group>
 
-    namespace cudax = cuda::experimental;
+  namespace cudax = cuda::experimental;
 
-    __global__ void kernel()
-    {
-      // Interwarp synchronizer from a list of barrier IDs.
-      cuda::std::array array{1, 3, 5, 7};
-      cudax::coop::interwarp_synchronizer s1{array};
+  __global__ void kernel()
+  {
+    // Interwarp synchronizer from a list of barrier IDs.
+    cuda::std::array array{1, 3, 5, 7};
+    cudax::coop::interwarp_synchronizer s1{array};
 
-      // Interwarp synchronizer from an infinite iota range.
-      cudax::coop::interwarp_synchronizer s2{cuda::std::ranges::views::iota(1)};
-    }
+    // Interwarp synchronizer from an infinite iota range.
+    cudax::coop::interwarp_synchronizer s2{cuda::std::ranges::views::iota(1)};
+  }

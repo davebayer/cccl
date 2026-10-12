@@ -5,33 +5,33 @@
 
 .. code:: cuda
 
-    namespace cudax::coop {
+  namespace cudax::coop {
 
-    template <typename Unit, typename ParentGroup, typename MappingResult>
-    class virtual_group : public /*group-interface-for*/<virtual_group>
-    {
-    public:
-      template <typename Mapping>
-        requires cuda::std::same_as</*mapping-result-of*/<Mapping>, MappingResult>
-      __device__ virtual_group(const Unit& unit, const ParentGroup& parent_group, const Mapping& mapping) noexcept
+  template <typename Unit, typename ParentGroup, typename MappingResult>
+  class virtual_group : public /*group-interface-for*/<virtual_group>
+  {
+  public:
+    template <typename Mapping>
+      requires cuda::std::same_as</*mapping-result-of*/<Mapping>, MappingResult>
+    __device__ virtual_group(const Unit& unit, const ParentGroup& parent_group, const Mapping& mapping) noexcept
 
-      virtual_group(const virtual_group&) = delete;
+    virtual_group(const virtual_group&) = delete;
 
-      virtual_group(virtual_group&&) = delete;
+    virtual_group(virtual_group&&) = delete;
 
-      virtual_group& operator=(const virtual_group&) = delete;
+    virtual_group& operator=(const virtual_group&) = delete;
 
-      virtual_group& operator=(virtual_group&&) = delete;
-    };
+    virtual_group& operator=(virtual_group&&) = delete;
+  };
 
-    template </*hierarchy-level-type*/ Unit, group ParentGroup, typename Mapping>
-      requires /*unit-same-as-or-below*/<Unit, typename ParentGroup::unit_type>
-    virtual_group(const Unit&, const ParentGroup&, const Mapping&)
-      -> virtual_group<Unit,
-                       ParentGroup,
-                       /*mapping-result-of*/<Unit, ParentGroup, Mapping>>;
+  template </*hierarchy-level-type*/ Unit, group ParentGroup, typename Mapping>
+    requires /*unit-same-as-or-below*/<Unit, typename ParentGroup::unit_type>
+  virtual_group(const Unit&, const ParentGroup&, const Mapping&)
+    -> virtual_group<Unit,
+                      ParentGroup,
+                      /*mapping-result-of*/<Unit, ParentGroup, Mapping>>;
 
-    } // namespace cudax::coop
+  } // namespace cudax::coop
 
 Overview
 --------
@@ -52,96 +52,96 @@ Examples
 
 .. code:: cuda
 
-    #include <cuda/devices>
-    #include <cuda/stream>
-    #include <cuda/hierarchy>
-    #include <cuda/launch>
-    #include <cuda/std/cstdint>
+  #include <cuda/devices>
+  #include <cuda/stream>
+  #include <cuda/hierarchy>
+  #include <cuda/launch>
+  #include <cuda/std/cstdint>
 
-    #include <cuda/experimental/coop/group>
+  #include <cuda/experimental/coop/group>
 
-    #include <cstdio>
+  #include <cstdio>
 
-    namespace cudax = cuda::experimental;
+  namespace cudax = cuda::experimental;
 
-    __device__ void print_info(const auto& work_group, const char* group_name)
+  __device__ void print_info(const auto& work_group, const char* group_name)
+  {
+    // Print a hello world message by the root thread in the group.
+    if (cuda::gpu_thread.is_root_rank(work_group))
     {
-      // Print a hello world message by the root thread in the group.
-      if (cuda::gpu_thread.is_root_rank(work_group))
-      {
-        // Get the warp count in the group.
-        const auto warp_count = cuda::warp.count(work_group);
+      // Get the warp count in the group.
+      const auto warp_count = cuda::warp.count(work_group);
 
-        // Print the message.
-        printf("Hello world from group %s of %u %s!\n", group_name, warp_count, (warp_count > 1) ? "warps" : "warp");
-      }
+      // Print the message.
+      printf("Hello world from group %s of %u %s!\n", group_name, warp_count, (warp_count > 1) ? "warps" : "warp");
     }
+  }
 
-    __device__ void demo(auto config)
+  __device__ void demo(auto config)
+  {
+    // An enumeration helper for every group rank.
+    enum : cuda::std::uint32_t
     {
-      // An enumeration helper for every group rank.
-      enum : cuda::std::uint32_t
-      {
-        group_A,
-        group_B,
-        group_C,
-      };
-
-      // The parent group for the virtual_group.
-      cudax::coop::this_block block{config};
-
-      // An array for group_as mapping that specifies how many units should every subgroup get.
-      const cuda::std::uint32_t warp_counts[]{/*group_A*/ 2,
-                                              /*group_B*/ 3,
-                                              /*group_C*/ 1};
-
-      // Create a virtual_group of warps within a block.
-      cudax::coop::virtual_group work_group{cuda::warp,
-                                            block,
-                                            cudax::coop::group_as{warp_counts}};
-
-      // Dispatch work for every group based on it's rank within the parent group.
-      switch (work_group.rank(block))
-      {
-        // Note that every group can do different things, but the number of synchronization points must match.
-        case group_A:
-          print_info(work_group, "group_A");
-          work_group.sync();
-          break;
-        case group_B:
-          work_group.sync();
-          print_info(work_group, "group_B");
-          break;
-        case group_C:
-          print_info(work_group, "group_C");
-          if (cuda::warp.rank(work_group) < 100) // always true
-          {
-            work_group.sync();
-          }
-          break;
-      }
-    }
-
-    struct Kernel
-    {
-      __device__ void operator()(auto config) const
-      {
-        demo(config);
-      }
+      group_A,
+      group_B,
+      group_C,
     };
 
-    int main()
+    // The parent group for the virtual_group.
+    cudax::coop::this_block block{config};
+
+    // An array for group_as mapping that specifies how many units should every subgroup get.
+    const cuda::std::uint32_t warp_counts[]{/*group_A*/ 2,
+                                            /*group_B*/ 3,
+                                            /*group_C*/ 1};
+
+    // Create a virtual_group of warps within a block.
+    cudax::coop::virtual_group work_group{cuda::warp,
+                                          block,
+                                          cudax::coop::group_as{warp_counts}};
+
+    // Dispatch work for every group based on it's rank within the parent group.
+    switch (work_group.rank(block))
     {
-      // Select device and create a stream for it.
-      const auto device = cuda::devices[0];
-      cuda::stream stream{device};
-
-      // Launch the test kernel on stream.
-      const auto config = cuda::make_config(cuda::grid_dims(1), cuda::block_dims<192>());
-      cuda::launch(stream, config, Kernel{});
-
-      // Wait until the kernel finishes.
-      stream.sync();
+      // Note that every group can do different things, but the number of synchronization points must match.
+      case group_A:
+        print_info(work_group, "group_A");
+        work_group.sync();
+        break;
+      case group_B:
+        work_group.sync();
+        print_info(work_group, "group_B");
+        break;
+      case group_C:
+        print_info(work_group, "group_C");
+        if (cuda::warp.rank(work_group) < 100) // always true
+        {
+          work_group.sync();
+        }
+        break;
     }
+  }
+
+  struct Kernel
+  {
+    __device__ void operator()(auto config) const
+    {
+      demo(config);
+    }
+  };
+
+  int main()
+  {
+    // Select device and create a stream for it.
+    const auto device = cuda::devices[0];
+    cuda::stream stream{device};
+
+    // Launch the test kernel on stream.
+    const auto config = cuda::make_config(cuda::grid_dims(1), cuda::block_dims<192>());
+    cuda::launch(stream, config, Kernel{});
+
+    // Wait until the kernel finishes.
+    stream.sync();
+  }
 
 `See it on Godbolt 🔗 <https://godbolt.org/z/ozfs4xKfj>`__

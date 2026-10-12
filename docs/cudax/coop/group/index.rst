@@ -15,17 +15,6 @@ Group families
    coalesced_group
    group_view
 
-Synchronizers
--------------
-
-.. toctree::
-   :maxdepth: 1
-
-   synchronizer/level_synchronizer
-   synchronizer/lane_synchronizer
-   synchronizer/interwarp_synchronizer
-   synchronizer/barrier_synchronizer
-
 Introduction to CCCL Cooperative Groups
 ---------------------------------------
 

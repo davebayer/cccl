@@ -5,43 +5,43 @@ This groups
 
 .. code:: cuda
 
-    namespace cudax::coop {
+  namespace cudax::coop {
 
-    template <typename Level, typename Hierarchy>
-    class /*this-group*/ : public /*group-interface-for*/</*this-group*/>
-    {
-    public:
-      /*this-group*/() = delete;
+  template <typename Level, typename Hierarchy>
+  class /*this-group*/ : public /*group-interface-for*/</*this-group*/>
+  {
+  public:
+    /*this-group*/() = delete;
 
-      template <typename HierarchyLike>
-        requires cuda::std::same_as<Hierarchy, /*hierarchy-type-of*/<HierarchyLike>>
-      __device__ /*this-group*/(const HierarchyLike& hierarchy_like) noexcept;
+    template <typename HierarchyLike>
+      requires cuda::std::same_as<Hierarchy, /*hierarchy-type-of*/<HierarchyLike>>
+    __device__ /*this-group*/(const HierarchyLike& hierarchy_like) noexcept;
 
-      /*this-group*/(const /*this-group*/&) = delete;
+    /*this-group*/(const /*this-group*/&) = delete;
 
-      /*this-group*/(/*this-group*/&&) = delete;
+    /*this-group*/(/*this-group*/&&) = delete;
 
-      /*this-group*/& operator=(const /*this-group*/&) = delete;
+    /*this-group*/& operator=(const /*this-group*/&) = delete;
 
-      /*this-group*/& operator=(/*this-group*/&&) = delete;
-    };
+    /*this-group*/& operator=(/*this-group*/&&) = delete;
+  };
 
-    template <typename Hierarchy>
-    class this_thread : public /*this-group*/<thread_level> {};
-    template <typename Hierarchy>
-    class this_warp : public /*this-group*/<warp_level> {};
-    template <typename Hierarchy>
-    class this_block : public /*this-group*/<block_level> {};
-    template <typename Hierarchy>
-    class this_cluster : public /*this-group*/<cluster_level> {};
-    template <typename Hierarchy>
-    class this_grid : public /*this-group*/<grid_level> {};
+  template <typename Hierarchy>
+  class this_thread : public /*this-group*/<thread_level> {};
+  template <typename Hierarchy>
+  class this_warp : public /*this-group*/<warp_level> {};
+  template <typename Hierarchy>
+  class this_block : public /*this-group*/<block_level> {};
+  template <typename Hierarchy>
+  class this_cluster : public /*this-group*/<cluster_level> {};
+  template <typename Hierarchy>
+  class this_grid : public /*this-group*/<grid_level> {};
 
-    template </*hierarchy-level-type*/ Level, /*hierarchy-like-type*/ HierarchyLike>
-    [[nodiscard]] __device__
-    auto make_this_group(const Level& level, const HierarchyLike& hierarchy_like) noexcept;
+  template </*hierarchy-level-type*/ Level, /*hierarchy-like-type*/ HierarchyLike>
+  [[nodiscard]] __device__
+  auto make_this_group(const Level& level, const HierarchyLike& hierarchy_like) noexcept;
 
-    } // namespace cudax::coop
+  } // namespace cudax::coop
 
 Overview
 --------
@@ -64,74 +64,74 @@ Examples
 
 .. code:: cuda
 
-    #include <cuda/devices>
-    #include <cuda/stream>
-    #include <cuda/hierarchy>
-    #include <cuda/launch>
-    #include <cuda/std/cstdint>
-    #include <cuda/std/cassert>
+  #include <cuda/devices>
+  #include <cuda/stream>
+  #include <cuda/hierarchy>
+  #include <cuda/launch>
+  #include <cuda/std/cstdint>
+  #include <cuda/std/cassert>
 
-    #include <cuda/experimental/coop/group>
+  #include <cuda/experimental/coop/group>
 
-    #include <cstdio>
+  #include <cstdio>
 
-    namespace cudax = cuda::experimental;
+  namespace cudax = cuda::experimental;
 
-    __device__ void print_info(auto group, const char* group_name)
+  __device__ void print_info(auto group, const char* group_name)
+  {
+    // Query thread and group information.
+    const auto thread_count = cuda::gpu_thread.count_as<cuda::std::uint32_t>(group);
+    const auto thread_rank  = cuda::gpu_thread.rank_as<cuda::std::uint32_t>(group);
+    const auto group_count  = group.template count_as<cuda::std::uint32_t>(cuda::grid);
+    const auto group_rank   = group.template rank_as<cuda::std::uint32_t>(cuda::grid);
+
+    // When the launch dimensions are known at compile time, the static_count query returns a valid count,
+    // otherwise the cuda::std::dynamic_extent is returned.
+    constexpr auto static_thread_count = cuda::gpu_thread.static_count(group);
+    constexpr auto static_group_count  = group.static_count(cuda::grid);
+
+    if (thread_rank == 0 && group_rank == 0)
     {
-      // Query thread and group information.
-      const auto thread_count = cuda::gpu_thread.count_as<cuda::std::uint32_t>(group);
-      const auto thread_rank  = cuda::gpu_thread.rank_as<cuda::std::uint32_t>(group);
-      const auto group_count  = group.template count_as<cuda::std::uint32_t>(cuda::grid);
-      const auto group_rank   = group.template rank_as<cuda::std::uint32_t>(cuda::grid);
-
-      // When the launch dimensions are known at compile time, the static_count query returns a valid count,
-      // otherwise the cuda::std::dynamic_extent is returned.
-      constexpr auto static_thread_count = cuda::gpu_thread.static_count(group);
-      constexpr auto static_group_count  = group.static_count(cuda::grid);
-
-      if (thread_rank == 0 && group_rank == 0)
-      {
-        printf("%s contains %u threads%s. There are %u groups within the grid%s.\n",
-              group_name,
-              thread_count,
-              (static_thread_count != cuda::std::dynamic_extent) ? " (statically known)" : "",
-              group_count,
-              (static_group_count != cuda::std::dynamic_extent) ? " (statically known)" : "");
-      }
-
-      // Ranks are always in range `[0;count)`
-      assert(thread_rank < thread_count);
-      assert(group_rank < group_count);
-
-      // The .sync() method synchronizes the whole group. Synchronizing this_grid requires cooperative launch.
-      group.sync();
+      printf("%s contains %u threads%s. There are %u groups within the grid%s.\n",
+            group_name,
+            thread_count,
+            (static_thread_count != cuda::std::dynamic_extent) ? " (statically known)" : "",
+            group_count,
+            (static_group_count != cuda::std::dynamic_extent) ? " (statically known)" : "");
     }
 
-    struct Kernel
+    // Ranks are always in range `[0;count)`
+    assert(thread_rank < thread_count);
+    assert(group_rank < group_count);
+
+    // The .sync() method synchronizes the whole group. Synchronizing this_grid requires cooperative launch.
+    group.sync();
+  }
+
+  struct Kernel
+  {
+    __device__ void operator()(auto config) const
     {
-      __device__ void operator()(auto config) const
-      {
-        print_info(cudax::coop::this_thread{config}, "this_thread");
-        print_info(cudax::coop::this_warp{config}, "this_warp");
-        print_info(cudax::coop::this_block{config}, "this_block");
-        print_info(cudax::coop::this_cluster{config}, "this_cluster");
-        print_info(cudax::coop::this_grid{config}, "this_grid");
-      }
-    };
-
-    int main()
-    {
-      // Select device and create a stream for it.
-      const auto device = cuda::devices[0];
-      cuda::stream stream{device};
-
-      // Launch the test kernel on stream. Use cooperative launch tag to make sure we can synchronize whole grid.
-      const auto config = cuda::make_config(cuda::grid_dims(2), cuda::block_dims<128>(), cuda::cooperative_launch{});
-      cuda::launch(stream, config, Kernel{});
-
-      // Wait until the kernel finishes.
-      stream.sync();
+      print_info(cudax::coop::this_thread{config}, "this_thread");
+      print_info(cudax::coop::this_warp{config}, "this_warp");
+      print_info(cudax::coop::this_block{config}, "this_block");
+      print_info(cudax::coop::this_cluster{config}, "this_cluster");
+      print_info(cudax::coop::this_grid{config}, "this_grid");
     }
+  };
+
+  int main()
+  {
+    // Select device and create a stream for it.
+    const auto device = cuda::devices[0];
+    cuda::stream stream{device};
+
+    // Launch the test kernel on stream. Use cooperative launch tag to make sure we can synchronize whole grid.
+    const auto config = cuda::make_config(cuda::grid_dims(2), cuda::block_dims<128>(), cuda::cooperative_launch{});
+    cuda::launch(stream, config, Kernel{});
+
+    // Wait until the kernel finishes.
+    stream.sync();
+  }
 
 `See it on Godbolt 🔗 <https://godbolt.org/z/E1KPs8jTr>`__

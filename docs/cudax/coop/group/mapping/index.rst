@@ -90,11 +90,11 @@ Predefined Mappings
 -------------------
 
 .. toctree::
-    :maxdepth: 1
+  :maxdepth: 1
 
-    identity_mapping
-    group_by
-    group_as
-    take
-    binary_partition
-    composite_mapping
+  identity_mapping
+  group_by
+  group_as
+  take
+  binary_partition
+  composite_mapping

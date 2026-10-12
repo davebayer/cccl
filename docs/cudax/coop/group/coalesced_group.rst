@@ -5,31 +5,31 @@
 
 .. code:: cuda
 
-    namespace cudax::coop {
+  namespace cudax::coop {
 
-    template <typename Hierarchy>
-    class coalesced_group : public /*group-interface-for*/<coalesced_group>
-    {
-    public:
-      coalesced_group() = delete;
+  template <typename Hierarchy>
+  class coalesced_group : public /*group-interface-for*/<coalesced_group>
+  {
+  public:
+    coalesced_group() = delete;
 
-      template <typename HierarchyLike>
-        requires cuda::std::same_as<Hierarchy, /*hierarchy-type-of*/<HierarchyLike>>
-      __device__ coalesced_group(const HierarchyLike& hierarchy_like) noexcept;
+    template <typename HierarchyLike>
+      requires cuda::std::same_as<Hierarchy, /*hierarchy-type-of*/<HierarchyLike>>
+    __device__ coalesced_group(const HierarchyLike& hierarchy_like) noexcept;
 
-      coalesced_group(const coalesced_group&) = delete;
+    coalesced_group(const coalesced_group&) = delete;
 
-      coalesced_group(coalesced_group&&) = delete;
+    coalesced_group(coalesced_group&&) = delete;
 
-      coalesced_group& operator=(const coalesced_group&) = delete;
+    coalesced_group& operator=(const coalesced_group&) = delete;
 
-      coalesced_group& operator=(coalesced_group&&) = delete;
-    };
+    coalesced_group& operator=(coalesced_group&&) = delete;
+  };
 
-    template </*hierarchy-like-type*/ HierarchyLike>
-    coalesced_group(const HierarchyLike&) -> coalesced_group</*hierarchy-type-of*/<HierarchyLike>>;
+  template </*hierarchy-like-type*/ HierarchyLike>
+  coalesced_group(const HierarchyLike&) -> coalesced_group</*hierarchy-type-of*/<HierarchyLike>>;
 
-    } // namespace cudax::coop
+  } // namespace cudax::coop
 
 Overview
 --------
@@ -50,63 +50,63 @@ Examples
 
 .. code:: cuda
 
-    #include <cuda/devices>
-    #include <cuda/stream>
-    #include <cuda/hierarchy>
-    #include <cuda/launch>
-    #include <cuda/std/cassert>
+  #include <cuda/devices>
+  #include <cuda/stream>
+  #include <cuda/hierarchy>
+  #include <cuda/launch>
+  #include <cuda/std/cassert>
 
-    #include <cuda/experimental/coop/group>
+  #include <cuda/experimental/coop/group>
 
-    namespace cudax = cuda::experimental;
+  namespace cudax = cuda::experimental;
 
-    __device__ void demo(auto config)
+  __device__ void demo(auto config)
+  {
+    cudax::coop::this_warp warp{config};
+
+    // When the whole warp takes the same path, coalesced_group and this_warp contain the same threads in the same order.
     {
-      cudax::coop::this_warp warp{config};
+      cudax::coop::coalesced_group coalesced{config};
 
-      // When the whole warp takes the same path, coalesced_group and this_warp contain the same threads in the same order.
-      {
-        cudax::coop::coalesced_group coalesced{config};
+      assert(cuda::gpu_thread.count(coalesced) == cuda::gpu_thread.count(warp));
+      assert(cuda::gpu_thread.rank(coalesced) == cuda::gpu_thread.rank(warp));
 
-        assert(cuda::gpu_thread.count(coalesced) == cuda::gpu_thread.count(warp));
-        assert(cuda::gpu_thread.rank(coalesced) == cuda::gpu_thread.rank(warp));
-
-        coalesced.sync();
-        warp.sync();
-      }
-
-      // When we split the warp in half, coaleced group shall only contain half of the threads
-      if (cuda::gpu_thread.rank(warp) < 16)
-      {
-        cudax::coop::coalesced_group coalesced{config};
-
-        assert(cuda::gpu_thread.count(coalesced) == 16);
-        assert(cuda::gpu_thread.rank(coalesced) < 16);
-
-        coalesced.sync();
-      }
+      coalesced.sync();
+      warp.sync();
     }
 
-    struct Kernel
+    // When we split the warp in half, coaleced group shall only contain half of the threads
+    if (cuda::gpu_thread.rank(warp) < 16)
     {
-      __device__ void operator()(auto config) const
-      {
-        demo(config);
-      }
-    };
+      cudax::coop::coalesced_group coalesced{config};
 
-    int main()
-    {
-      // Select device and create a stream for it.
-      const auto device = cuda::devices[0];
-      cuda::stream stream{device};
+      assert(cuda::gpu_thread.count(coalesced) == 16);
+      assert(cuda::gpu_thread.rank(coalesced) < 16);
 
-      // Launch the test kernel on stream.
-      const auto config = cuda::make_config(cuda::grid_dims(1), cuda::block_dims<32>());
-      cuda::launch(stream, config, Kernel{});
-
-      // Wait until the kernel finishes.
-      stream.sync();
+      coalesced.sync();
     }
+  }
+
+  struct Kernel
+  {
+    __device__ void operator()(auto config) const
+    {
+      demo(config);
+    }
+  };
+
+  int main()
+  {
+    // Select device and create a stream for it.
+    const auto device = cuda::devices[0];
+    cuda::stream stream{device};
+
+    // Launch the test kernel on stream.
+    const auto config = cuda::make_config(cuda::grid_dims(1), cuda::block_dims<32>());
+    cuda::launch(stream, config, Kernel{});
+
+    // Wait until the kernel finishes.
+    stream.sync();
+  }
 
 `See it on Godbolt 🔗 <https://godbolt.org/z/Kn17f5hbd>`__
