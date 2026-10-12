@@ -19,20 +19,20 @@ Group Synchronizer Instance Concept
                                                       const Hierarchy& hierarchy)
   {
     // Lifetime-related methods.
-    { t.deinit(mapping_result, hierarchy) } -> cuda::std::same_as<void>;
-    { ct.view() } noexcept -> /*group-synchronizer-instance*/<MappingResult, Hierarchy>;
+    { t.deinit(mapping_result, hierarchy) } -> cuda::std::same_as<void>;                    // (1)
+    { ct.view() } noexcept -> /*group-synchronizer-instance*/<MappingResult, Hierarchy>;    // (2)
 
     // Synchronization interface.
-    { ct.do_sync(mapping_result, hierarchy) } noexcept -> cuda::std::same_as<void>;
-    { ct.do_sync_aligned(mapping_result, hierarchy) } noexcept -> cuda::std::same_as<void>;
+    { ct.do_sync(mapping_result, hierarchy) } noexcept -> cuda::std::same_as<void>;         // (3)
+    { ct.do_sync_aligned(mapping_result, hierarchy) } noexcept -> cuda::std::same_as<void>; // (4)
   };
 
 Where:
 
-- ``deinit(...)`` is a method that deinitializes the synchronizer instance.
-- ``view()`` is a method that creates a non-owning view over the synchronizer instance resources. It must also satisfy the *group-synchronizer-instance* concept.
-- ``do_sync(...)`` is a method that triggers the synchronization. It doesn't require the units to be contextually-aligned.
-- ``do_sync_aligned(...)`` is a method that triggers the synchronization. The caller guarantees that all of the units are contextually-aligned (execute the exact same statement in the code).
+#. Deinitializes the synchronizer instance.
+#. Creates a non-owning view over the synchronizer instance resources. It must also satisfy the *group-synchronizer-instance* concept.
+#. Triggers the synchronization. It doesn't require the units to be contextually-aligned.
+#. Triggers the synchronization. The caller guarantees that all of the units are contextually-aligned (execute the exact same statement in the code).
 
 .. note:: When a mapping result is not valid (``.is_valid() == false``), any of the synchronization interfaces is undefined behaviour.
 

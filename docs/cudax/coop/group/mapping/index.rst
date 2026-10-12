@@ -18,36 +18,36 @@ Group Mapping Result Concept
     requires(cuda::std::is_copy_constructible_v<T>);
 
     // Group in the parent group info.
-    { T::static_group_count() } noexcept -> cuda::std::same_as<cuda::std::size_t>; // must be constexpr
-    { t.group_count() } noexcept -> cuda::std::same_as<cuda::std::uint32_t>;
-    { t.group_rank() } noexcept -> cuda::std::same_as<cuda::std::uint32_t>;
+    { T::static_group_count() } noexcept -> cuda::std::same_as<cuda::std::size_t>; // (1), must be constexpr
+    { t.group_count() } noexcept -> cuda::std::same_as<cuda::std::uint32_t>;       // (2)
+    { t.group_rank() } noexcept -> cuda::std::same_as<cuda::std::uint32_t>;        // (3)
 
     // Units in the group info.
-    { T::static_unit_count() } noexcept -> cuda::std::same_as<cuda::std::size_t>; // must be constexpr
-    { t.unit_count() } noexcept -> cuda::std::same_as<cuda::std::uint32_t>;
-    { t.unit_rank() } noexcept -> cuda::std::same_as<cuda::std::uint32_t>;
+    { T::static_unit_count() } noexcept -> cuda::std::same_as<cuda::std::size_t>;  // (4), must be constexpr
+    { t.unit_count() } noexcept -> cuda::std::same_as<cuda::std::uint32_t>;        // (5)
+    { t.unit_rank() } noexcept -> cuda::std::same_as<cuda::std::uint32_t>;         // (6)
 
     // Properties of the mapping result.
-    { T::is_always_exhaustive() } noexcept -> cuda::std::same_as<bool>; // must be constexpr
-    { T::is_always_contiguous() } noexcept -> cuda::std::same_as<bool>; // must be constexpr
-    { t.is_valid() } noexcept -> cuda::std::same_as<bool>;
+    { T::is_always_exhaustive() } noexcept -> cuda::std::same_as<bool>;            // (7), must be constexpr
+    { T::is_always_contiguous() } noexcept -> cuda::std::same_as<bool>;            // (8), must be constexpr
+    { t.is_valid() } noexcept -> cuda::std::same_as<bool>;                         // (9)
 
     // Other group related info.
-    { t.lane_mask() } noexcept -> cuda::std::same_as<cuda::device::lane_mask>;
+    { t.lane_mask() } noexcept -> cuda::std::same_as<cuda::device::lane_mask>;     // (10)
   };
 
 Where:
 
-- ``static_group_count()`` is the compile-time known number of groups. When it is equal to ``cuda::std::dynamic_extents``, it means that the group count is runtime known only.
-- ``group_count()`` is the runtime known number of groups. It is equal to ``static_cast<cuda::std::uint32_t>(static_group_count())`` when ``static_group_count() != cuda::std::dynamic_extent``.
-- ``group_rank()`` is this unit's group rank.
-- ``static_unit_count()`` is the compile-time known number of units within the every group. When equal to ``cuda::std::dynamic_extent``, it means that the number of units is runtime known only.
-- ``unit_count()`` is the runtime known number of units within the unit's group. It is equal to ``static_cast<cuda::std::uint32_t>(static_unit_count())`` when ``static_unit_count() != cuda::std::dynamic_extent``
-- ``unit_rank()`` is the unit's rank.
-- ``is_always_exhaustive()`` is a compile-time known property that specifies whether all units are always part of a group.
-- ``is_always_contiguous()`` is a compile-time known property that specifies whether all units within the group are mapped to a contiguous block of hardware resources.
-- ``is_valid()`` is a property that defines whether the mapping result is valid for the current unit. If not, it means that the unit won't be part of the newly created group.
-- ``lane_mask()`` is the mask of threads within this warp that are part of this group.
+#. The compile-time known number of groups. When it is equal to ``cuda::std::dynamic_extents``, it means that the group count is runtime known only.
+#. The runtime known number of groups. It is equal to ``static_cast<cuda::std::uint32_t>(static_group_count())`` when ``static_group_count() != cuda::std::dynamic_extent``.
+#. The current unit's group rank.
+#. The compile-time known number of units within the every group. When equal to ``cuda::std::dynamic_extent``, it means that the number of units is runtime known only.
+#. The runtime known number of units within the unit's group. It is equal to ``static_cast<cuda::std::uint32_t>(static_unit_count())`` when ``static_unit_count() != cuda::std::dynamic_extent``
+#. The current unit's rank.
+#. A compile-time known property that specifies whether all units are always part of a group.
+#. A compile-time known property that specifies whether all units within the group are mapped to a contiguous block of hardware resources.
+#. A property that defines whether the mapping result is valid for the current unit. If not, it means that the unit won't be part of the newly created group.
+#. The mask of threads within this warp that are part of this group.
 
 .. note:: When a mapping result is not valid (``.is_valid() == false``), calling any other non-static methods is undefined behaviour.
 

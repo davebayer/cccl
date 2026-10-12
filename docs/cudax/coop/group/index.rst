@@ -4,10 +4,16 @@ CCCL Cooperative Groups
 =======================
 
 .. toctree::
+  :hidden:
   :maxdepth: 1
 
   mapping/index
   synchronizer/index
+  coalesced_group
+  generic_group
+  group_view
+  this_group
+  virtual_group
 
 CCCL Cooperative Groups are available through the ``<cuda/experimental/coop/group>`` header.
 
@@ -43,34 +49,35 @@ The requirements on groups are formally specified by the ``cudax::coop::group`` 
   concept group = requires (const T& t)
   {
     // Member types.
-    requires /*is-hierarchy-level*/<typename T::unit_type>;
-    requires /*is-hierarchy-level*/<typename T::level_type>;
-    requires /*is-hierarchy*/<typename T::hierarchy_type>;
+    requires /*is-hierarchy-level*/<typename T::unit_type>;             // (1)
+    requires /*is-hierarchy-level*/<typename T::level_type>;            // (2)
+    requires /*is-hierarchy*/<typename T::hierarchy_type>;              // (3)
 
     // Getters.
-    { t.hierarchy() } noexcept -> cuda::std::same_as<typename T::hierarchy_type&>;
+    { t.hierarchy() } noexcept
+      -> cuda::std::same_as<typename T::hierarchy_type&>;               // (4)
 
     // Synchronization.
-    { t.sync() } noexcept -> cuda::std::same_as<void>;
-    { t.sync_aligned() } noexcept -> cuda::std::same_as<void>;
+    { t.sync() } noexcept -> cuda::std::same_as<void>;                  // (5)
+    { t.sync_aligned() } noexcept -> cuda::std::same_as<void>;          // (6)
 
     // Properties.
-    { T::is_always_exhaustive() } noexcept -> cuda::std::same_as<bool>; // must be constexpr
-    { T::is_always_contiguous() } noexcept -> cuda::std::same_as<bool>; // must be constexpr
+    { T::is_always_exhaustive() } noexcept -> cuda::std::same_as<bool>; // (7), must be constexpr
+    { T::is_always_contiguous() } noexcept -> cuda::std::same_as<bool>; // (8), must be constexpr
   };
 
   } // namespace cudax::coop
 
 Where:
 
-- ``unit_type`` is the unit level type that defines what units are being grouped.
-- ``level_type`` is the upper level bound type that defines within which level the units are grouped.
-- ``hierarchy_type`` is the hierarchy type within which the group is operating.
-- ``hierarchy()`` is a member function that returns ``const hierarchy_type&`` of the group.
-- ``sync()`` is a member function that synchronizes all units that are part of the group.
-- ``sync_aligned()`` is same as ``sync()``, but all of the units are contextually aligned (execute the same instruction).
-- ``is_always_exhaustive()`` is a compile-time known property that specifies whether all units are always part of a group.
-- ``is_always_contiguous()`` is a compile-time known property that specifies whether all units within the group are mapped to a contiguous block of hardware resources.
+#. The unit level type that defines what units are being grouped.
+#. The upper level bound type that defines within which level the units are grouped.
+#. The hierarchy type within which the group is operating.
+#. Returns a ``const hierarchy_type&`` to the hierarchy stored by the group.
+#. Synchronizes all units that are part of the group.
+#. Same as ``sync()``, but all of the units are contextually aligned (execute the same instruction).
+#. A compile-time known property that specifies whether all units are always part of a group.
+#. A compile-time known property that specifies whether all units within the group are mapped to a contiguous block of hardware resources.
 
 Group Queries
 -------------
@@ -95,6 +102,7 @@ Where:
 The supported query kinds are:
 
 .. code:: cpp
+
   qunit.static_count(group); // (1), always constexpr
   qunit.count_as<T>(group);  // (2)
   qunit.rank_as<T>(group);   // (3)
@@ -154,8 +162,8 @@ Predefined Groups
 
 CCCL Cooperative Groups come with several predefined group types:
 
-- :ref:`This Groups <cudax-group-this-group>`
-- :ref:`Coalesced Group <cudax-group-coalesced-group>`
-- :ref:`Generic Group <cudax-group-generic-group>`
-- :ref:`Virtual Group <cudax-group-virtual-group>`
-- :ref:`Group View <cudax-group-group-view>`
+- :ref:`This Groups <cudax-coop-group-this-group>`
+- :ref:`Coalesced Group <cudax-coop-group-coalesced-group>`
+- :ref:`Generic Group <cudax-coop-group-generic-group>`
+- :ref:`Virtual Group <cudax-coop-group-virtual-group>`
+- :ref:`Group View <cudax-coop-group-group-view>`
