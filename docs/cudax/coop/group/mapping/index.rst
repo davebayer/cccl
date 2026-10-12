@@ -44,7 +44,7 @@ Where:
 - ``static_unit_count()`` is the compile-time known number of units within the every group. When equal to ``cuda::std::dynamic_extent``, it means that the number of units is runtime known only.
 - ``unit_count()`` is the runtime known number of units within the unit's group. It is equal to ``static_cast<cuda::std::uint32_t>(static_unit_count())`` when ``static_unit_count() != cuda::std::dynamic_extent``
 - ``unit_rank()`` is the unit's rank.
-- ``is_always_exhaustive()`` is a compile-time known property that specifies whether all units are part of a group.
+- ``is_always_exhaustive()`` is a compile-time known property that specifies whether all units are always part of a group.
 - ``is_always_contiguous()`` is a compile-time known property that specifies whether all units within the group are mapped to a contiguous block of hardware resources.
 - ``is_valid()`` is a property that defines whether the mapping result is valid for the current unit. If not, it means that the unit won't be part of the newly created group.
 - ``lane_mask()`` is the mask of threads within this warp that are part of this group.
