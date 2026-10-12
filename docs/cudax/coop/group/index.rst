@@ -14,6 +14,8 @@ Group families
    virtual_group
    coalesced_group
    group_view
+   mapping/index
+   synchronizer/index
 
 Introduction to CCCL Cooperative Groups
 ---------------------------------------
