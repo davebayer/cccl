@@ -17,13 +17,10 @@ Group families
   mapping/index
   synchronizer/index
 
-Introduction to CCCL Cooperative Groups
----------------------------------------
-
-CCCL Cooperative Groups is an implementation of a successor to CTK's Cooperative Groups (``<cooperative_groups.h>``). The goal is to provide a more capable API that provides better flexibility, performance and safety.
+CCCL Cooperative Groups, available through the ``<cuda/experimental/coop/group>`` header, is an implementation of a successor to CTK's Cooperative Groups (``<cooperative_groups.h>``). The goal is to provide a more capable API that provides better flexibility, performance and safety.
 
 Concerning Groups
-^^^^^^^^^^^^^^^^^
+-----------------
 
 Let's start with a quick introduction to groups regarding the CUDA programming model. A group could be simply defined as a collection of threads that can synchronize, thus can cooperate on solving an algorithmic problems. However, such a generic group isn't too suitable for the CUDA programming model, because the definition doesn't allow an efficient implementation of the synchronization in the hardware.
 
@@ -33,8 +30,12 @@ Even though this design solves the synchronization efficiency issue, the design 
 
 CCCL Cooperative Groups address this problem by changing the group definition again. In this new design, a group is a collection of units within an upper boundary that can synchronize, where the unit can be any CUDA hierarchy level below or same as the upper boundary. This means that when writing a cooperative algorithm, you what is the biggest building block of the group and optimize the algorithm accordingly.
 
-Group Concept
-^^^^^^^^^^^^^
+
+
+Requirements on Groups
+----------------------
+
+
 
 .. code:: cpp
 
@@ -62,3 +63,16 @@ Group Concept
   };
 
   } // namespace cudax::coop
+
+
+Predefined Groups
+-----------------
+
+.. toctree::
+  :maxdepth: 1
+
+  this_group
+  coalesced_group
+  generic_group
+  virtual_group
+  group_view

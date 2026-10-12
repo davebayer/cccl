@@ -1,6 +1,6 @@
 .. _cudax-coop-group-this-group:
 
-This groups
+This Groups
 ===========
 
 .. code:: cuda
