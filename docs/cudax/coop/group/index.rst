@@ -16,6 +16,7 @@ CCCL Cooperative Groups
 
 CCCL Cooperative Groups are available through the ``<cuda/experimental/coop/group>`` header.
 
+
 Introduction
 ------------
 
@@ -45,7 +46,7 @@ Hierarchy-Aware Groups
 
 One of the limitations of the CTK's Cooperative Groups design is that they lack static information about the hierarchy of the launched kernel. For instance, with the CTK's Cooperative Groups, a computation of 1D thread rank within a block is always done as:
 
-.. code:: cpp
+.. code:: cuda
 
   const auto thread_rank = (threadIdx.z + blockDim.y * threadIdx.y) * blockDim.x + threadIdx.x;
 
@@ -53,7 +54,7 @@ independently on whether the thread block is 1D or 3D. If the thread block is ac
 
 CCCL Cooperative Groups on the other hand are hierarchy-aware. They are designed to interoperate with the ``cuda::launch`` to get as much compile-time information about the launched kernel as possible. If the launched hierarchy really consists of 1D blocks, then CCCL Cooperative Groups would compute only:
 
-.. code:: cpp
+.. code:: cuda
 
   const auto thread_rank = threadIdx.x;
 
@@ -91,6 +92,7 @@ Cases **1.** and **3.** can be handled inside the mapping implementation, howeve
 For this reason, CCCL Cooperative Groups introduce the optional participation feature, which allows the group object to be in an invalidated state -- we call it that the unit is not part of the group.
 
 Such a unit cannot participate in any collective operations, such as creating a new group or calling a cooperative algorithm.
+
 
 Requirements on Groups
 ----------------------
@@ -135,6 +137,7 @@ Where:
 #. Same as ``sync()``, but all of the units are contextually aligned (execute the same instruction).
 #. A compile-time known property that specifies whether all units are always part of a group.
 #. A compile-time known property that specifies whether all units within the group are mapped to a contiguous block of hardware resources.
+
 
 Group Queries
 -------------
@@ -214,6 +217,7 @@ The supported query kinds are:
 
 .. warning:: All non-static queries except for ``is_part_of(...)`` query can be done only by units that belong to the group. Executing any non-static query by units for which ``qunit.is_part_of(group) == false`` is undefined behaviour.
 
+
 Predefined Groups
 -----------------
 
@@ -227,3 +231,24 @@ CCCL Cooperative Groups come with several predefined group types.
   - :ref:`cudax-coop-group-virtual-group`
 3. Non-owning group view over a group.
   - :ref:`Group View <cudax-coop-group-group-view>`
+
+
+Interoperability with CTK's Cooperative Groups
+----------------------------------------------
+
+CCCL Cooperative Groups groups don't provide CTK's Cooperative Groups-like interface, thus cannot be used in algorithms that expect a CTK's Cooperative Group group.
+
+However, CCCL Cooperative Groups provide ``cudax::coop::make_cg_equivalent_group(...)`` function that converts a CTK's Cooperative Group group to an equivalent CCCL group.
+
+.. code:: cuda
+
+  namespace cudax::coop
+  {
+
+  template <typename CgGroup, /*hierarchy-like-type*/ HierarchyLike>
+  [[nodiscard]] __device__
+  group auto make_cg_equivalent_group(const CgGroup& cg_group, const HierarchyLike& hierarchy_like) noexcept;
+
+  } // namespace cudax::coop
+
+.. note:: The group returned by the ``cudax::coop::make_cg_equivalent_group(...)`` doesn't take ownership over the resources owned by the ``cg_group``, thus ``cg_group`` should outlive the returned group.
