@@ -7,13 +7,13 @@ CCCL Cooperative Groups
   :hidden:
   :maxdepth: 1
 
-   mapping/index
-   synchronizer/index
-   coalesced_group
-   generic_group
-   group_view
-   this_group
-   virtual_group
+  mapping/index
+  synchronizer/index
+  coalesced_group
+  generic_group
+  group_view
+  this_group
+  virtual_group
 
 CCCL Cooperative Groups are available through the ``<cuda/experimental/coop/group>`` header.
 
@@ -39,7 +39,7 @@ CCCL Cooperative Groups address this problem by changing the group definition ag
 Hierarchy-Aware Groups
 ----------------------
 
-One of the limitations of the CTK's Cooperative Groups design is that they lack static information about the hierarchy of the launched kernel. For instance, with the CTK's Cooperative Groups, a computation of a 1D rank of a thread within a block is always done as:
+One of the limitations of the CTK's Cooperative Groups design is that they lack static information about the hierarchy of the launched kernel. For instance, with the CTK's Cooperative Groups, a computation of 1D thread rank within a block is always done as:
 
 .. code:: cpp
 
@@ -57,8 +57,18 @@ which can make the difference between register spilling to local memory and fitt
 
 Having the knowledge about the statically-known information about the launched hierarchy has another great benefit. An API taking a group can statically allocate resources such as shared memory precisely for the given group without the need for passing this information separately via a template parameter. This is a property that is very valuable for cooperative algorithms.
 
+Separation of Partition and Synchronization
+-------------------------------------------
+
+When creating a group, it is necessary to define *how the units are grouped* and *how the units are synchronized*.
+
+CTK's Cooperative Groups fuse these 2 properties together, providing free functions that do the group partition and select the suitable synchronization mechanism for the group.
+
+CCCL Cooperative Groups instead try to give the user the control over both properties by separating them. It is implemented by a family of types that implement a well-defined interface. The information about *how the units are grouped* is passed by :ref:`cudax-coop-group-mapping` and *how the units are synchronized* is passed by :ref:`cudax-coop-group-synchronizer`.
+
 Optional Participation
 ----------------------
+
 
 
 
