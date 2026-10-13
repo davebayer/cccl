@@ -1,7 +1,7 @@
 .. _cudax-coop-group-this-group:
 
-This Groups
-===========
+``cudax::coop::this_{level}``
+=============================
 
 .. code:: cuda
 
