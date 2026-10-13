@@ -7,13 +7,13 @@ CCCL Cooperative Groups
   :hidden:
   :maxdepth: 1
 
-  mapping/index
-  synchronizer/index
-  coalesced_group
-  generic_group
-  group_view
-  this_group
-  virtual_group
+   mapping/index
+   synchronizer/index
+   coalesced_group
+   generic_group
+   group_view
+   this_group
+   virtual_group
 
 CCCL Cooperative Groups are available through the ``<cuda/experimental/coop/group>`` header.
 
@@ -28,7 +28,34 @@ Even though this design solves the synchronization efficiency issue, the design 
 
 CCCL Cooperative Groups address this problem by changing the group definition again. In this new design, a group is a collection of units within an upper boundary that can synchronize, where the unit can be any CUDA hierarchy level below or same as the upper boundary. This means that when writing a cooperative algorithm, you what is the biggest building block of the group and optimize the algorithm accordingly.
 
+.. figure:: images/group-definitions.svg
+   :width: 100%
+   :alt: Three views of two CUDA thread blocks: arbitrary highlighted threads across blocks, highlighted threads within one block boundary, and a complete highlighted warp within one block boundary.
 
+   Group definitions illustrated with two CUDA thread blocks. Green dots are
+   participating threads; dashed blue outlines mark the upper boundary. The CCCL
+   example additionally identifies a complete warp as the group's unit.
+
+Hierarchy-Aware Groups
+----------------------
+
+One of the limitations of the CTK's Cooperative Groups design is that they lack static information about the hierarchy of the launched kernel. For instance, with the CTK's Cooperative Groups, a computation of a 1D rank of a thread within a block is always done as:
+
+.. code:: cpp
+
+  const auto thread_rank = (threadIdx.z + blockDim.y * threadIdx.y) * blockDim.x + threadIdx.x;
+
+independently on whether the thread block is 1D or 3D. If the thread block is actually 1D, this computation wastes precious registers and introduces unnecessary overhead.
+
+CCCL Cooperative Groups on the other hand are hierarchy-aware. They are designed to interoperate with the ``cuda::launch`` to get as much compile-time information about the launched kernel as possible. If the launched hierarchy really consists of 1D blocks, then CCCL Cooperative Groups would compute only:
+
+.. code:: cpp
+
+  const auto thread_rank = threadIdx.x;
+
+which can make the difference between register spilling to local memory and fitting everything within registers.
+
+Having the knowledge about the statically-known information about the launched hierarchy has another great benefit. An API taking a group can statically allocate resources such as shared memory precisely for the given group without the need for passing this information separately via a template parameter. This is a property that is very valuable for cooperative algorithms.
 
 Optional Participation
 ----------------------
