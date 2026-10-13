@@ -4,21 +4,25 @@ CCCL Cooperative Groups
 =======================
 
 .. toctree::
-  :hidden:
   :maxdepth: 1
 
   mapping/index
   synchronizer/index
+  this_group
   coalesced_group
   generic_group
-  group_view
-  this_group
   virtual_group
+  group_view
 
 CCCL Cooperative Groups are available through the ``<cuda/experimental/coop/group>`` header.
 
+Introduction
+------------
+
+This section describes the fundamental ideas and features of CCCL Cooperative Groups and how they compare to CTK's Cooperative Groups.
+
 Concerning Groups
------------------
+^^^^^^^^^^^^^^^^^
 
 Let's start with a quick introduction to groups regarding the CUDA programming model. A group could be simply defined as a collection of threads that can synchronize, thus can cooperate on solving an algorithmic problems. However, such a generic group isn't too suitable for the CUDA programming model, because the definition doesn't allow an efficient implementation of the synchronization in the hardware.
 
@@ -37,7 +41,7 @@ CCCL Cooperative Groups address this problem by changing the group definition ag
    example additionally identifies a complete warp as the group's unit.
 
 Hierarchy-Aware Groups
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 One of the limitations of the CTK's Cooperative Groups design is that they lack static information about the hierarchy of the launched kernel. For instance, with the CTK's Cooperative Groups, a computation of 1D thread rank within a block is always done as:
 
@@ -58,19 +62,35 @@ which can make the difference between register spilling to local memory and fitt
 Having the knowledge about the statically-known information about the launched hierarchy has another great benefit. An API taking a group can statically allocate resources such as shared memory precisely for the given group without the need for passing this information separately via a template parameter. This is a property that is very valuable for cooperative algorithms.
 
 Separation of Partition and Synchronization
--------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When creating a group, it is necessary to define *how the units are grouped* and *how the units are synchronized*.
 
 CTK's Cooperative Groups fuse these 2 properties together, providing free functions that do the group partition and select the suitable synchronization mechanism for the group.
 
-CCCL Cooperative Groups instead try to give the user the control over both properties by separating them. It is implemented by a family of types that implement a well-defined interface. The information about *how the units are grouped* is passed by :ref:`cudax-coop-group-mapping` and *how the units are synchronized* is passed by :ref:`cudax-coop-group-synchronizer`.
+CCCL Cooperative Groups instead try to give the user the control over both properties by separating them. It is implemented by a family of types that implement a well-defined interface. The information about *how the units are grouped* is passed by :ref:`cudax-coop-group-mapping` and *how the units are synchronized* is passed by :ref:`cudax-coop-group-synchronizer`. The design can be liken to ``std::mdspan``'s layout mappings and accessors.
+
+Group Queries
+^^^^^^^^^^^^^
+
+CTK's Cooperative Groups provide ``cg_group.thread_rank()`` and ``cg_group.num_threads()`` methods to query the thread rank/count in a group. CCCL Cooperative Groups could do the same thing, however, these queries would be good enough only for groups with ``thread_level`` unit type. When the unit type of a group would be for example ``warp_level``, we'd like to query what's the warp rank/count of the current warp within the group.
+
+For this reason, CCCL Cooperative Groups implement group queries in a similar fashion as hierarchy queries that allow to query information about any level below the group's unit type. We call them *sub-unit* queries. Similarly, a group might be queried for it's rank/count within the parent group or a hierarchy level, when the group is an implicit group. These are called *super-level* queries.
 
 Optional Participation
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
+Imagine a group of :math:`N` units that shall be split into :math:`N / M` groups of :math:`M` units. When :math:`N` is divisible by :math:`M` without a remainder, every unit can be assigned to a new group. However, when :math:`N` is not divisible by :math:`M` without a remainder, you are left with 3 options:
 
+#. mark this case as unsupported,
+#. create :math:`N / M` groups and left :math:`N % M` groups without a group or
+#. create :math:`N / M + 1` groups with the last group being incomplete.
 
+Cases **1.** and **3.** can be handled inside the mapping implementation, however case **2.** requires additional support by the groups implementation.
+
+For this reason, CCCL Cooperative Groups introduce the optional participation feature, which allows the group object to be in an invalidated state -- we call it that the unit is not part of the group.
+
+Such a unit cannot participate in any collective operations, such as creating a new group or calling a cooperative algorithm.
 
 Requirements on Groups
 ----------------------
@@ -197,10 +217,13 @@ The supported query kinds are:
 Predefined Groups
 -----------------
 
-CCCL Cooperative Groups come with several predefined group types:
+CCCL Cooperative Groups come with several predefined group types.
 
-- :ref:`This Groups <cudax-coop-group-this-group>`
-- :ref:`Coalesced Group <cudax-coop-group-coalesced-group>`
-- :ref:`Generic Group <cudax-coop-group-generic-group>`
-- :ref:`Virtual Group <cudax-coop-group-virtual-group>`
-- :ref:`Group View <cudax-coop-group-group-view>`
+1. Implicit groups without a parent group. They are essential building blocks for other groups.
+  - :ref:`cudax-coop-group-this-group`
+  - :ref:`cudax-coop-group-coalesced-group`
+2. Groups that are created by splitting another group.
+  - :ref:`cudax-coop-group-generic-group`
+  - :ref:`cudax-coop-group-virtual-group`
+3. Non-owning group view over a group.
+  - :ref:`Group View <cudax-coop-group-group-view>`

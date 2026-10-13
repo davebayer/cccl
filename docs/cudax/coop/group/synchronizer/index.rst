@@ -1,7 +1,7 @@
 .. _cudax-coop-group-synchronizer:
 
-Synchronizer Instance
-=====================
+Group Synchronizers
+===================
 
 Group synchronizers are types that implement the synchronizer interface. They define what synchronization mechanism shall be used to synchronize the group. The type needs to implement the ``.make_instance(...)`` method that returns a type that satisfies the *group synchronizer instance* concept.
 
