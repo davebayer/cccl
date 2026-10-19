@@ -27,23 +27,26 @@
 #include <cuda/std/__tuple_dir/tuple_like.h>
 #include <cuda/std/__tuple_dir/tuple_size.h>
 #include <cuda/std/__type_traits/remove_reference.h>
+#include <cuda/std/__utility/declval.h>
 #include <cuda/std/__utility/forward.h>
 
 #include <cuda/std/__cccl/prologue.h>
 
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
-template <class _Fn, class _Tuple>
+template <class _Fn, class _Tuple, class _Indices>
 inline constexpr bool __can_apply_impl = false;
 
-template <class _Fn, class... _Types>
-inline constexpr bool __can_apply_impl<_Fn, __tuple_types<_Types...>> = is_invocable_v<_Fn, _Types...>;
+template <class _Fn, class _Tuple, size_t... _Id>
+inline constexpr bool __can_apply_impl<_Fn, _Tuple, __tuple_indices<_Id...>> =
+  is_invocable_v<_Fn, decltype(::cuda::std::get<_Id>(::cuda::std::declval<_Tuple>()))...>;
 
 template <class _Fn, class _Tuple, bool = __tuple_like<_Tuple>>
 inline constexpr bool __can_apply = false;
 
 template <class _Fn, class _Tuple>
-inline constexpr bool __can_apply<_Fn, _Tuple, true> = __can_apply_impl<_Fn, __make_tuple_types_t<_Tuple>>;
+inline constexpr bool __can_apply<_Fn, _Tuple, true> =
+  __can_apply_impl<_Fn, _Tuple, __make_tuple_indices_t<tuple_size_v<remove_reference_t<_Tuple>>>>;
 
 #define _LIBCUDACXX_NOEXCEPT_RETURN(...) \
   noexcept(noexcept(__VA_ARGS__))        \
