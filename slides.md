@@ -361,8 +361,8 @@ group_view(const Unit&, const Group&) -> group_view<Unit, Group>;
 - implements the same queries as `group`
 
 ## Group Mappings
-- Determines how the units are split into subgroups.
-- Needs to implement the `map` method that transforms */*group-mapping-result*/* types:
+- Determines how the units are split into subgroups
+- Needs to implement the `map` method that transforms `/*group-mapping-result*/` types:
 ```cpp
 template <typename T, typename Unit, typename ParentGroup, typename PrevMappingResult>
 concept /*group-mapping*/ = requires (T& t,
@@ -374,15 +374,37 @@ concept /*group-mapping*/ = requires (T& t,
   { t.map(non_exhaustive, unit, parent_group, prev_mapping_result) } -> /*group-mapping-result*/;
 };
 ```
-- The overload that takes the ``non_exhaustive`` tag does the non-exhaustive mapping.
-- Mappings can be chained with ``|`` to transform the result from left to right.
-- Goal is to preserve as much compile-time information as possible.
+- The overload that takes the `non_exhaustive` tag does the non-exhaustive mapping
+- Mappings can be chained with `|` to transform the result from left to right
+- Goal is to preserve as much compile-time information as possible
 
 ## Predefined Group Mappings
 [//]: <> (This slide should generate as much slides as there are items. Put the list on the left and highlight 1 item per slide. On the right show the description and make a diagram example how this mapping is used on threads within a single warp)
-- `identity_mapping` preserves the previous mapping result without further partitioning.
-- `group_by` splits each group into subgroups with the same specified number of units.
-- `group_as` splits each group into subgroups with individually specified sizes.
-- `take` selects the first specified number of units from each group.
-- `binary_partition` splits threads within a warp into two groups based on a predicate.
-- `composite_mapping` applies multiple mappings in sequence, composed with the pipe operator (`|`).
+- `identity_mapping` preserves the previous mapping result without further partitioning
+- `group_by` splits each group into subgroups with the same specified number of units
+- `group_as` splits each group into subgroups with individually specified sizes
+- `take` selects the first specified number of units from each group
+- `binary_partition` splits threads within a warp into two groups based on a predicate
+- `composite_mapping` applies multiple mappings in sequence, composed with the `|` operator
+
+## Group Synchronizers
+- Determines how the subgroups are synchronized
+- Needs to implement the `make_instance` method that returns the `/*group-synchronizer-instance*/` type:
+```cpp
+template <typename T, typename Unit, typename ParentGroup, typename MappingResult>
+concept /*group-synchronizer*/ = requires (T& t,
+                                           const Unit& unit,
+                                           const ParentGroup& parent_group,
+                                           const MappingResult& mapping_result)
+{
+  { t.make_instance(unit, parent_group, mapping_result) }
+    -> /*group-synchronizer-instance*/<MappingResult, typename ParentGroup::hierarchy_type>;
+};
+```
+
+## Predefined Group Synchronizers
+[//]: <> (This slide should generate as much slides as there are items. Put the list on the left and highlight 1 item per slide. On the right show how the type can be constructed and what's the sync and sync_aligned() behaviour of the group is)
+- `level_synchronizer` synchronizes all threads within the group's level.
+- `lane_synchronizer` uses `__syncwarp(mask)` for synchronization.
+- `interwarp_synchronizer` uses `__barrier_sync_count(barrier_id, nthreads)` for synchronization.
+- `barrier_synchronizer` uses `cuda::barrier::arrive_and_wait()` for synchronization.
