@@ -224,17 +224,7 @@ public:
   using level_type      = Level;
   using hierarchy_type  = Hierarchy;
 
-  /*this-group*/() = delete;
-
   __device__ /*this-group*/(const auto& hierarchy_like) noexcept;
-
-  /*this-group*/(const /*this-group*/&) = delete;
-
-  /*this-group*/(/*this-group*/&&) = delete;
-
-  /*this-group*/& operator=(const /*this-group*/&) = delete;
-
-  /*this-group*/& operator=(/*this-group*/&&) = delete;
 };
 
 template <typename Hierarchy>
@@ -266,18 +256,12 @@ public:
   using level_type      = warp_level;
   using hierarchy_type  = Hierarchy;
 
-  coalesced_group() = delete;
-
   __device__ explicit coalesced_group(const auto& hierarchy_like) noexcept;
-
-  coalesced_group(const coalesced_group&) = delete;
-
-  coalesced_group(coalesced_group&&) = delete;
-
-  coalesced_group& operator=(const coalesced_group&) = delete;
-
-  coalesced_group& operator=(coalesced_group&&) = delete;
 };
+
+template </*hierarchy-like-type*/ HierarchyLike>
+coalesced_group(const HierarchyLike&)
+  -> coalesced_group</*hierarchy-type-of*/<HierarchyLike>>;
 ```
 - groups all currently active threads within a warp based on `__activemask()`
 - useful for opprotunistic programming
@@ -286,3 +270,119 @@ public:
 
 ## Derived Groups
 ### Generic group
+[//]: <> (Put code on the left, the text on the right)
+```cpp
+template <typename Unit,
+          typename ParentGroup,
+          typename MappingResult,
+          typename SynchronizerInstance>
+class generic_group : public /*group-interface-for*/<generic_group>
+{
+public:
+  using unit_type       = Unit;
+  using level_type      = typename ParentGroup::level_type;
+  using hierarchy_type  = typename ParentGroup::hierarchy_type;
+
+  __device__ explicit generic_group(const Unit& unit,
+                                    const ParentGroup& parent_group,
+                                    auto&& mapping,
+                                    auto&& synchronizer) noexcept;
+
+};
+
+template </*hierarchy-level-type*/ Unit,
+          group ParentGroup,
+          typename Mapping,
+          typename Synchronizer>
+  requires /*unit-same-as-or-below*/<Unit, typename ParentGroup::unit_type>
+generic_group(const Unit&, const ParentGroup&, Mapping&&, Synchronizer&&)
+  -> generic_group<Unit,
+                   ParentGroup,
+                   /*result-of-mapping*/,
+                   /*synchronizer-instance*/>;
+```
+- splits `parent_group` into independent subgroups of `unit` units as defined by `mapping`
+- uses `synchronizer` for synchronization
+- construction is a collective operation
+
+## Derived Groups
+### Generic group
+[//]: <> (Put code on the left, the text on the right)
+```cpp
+template <typename Unit, typename ParentGroup, typename MappingResult>
+class virtual_group : public /*group-interface-for*/<virtual_group>
+{
+public:
+  using unit_type       = Unit;
+  using level_type      = typename ParentGroup::level_type;
+  using hierarchy_type  = typename ParentGroup::hierarchy_type;
+
+  __device__ explicit virtual_group(const Unit& unit,
+                                    const ParentGroup& parent_group,
+                                    auto&& mapping) noexcept;
+};
+
+template </*hierarchy-level-type*/ Unit, group ParentGroup, typename Mapping>
+  requires /*unit-same-as-or-below*/<Unit, typename ParentGroup::unit_type>
+virtual_group(const Unit&, const ParentGroup&, Mapping&&)
+  -> virtual_group<Unit, ParentGroup, /*result-of-mapping*/>;
+```
+- creates a virtual layer over the `parent_group`
+- splits `parent_group` into independent subgroups of `unit` units as defined by `mapping`
+- uses `parent_group` for synchronization
+- all subgroups must share the synchronization points
+- construction is a collective operation
+
+## Group View
+[//]: <> (Put code on the left, the text on the right)
+```cpp
+template <typename Unit, typename Group>
+class group_view : public /*group-interface-for*/<group_view>
+{
+public:
+  using unit_type       = Unit;
+  using level_type      = typename Group::level_type;
+  using hierarchy_type  = typename Group::hierarchy_type;
+
+  __device__ group_view(const Group& group) noexcept
+    requires cuda::std::same_as<Unit, typename Group::unit_type>;
+
+  __device__ explicit group_view(const Unit& unit, const Group& group) noexcept;
+};
+
+template <group Group>
+group_view(const Group&) -> group_view<typename Group::unit_type, Group>;
+
+template </*hierarchy-level-type*/ Unit, group Group>
+group_view(const Unit&, const Group&) -> group_view<Unit, Group>;
+```
+- non-owning view over `group`
+- allows to view `group` as if it had a different `unit`
+- implements the same queries as `group`
+
+## Group Mappings
+- Determines how the units are split into subgroups.
+- Needs to implement the `map` method that transforms */*group-mapping-result*/* types:
+```cpp
+template <typename T, typename Unit, typename ParentGroup, typename PrevMappingResult>
+concept /*group-mapping*/ = requires (T& t,
+                                      const Unit& unit,
+                                      const ParentGroup& parent_group,
+                                      const PrevMappingResult& prev_mapping_result)
+{
+  { t.map(unit, parent_group, prev_mapping_result) } -> /*group-mapping-result*/;
+  { t.map(non_exhaustive, unit, parent_group, prev_mapping_result) } -> /*group-mapping-result*/;
+};
+```
+- The overload that takes the ``non_exhaustive`` tag does the non-exhaustive mapping.
+- Mappings can be chained with ``|`` to transform the result from left to right.
+- Goal is to preserve as much compile-time information as possible.
+
+## Predefined Group Mappings
+[//]: <> (This slide should generate as much slides as there are items. Put the list on the left and highlight 1 item per slide. On the right show the description and make a diagram example how this mapping is used on threads within a single warp)
+- `identity_mapping` preserves the previous mapping result without further partitioning.
+- `group_by` splits each group into subgroups with the same specified number of units.
+- `group_as` splits each group into subgroups with individually specified sizes.
+- `take` selects the first specified number of units from each group.
+- `binary_partition` splits threads within a warp into two groups based on a predicate.
+- `composite_mapping` applies multiple mappings in sequence, composed with the pipe operator (`|`).
