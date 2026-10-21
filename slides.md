@@ -334,6 +334,7 @@ virtual_group(const Unit&, const ParentGroup&, Mapping&&)
 - uses `parent_group` for synchronization
 - all subgroups must share the synchronization points
 - construction is a collective operation
+- Cannot be created from a non-exhaustive mapping.
 
 ## Group View
 [//]: <> (Put code on the left, the text on the right)
