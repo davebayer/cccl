@@ -118,6 +118,18 @@ CCCL Cooperative Groups add support for non-exhaustive mapping.
 [//]: <> (Place here a picture of threads within a warp being grouped by 5, leaving 2 threads without any group. The parent groups should be placed on the left, then an arrow to the mapping that groups by 5 and arrow of the split parent group)
 
 ## Requirements on groups
+### How a group should look like
+It should specify:
+1. What are the units being grouped (threads, warps, ...)
+2. Within what level (block, grid, ...)
+3. In which hierarchy
+
+It should provide:
+1. APIs for queries
+2. APIs for synchronization
+
+## Requirements on groups
+### The group concept
 [//]: <> (2 columns, the concept is on the left)
 ```cpp
 template <typename T>
@@ -184,3 +196,18 @@ concept group = requires (const T& t)
   3. Current `group`'s rank within `/*parent-group-or-qlevel*/` returned as `T`
   4. Same as `group.count_as</*default-T*/>(/*parent-group-or-qlevel*/)`
   5. Same as `group.rank_as</*default-T*/>(/*parent-group-or-qlevel*/)`
+
+## Predefined Groups
+[//]: <> (Make this slide somehow interesting, don't make it just a list)
+CCCL Cooperative Groups come with several predefined group types:
+
+- Implicit groups without a parent group. They are essential building blocks for other groups.
+  - this_{level} groups
+  - coalesced_group
+
+- Groups that are created by splitting another group.
+  - generic_group
+  - virtual_group
+
+- A non-owning group view over a group.
+  - group_view
