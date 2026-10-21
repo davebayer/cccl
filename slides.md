@@ -113,3 +113,70 @@ When creating a group, *how the units are grouped* are independent on and *how t
 ### Optional participation
 CCCL Cooperative Groups add support for non-exhaustive mapping.
 [//]: <> (Place here a picture of threads within a warp being grouped by 5, leaving 2 threads without any group. The parent groups should be placed on the left, then an arrow to the mapping that groups by 5 and arrow of the split parent group)
+
+## Requirements on groups
+[//]: <> (2 columns, the concept is on the left)
+```cpp
+template <typename T>
+concept group = requires (T& t, const T& ct)
+{
+  // Member types.
+  requires /*is-hierarchy-level*/<typename T::unit_type>;             // (1)
+  requires /*is-hierarchy-level*/<typename T::level_type>;            // (2)
+  requires /*is-hierarchy*/<typename T::hierarchy_type>;              // (3)
+
+  // Getters.
+  { ct.hierarchy() } noexcept
+    -> cuda::std::same_as<const typename T::hierarchy_type&>;         // (4)
+
+  // Synchronization.
+  { t.sync() } noexcept -> cuda::std::same_as<void>;                  // (5)
+  { t.sync_aligned() } noexcept -> cuda::std::same_as<void>;          // (6)
+
+  // Properties.
+  { T::is_always_contiguous() } noexcept -> cuda::std::same_as<bool>; // (7), must be constexpr
+};
+```
+1. what units are being grouped
+2. within which level
+3. in which hierarchy
+4. hierarchy getter
+5. synchronizes all units
+6. synchronizes all units, requires context alignment
+7. `true` if each group occupies a contiguous range of physical units
+
+## Group queries
+[//]: <> (2 columns, the concept is on the left)
+- Sub-unit queries
+  - Query information about levels that are below the group's unit type.
+  ```cpp
+  qunit.static_count(group); // (1), always constexpr
+  qunit.count_as<T>(group);  // (2)
+  qunit.rank_as<T>(group);   // (3)
+
+  qunit.count(group);        // (4)
+  qunit.rank(group);         // (5)
+  qunit.is_root_rank(group); // (6)
+  ```
+  1. Statically known number of `qunit` within `group`
+  2. Number of `qunit` within `group` returned as `T`
+  3. Current `qunit`'s rank within `group` returned as `T`
+  4. Same as `qunit.count_as</*default-T*/>(group)`
+  5. Same as `qunit.rank_as</*default-T*/>(group)`
+  6. Same as `qunit.rank(group) == 0`
+
+- Super-level queries
+  - Query information about levels that are above the group's upper boundary type.
+  ```cpp
+  group.static_count(/*parent-group-or-qlevel*/); // (1), always constexpr
+  group.count_as<T>(/*parent-group-or-qlevel*/);  // (2)
+  group.rank_as<T>(/*parent-group-or-qlevel*/);   // (3)
+
+  group.count(/*parent-group-or-qlevel*/);        // (4)
+  group.rank(/*parent-group-or-qlevel*/);         // (5)
+  ```
+  1. Statically known number of `group` within `/*parent-group-or-qlevel*/`
+  2. Number of `group` within `/*parent-group-or-qlevel*/` returned as `T`.
+  3. Current `group`'s rank within `/*parent-group-or-qlevel*/` returned as `T`
+  4. Same as `group.count_as</*default-T*/>(/*parent-group-or-qlevel*/)`
+  5. Same as `group.rank_as</*default-T*/>(/*parent-group-or-qlevel*/)`
