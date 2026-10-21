@@ -180,7 +180,7 @@ concept group = requires (const T& t)
   group.rank(/*parent-group-or-qlevel*/);         // (5)
   ```
   1. Statically known number of `group` within `/*parent-group-or-qlevel*/`
-  2. Number of `group` within `/*parent-group-or-qlevel*/` returned as `T`.
+  2. Number of `group` within `/*parent-group-or-qlevel*/` returned as `T`
   3. Current `group`'s rank within `/*parent-group-or-qlevel*/` returned as `T`
   4. Same as `group.count_as</*default-T*/>(/*parent-group-or-qlevel*/)`
   5. Same as `group.rank_as</*default-T*/>(/*parent-group-or-qlevel*/)`
