@@ -10,7 +10,9 @@
 - We need APIs that will implement algorithms that solve the common problems
   - CCCL Cooperative Algorithms
 
-## When?
+## Timeline
+
+The GTC 2027 goal was Jake's idea.
 Ambitious goal: GTC 03/27
 
 [//]: <> (The contents should be a timeline of 2 columns, the first one for groups, the second one for algorithms, those lines with ? comment are plans, make them different from the others)
