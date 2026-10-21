@@ -68,12 +68,14 @@ Ambitious goal: GTC 03/27
 - CTK's Cooperative Groups
   ```cpp
   // What cooperative_groups::this_thread_block().thread_rank() would compute.
-  const auto thread_rank = (threadIdx.z * blockDim.y + threadIdx.y) * blockDim.x + threadIdx.x;
+  const auto thread_rank =
+    (threadIdx.z * blockDim.y + threadIdx.y) * blockDim.x + threadIdx.x;
   ```
 - CCCL Cooperative Groups
   ```cpp
   // What CCCL Cooperative Groups equivalent would compute.
-  const auto thread_rank = (threadIdx.z * blockDim.y + threadIdx.y) * blockDim.x + threadIdx.x;
+  const auto thread_rank =
+    (threadIdx.z * blockDim.y + threadIdx.y) * blockDim.x + threadIdx.x;
   ```
 
 ## What makes them different?
@@ -82,7 +84,8 @@ Ambitious goal: GTC 03/27
 - CTK's Cooperative Groups
   ```cpp
   // What cooperative_groups::this_thread_block().thread_rank() would compute.
-  const auto thread_rank = (threadIdx.z * blockDim.y + threadIdx.y) * blockDim.x + threadIdx.x;
+  const auto thread_rank =
+    (threadIdx.z * blockDim.y + threadIdx.y) * blockDim.x + threadIdx.x;
   ```
 - CCCL Cooperative Groups
   ```cpp
@@ -118,23 +121,24 @@ CCCL Cooperative Groups add support for non-exhaustive mapping.
 [//]: <> (2 columns, the concept is on the left)
 ```cpp
 template <typename T>
-concept group = requires (T& t, const T& ct)
+concept group = requires (const T& t)
 {
   // Member types.
-  requires /*is-hierarchy-level*/<typename T::unit_type>;             // (1)
-  requires /*is-hierarchy-level*/<typename T::level_type>;            // (2)
-  requires /*is-hierarchy*/<typename T::hierarchy_type>;              // (3)
+  requires /*is-hierarchy-level*/<typename T::unit_type>;     // (1)
+  requires /*is-hierarchy-level*/<typename T::level_type>;    // (2)
+  requires /*is-hierarchy*/<typename T::hierarchy_type>;      // (3)
 
   // Getters.
-  { ct.hierarchy() } noexcept
-    -> cuda::std::same_as<const typename T::hierarchy_type&>;         // (4)
+  { t.hierarchy() } noexcept
+    -> cuda::std::same_as<const typename T::hierarchy_type&>; // (4)
 
   // Synchronization.
-  { t.sync() } noexcept -> cuda::std::same_as<void>;                  // (5)
-  { t.sync_aligned() } noexcept -> cuda::std::same_as<void>;          // (6)
+  { t.sync() } noexcept -> cuda::std::same_as<void>;          // (5)
+  { t.sync_aligned() } noexcept -> cuda::std::same_as<void>;  // (6)
 
   // Properties.
-  { T::is_always_contiguous() } noexcept -> cuda::std::same_as<bool>; // (7), must be constexpr
+  { T::is_always_contiguous() } noexcept
+    -> cuda::std::same_as<bool>;                              // (7), must be constexpr
 };
 ```
 1. what units are being grouped
@@ -146,7 +150,7 @@ concept group = requires (T& t, const T& ct)
 7. `true` if each group occupies a contiguous range of physical units
 
 ## Group queries
-[//]: <> (2 columns)
+[//]: <> (2 columns, fit it in one slide)
 - Sub-unit queries
   - Query information about levels that are below the group's unit type.
   ```cpp
