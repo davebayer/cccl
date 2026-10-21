@@ -152,7 +152,7 @@ concept group = requires (const T& t)
 
   // Properties.
   { T::is_always_contiguous() } noexcept
-    -> cuda::std::same_as<bool>;                              // (7), must be constexpr
+    -> cuda::std::same_as<bool>;                              // (7)
 };
 ```
 1. what units are being grouped
