@@ -146,7 +146,7 @@ concept group = requires (T& t, const T& ct)
 7. `true` if each group occupies a contiguous range of physical units
 
 ## Group queries
-[//]: <> (2 columns, the concept is on the left)
+[//]: <> (2 columns)
 - Sub-unit queries
   - Query information about levels that are below the group's unit type.
   ```cpp
