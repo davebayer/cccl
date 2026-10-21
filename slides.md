@@ -90,4 +90,26 @@ Ambitious goal: GTC 03/27
   const auto thread_rank = threadIdx.x;
   ```
 
-##
+## What makes them different?
+### Group queries
+[//]: <> (Here I want 2 columns, again the picture of GPU threads within a block, Both should show the same thread rank)
+- CTK's Cooperative Groups
+- CCCL Cooperative Groups
+
+## What makes them different?
+### Group queries
+[//]: <> (Here I want 2 columns, again the picture of GPU first and third warp within a block)
+- CTK's Cooperative Groups
+  [//]: <> (Only shows thread rank)
+- CCCL Cooperative Groups
+  [//]: <> (Shows both thread rank and warp rank)
+
+## What makes them different?
+### Separation of Partition and Synchronization
+When creating a group, *how the units are grouped* are independent on and *how the units are synchronized*.
+[//]: <> (Place here similar picture to docs/cudax/coop/group/images/group-design.svg)
+
+## What makes them different?
+### Optional participation
+CCCL Cooperative Groups add support for non-exhaustive mapping.
+[//]: <> (Place here a picture of threads within a warp being grouped by 5, leaving 2 threads without any group. The parent groups should be placed on the left, then an arrow to the mapping that groups by 5 and arrow of the split parent group)
