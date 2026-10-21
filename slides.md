@@ -166,7 +166,7 @@ concept group = requires (const T& t)
 - Sub-unit queries
   - Query information about levels that are below the group's unit type.
   ```cpp
-  qunit.static_count(group); // (1), always constexpr
+  qunit.static_count(group); // (1)
   qunit.count_as<T>(group);  // (2)
   qunit.rank_as<T>(group);   // (3)
 
@@ -184,7 +184,7 @@ concept group = requires (const T& t)
 - Super-level queries
   - Query information about levels that are above the group's upper boundary type.
   ```cpp
-  group.static_count(/*parent-group-or-qlevel*/); // (1), always constexpr
+  group.static_count(/*parent-group-or-qlevel*/); // (1)
   group.count_as<T>(/*parent-group-or-qlevel*/);  // (2)
   group.rank_as<T>(/*parent-group-or-qlevel*/);   // (3)
 
@@ -402,6 +402,8 @@ concept /*group-synchronizer*/ = requires (T& t,
 };
 ```
 
+- Synchronizers need not support every combination of `Unit`, `ParentGroup`, and `MappingResult`.
+
 ## Predefined Group Synchronizers
 [//]: <> (This slide should generate as much slides as there are items. Put the list on the left and highlight 1 item per slide. On the right show how the type can be constructed and what's the sync and sync_aligned() behaviour of the group is)
 - `level_synchronizer` synchronizes all threads within the group's level.
@@ -552,7 +554,8 @@ __device__ void coop_algorithm(const auto& group, ...)
 __global__ void what_we_have(auto config)
 {
   // group_by can be non-exhaustive, 32 / 3 has remainder, 2 threads get empty g
-  auto g = cudax::coop::make_optional_group<cudax::coop::generic_group>(
+  auto g = cudax::coop::make_group<cudax::coop::generic_group>(
+    cudax::coop::non_exhaustive,
     cuda::gpu_thread,
     cudax::coop::this_warp{config},
     cudax::coop::group_by{3}, // non_exhaustive tag can be removed
@@ -574,7 +577,8 @@ __device__ void coop_algorithm(const auto& group, ...)
 __global__ void what_we_have(auto config)
 {
   // group_by can be non-exhaustive, 32 / 3 has remainder, 2 threads get empty g
-  auto g = cudax::coop::make_optional_group<cudax::coop::generic_group>(
+  auto g = cudax::coop::make_group<cudax::coop::generic_group>(
+    cudax::coop::non_exhaustive,
     cuda::gpu_thread,
     cudax::coop::this_warp{config},
     cudax::coop::group_by{3}, // non_exhaustive tag can be removed
