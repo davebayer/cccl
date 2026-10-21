@@ -202,12 +202,87 @@ concept group = requires (const T& t)
 CCCL Cooperative Groups come with several predefined group types:
 
 - Implicit groups without a parent group. They are essential building blocks for other groups.
-  - this_{level} groups
-  - coalesced_group
+  - `this_{level} groups`
+  - `coalesced_group` (new)
 
-- Groups that are created by splitting another group.
-  - generic_group
-  - virtual_group
+- Groups that are created by splitting another group. We call them derived.
+  - `generic_group`
+  - `virtual_group` (new)
 
 - A non-owning group view over a group.
-  - group_view
+  - `group_view` (new)
+
+## Implicit Groups
+### This groups
+[//]: <> (Put code on the left, the text on the right)
+```cpp
+template <typename Level, typename Hierarchy>
+class /*this-group*/ : public /*group-interface-for*/</*this-group*/>
+{
+public:
+  using unit_type       = Level;
+  using level_type      = Level;
+  using hierarchy_type  = Hierarchy;
+
+  /*this-group*/() = delete;
+
+  __device__ /*this-group*/(const auto& hierarchy_like) noexcept;
+
+  /*this-group*/(const /*this-group*/&) = delete;
+
+  /*this-group*/(/*this-group*/&&) = delete;
+
+  /*this-group*/& operator=(const /*this-group*/&) = delete;
+
+  /*this-group*/& operator=(/*this-group*/&&) = delete;
+};
+
+template <typename Hierarchy>
+class this_thread : public /*this-group*/<thread_level, Hierarchy> {};
+template <typename Hierarchy>
+class this_warp : public /*this-group*/<warp_level, Hierarchy> {};
+template <typename Hierarchy>
+class this_block : public /*this-group*/<block_level, Hierarchy> {};
+template <typename Hierarchy>
+class this_cluster : public /*this-group*/<cluster_level, Hierarchy> {};
+template <typename Hierarchy>
+class this_grid : public /*this-group*/<grid_level, Hierarchy> {};
+```
+- one class per level
+- contain a single unit within the same level
+- building blocks for other groups
+- always contiguous
+- use `level_synchronizer` for synchronization
+
+## Implicit Groups
+### Coalesced group
+[//]: <> (Put code on the left, the text on the right)
+```cpp
+template <typename Hierarchy>
+class coalesced_group : public /*group-interface-for*/<coalesced_group>
+{
+public:
+  using unit_type       = thread_level;
+  using level_type      = warp_level;
+  using hierarchy_type  = Hierarchy;
+
+  coalesced_group() = delete;
+
+  __device__ explicit coalesced_group(const auto& hierarchy_like) noexcept;
+
+  coalesced_group(const coalesced_group&) = delete;
+
+  coalesced_group(coalesced_group&&) = delete;
+
+  coalesced_group& operator=(const coalesced_group&) = delete;
+
+  coalesced_group& operator=(coalesced_group&&) = delete;
+};
+```
+- groups all currently active threads within a warp based on `__activemask()`
+- useful for opprotunistic programming
+- it is not always contiguous
+- uses `lane_synchronizer` for synchronization
+
+## Derived Groups
+### Generic group
