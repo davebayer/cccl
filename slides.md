@@ -408,3 +408,194 @@ concept /*group-synchronizer*/ = requires (T& t,
 - `lane_synchronizer` uses `__syncwarp(mask)` for synchronization.
 - `interwarp_synchronizer` uses `__barrier_sync_count(barrier_id, nthreads)` for synchronization.
 - `barrier_synchronizer` uses `cuda::barrier::arrive_and_wait()` for synchronization.
+
+## Optional participation
+### What we had previously
+Exhaustivity is a property of the mapping.
+
+Scenario 1
+```cpp
+__device__ void coop_algorithm(const auto& group, ...)
+{
+  // We need to check if the thread is part of the current group.
+  assert(cuda::gpu_thread.is_part_of(group));
+
+  // ...
+}
+
+__global__ void what_we_had(auto config)
+{
+  // group_by is forced to be always exhaustive, 32 / 3 has remainder, thus assertion triggers.
+  cudax::coop::generic_group g{cuda::gpu_thread,
+                               cudax::coop::this_warp{config},
+                               cudax::coop::group_by{3},
+                               cudax::coop::lane_synchronizer{}};
+
+  coop_algorithm(g, ...); // never reached
+}
+```
+
+## Optional participation
+### What we had previously
+Exhaustivity is a property of the mapping.
+
+Scenario 2
+```cpp
+__device__ void coop_algorithm(const auto& group, ...)
+{
+  // We need to check if the thread is part of the current group.
+  assert(cuda::gpu_thread.is_part_of(group));
+
+  // ...
+}
+
+__global__ void what_we_had(auto config)
+{
+  // group_by non-exhaustive, 32 / 3 has remainder, 2 threads get invalid g
+  cudax::coop::generic_group g{cuda::gpu_thread,
+                               cudax::coop::this_warp{config},
+                               cudax::coop::group_by{cudax::coop::non_exhaustive, 3},
+                               cudax::coop::lane_synchronizer{}};
+
+  coop_algorithm(g, ...); // triggers assertion
+}
+```
+
+## Optional participation
+### What we had previously
+Exhaustivity is a property of the mapping.
+
+Scenario 3
+```cpp
+__device__ void coop_algorithm(const auto& group, ...)
+{
+  // We need to check if the thread is part of the current group.
+  assert(cuda::gpu_thread.is_part_of(group));
+
+  // ...
+}
+
+__global__ void what_we_had(auto config)
+{
+  // group_by non-exhaustive, 32 / 3 has remainder, 2 threads get invalid g
+  cudax::coop::generic_group g{cuda::gpu_thread,
+                               cudax::coop::this_warp{config},
+                               cudax::coop::group_by{cudax::coop::non_exhaustive, 3},
+                               cudax::coop::lane_synchronizer{}};
+
+  // ok
+  if (cuda::gpu_thread.is_part_of(g))
+  {
+    coop_algorithm(g, ...);
+  }
+}
+```
+
+## Optional participation
+### What we had previously
+Exhaustivity is a property of the mapping.
+
+Conclusion:
+- You need to constantly check whether a group is valid
+- It's easy to make a mistake, because you are left with an invalid object
+
+## Optional participation
+### What we have now
+Exhaustivity is a construction parameter.
+.. but for that we need a factory function, that returns `cuda::std::optional`
+```cpp
+template <template <typename...> typename GroupTempl>
+[[nodiscard]] __device__
+auto make_group(auto&&... args) noexcept
+  -> /*GroupTempl-instantiated-with-args*/;                      // (1)
+
+template <template <typename...> typename GroupTempl>
+[[nodiscard]] __device__
+auto make_group(const non_exhaustive_t&, auto&&... args) noexcept
+  -> cuda::std::optional</*GroupTempl-instantiated-with-args*/>; // (2)
+```
+1. Equivalent to `GroupTempl{args...}`.
+2. Does non-exhaustive mapping and optionally returns the initialized group.
+
+As a consequence, a group object is never invalid.
+
+## Optional participation
+### What we have now
+Scenario 1 works the same as before.
+```cpp
+__device__ void coop_algorithm(const auto& group, ...)
+{
+  // We needn't to check for the group because it's always valid.
+}
+
+__global__ void what_we_have(auto config)
+{
+  // group_by is forced to be always exhaustive, 32 / 3 has remainder, thus assertion triggers.
+  cudax::coop::generic_group g{cuda::gpu_thread,
+                               cudax::coop::this_warp{config},
+                               cudax::coop::group_by{3},
+                               cudax::coop::lane_synchronizer{}};
+
+  coop_algorithm(g, ...); // never reached
+}
+```
+
+## Optional participation
+### What we have now
+Scenario 2
+```cpp
+__device__ void coop_algorithm(const auto& group, ...)
+{
+  // We needn't to check for the group because it's always valid.
+}
+
+__global__ void what_we_have(auto config)
+{
+  // group_by can be non-exhaustive, 32 / 3 has remainder, 2 threads get empty g
+  auto g = cudax::coop::make_optional_group<cudax::coop::generic_group>(
+    cuda::gpu_thread,
+    cudax::coop::this_warp{config},
+    cudax::coop::group_by{3}, // non_exhaustive tag can be removed
+    cudax::coop::lane_synchronizer{});
+
+  coop_algorithm(*g, ...); // triggers assertion inside optional::operator*
+}
+```
+
+## Optional participation
+### What we have now
+Scenario 3
+```cpp
+__device__ void coop_algorithm(const auto& group, ...)
+{
+  // We needn't to check for the group because it's always valid.
+}
+
+__global__ void what_we_have(auto config)
+{
+  // group_by can be non-exhaustive, 32 / 3 has remainder, 2 threads get empty g
+  auto g = cudax::coop::make_optional_group<cudax::coop::generic_group>(
+    cuda::gpu_thread,
+    cudax::coop::this_warp{config},
+    cudax::coop::group_by{3}, // non_exhaustive tag can be removed
+    cudax::coop::lane_synchronizer{});
+
+  // ok
+  if (g)
+  {
+    coop_algorithm(*g, ...);
+  }
+}
+```
+
+## Interoperability with CTK's Cooperative Groups
+Every CTK's Cooperative Groups group has a CCCL equivalent.
+[//]: <> (Add a table that maps CTK CG's groups to CCCL groups)
+
+We can just extend the `make_group` factory function:
+```cpp
+[[nodiscard]] __device__ group auto
+make_group(const auto& cg_group, const auto& hierarchy_like) noexcept;
+```
+
+# Thank you for your attention
