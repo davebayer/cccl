@@ -55,6 +55,8 @@ TEST_FUNC constexpr void test()
   constexpr int digits = cuda::std::numeric_limits<T>::digits;
   constexpr T all_ones = cuda::std::numeric_limits<T>::max();
   constexpr T high_bit = static_cast<T>(T{1} << (digits - 1));
+  constexpr T mixed_bits =
+    static_cast<T>((static_cast<T>(0x0123456789ABCDEFull) << (digits / 2)) | static_cast<T>(0xFEDCBA9876543210ull));
   constexpr T values[] = {
     T{0},
     T{1},
@@ -62,6 +64,10 @@ TEST_FUNC constexpr void test()
     T{0b101},
     T{0b11001001},
     high_bit,
+    static_cast<T>(all_ones >> (digits / 2)),
+    static_cast<T>(all_ones << (digits / 2)),
+    static_cast<T>(0xFEDCBA9876543210ull),
+    mixed_bits,
     all_ones,
     static_cast<T>(all_ones - T{1}),
   };
@@ -73,6 +79,8 @@ TEST_FUNC constexpr void test()
       test_bit_repeat(value, width);
     }
 
+    test_bit_repeat(value, (1 << 27) + 1);
+    test_bit_repeat(value, (1 << 28) + 1);
     test_bit_repeat(value, cuda::std::numeric_limits<int>::max());
   }
 }

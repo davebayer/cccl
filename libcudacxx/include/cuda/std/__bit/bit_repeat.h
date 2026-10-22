@@ -21,10 +21,10 @@
 #  pragma system_header
 #endif // no system header
 
+#include <cuda/__bit/bit_trunc.h>
 #include <cuda/__bit/bitmask.h>
 #include <cuda/std/__bit/shl.h>
 #include <cuda/std/__concepts/concept_macros.h>
-#include <cuda/std/__type_traits/conditional.h>
 #include <cuda/std/__type_traits/is_unsigned_integer.h>
 #include <cuda/std/__type_traits/num_bits.h>
 #include <cuda/std/cstdint>
@@ -57,21 +57,90 @@ template <class _Tp>
 template <class _Tp>
 [[nodiscard]] _CCCL_DEVICE_API _Tp __bit_repeat_impl_device(const _Tp __v, const int __n) noexcept(false)
 {
-  if constexpr (sizeof(_Tp) <= sizeof(uint64_t))
+  if constexpr (sizeof(_Tp) <= sizeof(uint32_t))
   {
-    using _Up = conditional_t<sizeof(_Tp) < sizeof(uint32_t), uint32_t, _Tp>;
-
     constexpr auto __width = unsigned{__num_bits_v<_Tp>};
     const auto __bounded_n = ::min(static_cast<unsigned>(__n), __width);
 
-    _Up __ret = __v & ::cuda::bitmask<_Up>(0, __bounded_n);
+    uint32_t __ret = ::cuda::bit_trunc(__v, static_cast<int>(__bounded_n));
 
     _CCCL_PRAGMA_UNROLL_FULL()
     for (unsigned __i = 1; __i < __width; __i *= 2)
     {
-      __ret = ::cuda::std::shl(__ret, __bounded_n * __i) | __ret;
+      __ret |= ::cuda::std::shl(__ret, __bounded_n * __i);
     }
     return static_cast<_Tp>(__ret);
+  }
+  else if constexpr (sizeof(_Tp) == sizeof(uint64_t))
+  {
+    constexpr auto __width = unsigned{__num_bits_v<_Tp>};
+    const auto __bounded_n = ::min(static_cast<unsigned>(__n), __width);
+
+    auto __lo       = static_cast<uint32_t>(__v);
+    const auto __hi = static_cast<uint32_t>(__v >> 32);
+
+    // Clear all bits above __bounded_n in __lo.
+    __lo = ::cuda::bit_trunc(__lo, static_cast<int>(__bounded_n));
+
+    // Fill the low word; shl safely handles shifts >= 32.
+    __lo |= ::cuda::std::shl(__lo, __bounded_n);
+    __lo |= ::cuda::std::shl(__lo, __bounded_n * 2);
+    __lo |= ::cuda::std::shl(__lo, __bounded_n * 4);
+    __lo |= ::cuda::std::shl(__lo, __bounded_n * 8);
+    __lo |= ::cuda::std::shl(__lo, __bounded_n * 16);
+
+    // Scale widths <= 32 by a power of two to a period in [17, 32].
+    // For larger widths, the unsigned overshift yields zero for this unused candidate.
+    const auto __period = ::cuda::std::shl(__bounded_n, static_cast<uint32_t>(::__clz(__bounded_n - 1) - 27));
+
+    // Continue the pattern from bit 32; clamping also handles a 32-bit period.
+    const auto __tail     = ::__funnelshift_lc(__lo, 0u, __period);
+    const auto __small_hi = ::__funnelshift_lc(__lo, __tail, __period);
+
+    // For widths > 32, keep the original high pattern bits and start the next copy of __lo.
+    const auto __shift    = 64 - __bounded_n;
+    const auto __large_hi = ::__funnelshift_r(::cuda::std::shl(__hi, __shift), __lo, __shift);
+    return (uint64_t{__bounded_n > 32 ? __large_hi : __small_hi} << 32) | __lo;
+  }
+  else if constexpr (sizeof(_Tp) == 16)
+  {
+    const auto __pattern_width = static_cast<unsigned>(__n);
+    auto __word0               = ::cuda::bit_trunc(static_cast<uint32_t>(__v), __pattern_width);
+    auto __word1               = static_cast<uint32_t>(__v >> 32);
+    const auto __word2         = static_cast<uint32_t>(__v >> 64);
+    const auto __word3         = static_cast<uint32_t>(__v >> 96);
+
+    // Bound shift counts so doubling them cannot wrap for large pattern widths.
+    const auto __repeat_width = ::min(__pattern_width, 32u);
+    __word0 |= ::cuda::std::shl(__word0, __repeat_width);
+    __word0 |= ::cuda::std::shl(__word0, __repeat_width * 2);
+    __word0 |= ::cuda::std::shl(__word0, __repeat_width * 4);
+    __word0 |= ::cuda::std::shl(__word0, __repeat_width * 8);
+    __word0 |= ::cuda::std::shl(__word0, __repeat_width * 16);
+
+    // For widths < 64, share a period in [32, 63] between the low and high halves.
+    const auto __period      = ::cuda::std::shl(__pattern_width, static_cast<unsigned>(::__clz(__pattern_width) - 26));
+    const auto __half_period = __period >> 1;
+    const auto __tail        = ::__funnelshift_lc(__word0, 0u, __half_period);
+    const auto __small_word1 = ::__funnelshift_lc(__word0, __tail, __half_period);
+    const auto __shift32     = __pattern_width - 32;
+    const auto __large_word1 = ::cuda::bit_trunc(__word1, __shift32) | ::cuda::std::shl(__word0, __shift32);
+    __word1                  = __pattern_width >= 32 ? __large_word1 : __small_word1;
+
+    // Wrapped counts continue the period without subtracting 32.
+    const auto __small_word2 = ::__funnelshift_l(__word0, __word1, __period);
+    const auto __small_word3 = ::__funnelshift_l(__word1, __small_word2, __period);
+
+    // Preserve high input bits and insert the repeated prefix after them.
+    const auto __shift64     = __pattern_width - 64;
+    const auto __large_word2 = ::cuda::bit_trunc(__word2, __shift64) | ::cuda::std::shl(__word0, __shift64);
+    const auto __shift96     = ::max(__n - 96, 0);
+    const auto __large_word3 =
+      ::cuda::bit_trunc(__word3, __shift96)
+      | ::cuda::std::shl(::__funnelshift_lc(__word0, __word1, __shift64), static_cast<unsigned>(__shift96));
+    const auto __result_word2 = __pattern_width >= 64 ? __large_word2 : __small_word2;
+    const auto __result_word3 = __pattern_width >= 64 ? __large_word3 : __small_word3;
+    return (_Tp{__result_word3} << 96) | (_Tp{__result_word2} << 64) | (_Tp{__word1} << 32) | __word0;
   }
   else
   {
