@@ -97,11 +97,9 @@ template <class _Tp>
 template <class = void>
 [[nodiscard]]
 _CCCL_DEVICE_API ::cuda::std::uint32_t
-__szext_clamp_sm70(const ::cuda::std::uint32_t __v, const ::cuda::std::uint32_t __n) noexcept
+__szext_clamp(const ::cuda::std::uint32_t __v, const ::cuda::std::uint32_t __n) noexcept
 {
-  ::cuda::std::uint32_t __ret;
-  asm("szext.clamp.u32 %0, %1, %2;" : "=r"(__ret) : "r"(__v), "r"(__n));
-  return __ret;
+  return __n >= 32 ? __v : __v & ((1u << __n) - 1u);
 }
 
 template <class _Tp>
@@ -114,25 +112,25 @@ template <class _Tp>
 
   if constexpr (sizeof(_Tp) <= sizeof(uint32_t))
   {
-    return static_cast<_Tp>(::cuda::__szext_clamp_sm70(uint32_t{__v}, __un));
+    return static_cast<_Tp>(::cuda::__szext_clamp(uint32_t{__v}, __un));
   }
   else if constexpr (sizeof(_Tp) == sizeof(uint64_t))
   {
-    const auto __lo = ::cuda::__szext_clamp_sm70(static_cast<uint32_t>(__v), __un);
-    const auto __hi = ::cuda::__szext_clamp_sm70(
-      static_cast<uint32_t>(__v >> 32), static_cast<uint32_t>(::cuda::std::max(__n - 32, 0)));
+    const auto __lo = ::cuda::__szext_clamp(static_cast<uint32_t>(__v), __un);
+    const auto __hi =
+      ::cuda::__szext_clamp(static_cast<uint32_t>(__v >> 32), static_cast<uint32_t>(::cuda::std::max(__n - 32, 0)));
     return _Tp{__lo} | (_Tp{__hi} << 32);
   }
 #  if _CCCL_HAS_INT128()
   else if constexpr (sizeof(_Tp) == sizeof(__uint128_t))
   {
-    const auto __w0 = ::cuda::__szext_clamp_sm70(static_cast<uint32_t>(__v), __un);
-    const auto __w1 = ::cuda::__szext_clamp_sm70(
-      static_cast<uint32_t>(__v >> 32), static_cast<uint32_t>(::cuda::std::max(__n - 32, 0)));
-    const auto __w2 = ::cuda::__szext_clamp_sm70(
-      static_cast<uint32_t>(__v >> 64), static_cast<uint32_t>(::cuda::std::max(__n - 64, 0)));
-    const auto __w3 = ::cuda::__szext_clamp_sm70(
-      static_cast<uint32_t>(__v >> 96), static_cast<uint32_t>(::cuda::std::max(__n - 96, 0)));
+    const auto __w0 = ::cuda::__szext_clamp(static_cast<uint32_t>(__v), __un);
+    const auto __w1 =
+      ::cuda::__szext_clamp(static_cast<uint32_t>(__v >> 32), static_cast<uint32_t>(::cuda::std::max(__n - 32, 0)));
+    const auto __w2 =
+      ::cuda::__szext_clamp(static_cast<uint32_t>(__v >> 64), static_cast<uint32_t>(::cuda::std::max(__n - 64, 0)));
+    const auto __w3 =
+      ::cuda::__szext_clamp(static_cast<uint32_t>(__v >> 96), static_cast<uint32_t>(::cuda::std::max(__n - 96, 0)));
     return _Tp{__w0} | (_Tp{__w1} << 32) | (_Tp{__w2} << 64) | (_Tp{__w3} << 96);
   }
 #  endif // _CCCL_HAS_INT128()
