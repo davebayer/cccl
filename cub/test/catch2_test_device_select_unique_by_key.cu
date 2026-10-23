@@ -11,6 +11,7 @@
 
 #include <algorithm>
 
+#include "catch2_test_device_select_common.cuh"
 #include "catch2_test_launch_helper.h"
 #include "cub_test_macros.h"
 
@@ -111,6 +112,40 @@ using huge_types = c2h::type_list<c2h::custom_type_t<c2h::equal_comparable_t, c2
                                   c2h::custom_type_t<c2h::equal_comparable_t, c2h::huge_data<256>::type>>;
 
 using types = c2h::type_list<std::uint8_t, std::uint32_t>;
+
+CUB_TEST("DeviceSelect::UniqueByKey preserves a templated equality operator with proxy iterators",
+         "[device][select_unique_by_key]",
+         CUB_SMALL)
+{
+  using type = std::int32_t;
+  const c2h::host_vector<type> input_keys{1, 2, 3, 11, 12, 21};
+  const c2h::host_vector<type> input_values{10, 20, 30, 40, 50, 60};
+  const c2h::host_vector<type> expected_keys{1, 11, 21};
+  const c2h::host_vector<type> expected_values{10, 40, 60};
+  c2h::device_vector<type> keys_in   = input_keys;
+  c2h::device_vector<type> values_in = input_values;
+  c2h::device_vector<type> keys_out(input_keys.size());
+  c2h::device_vector<type> values_out(input_values.size());
+  c2h::device_vector<type> num_selected(1);
+
+  STATIC_REQUIRE_FALSE(
+    cuda::std::indirect_binary_predicate<same_decade_t, decltype(keys_in.begin()), decltype(keys_in.begin())>);
+
+  select_unique_by_key(
+    keys_in.begin(),
+    values_in.begin(),
+    keys_out.begin(),
+    values_out.begin(),
+    num_selected.begin(),
+    input_keys.size(),
+    same_decade_t{});
+
+  REQUIRE(num_selected[0] == 3);
+  keys_out.resize(expected_keys.size());
+  values_out.resize(expected_values.size());
+  REQUIRE(keys_out == expected_keys);
+  REQUIRE(values_out == expected_values);
+}
 
 CUB_TEST("DeviceSelect::UniqueByKey can run with empty input", "[device][select_unique_by_key]", CUB_SMALL, types)
 {

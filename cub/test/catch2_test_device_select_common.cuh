@@ -53,6 +53,16 @@ struct eq_mod3_t
   }
 };
 
+// A single template parameter deliberately excludes mixed value/proxy-reference arguments.
+struct same_decade_t
+{
+  template <typename T>
+  __host__ __device__ bool operator()(const T& a, const T& b) const
+  {
+    return a / 10 == b / 10;
+  }
+};
+
 template <typename T, typename TargetT>
 struct modx_and_add_divy
 {

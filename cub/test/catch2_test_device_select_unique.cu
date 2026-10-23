@@ -93,6 +93,36 @@ using all_types =
 
 using types = c2h::type_list<std::uint8_t, std::uint32_t>;
 
+CUB_TEST("DeviceSelect::Unique preserves a templated equality operator with proxy iterators",
+         "[device][select_unique]",
+         CUB_SMALL)
+{
+  using type = std::int32_t;
+  const c2h::host_vector<type> input{1, 2, 3, 11, 12, 21};
+  const c2h::host_vector<type> expected{1, 11, 21};
+  c2h::device_vector<type> in = input;
+  c2h::device_vector<type> out(input.size());
+  c2h::device_vector<type> num_selected(1);
+
+  STATIC_REQUIRE_FALSE(cuda::std::indirect_binary_predicate<same_decade_t, decltype(in.begin()), decltype(in.begin())>);
+
+  const bool in_place = GENERATE(false, true);
+  if (in_place)
+  {
+    select_unique(in.begin(), num_selected.begin(), input.size(), same_decade_t{});
+    REQUIRE(num_selected[0] == 3);
+    in.resize(expected.size());
+    REQUIRE(in == expected);
+  }
+  else
+  {
+    select_unique(in.begin(), out.begin(), num_selected.begin(), input.size(), same_decade_t{});
+    REQUIRE(num_selected[0] == 3);
+    out.resize(expected.size());
+    REQUIRE(out == expected);
+  }
+}
+
 CUB_TEST("DeviceSelect::Unique can run with empty input", "[device][select_unique]", CUB_SMALL, types)
 {
   using type = typename c2h::get<0, TestType>;
