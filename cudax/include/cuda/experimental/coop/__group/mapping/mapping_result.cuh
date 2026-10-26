@@ -38,11 +38,19 @@
 
 namespace cuda::experimental::coop
 {
+template <class _StaticCounts, bool _IsAlwaysExhaustive, bool _IsAlwaysContiguous>
+struct __mapping_result;
+
+template <::cuda::std::size_t _StaticGroupCount, ::cuda::std::size_t _StaticUnitCount>
+struct __uniform_static_counts;
+
 template <::cuda::std::size_t _StaticGroupCount,
-          ::cuda::std::size_t _StaticCount,
+          ::cuda::std::size_t _StaticUnitCount,
           bool _IsAlwaysExhaustive,
           bool _IsAlwaysContiguous>
-struct __mapping_result
+struct __mapping_result<__uniform_static_counts<_StaticGroupCount, _StaticUnitCount>,
+                        _IsAlwaysExhaustive,
+                        _IsAlwaysContiguous>
 {
   ::cuda::std::uint32_t __group_count_;
   ::cuda::std::uint32_t __group_rank_;
@@ -90,9 +98,20 @@ struct __mapping_result
     return __group_rank_;
   }
 
+  [[nodiscard]] _CCCL_DEVICE_API static constexpr bool has_uniform_static_unit_count() noexcept
+  {
+    return true;
+  }
+
   [[nodiscard]] _CCCL_DEVICE_API static constexpr ::cuda::std::size_t static_unit_count() noexcept
   {
-    return _StaticCount;
+    return _StaticUnitCount;
+  }
+
+  [[nodiscard]] _CCCL_DEVICE_API static constexpr ::cuda::std::size_t static_unit_count(::cuda::std::size_t __i) noexcept
+  {
+    _CCCL_ASSERT(__i < static_group_count(), "invalid __i");
+    return _StaticUnitCount;
   }
 
   [[nodiscard]] _CCCL_DEVICE_API ::cuda::std::uint32_t unit_count() const noexcept
@@ -102,14 +121,125 @@ struct __mapping_result
       _CCCL_ASSERT(is_valid(), "getting unit count of thread that is not part of the group is UB");
     }
 
-    if constexpr (_StaticCount != ::cuda::std::dynamic_extent)
+    if constexpr (_StaticUnitCount != ::cuda::std::dynamic_extent)
     {
-      return static_cast<::cuda::std::uint32_t>(_StaticCount);
+      return static_cast<::cuda::std::uint32_t>(_StaticUnitCount);
     }
     else
     {
       return __unit_count_;
     }
+  }
+
+  [[nodiscard]] _CCCL_DEVICE_API ::cuda::std::uint32_t unit_rank() const noexcept
+  {
+    if constexpr (!_IsAlwaysExhaustive)
+    {
+      _CCCL_ASSERT(is_valid(), "getting unit rank of thread that is not part of the group is UB");
+    }
+    return __unit_rank_;
+  }
+
+  [[nodiscard]] _CCCL_DEVICE_API ::cuda::device::lane_mask lane_mask() const noexcept
+  {
+    if constexpr (!_IsAlwaysExhaustive)
+    {
+      _CCCL_ASSERT(is_valid(), "getting lane mask of thread that is not part of the group is UB");
+    }
+    return __lane_mask_;
+  }
+
+  [[nodiscard]] _CCCL_DEVICE_API bool is_valid() const noexcept
+  {
+    if constexpr (_IsAlwaysExhaustive)
+    {
+      return true;
+    }
+    else
+    {
+      return __unit_rank_ != __invalid_count_or_rank;
+    }
+  }
+
+  [[nodiscard]] _CCCL_DEVICE_API static constexpr bool is_always_exhaustive() noexcept
+  {
+    return _IsAlwaysExhaustive;
+  }
+
+  [[nodiscard]] _CCCL_DEVICE_API static constexpr bool is_always_contiguous() noexcept
+  {
+    return _IsAlwaysContiguous;
+  }
+};
+
+template <::cuda::std::size_t... _StaticUnitCounts, bool _IsAlwaysExhaustive, bool _IsAlwaysContiguous>
+struct __mapping_result<::cuda::std::index_sequence<_StaticUnitCounts...>, _IsAlwaysExhaustive, _IsAlwaysContiguous>
+{
+  static_assert(sizeof...(_StaticUnitCounts) > 0);
+
+  ::cuda::std::uint32_t __group_rank_;
+  ::cuda::std::uint32_t __unit_rank_;
+  ::cuda::device::lane_mask __lane_mask_;
+
+  [[nodiscard]] _CCCL_DEVICE_API static constexpr __mapping_result __invalid() noexcept
+  {
+    return {__invalid_count_or_rank, __invalid_count_or_rank, ::cuda::device::lane_mask::none()};
+  }
+
+  [[nodiscard]] _CCCL_DEVICE_API static constexpr ::cuda::std::size_t static_group_count() noexcept
+  {
+    return sizeof...(_StaticUnitCounts);
+  }
+
+  [[nodiscard]] _CCCL_DEVICE_API ::cuda::std::uint32_t group_count() const noexcept
+  {
+    if constexpr (!_IsAlwaysExhaustive)
+    {
+      _CCCL_ASSERT(is_valid(), "getting group count of thread that is not part of the group is UB");
+    }
+    return _StaticUnitCounts;
+  }
+
+  [[nodiscard]] _CCCL_DEVICE_API ::cuda::std::uint32_t group_rank() const noexcept
+  {
+    if constexpr (!_IsAlwaysExhaustive)
+    {
+      _CCCL_ASSERT(is_valid(), "getting group rank of thread that is not part of the group is UB");
+    }
+    return __group_rank_;
+  }
+
+  [[nodiscard]] _CCCL_DEVICE_API static constexpr bool has_uniform_static_unit_count() noexcept
+  {
+    return ::cuda::std::min({_StaticUnitCounts...}) == ::cuda::std::max({_StaticUnitCounts...});
+  }
+
+  [[nodiscard]] _CCCL_DEVICE_API static constexpr ::cuda::std::size_t static_unit_count() noexcept
+  {
+    if constexpr (has_uniform_static_unit_count())
+    {
+      return static_unit_count(0);
+    }
+    else
+    {
+      return ::cuda::std::dynamic_extent;
+    }
+  }
+
+  [[nodiscard]] _CCCL_DEVICE_API static constexpr ::cuda::std::size_t static_unit_count(::cuda::std::size_t __i) noexcept
+  {
+    _CCCL_ASSERT(__i < static_group_count(), "invalid __i");
+    constexpr ::cuda::std::size_t __static_unit_counts[]{_StaticUnitCounts...};
+    return __static_unit_counts[__i];
+  }
+
+  [[nodiscard]] _CCCL_DEVICE_API ::cuda::std::uint32_t unit_count() const noexcept
+  {
+    if constexpr (!_IsAlwaysExhaustive)
+    {
+      _CCCL_ASSERT(is_valid(), "getting unit count of thread that is not part of the group is UB");
+    }
+    return static_cast<::cuda::std::uint32_t>(static_unit_count(__group_rank_));
   }
 
   [[nodiscard]] _CCCL_DEVICE_API ::cuda::std::uint32_t unit_rank() const noexcept

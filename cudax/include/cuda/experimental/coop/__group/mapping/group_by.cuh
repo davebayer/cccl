@@ -52,6 +52,21 @@ public:
     _CCCL_ASSERT(__unit_count == _StaticUnitCount, "__unit_count must match the static _StaticUnitCount");
   }
 
+  template <class _PrevMappingResult>
+  [[nodiscard]] _CCCL_DEVICE_API static _CCCL_CONSTEVAL ::cuda::std::size_t __static_group_count_for() noexcept
+  {
+    if constexpr (_PrevMappingResult::has_uniform_unit_count())
+    {
+      if (_PrevMappingResult::static_group_count() == ::cuda::std::dynamic_extent)
+      {
+        return ::cuda::std::dynamic_extent;
+      }
+
+      constexpr auto __static_prev_nunits = _PrevMappingResult::static_unit_count();
+      return __mapping_result
+    }
+  }
+
   template <bool _Exhaustive, class _Unit, class _PrevMappingResult>
   [[nodiscard]] _CCCL_DEVICE_API static auto
   __do_map(const _Unit&, const _PrevMappingResult& __prev_mapping_result) noexcept
@@ -72,8 +87,7 @@ public:
       __static_prev_nunits != ::cuda::std::dynamic_extent && __static_prev_nunits % _StaticUnitCount == 0;
 
     using _MappingResult =
-      __mapping_result<__static_ngroups,
-                       _StaticUnitCount,
+      __mapping_result<__uniform_static_counts<__static_ngroups, _StaticUnitCount>,
                        _Exhaustive || (_PrevMappingResult::is_always_exhaustive() && __curr_is_always_exhaustive),
                        _PrevMappingResult::is_always_contiguous()>;
 
@@ -159,8 +173,7 @@ public:
   __do_map(const _Unit&, const _PrevMappingResult& __prev_mapping_result) const noexcept
   {
     using _MappingResult =
-      __mapping_result<::cuda::std::dynamic_extent,
-                       ::cuda::std::dynamic_extent,
+      __mapping_result<__uniform_static_counts<::cuda::std::dynamic_extent, ::cuda::std::dynamic_extent>,
                        _Exhaustive,
                        _PrevMappingResult::is_always_contiguous()>;
 

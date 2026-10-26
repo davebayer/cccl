@@ -72,7 +72,7 @@ class virtual_group;
 template <class _Hierarchy>
 class coalesced_group;
 
-template <class _Unit, class _Group>
+template <class _Unit, class _Group, class _MappingResult>
 class group_view;
 
 // mappings
@@ -134,6 +134,10 @@ inline constexpr bool __is_group_mapping_v<take<_StaticUnitCount>> = true;
 // tags
 
 struct non_exhaustive_t;
+
+enum class __static_dispatch_group_rank : ::cuda::std::size_t
+{
+};
 
 inline constexpr ::cuda::std::uint32_t __invalid_count_or_rank = 0xffff'ffff;
 } // namespace cuda::experimental::coop

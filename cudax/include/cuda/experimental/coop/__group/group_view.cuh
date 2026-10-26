@@ -71,7 +71,7 @@ template <class _Unit, class _Group>
 using __group_view_mapping_result_t =
   decltype(::cuda::experimental::coop::__do_group_view_mapping(_Unit{}, ::cuda::std::declval<_Group>()));
 
-template <class _Unit, class _Group>
+template <class _Unit, class _Group, class _MappingResult>
 class group_view
 {
   static_assert(__is_hierarchy_level_v<_Unit>);
@@ -79,7 +79,7 @@ class group_view
   static_assert(__unit_same_as_or_below_v<_Unit, typename _Group::unit_type>,
                 "unit_type must be same as or below the _Group's unit_type");
 
-  using _MappingResult        = __group_view_mapping_result_t<_Unit, _Group>;
+  using _MappingResult        = ;
   using _SynchronizerInstance = decltype(::cuda::std::declval<const _Group&>().__synchronizer_instance().view());
   static_assert(__group_mapping_result<_MappingResult>);
 
@@ -195,19 +195,32 @@ public:
 
 _CCCL_TEMPLATE(class _Group)
 _CCCL_REQUIRES(group<_Group>)
-_CCCL_DEDUCTION_GUIDE_ATTRIBUTES group_view(const _Group&) -> group_view<typename _Group::unit_type, _Group>;
+_CCCL_DEDUCTION_GUIDE_ATTRIBUTES group_view(const _Group&)
+  -> group_view<typename _Group::unit_type, _Group, __group_view_mapping_result_t<typename _Group::unit_type, _Group>>;
 
-template <class _Unit, class _Group>
-_CCCL_DEDUCTION_GUIDE_ATTRIBUTES group_view(const group_view<_Unit, _Group>&) -> group_view<_Unit, _Group>;
+template <class _Unit, class _Group, class _MappingResult>
+_CCCL_DEDUCTION_GUIDE_ATTRIBUTES group_view(const group_view<_Unit, _Group, _MappingResult>&)
+  -> group_view<_Unit, _Group, _MappingResult>;
 
 _CCCL_TEMPLATE(class _Unit, class _Group)
 _CCCL_REQUIRES(__is_hierarchy_level_v<_Unit> _CCCL_AND group<_Group>)
-_CCCL_DEDUCTION_GUIDE_ATTRIBUTES group_view(const _Unit&, const _Group&) -> group_view<_Unit, _Group>;
+_CCCL_DEDUCTION_GUIDE_ATTRIBUTES group_view(const _Unit&, const _Group&)
+  -> group_view<_Unit, _Group, __group_view_mapping_result_t<_Unit, _Group>>;
 
-_CCCL_TEMPLATE(class _Unit, class _OtherUnit, class _Group)
+_CCCL_TEMPLATE(class _Unit, class _OtherUnit, class _Group, class _MappingResult)
 _CCCL_REQUIRES(__is_hierarchy_level_v<_Unit> _CCCL_AND __unit_same_as_or_below_v<_Unit, _OtherUnit>)
-_CCCL_DEDUCTION_GUIDE_ATTRIBUTES group_view(const _Unit&, const group_view<_OtherUnit, _Group>&)
-  -> group_view<_Unit, _Group>;
+_CCCL_DEDUCTION_GUIDE_ATTRIBUTES group_view(const _Unit&, const group_view<_OtherUnit, _Group, _MappingResult>&)
+  -> group_view<_Unit, _Group, __group_view_mapping_result_t<_Unit, group_view<_OtherUnit, _Group, _MappingResult>>>;
+
+_CCCL_TEMPLATE(class _Group, __static_dispatch_group_rank _Rank)
+_CCCL_REQUIRES(group<_Group>)
+_CCCL_DEDUCTION_GUIDE_ATTRIBUTES
+group_view(const ::cuda::std::integral_constant<__static_dispatch_group_rank, _Rank>&, const _Group&)
+  -> group_view<typename _Group::unit_type, _Group, __group_view_mapping_result_t<typename _Group::unit_type, _Group>>;
+
+template <class _Unit, class _Group, class _MappingResult>
+_CCCL_DEDUCTION_GUIDE_ATTRIBUTES group_view(const group_view<_Unit, _Group, _MappingResult>&)
+  -> group_view<_Unit, _Group, _MappingResult>;
 } // namespace cuda::experimental::coop
 
 #endif // !_CCCL_DOXYGEN_INVOKED
