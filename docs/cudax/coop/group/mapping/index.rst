@@ -11,7 +11,6 @@ Group Mappings
   group_as
   take
   binary_partition
-  composite_mapping
 
 Group mappings define how a parent group's units are assigned to subgroups, independently of the synchronization mechanism. To communicate this information, they are required to accept and return types that satisfy the *group mapping result* concept.
 
@@ -100,8 +99,6 @@ Where:
 
 The overload that takes the ``non_exhaustive`` tag does the non-exhaustive mapping.
 
-Mappings can be chained with ``|`` to transform the result from left to right. This is implemented by :ref:`cudax-coop-group-mapping-composite-mapping`.
-
 Predefined Mappings
 -------------------
 
@@ -112,4 +109,3 @@ The implementation comes with several predefined mappings that should cover most
 - :doc:`group_as <group_as>` splits each group into subgroups with individually specified sizes.
 - :doc:`take <take>` selects the first specified number of units from each group.
 - :doc:`binary_partition <binary_partition>` splits threads within a warp into two groups based on a predicate.
-- :doc:`composite_mapping <composite_mapping>` applies multiple mappings in sequence, composed with the pipe operator (``|``).
