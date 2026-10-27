@@ -48,6 +48,7 @@ template <class _RangeView>
 class group_as
 {
   static_assert(::cuda::std::ranges::sized_range<_RangeView>, "_RangeView must be a sized range");
+  static_assert(::cuda::std::ranges::forward_range<_RangeView>, "_RangeView must be a forward range");
   static_assert(::cuda::std::is_convertible_v<::cuda::std::ranges::range_value_t<_RangeView>, ::cuda::std::uint32_t>,
                 "_RangeView's value_type must be convertible to uint32_t");
 
@@ -108,10 +109,11 @@ public:
     }
 
     ::cuda::std::uint32_t __sum = 0;
+    auto __it                   = ::cuda::std::ranges::cbegin(__unit_counts_);
     _CCCL_PRAGMA_UNROLL_FULL()
     for (::cuda::std::uint32_t __i = 0; __i < __curr_ngroups; ++__i)
     {
-      const auto __i_count = static_cast<::cuda::std::uint32_t>(__unit_counts_[__i]);
+      const auto __i_count = static_cast<::cuda::std::uint32_t>(*__it++);
       if (__prev_unit_rank < __sum + __i_count)
       {
         const auto __group_rank = __prev_mapping_result.group_rank() * __curr_ngroups + __i;
@@ -149,8 +151,9 @@ public:
 
 _CCCL_TEMPLATE(class _Range)
 _CCCL_REQUIRES(
-  ::cuda::std::ranges::sized_range<_Range> _CCCL_AND ::cuda::std::ranges::viewable_range<_Range>
-    _CCCL_AND ::cuda::std::is_convertible_v<::cuda::std::ranges::range_value_t<_Range>, ::cuda::std::uint32_t>)
+  ::cuda::std::ranges::viewable_range<_Range> _CCCL_AND ::cuda::std::ranges::sized_range<_Range>
+    _CCCL_AND ::cuda::std::ranges::forward_range<_Range>
+      _CCCL_AND ::cuda::std::is_convertible_v<::cuda::std::ranges::range_value_t<_Range>, ::cuda::std::uint32_t>)
 _CCCL_DEDUCTION_GUIDE_ATTRIBUTES group_as(_Range&&) -> group_as<::cuda::std::ranges::views::all_t<_Range>>;
 } // namespace cuda::experimental::coop
 
