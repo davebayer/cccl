@@ -321,7 +321,7 @@
 <path d="M 1054 448 H 1116" class="callout"/>
 <text x="1130" y="454" class="note" text-anchor="start">Warp rank: 2</text>
 </g>
-<text x="360" y="525" class="heading" text-anchor="middle">CTK Cooperative Groups</text>
+<text x="360" y="525" class="heading" text-anchor="middle">Original Cooperative Groups</text>
 <text x="360" y="559" class="subtitle" text-anchor="middle">Groups threads within the block level</text>
 <text x="1080" y="525" class="heading" text-anchor="middle">CCCL Cooperative Groups</text>
 <text x="1080" y="559" class="subtitle" text-anchor="middle">Groups warps within the block level</text>
