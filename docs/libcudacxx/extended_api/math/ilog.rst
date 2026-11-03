@@ -52,8 +52,14 @@ The functions perform the following operations in device code:
 
 - ``ilog2``: ``FLO``
 - ``ceil_ilog2``: ``FLO``, ``POPC``, ``ADD``, comparison
-- ``ilog10``: ``FLO``, ``FMUL``, ``F2I``, constant memory lookup, ``SEL`` + ``IADD`` only if ``T == uint32_t`` or ``T == __uint128_t``
+- ``ilog10``: For 8-bit and 16-bit types, comparisons and additions. For wider types, ``FLO``,
+  fixed-point integer arithmetic, and an exact correction using a power of ten constructed from constant factors.
+  For 32-bit and wider types, the final correction uses the subtraction's borrow flag.
+  No floating-point arithmetic or table lookup is required.
 - ``ceil_ilog10``: ``ilog10`` with an additional comparison, subtraction, and ``IADD``
+
+On the host and during constant evaluation, ``ilog10`` uses a floating-point estimate based on ``ilog2``
+and corrects it with a lookup in a power-of-ten table.
 
 Example
 -------
