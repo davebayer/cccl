@@ -24,6 +24,7 @@
 #include <cuda/__cmath/ilog.h>
 #include <cuda/__cmath/pow2.h>
 #include <cuda/__cmath/uabs.h>
+#include <cuda/std/__bit/bit_reverse.h>
 #include <cuda/std/__bit/countl.h>
 #include <cuda/std/__charconv/chars_format.h>
 #include <cuda/std/__charconv/to_chars_result.h>
@@ -124,6 +125,34 @@ _CCCL_API constexpr void __to_chars_int_generic(char* __last, _Tp __value, int _
   } while (__value != 0);
 }
 
+template <class _Tp>
+_CCCL_API constexpr void __to_chars_int_base_2(char* __first, _Tp __value, int __n, int __written) noexcept
+{
+  constexpr int __num_bits   = __num_bits_v<_Tp>;
+  constexpr int __num_chunks = __num_bits / 4;
+  uint32_t __digits[__num_chunks]{};
+
+  // Reverse the significant bits so the first digit occupies the least significant bit.
+  __value = ::cuda::std::bit_reverse(__value) >> (__num_bits - __n);
+  _CCCL_PRAGMA_UNROLL_FULL()
+  for (int __i = 0; __i < __num_chunks; ++__i)
+  {
+    // Spread each nibble into bit positions 0, 8, 16 and 24, then add '0' to all byte lanes.
+    const auto __bits = static_cast<uint32_t>(__value & 0xF);
+    __digits[__i]     = ((__bits * 0x00204081u) & 0x01010101u) + ('0' * 0x01010101u);
+    __value >>= 4;
+  }
+
+  _CCCL_PRAGMA_UNROLL_FULL()
+  for (int __i = 0; __i < __num_bits; ++__i)
+  {
+    if (__i < __written)
+    {
+      __first[__i] = static_cast<char>((__digits[__i / 4] >> ((__i % 4) * 8)) & 0xFF);
+    }
+  }
+}
+
 _CCCL_TEMPLATE(class _Tp)
 _CCCL_REQUIRES(__cccl_is_integer_v<_Tp>)
 [[nodiscard]] _CCCL_API constexpr to_chars_result
@@ -168,6 +197,13 @@ to_chars(char* __first, char* __last, _Tp __value, int __base = 10) noexcept
       default:
         __n = ::cuda::std::__to_chars_int_width(__value, __base);
         break;
+    }
+
+    if (__base == 2)
+    {
+      const int __written = __n <= __cap ? __n : static_cast<int>(__cap);
+      ::cuda::std::__to_chars_int_base_2(__first, __value, __n, __written);
+      return {__first + __written, __n <= __cap ? errc{} : errc::value_too_large};
     }
 
     if (__n > __cap)
