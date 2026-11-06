@@ -24,6 +24,7 @@
 // IWYU pragma: begin_exports
 #include <cuda/__cmath/abs_diff.h>
 #include <cuda/__cmath/ceil_div.h>
+#include <cuda/__cmath/clip.h>
 #include <cuda/__cmath/fast_modulo_division.h>
 #include <cuda/__cmath/ilog.h>
 #include <cuda/__cmath/ipow.h>

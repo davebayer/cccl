@@ -8,6 +8,7 @@ Math
    :maxdepth: 1
 
    math/abs_diff
+   math/clip
    math/ceil_div
    math/round_up
    math/round_down
@@ -34,6 +35,11 @@ Math
      - Absolute difference
      - CCCL 3.6.0
      - CUDA 13.6
+
+   * - :ref:`clip <libcudacxx-extended-api-math-clip>`
+     - Clamp a numeric value to an inclusive range
+     - CCCL 3.7.0
+     - CUDA 13.7
 
    * - :ref:`ceil_div <libcudacxx-extended-api-math-ceil-div>`
      - Ceiling division
