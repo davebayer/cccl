@@ -59,8 +59,8 @@ __device__ void test_uniform(const Group& group)
   static_assert(Original::has_uniform_static_unit_count());
 
   // Uniform counts, including dynamic_extent, need no per-group specialization.
-  unsigned calls   = 0;
-  const auto count = group.with_static_unit_count([&](auto view) {
+  unsigned calls      = 0;
+  const auto callback = [&](auto view) {
     ++calls;
 
     constexpr auto unit         = Unit{};
@@ -73,11 +73,12 @@ __device__ void test_uniform(const Group& group)
     view.sync();
 
     return unit.count(view);
-  });
+  };
 
-  // Dispatch invokes the callable exactly once and returns its result.
+  // Dispatch invokes the callable exactly once and discards its result.
+  static_assert(cuda::std::is_void_v<decltype(group.with_static_unit_count(callback))>);
+  group.with_static_unit_count(callback);
   CHECK(calls == 1);
-  CHECK(count == Unit{}.count(group));
 }
 
 template <class Config, class Level>
@@ -217,9 +218,9 @@ __device__ void test_nonuniform(const Group& group, unsigned units_per_warp)
     return *calls_ptr;
   };
 
-  // An lvalue callable and its reference return must pass through without copying.
-  static_assert(cuda::std::is_same_v<decltype(group.with_static_unit_count(callback)), unsigned&>);
-  CHECK(&group.with_static_unit_count(callback) == &calls);
+  // An lvalue callable is invoked once, and its reference return is discarded.
+  static_assert(cuda::std::is_void_v<decltype(group.with_static_unit_count(callback))>);
+  group.with_static_unit_count(callback);
   CHECK(calls == 1);
 }
 
@@ -293,7 +294,7 @@ struct ForwardedCallable
   ForwardedCallable(const ForwardedCallable&) = delete;
 
   template <class Group>
-  __device__ unsigned& operator()(Group group) &&
+  [[nodiscard]] __device__ unsigned& operator()(Group group) &&
   {
     CHECK(cuda::gpu_thread.count(group) > 0);
     ++calls;
@@ -319,13 +320,12 @@ struct CoalescedKernel
       const cudax::coop::group_view view{group};
       test_uniform(view);
 
-      // Forward an rvalue callable and preserve the identity of its reference result.
+      // Forward an rvalue callable and discard its reference result.
       unsigned calls = 0;
       ForwardedCallable callable{calls};
-      static_assert(cuda::std::is_same_v<decltype(group.with_static_unit_count(cuda::std::move(callable))), unsigned&>);
+      static_assert(cuda::std::is_void_v<decltype(group.with_static_unit_count(cuda::std::move(callable)))>);
 
-      unsigned& result = group.with_static_unit_count(cuda::std::move(callable));
-      CHECK(&result == &calls);
+      group.with_static_unit_count(cuda::std::move(callable));
       CHECK(calls == 1);
     }
   }
@@ -335,5 +335,80 @@ C2H_TEST("Static unit count dispatch for coalesced groups and callable forwardin
 {
   const cuda::stream stream{cuda::devices[0]};
   cuda::launch(stream, cuda::make_config(cuda::grid_dims<1>(), cuda::block_dims<32>()), CoalescedKernel{});
+  stream.sync();
+}
+
+struct RejectZeroStaticCount
+{
+  unsigned& calls;
+
+  template <class View>
+  __device__ void operator()(View view) const
+  {
+    static_assert(cuda::gpu_thread.static_count(view) != 0,
+                  "the callable must not be instantiated for a zero static unit count");
+    ++calls;
+  }
+};
+
+struct EmptySlotsKernel
+{
+  template <class Config, cuda::std::size_t... Counts>
+  __device__ void test(Config config, cuda::std::index_sequence<Counts...> counts) const
+  {
+    const cudax::coop::this_warp parent{config};
+    const cudax::coop::generic_group group{
+      cuda::gpu_thread,
+      parent,
+      cudax::coop::group_as{counts},
+      cudax::coop::lane_synchronizer{},
+    };
+
+    unsigned calls = 0;
+    group.with_static_unit_count([&](auto view) {
+      constexpr auto count = cuda::gpu_thread.static_count(view);
+      static_assert(count > 0);
+      const cudax::coop::generic_group child{
+        cuda::gpu_thread,
+        view,
+        cudax::coop::group_by{cuda::std::cw<count>},
+        cudax::coop::lane_synchronizer{},
+      };
+      CHECK(child.count(view) == 1);
+      CHECK(child.rank(view) == 0);
+      CHECK(cuda::gpu_thread.count(child) == count);
+      child.sync();
+      check_mapping(group, view);
+      ++calls;
+      // Different specializations may return different types because the result is discarded.
+      return cuda::std::integral_constant<unsigned, static_cast<unsigned>(count)>{};
+    });
+    CHECK(calls == 1);
+
+    unsigned forwarded_calls = 0;
+    ForwardedCallable callable{forwarded_calls};
+    group.with_static_unit_count(cuda::std::move(callable));
+    CHECK(forwarded_calls == 1);
+
+    // This callback deliberately makes instantiation for any empty slot ill-formed.
+    unsigned nonempty_calls = 0;
+    group.with_static_unit_count(RejectZeroStaticCount{nonempty_calls});
+    CHECK(nonempty_calls == 1);
+  }
+
+  template <class Config>
+  __device__ void operator()(Config config) const
+  {
+    test(config, cuda::std::index_sequence<0, 32, 0>{});
+    test(config, cuda::std::index_sequence<0, 1, 0, 31, 0>{});
+    test(config, cuda::std::index_sequence<0, 17, 0, 9, 0, 6, 0>{});
+    test(config, cuda::std::index_sequence<0, 8, 3, 8, 0, 13, 0>{});
+  }
+};
+
+C2H_TEST("Static unit count dispatch skips empty partition slots", "[with_static_unit_count]")
+{
+  const cuda::stream stream{cuda::devices[0]};
+  cuda::launch(stream, cuda::make_config(cuda::grid_dims<1>(), cuda::block_dims<32>()), EmptySlotsKernel{});
   stream.sync();
 }
