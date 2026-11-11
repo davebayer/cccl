@@ -20,6 +20,48 @@
 
 #include "group_testing.cuh"
 
+using RuntimeHierarchy      = decltype(cuda::make_hierarchy(cuda::block_dims(1u)));
+using RuntimeBlock          = cudax::coop::this_block<RuntimeHierarchy>;
+using RuntimeWarp           = cudax::coop::this_warp<RuntimeHierarchy>;
+using WarpThreads           = cudax::coop::group_view_t<cuda::thread_level, RuntimeWarp>;
+using BlockWarps            = cudax::coop::group_view_t<cuda::warp_level, RuntimeBlock>;
+using BlockView             = cudax::coop::group_view_t<cuda::block_level, RuntimeBlock>;
+using NonuniformWarpMapping = cudax::coop::__mapping_result<cudax::coop::__static_unit_counts<1, 3>, true, true>;
+using NonuniformWarps       = cudax::coop::virtual_group<cuda::warp_level, RuntimeBlock, NonuniformWarpMapping>;
+using GroupedWarps          = cudax::coop::group_view_t<cuda::warp_level, NonuniformWarps>;
+using GroupedThreads        = cudax::coop::group_view_t<cuda::thread_level, NonuniformWarps>;
+
+// Public view types and count queries must also work in the CUDA host pass.
+static_assert(WarpThreads::static_unit_count() == 32);
+static_assert(BlockWarps::static_unit_count() == cuda::std::dynamic_extent);
+static_assert(BlockView::static_unit_count() == 1);
+static_assert(GroupedWarps::static_unit_count() == cuda::std::dynamic_extent);
+static_assert(GroupedThreads::static_unit_count() == cuda::std::dynamic_extent);
+
+template <class Original, class Refined>
+__device__ void check_refined_view(const Original& original, const Refined& refined)
+{
+  using Unit = typename Original::unit_type;
+  static_assert(cuda::std::is_same_v<typename Refined::unit_type, Unit>);
+  static_assert(cuda::std::is_same_v<typename Refined::hierarchy_type, typename Original::hierarchy_type>);
+  static_assert(Refined::is_always_contiguous() == Original::is_always_contiguous());
+  const auto before = original.__mapping_result();
+  const auto after  = refined.__mapping_result();
+  CHECK(after.is_valid() == before.is_valid());
+  if (before.is_valid())
+  {
+    CHECK(after.group_count() == before.group_count());
+    CHECK(after.group_rank() == before.group_rank());
+    CHECK(after.unit_count() == before.unit_count());
+    CHECK(after.unit_rank() == before.unit_rank());
+    CHECK(after.lane_mask() == before.lane_mask());
+    CHECK(Unit{}.count(refined) == Unit{}.count(original));
+    CHECK(Unit{}.rank(refined) == Unit{}.rank(original));
+    CHECK(cuda::gpu_thread.count(refined) == cuda::gpu_thread.count(original));
+    CHECK(cuda::gpu_thread.rank(refined) == cuda::gpu_thread.rank(original));
+  }
+}
+
 template <class Config, class Level>
 __device__ void test_group_view(Config config, Level level)
 {
@@ -59,6 +101,18 @@ __device__ void test_group_view(Config config, Level level)
   // Test view over the group.
   {
     const cudax::coop::group_view gv{g};
+
+    // Explicit refinements retain the native synchronizer and do not nest view types.
+    const auto refined = gv.template with_static_unit_count<1>().with_unit_rank(0);
+    using Refined      = cuda::std::remove_cv_t<decltype(refined)>;
+    static_assert(Refined::static_unit_count() == 1);
+    static_assert(cuda::std::is_same_v<decltype(refined.template with_static_unit_count<1>()), Refined>);
+    static_assert(cuda::std::is_same_v<decltype(refined.with_unit_rank(0)), Refined>);
+    check_refined_view(gv, refined);
+    refined.sync();
+    refined.wait(refined.arrive());
+    refined.sync_aligned();
+    refined.wait_aligned(refined.arrive_aligned());
 
     if constexpr (cuda::std::is_same_v<Level, cuda::thread_level>)
     {
@@ -222,7 +276,11 @@ __device__ void test_group_view(Config config, Level level)
     auto& barriers   = get_barriers<cuda::warp.static_count(level, config) / n>(cuda::warp);
 
     const cudax::coop::generic_group g2{
-      cuda::warp, g, cudax::coop::group_by{cuda::std::cw<n>}, cudax::coop::barrier_synchronizer{barriers}};
+      cuda::warp,
+      g,
+      cudax::coop::group_by{cuda::std::cw<n>},
+      cudax::coop::barrier_synchronizer{barriers},
+    };
     REQUIRE(cuda::warp.count(g2) == n);
     REQUIRE(g2.count(g) == cuda::warp.count(level) / n);
 
@@ -371,7 +429,9 @@ __device__ void test_nonuniform_group_view(Config config)
 
   // Exercise the conversion from a view while retaining the original group type.
   const cudax::coop::group_view<cuda::thread_level, cuda::std::remove_cv_t<decltype(group)>, Threads> converted{
-    cuda::gpu_thread, warps};
+    cuda::gpu_thread,
+    warps,
+  };
 
   check(converted, cuda::gpu_thread, 128);
 }
@@ -399,5 +459,113 @@ C2H_TEST("Group View preserves per-group static unit counts", "[group_view]")
   // The same launch shape with runtime dimensions exercises the dynamic fallback.
   cuda::launch(stream, cuda::make_config(cuda::grid_dims<4>(), cuda::block_dims(128)), NonuniformViewKernel{});
 
+  stream.sync();
+}
+
+template <cuda::std::size_t Count, cuda::std::size_t Prefix, class Group, class Parent>
+__device__ void check_static_partition_refinement(const Group& group, const Parent& parent)
+{
+  const cudax::coop::group_view original{group};
+  const auto rank    = cuda::warp.rank_as<unsigned>(cuda::block) - static_cast<unsigned>(Prefix);
+  const auto refined = original.template with_static_unit_count<Count>().with_unit_rank(rank);
+  static_assert(decltype(refined)::static_unit_count() == Count);
+  static_assert(cuda::warp.static_count(refined) == Count);
+  static_assert(cuda::gpu_thread.static_count(refined) == Count * 32);
+  check_refined_view(original, refined);
+  CHECK(refined.rank(parent) == group.rank(parent));
+  CHECK(refined.count(parent) == group.count(parent));
+  refined.sync();
+  refined.wait(refined.arrive());
+}
+
+struct ParityLabel
+{
+  template <class MappingResult>
+  __device__ unsigned operator()(const MappingResult& result) const
+  {
+    return result.unit_rank() % 2;
+  }
+};
+
+struct RefinementKernel
+{
+  template <class Config>
+  __device__ void operator()(Config config) const
+  {
+    const cudax::coop::this_block block{config};
+    const auto warps = cudax::coop::group_view{cuda::warp, block}.template with_static_unit_count<7>().with_unit_rank(
+      cuda::warp.rank_as<unsigned>(cuda::block));
+    static_assert(decltype(warps)::static_unit_count() == 7);
+
+    const cuda::std::uint32_t barrier_ids[]{1, 2, 3, 4};
+    const cudax::coop::generic_group partition{
+      cuda::warp,
+      warps,
+      cudax::coop::group_as{cuda::std::index_sequence<1, 3, 2, 1>{}},
+      cudax::coop::interwarp_synchronizer{cuda::std::span{barrier_ids}},
+    };
+    const auto rank = cuda::warp.rank_as<unsigned>(cuda::block);
+    if (rank < 1)
+    {
+      check_static_partition_refinement<1, 0>(partition, warps);
+    }
+    else if (rank < 4)
+    {
+      check_static_partition_refinement<3, 1>(partition, warps);
+    }
+    else if (rank < 6)
+    {
+      check_static_partition_refinement<2, 4>(partition, warps);
+    }
+    else
+    {
+      check_static_partition_refinement<1, 6>(partition, warps);
+    }
+    block.sync();
+
+    // Noncontiguous thread groups must retain their original masks and synchronization.
+    const cudax::coop::this_warp warp{config};
+    const cudax::coop::generic_group interleaved{
+      cuda::gpu_thread,
+      warp,
+      cudax::coop::labeled_partition{ParityLabel{}},
+      cudax::coop::lane_synchronizer{},
+    };
+    const cudax::coop::group_view threads{interleaved};
+    const auto cached_rank  = cuda::gpu_thread.rank_as<unsigned>(cuda::warp) / 2;
+    const auto refined      = threads.template with_static_unit_count<16>().with_unit_rank(cached_rank);
+    const auto cached_first = threads.with_unit_rank(cached_rank).template with_static_unit_count<16>();
+    static_assert(!decltype(refined)::is_always_contiguous());
+    static_assert(cuda::std::is_same_v<decltype(refined), decltype(cached_first)>);
+    check_refined_view(threads, refined);
+    check_refined_view(threads, cached_first);
+    refined.sync();
+    refined.wait(refined.arrive());
+
+    // Refinement must not turn an invalid nonexhaustive view into a valid group.
+    using InvalidMapping =
+      cudax::coop::__mapping_result<cudax::coop::__uniform_static_unit_count<1, cuda::std::dynamic_extent>, false, false>;
+    const cudax::coop::group_view<cuda::thread_level, cuda::std::remove_cv_t<decltype(warp)>, InvalidMapping> invalid{
+      warp,
+      InvalidMapping::__invalid(),
+    };
+    const auto invalid_refined = invalid.template with_static_unit_count<16>().with_unit_rank(0);
+    CHECK(!invalid_refined.__mapping_result().is_valid());
+    static_assert(decltype(invalid_refined)::static_unit_count() == 16);
+
+    using InvalidStaticMapping = cudax::coop::__mapping_result<cudax::coop::__static_unit_counts<1, 3>, false, false>;
+    const cudax::coop::group_view<cuda::thread_level, cuda::std::remove_cv_t<decltype(warp)>, InvalidStaticMapping>
+      invalid_static{warp, InvalidStaticMapping::__invalid()};
+    const auto invalid_cached = invalid_static.with_unit_rank(0);
+    CHECK(!invalid_cached.__mapping_result().is_valid());
+    const auto invalid_static_refined = invalid_cached.template with_static_unit_count<3>();
+    CHECK(!invalid_static_refined.__mapping_result().is_valid());
+  }
+};
+
+C2H_TEST("Group View refines known counts and cached ranks", "[group_view]")
+{
+  const cuda::stream stream{cuda::devices[0]};
+  cuda::launch(stream, cuda::make_config(cuda::grid_dims<1>(), cuda::block_dims(224)), RefinementKernel{});
   stream.sync();
 }

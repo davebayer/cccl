@@ -142,6 +142,8 @@ public:
 
   _CCCL_TEMPLATE(class _HierarchyLike)
   _CCCL_REQUIRES(::cuda::std::is_same_v<_Hierarchy, __hierarchy_type_of<_HierarchyLike>>)
+  // Hardware groups intentionally accept hierarchy objects implicitly.
+  // NOLINTNEXTLINE(cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
   _CCCL_DEVICE_API __this_group_base(const _HierarchyLike& __hier_like)
       : __hier_{::cuda::__unpack_hierarchy_if_needed(__hier_like)}
   {}
@@ -276,7 +278,7 @@ public:
 
   _CCCL_TEMPLATE(class _InLevel)
   _CCCL_REQUIRES(__is_hierarchy_level_v<_InLevel>)
-  [[nodiscard]] _CCCL_DEVICE_API auto rank(const _InLevel& __in_level) const
+  [[nodiscard]] _CCCL_DEVICE_API typename _InLevel::__product_type rank(const _InLevel& __in_level) const
   {
     return __rank_as_impl<typename _InLevel::__product_type>(__mapping_result_, __hier_, __in_level);
   }

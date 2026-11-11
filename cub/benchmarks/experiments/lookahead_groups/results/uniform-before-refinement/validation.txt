@@ -1,0 +1,130 @@
+Validation date: 2026-11-11
+
+Environment
+  NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM120; GPU executions outside sandbox.
+  Latest compiler: nvcc 13.5.37 + GCC 13.3.0, C++17, -arch=sm_120.
+  Compatibility compiler: nvcc 12.0.76 + g++-7, C++17, compute_90 PTX.
+  clang-tidy 23.1.6, repository .clang-tidy configuration.
+
+Results
+  PASS: existing shifted-output regression, latest compiler and CUDA 12.0/GCC 7,
+        both default CUB and group+scan experiment builds.
+  PASS: existing Catch2 scan suite, 26,586 assertions in 12 test cases, RNG seed 42:
+        catch2_test_device_scan_alignment.cu
+        catch2_test_device_scan_deterministic.cu
+        catch2_test_device_scan_noncommutative.cu
+        catch2_test_device_exclusive_scan_noncommutative.cu
+        Built with both experiment definitions, latest compiler, SM120, C++17.
+        Covers alignment/tails, floating-point run-to-run reproducibility, host
+        references, and associative noncommutative operators without a declared identity.
+  PASS: forced small-policy RLE lookahead smoke on SM120 using group-backed Squad.
+        items_per_thread=8, compute_warps=2, key_ring_stages=3, pos_ring_stages=2,
+        poll_items_per_thread=5, dense_poll_items_per_thread=3,
+        dense_mode_runs_per_tile=128, flag_staging_threshold=32.
+        Sizes 0, 1, 31, 33, 4,097 and 1,000,003; shifted input/output, run counts,
+        run lengths, unique values, and output guards checked.
+        The default SM120 RLE policy chooses lookback. This smoke explicitly
+        invokes lookahead with the small policy; it is not an RLE benchmark.
+  PASS: focused squad.cu ranks, elections and repeated named-barrier synchronization
+        in uneven [1,3,2,1]-warp layouts, including prefix/suffix warps, using latest
+        compiler and CUDA 12.0/GCC 7 compute_90 PTX JIT.
+  PASS: focused warp_scan.cu direct helper/wrapper checks for 0..32 valid items,
+        integer addition and noncommutative affine composition across 12 physical
+        warps; no operator calls on invalid lanes; latest compiler, SM120, C++17.
+  PASS: full edited product-header clang-tidy checks with both experiment definitions,
+        host-only and device-only SM120 parsing; no changed-line filtering.
+        Product header filter covers squad.cuh, group.cuh and kernel_scan_lookahead.cuh.
+  PASS: scan.cu, squad.cu and warp_scan.cu clang-tidy checks.
+  PASS: final pre-commit checks on all eight implementation/test/report source
+        files and git diff --check (run by the root agent after formatting).
+  PASS: finalized groups+scan benchmark correctness harness under compute-sanitizer
+        memcheck; ERROR SUMMARY: 0 errors.
+  PASS: full benchmark harness correctness-only with CUDA 12.0/GCC 7 C++17,
+        using its compatible lookback path (run by the benchmark agent).
+
+Compiler compatibility limit
+  CUDA 12.0 cannot target SM120 and does not provide the PTX ISA 8.6 instructions
+  used by lookahead scan. The CUDA 12.0 shifted-output run therefore checks the
+  compatible legacy scan path and header compatibility. The separately instantiated
+  squad test exercises the new group adapter on compute_90 PTX JIT. These checks do
+  not establish lookahead-kernel support on CUDA 12.0.
+
+Clang-tidy details
+  Clang 23 supports CUDA Toolkit versions through 13.2 and parses the 13.5 headers
+  with PTX ISA 9.2 for these checks. Only its unknown-toolkit-version warning is
+  disabled; repository checks remain enabled. Device parsing uses __CUDA_ARCH__=1200.
+  A single local NOLINTNEXTLINE(misc-const-correctness) on store_tile's refInOutS
+  documents a template false positive: data() requires a mutable SmemRef when the
+  store squad is active, even though a widening-output specialization omits that call.
+  Applying the suggested const qualifier was verified to fail the noncommutative
+  same-output-type compilation. No whole-file check suppression was used.
+
+Commands and local logs
+  Common experiment arguments:
+    -Ilibcudacxx/include -Icub -Ithrust -Icudax/include
+    -D_CUDAX_ENABLE_GROUP_FEATURES_IN_LIBCUDACXX
+    -D_CUB_WARPSPEED_USE_CUDAX_GROUPS -D_CUB_LOOKAHEAD_USE_CUDAX_SCAN
+
+  Latest shifted-output regression (plus common experiment arguments):
+    /usr/local/cuda-13.5/bin/nvcc -std=c++17 -O3 -arch=sm_120 \
+      cub/test/test_device_scan_warpspeed_shifted_output.cu \
+      -o build/lookahead-groups/validation/shifted-groups-scan
+    build/lookahead-groups/validation/shifted-groups-scan
+
+  CUDA 12.0 regression (plus common experiment arguments):
+    /usr/local/cuda-12.0/bin/nvcc -ccbin=g++-7 -std=c++17 -O2 \
+      -gencode=arch=compute_90,code=compute_90 \
+      cub/test/test_device_scan_warpspeed_shifted_output.cu \
+      -o build/lookahead-groups/validation/shifted-cuda12-groups-scan
+    build/lookahead-groups/validation/shifted-cuda12-groups-scan
+    build/lookahead-groups/cuda12-scan --correctness-only
+
+  Existing Catch2 tests:
+    python3 build/lookahead-groups/validation/build_tests.py
+    build/lookahead-groups/validation/scan-catch2 --reporter compact --rng-seed 42
+    The local script records exact compile/link commands in compile-*.log and link.log;
+    it reuses existing build/cudax-cpp20 C2H/Catch2 libraries without rebuilding them.
+
+  Forced RLE smoke (plus common group arguments, without the scan experiment macro):
+    /usr/local/cuda-13.5/bin/nvcc -std=c++17 --expt-relaxed-constexpr -O3 -arch=sm_120 \
+      build/lookahead-groups/validation/rle_smoke.cu \
+      -o build/lookahead-groups/validation/rle-groups
+    build/lookahead-groups/validation/rle-groups
+    --expt-relaxed-constexpr is needed by the existing RLE launch-bounds helper.
+
+  Focused warp helper (plus common experiment arguments):
+    /usr/local/cuda-13.5/bin/nvcc -std=c++17 -arch=sm_120 \
+      cub/benchmarks/experiments/lookahead_groups/warp_scan.cu \
+      -o /tmp/cccl-warp-scan-groups13
+    /tmp/cccl-warp-scan-groups13
+
+  Focused squads (plus common group arguments, without the scan experiment macro):
+    /usr/local/cuda-13.5/bin/nvcc -std=c++17 -arch=sm_120 \
+      cub/benchmarks/experiments/lookahead_groups/squad.cu -o /tmp/cccl-squad-groups13
+    /tmp/cccl-squad-groups13
+    /usr/local/cuda-12.0/bin/nvcc -ccbin g++-7 -std=c++17 \
+      -gencode=arch=compute_90,code=compute_90 \
+      cub/benchmarks/experiments/lookahead_groups/squad.cu -o /tmp/cccl-squad-groups12
+    /tmp/cccl-squad-groups12
+
+  Final scan correctness under compute-sanitizer:
+    /usr/local/cuda-13.5/bin/compute-sanitizer --tool memcheck --error-exitcode 99 \
+      build/lookahead-groups/groups_scan-scan --correctness-only
+    Log: build/lookahead-groups/validation/memcheck-groups-scan.log
+
+  Full product-header clang-tidy (plus common experiment arguments):
+    clang-tidy build/lookahead-groups/validation/tidy_product.cu --quiet \
+      --header-filter='cub/cub/(detail/warpspeed/squad/(squad|group)|device/dispatch/kernels/kernel_scan_lookahead)[.]cuh' \
+      --system-headers -- -x cuda --cuda-device-only --cuda-gpu-arch=sm_120 \
+      --cuda-path=/usr/local/cuda-13.5 -std=c++17 \
+      -D_CCCL_CLANG_TIDY_INVOKED=1 -Wno-unknown-cuda-version
+    Repeated with --cuda-host-only. The local TU instantiates int ExclusiveScan.
+    The scan.cu check uses the same frontend arguments without the header filter.
+
+  Detailed local validation inputs, binaries, compiler/tidy logs and runtime logs:
+    build/lookahead-groups/validation/
+  Default-path regression logs and binaries:
+    build/lookahead-groups/compile-shifted-default.log
+    build/lookahead-groups/compile-shifted-cuda12-default.log
+  The ignored build directory contains supplementary validation artifacts; the
+  committed benchmark runner and focused squad/warp tests reproduce the core experiment.

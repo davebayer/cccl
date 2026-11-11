@@ -1,0 +1,57 @@
+{
+  "ncu_version": "NVIDIA (R) Nsight Compute Command Line Profiler\nCopyright (c) 2018-2026 NVIDIA Corporation\nVersion 2026.4.0.0 (build 39012641) (public-release)\n",
+  "binary_sha256": {
+    "baseline": "9bd96142fce6aba366f91e16215e32622c027ee8a1556c2e8eeb593d67720567",
+    "before_static": "1c75960c17cae74edde24bfb748aebfd6d9c33de2232ad1da8906e00f30dbe3d",
+    "uniform": "120a8352ed2d0b826fb6c83e49bf647dd9e4b53dbce230ceb6cfb8f109cd16e2"
+  },
+  "sections": [
+    "LaunchStats",
+    "InstructionStats",
+    "Occupancy",
+    "SpeedOfLight"
+  ],
+  "clock_control": "none",
+  "cache_control": "none",
+  "notes": "Single validated scan, kernel replay. Profile durations are not the event benchmark. Total instruction counts vary with lookahead polling and CTA scheduling. All tested kernels use 98,656 bytes of dynamic shared memory; shared memory and allocated registers both limit residency to one CTA. Raw profiler CSVs and stdout are in build/lookahead-groups/profile.",
+  "final_profile": {
+    "ncu_version": "NVIDIA (R) Nsight Compute Command Line Profiler\nCopyright (c) 2018-2026 NVIDIA Corporation\nVersion 2026.4.0.0 (build 39012641) (public-release)\n",
+    "binary_sha256": {
+      "final_static": "a364126307746318df7e679ae56244827a3684e7c5878b4592de5fe3a61dadc7"
+    },
+    "commands": [
+      [
+        "ncu",
+        "--clock-control",
+        "none",
+        "--cache-control",
+        "none",
+        "--replay-mode",
+        "kernel",
+        "--kernel-name",
+        "regex:DeviceScanKernel",
+        "--launch-count",
+        "1",
+        "--section",
+        "LaunchStats",
+        "--section",
+        "InstructionStats",
+        "--section",
+        "Occupancy",
+        "--section",
+        "SpeedOfLight",
+        "--csv",
+        "--page",
+        "raw",
+        "--log-file",
+        "build/lookahead-groups/profile/final-core-raw/final_static-float32-1024.csv",
+        "/home/dabayer/cccl/build/lookahead-groups/static_groups-scan",
+        "--profile-case",
+        "float32",
+        "exclusive",
+        "1024"
+      ]
+    ],
+    "notes": "One validated scan per process; clock and cache control disabled. Profiling duration is not the event benchmark. Total instruction counts vary with lookahead polling and CTA scheduling."
+  }
+}

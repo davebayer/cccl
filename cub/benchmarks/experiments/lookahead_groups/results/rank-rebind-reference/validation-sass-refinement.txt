@@ -1,0 +1,70 @@
+Final SASS refinement validation, 2026-11-11
+
+Retained implementation
+  Asserted descriptor-local warp-rank rebind in squad_dispatch_static_leaf.
+  Original linear group_as selector; expanded boundary tests and local lint fixes.
+  Binary mapper, descriptor-index/constexpr-role variants, and rank caches rejected.
+  The Git index was not changed by this work.
+
+Required compiler matrix, C++17
+  Latest: /usr/local/cuda-13.5/bin/nvcc -ccbin=/usr/bin/g++-13, CUDA13.5.37/GCC13.3.
+    -O3 -arch=sm_120
+  Compatibility: /usr/local/cuda-12.0/bin/nvcc -ccbin=/usr/bin/g++-7, CUDA12.0.76.
+    -O3 -gencode=arch=compute_90,code=compute_90
+  Each nvcc invocation uses a private TemporaryDirectory as TMPDIR.
+  All GPU checks execute outside the sandbox on RTX PRO 6000 Blackwell GPU0.
+
+Final-source CUB validation: PASS
+  26,586 assertions across 12 existing cases, RNG seed42:
+    catch2_test_device_scan_alignment.cu
+    catch2_test_device_scan_deterministic.cu
+    catch2_test_device_scan_noncommutative.cu
+    catch2_test_device_exclusive_scan_noncommutative.cu
+  Latest and CUDA12 shifted-output regression: PASS.
+  CUDA12 full scan harness --correctness-only: PASS.
+  Warp helper, valid-lane counts0..32, sum/noncommutative composition: PASS.
+  Shared lookahead RLE smoke, shifted buffers and guards: PASS.
+  Build and run logs:
+    build/lookahead-groups/validation-sass-refinement/
+  Reproduce targeted builds:
+    python3 build/lookahead-groups/validation-sass-refinement/build_tests.py
+    python3 build/lookahead-groups/validation-sass-refinement/build_auxiliary.py
+  Reproduce targeted execution:
+    build/lookahead-groups/validation-sass-refinement/scan-catch2 --reporter compact --rng-seed 42
+    build/lookahead-groups/validation-sass-refinement/shifted-latest
+    build/lookahead-groups/validation-sass-refinement/shifted-cuda12
+    build/lookahead-groups/validation-sass-refinement/harness-cuda12 --correctness-only
+    build/lookahead-groups/validation-sass-refinement/warp-scan
+    build/lookahead-groups/validation-sass-refinement/rle
+  Exact compile/link commands are the first lines of individual compile logs.
+
+Compatibility scope
+  CUDA12 cannot compile SM120 or the PTX8.6 lookahead body. Its scan checks test
+  legacy/header compatibility. The separate squad/core tests instantiate real
+  group code as compute90 PTX and execute via driver JIT on the RTX GPU.
+
+Group semantic validation and rejected-prototype evidence
+  results/validation-static-map.txt: expanded group_as tests on both compilers,
+    host/device header clang-tidy, device test clang-tidy and pre-commit.
+  results/sass-paths.txt: aligned instructions and causal dependencies, full8kernel
+    optional-macro isolation, resource regressions and final selection rationale.
+  Previous unchanged group/core checks:
+    results/validation-groups-fix.txt and results/validation-perf-fix.txt.
+  New final squad/debug checks and measured-binary checks are recorded below.
+
+Final squad validation and source lint: PASS
+  Both pinned compiler toolchains, CCCL_ENABLE_ASSERTIONS enabled:
+    single [1], uniform [1,1,1,1], uneven [1,3,2,1] and [2,3,1,4],
+    maximum1024thread [8,8,8,8], dynamic full/subrange dispatch,
+    and reversed descriptor IDs with repeated synchronization.
+  Final product-header clang-tidy: host-only and device-only PASS.
+  Amended squad test: device-only clang-tidy PASS.
+  Changed scan harness: strict host-only and device-only clang-tidy PASS.
+  Changed benchmark runner: Ruff and pre-commit PASS.
+  Logs:
+    build/lookahead-groups/sass-rebind/squad-{latest,cuda12}-{build,run}.log
+    build/lookahead-groups/sass-rebind/tidy-final-header-{host,device}.log
+    build/lookahead-groups/sass-rebind/tidy-final-squad-device.log
+    build/lookahead-groups/refined/tooling-validation/
+  Clang23 uses -Wno-unknown-cuda-version with installed CUDA13.5; repository
+  checks remain enabled, with precise local annotations for intentional cases.

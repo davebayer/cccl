@@ -1,0 +1,9 @@
+Pristine baseline versus edited tree with all experiment macros disabled:
+Compared cuobjdump --dump-sass output (nvcc 13.5, -O3 -std=c++17 -arch=sm_120 -lineinfo).
+Each contains 13216 instructions across all kernels. The only instruction differences are
+eight ISETP.GE.U32.AND -> ISETP.GE.AND signedness changes (one per scan kernel),
+from replacing unsigned laneIdx with the int-returning laneRank adapter.
+Registers, scheduling, instruction counts, operands, and all other instructions match.
+Source identifier path strings and the corresponding comparison encoding bits differ.
+No timing control run was added because these signedness-only changes do not add instructions.
+Raw dumps: build/lookahead-groups/baseline.sass and current-default.sass.

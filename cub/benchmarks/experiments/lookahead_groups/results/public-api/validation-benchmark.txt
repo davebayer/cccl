@@ -1,0 +1,71 @@
+Public group API benchmark validation, 2026-11-11
+
+Final implementation uses the public algorithm umbrella
+  kernel_scan_lookahead.cuh includes <cuda/experimental/coop/algorithm>.
+  Final kernel header SHA256: 321e6153b0a82ab08fa70717fc3f7dde553de6f2f499ac6439428c3a838b142a
+  The prior cohort using its private shuffle_up include is separately archived:
+    results/pre-public-algorithm-header/
+    build/lookahead-groups/pre-public-algorithm-header/
+  All 2,907 source headers in that archive were recovered/verified against its
+  compiled hashes, including the original pre-change kernel header.
+  No prior/full/focused/profiler artifacts are mixed with this final cohort.
+
+Reference isolation and portability: PASS
+  Original CUB baseline: 24ee635e35caa47b1602e129e49cea60db8b4f05.
+  Complete private adapter dependency snapshot: 2,907 CUB/CUDAX/libcu++/Thrust
+  headers, frozen before product edits with its harness, runner, data and binaries.
+  private-before-public.patch reconstructs exactly those 2,907 files from the
+  pinned revision. Private controls do not use current public group headers.
+  Private manifest SHA256: ea64e38c6527e1a9016387f2d4b9b40f6b8279b4857ffa65d3729ad26477b1c2
+  Portable private fixture SHA256: 09695c5b691ba987e1866d2f69d49bb347b46e1851a24e29049385aa70fa116f
+
+Compiler, source and API surface checks: PASS
+  Latest installed CUDA13.5.37 + explicit /usr/bin/g++-13 (13.3), C++17,
+  -O3 -arch=sm_120 -lineinfo. Private TMPDIR per nvcc invocation.
+  All current CUB/CUDAX/libcu++/Thrust headers, harness, runner and fixture are
+  hashed before/after compilation and timing (2,910 files).
+  Immutable snapshots reject content and file-set changes. Known-ratio checks
+  verify private/public ratios and paired bootstrap intervals.
+  Active CUB group code has no private group types, getters, synchronizer-instance
+  references, array.__elems_ access or experimental/coop/__ includes.
+  Public-surface audit: build/lookahead-groups/public-api-final/public-surface-audit.txt
+
+Authoritative final code generation: PASS
+  Original/private/public main binaries each have 13,216 SASS instructions.
+  Private/public optional binaries each have 13,536 instructions.
+  All eight public main and eight public optional scan kernels have exactly the
+  same normalized instructions/opcodes/operands as freshly rebuilt private controls.
+  All five complete shader streams, including helpers, are identical to the
+  archived cohort before the public algorithm umbrella. Only unused module
+  objects/constant metadata increase; per-kernel resources and instructions do not.
+  All 40 scan resource rows have zero stack/spill loads/stores; no binary has
+  indirect branches. The current default versus original comparison retains
+  exactly eight known signedness substitutions and no inserted/deleted instructions.
+  Audits under build/lookahead-groups/public-api-final/:
+    literal-private-public-comparison.json
+    public-algorithm-header-comparison.json
+    control/comparison.json
+
+Final measurements and artifact integrity: PASS
+  Full matrix: 10 rotating/reversed rounds, 1,800 timing rows, 180 summaries.
+  Focused float32 exclusive1K/65K/1M: 40 rounds, 600 timing rows, 15 summaries.
+  All process correctness checks passed.
+  Nsight Compute: 12 profiles, original/private/public at1K/65K/1M/64M;
+  clock and cache control disabled. Replay timings are diagnostic only.
+  Full/focused binaries and all profiled binaries match measured SHA256 hashes.
+  All 2,910 current source files, runner and harness remain unchanged.
+  Detailed audit: measurement-audit.json
+  Exact build/run/profile commands and logs:
+    build/lookahead-groups/public-api-final/
+
+Rejected prototype evidence is separate from final product/data
+  public-cub-rank-timing: 20 rounds/180 validated measurements; subtracting a
+  derived origin trades1K improvement for1M regression and does not fix65K.
+  public-cub-mask-timing: same protocol; its65K gain is uncertain and leaves
+  baseline overhead. public-cub-singleton-probe produces identical scan SASS.
+  All three changes were rejected/reverted before final compilation.
+
+Final owned pre-commit and post-format audit: PASS
+  Runner, private fixture, historical report, all final/focused results and the
+  pre-public-algorithm-header archive: 55 files, all applicable hooks pass.
+  No formatter mutations. Log: build/lookahead-groups/public-api-final/precommit-final.log

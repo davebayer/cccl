@@ -1,0 +1,40 @@
+{
+  "measured_at_utc": "2026-11-11T12:25:11.431811+00:00",
+  "baseline_revision": "24ee635e35caa47b1602e129e49cea60db8b4f05",
+  "rounds": 5,
+  "definitions": {
+    "baseline": [],
+    "groups": [
+      "-D_CUB_WARPSPEED_USE_CUDAX_GROUPS"
+    ],
+    "groups_scan": [
+      "-D_CUB_WARPSPEED_USE_CUDAX_GROUPS",
+      "-D_CUB_LOOKAHEAD_USE_CUDAX_SCAN"
+    ]
+  },
+  "language_standard": "C++17",
+  "architecture": "sm_120",
+  "clock_control": "Application clocks and power limit left unchanged",
+  "source_sha256": "556d3b9235c5e19d9df3de28b3f8577712fd5a3285fbfb3f1665e0e847cddfd2",
+  "compiled_source_sha256": {
+    "cub/benchmarks/experiments/lookahead_groups/scan.cu": "556d3b9235c5e19d9df3de28b3f8577712fd5a3285fbfb3f1665e0e847cddfd2",
+    "cub/cub/detail/warpspeed/squad/group.cuh": "84e96e35c2fe5272b2796c6df54de9bd94632be97c65b34998c23be9fdc56d0c",
+    "cub/cub/detail/warpspeed/squad/squad.cuh": "39ac580383e982b9fa8ff9148a4f82990794dc2b6631f7c1e307946d35858d2c",
+    "cub/cub/device/dispatch/kernels/kernel_scan_lookahead.cuh": "1814e1d9f00f0f636a56218a4f08bf214e76098a34f0deece6071981f28e1ad8"
+  },
+  "compiler": "nvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2026 NVIDIA Corporation\nBuilt on Mon_Oct_12_19:25:48_PDT_2026\nCuda compilation tools, release 13.5, V13.5.37\nBuild cuda_13.5.r13.5/compiler.39125733_0\n",
+  "host_compiler": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0\nCopyright (C) 2023 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+  "gpu": "name, uuid, driver_version, memory.total [MiB], clocks.max.sm [MHz], clocks.max.memory [MHz]\nNVIDIA RTX PRO 6000 Blackwell Workstation Edition, GPU-c41cf180-3f53-1f1d-c21a-f7519fd15ffb, 620.70.06, 97887 MiB, 3090 MHz, 14001 MHz\n",
+  "binary_sha256": {
+    "baseline": "1812667a57db5cf13e4011b88671e5dbce3df93dd29ca193ed9f75719c077194",
+    "groups": "8ee6748f83cec2a1378c6f0832729e1eafce236c8df31da8ca55f49b607abc99",
+    "groups_scan": "84ddc6dcb42c4b0256633cb85df6c15551ac5a459d049625c9419a8ec202128b"
+  },
+  "timing": "CUDA graph replay, 64 scans/batch for <=2^20 elements else 8; three warm-up graph replays; median of 9 event batches per round",
+  "device_properties": {
+    "l2_cache_bytes": 134217728,
+    "multiprocessor_count": 188,
+    "shared_memory_per_multiprocessor_bytes": 102400
+  },
+  "default_control": "See control.txt: identical SASS except eight signedness-only comparisons; identical instruction counts and scheduling."
+}

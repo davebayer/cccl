@@ -1,0 +1,22 @@
+Final structural benchmark validation
+
+PASS: authoritative squad header SHA256 9c637aff8161166c8006a4dd243b29f238ac39167f0143b60b07fb8d2f2f95a5.
+PASS: five freshly rebuilt variants use the same scan.cu source, nvcc 13.5.37/GCC 13.3, C++17, -O3 -arch=sm_120 -lineinfo; each nvcc uses a private TMPDIR.
+PASS: source, reference-header and binary hashes validated before timing; stale sources, changed snapshots and duplicate cases are rejected.
+PASS: final full matrix has 10 balanced rotating/reversed process rounds, 1800 timing records, 180 summaries; all 50 process correctness checks passed.
+PASS: authoritative SASS totals baseline 13216, original prior 13472/13824, structural final 13216/13536. All have zero BRX/BRXU, stack and spills.
+PASS: per-kernel totals are exported separately. Float-inclusive and int-exclusive main kernels retain eight extra instructions each; whole-binary equality does not mean instruction identity.
+PASS: default-current versus pristine baseline has 13216 instructions each with exactly eight signedness substitutions and no inserted/deleted/reordered instructions.
+PASS: original-prior, older-before and rank-only reference patches reconstruct the selected snapshot header bytes exactly.
+PASS: known-ratio bootstrap sanity check (candidate=2*baseline gives 100% point estimate and interval). Statistics use 2000 paired-round resamples and seed 42.
+PASS: final scan.cu strict clang-tidy 23 host/device checks with all experiment macros and --warnings-as-errors=*.
+clang-tidy-23 cub/benchmarks/experiments/lookahead_groups/scan.cu --quiet '--warnings-as-errors=*' -- --cuda-device-only -x cuda --cuda-gpu-arch=sm_120 --cuda-path=/usr/local/cuda-13.5 -std=c++17 -D_CCCL_CLANG_TIDY_INVOKED=1 -Wno-unknown-cuda-version -D_CUDAX_ENABLE_GROUP_FEATURES_IN_LIBCUDACXX -D_CUB_WARPSPEED_USE_CUDAX_GROUPS -D_CUB_WARPSPEED_USE_STATIC_CUDAX_GROUPS -D_CUB_LOOKAHEAD_USE_CUDAX_SCAN -Ilibcudacxx/include -Icub -Ithrust -Icudax/include
+clang-tidy-23 cub/benchmarks/experiments/lookahead_groups/scan.cu --quiet '--warnings-as-errors=*' -- --cuda-host-only -x cuda --cuda-gpu-arch=sm_120 --cuda-path=/usr/local/cuda-13.5 -std=c++17 -D_CCCL_CLANG_TIDY_INVOKED=1 -Wno-unknown-cuda-version -D_CUDAX_ENABLE_GROUP_FEATURES_IN_LIBCUDACXX -D_CUB_WARPSPEED_USE_CUDAX_GROUPS -D_CUB_WARPSPEED_USE_STATIC_CUDAX_GROUPS -D_CUB_LOOKAHEAD_USE_CUDAX_SCAN -Ilibcudacxx/include -Icub -Ithrust -Icudax/include
+
+Full benchmark source pre-commit/Ruff checks passed; final all-artifact hooks are recorded with the overall validation.
+
+PASS: final focused repeatability completed 40 balanced process rounds for float32 exclusive 1K/1M: 400 records, 10 summaries, and paired-round bootstrap confidence intervals; all 400 process checks passed.
+PASS: final Nsight Compute diagnostics completed baseline/prior/final at 1K/1M/64M, 9 profiles, clock/cache control disabled.
+PASS: final full/focused binary manifests agree; every profiling binary hash matches the corresponding measured binary.
+PASS: final harness, runner and all compiled-source hashes still match the workspace, and measured binary hashes match on-disk artifacts.
+PASS: final benchmark tools, generated data and archive pre-commit hooks passed with no file modifications; log at build/lookahead-groups/structural-final/tooling-validation/precommit-final.log.

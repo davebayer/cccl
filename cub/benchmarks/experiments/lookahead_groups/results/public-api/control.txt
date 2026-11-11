@@ -1,0 +1,4 @@
+Current default CUB versus original baseline: PASS.
+Both have13,216 SASS instructions with identical ordering.
+Exactly8 previously known ISETP.GE.U32.AND -> ISETP.GE.AND substitutions; no insertions/deletions.
+Details: build/lookahead-groups/public-api-final/control/comparison.json

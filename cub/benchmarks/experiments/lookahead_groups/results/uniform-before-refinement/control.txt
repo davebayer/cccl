@@ -1,0 +1,11 @@
+Pristine baseline versus final edited tree with all CUB experiment macros disabled:
+Both built with nvcc 13.5.37, explicit GCC 13.3, C++17, -O3 -arch=sm_120 -lineinfo and isolated TMPDIR.
+Both contain 13216 SASS instruction rows across all kernels. The only 8 instruction differences
+are ISETP.GE.U32.AND -> ISETP.GE.AND signedness comparisons from the laneRank adapter;
+no inserted, deleted or reordered instructions. Raw dumps are in build/lookahead-groups/profile.
+
+Final experimental dispatch evidence is recorded in dispatch-codegen.csv:
+baseline 13216 instructions,67 BSSY/BSYNC pairs,0 BRX/BRXU;
+pre-fix static 19080 instructions,412 pairs,16 BRX;
+fixed static 13472 instructions,69 pairs,0 BRX/BRXU.
+These are whole-binary static instruction counts for the same harness, not dynamic operation counts.

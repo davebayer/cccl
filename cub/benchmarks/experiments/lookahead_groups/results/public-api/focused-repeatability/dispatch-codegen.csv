@@ -1,0 +1,6 @@
+variant,instruction_rows,brx,brxu,bssy,bsync,uniform_bra
+baseline,13216,0,0,67,67,91
+private_groups,13216,0,0,69,69,85
+private_groups_scan,13536,0,0,67,67,85
+static_groups,13216,0,0,69,69,85
+static_groups_scan,13536,0,0,67,67,85

@@ -98,12 +98,16 @@ struct level_synchronizer::__synchronizer_instance
   {
     if constexpr (::cuda::std::is_same_v<_Level, cluster_level>)
     {
+      // The aligned cluster barrier requires this PTX spelling.
+      // NOLINTNEXTLINE(portability-no-assembler)
       NV_IF_TARGET(NV_PROVIDES_SM_90, ({ asm volatile("barrier.cluster.arrive.aligned;" ::: "memory"); }))
     }
     return arrival_token{};
   }
 
   template <class _Hierarchy>
+  // Dummy tokens are validated without transferring any synchronization state.
+  // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
   _CCCL_DEVICE_API void do_wait(const _Hierarchy&, [[maybe_unused]] arrival_token&& __tok) const
   {
     _CCCL_ASSERT(__tok.__valid(), "invalid arrival token passed to do_wait function");
@@ -116,7 +120,7 @@ struct level_synchronizer::__synchronizer_instance
       ::__syncwarp();
     }
     else if constexpr (::cuda::std::is_same_v<_Level, block_level>)
-    {
+    { // NOLINT(bugprone-branch-clone): Matches the pre-SM90 cluster fallback.
       ::cuda::experimental::coop::__block_sync</*is-aligned*/ false>();
     }
     else if constexpr (::cuda::std::is_same_v<_Level, cluster_level>)
@@ -132,6 +136,8 @@ struct level_synchronizer::__synchronizer_instance
   }
 
   template <class _Hierarchy>
+  // Dummy tokens are validated without transferring any synchronization state.
+  // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
   _CCCL_DEVICE_API void do_wait_aligned(const _Hierarchy&, [[maybe_unused]] arrival_token&& __tok) const
   {
     _CCCL_ASSERT(__tok.__valid(), "invalid arrival token passed to do_wait_aligned function");
@@ -144,13 +150,15 @@ struct level_synchronizer::__synchronizer_instance
       ::__syncwarp();
     }
     else if constexpr (::cuda::std::is_same_v<_Level, block_level>)
-    {
+    { // NOLINT(bugprone-branch-clone): Matches the pre-SM90 cluster fallback.
       ::cuda::experimental::coop::__block_sync</*is-aligned*/ true>();
     }
     else if constexpr (::cuda::std::is_same_v<_Level, cluster_level>)
     {
       NV_IF_ELSE_TARGET(NV_PROVIDES_SM_90,
                         ({
+                          // The aligned cluster barrier requires this PTX spelling.
+                          // NOLINTNEXTLINE(portability-no-assembler)
                           asm volatile("barrier.cluster.wait.aligned;" ::: "memory");
                         }),
                         ({ ::cuda::experimental::coop::__block_sync</*is-aligned*/ true>(); }))
@@ -175,6 +183,8 @@ struct __grid_workspace
 [[nodiscard]] _CCCL_CONST _CCCL_DEVICE inline __grid_workspace* __get_grid_barrier_ptr()
 {
   __grid_workspace* __ret;
+  // Cooperative launch provides its workspace through driver ABI environment registers.
+  // NOLINTNEXTLINE(portability-no-assembler)
   asm("mov.b64 %0, {%%envreg2, %%envreg1};" : "=l"(__ret));
   return __ret;
 }
@@ -225,7 +235,7 @@ struct level_synchronizer::__synchronizer_instance<grid_level>
       const auto __block_idx = block.index(grid, __hier);
       if ((__block_idx.x | __block_idx.y | __block_idx.z) == 0)
       {
-        __nblocks = ::cuda::std::uint32_t{::cuda::std::numeric_limits<int>::min()} - (__expected - 1);
+        __nblocks = static_cast<::cuda::std::uint32_t>(::cuda::std::numeric_limits<int>::min()) - (__expected - 1);
       }
 
       ::cuda::std::uint32_t __old_barrier_value;
@@ -233,20 +243,26 @@ struct level_synchronizer::__synchronizer_instance<grid_level>
       __old_barrier_value =
         __nv_atomic_fetch_add(__barrier_ptr, __nblocks, __NV_ATOMIC_RELEASE, __NV_THREAD_SCOPE_DEVICE);
 #  else // ^^^ _CCCL_HAS_NV_ATOMIC_BUILTINS() ^^^ / vvv !_CCCL_HAS_NV_ATOMIC_BUILTINS() vvv
+      // The fallback must retain device-scope release ordering.
+      // NOLINTNEXTLINE(portability-no-assembler)
       asm volatile("atom.add.release.gpu.u32 %0, [%1], %2;"
                    : "=r"(__old_barrier_value)
                    : "l"(__barrier_ptr), "r"(__nblocks)
                    : "memory");
 #  endif // ^^^ !_CCCL_HAS_NV_ATOMIC_BUILTINS() ^^^
       ::cuda::std::uint32_t __curr_barrier_value;
+      // The acquire load below updates the polled value through an asm output.
+      // NOLINTNEXTLINE(bugprone-infinite-loop)
       do
       {
 #  if _CCCL_HAS_NV_ATOMIC_BUILTINS()
         __nv_atomic_load(__barrier_ptr, &__curr_barrier_value, __NV_ATOMIC_ACQUIRE, __NV_THREAD_SCOPE_DEVICE);
 #  else // ^^^ _CCCL_HAS_NV_ATOMIC_BUILTINS() ^^^ / vvv !_CCCL_HAS_NV_ATOMIC_BUILTINS() vvv
+        // The fallback must retain device-scope acquire ordering.
+        // NOLINTNEXTLINE(portability-no-assembler)
         asm volatile("ld.acquire.gpu.u32 %0, [%1];" : "=r"(__curr_barrier_value) : "l"(__barrier_ptr) : "memory");
 #  endif // ^^^ !_CCCL_HAS_NV_ATOMIC_BUILTINS() ^^^
-      } while (static_cast<int>(__old_barrier_value) < 0 == static_cast<int>(__curr_barrier_value) < 0);
+      } while ((static_cast<int>(__old_barrier_value) < 0) == (static_cast<int>(__curr_barrier_value) < 0));
     }
 
     // Wait for the thread 0 to finish the inter block synchronization.
@@ -273,13 +289,15 @@ struct level_synchronizer::__synchronizer_instance<grid_level>
       const auto __block_idx = block.index(grid, __hier);
       if ((__block_idx.x | __block_idx.y | __block_idx.z) == 0)
       {
-        __nblocks = ::cuda::std::uint32_t{::cuda::std::numeric_limits<int>::min()} - (__expected - 1);
+        __nblocks = static_cast<::cuda::std::uint32_t>(::cuda::std::numeric_limits<int>::min()) - (__expected - 1);
       }
 
 #  if _CCCL_HAS_NV_ATOMIC_BUILTINS()
       __old_barrier_value =
         __nv_atomic_fetch_add(__barrier_ptr, __nblocks, __NV_ATOMIC_RELEASE, __NV_THREAD_SCOPE_DEVICE);
 #  else // ^^^ _CCCL_HAS_NV_ATOMIC_BUILTINS() ^^^ / vvv !_CCCL_HAS_NV_ATOMIC_BUILTINS() vvv
+      // The fallback must retain device-scope release ordering.
+      // NOLINTNEXTLINE(portability-no-assembler)
       asm volatile("atom.add.release.gpu.u32 %0, [%1], %2;"
                    : "=r"(__old_barrier_value)
                    : "l"(__barrier_ptr), "r"(__nblocks)
@@ -311,11 +329,15 @@ struct level_synchronizer::__synchronizer_instance<grid_level>
     if ((__thread_idx.x | __thread_idx.y | __thread_idx.z) == 0)
     {
       ::cuda::std::uint32_t __curr_barrier_value;
+      // The acquire load below updates the polled value through an asm output.
+      // NOLINTNEXTLINE(bugprone-infinite-loop)
       do
       {
 #  if _CCCL_HAS_NV_ATOMIC_BUILTINS()
         __nv_atomic_load(__barrier_ptr, &__curr_barrier_value, __NV_ATOMIC_ACQUIRE, __NV_THREAD_SCOPE_DEVICE);
 #  else // ^^^ _CCCL_HAS_NV_ATOMIC_BUILTINS() ^^^ / vvv !_CCCL_HAS_NV_ATOMIC_BUILTINS() vvv
+        // The fallback must retain device-scope acquire ordering.
+        // NOLINTNEXTLINE(portability-no-assembler)
         asm volatile("ld.acquire.gpu.u32 %0, [%1];" : "=r"(__curr_barrier_value) : "l"(__barrier_ptr) : "memory");
 #  endif // ^^^ !_CCCL_HAS_NV_ATOMIC_BUILTINS() ^^^
       } while ((static_cast<int>(__old_barrier_value) < 0) == (static_cast<int>(__curr_barrier_value) < 0));
@@ -326,12 +348,16 @@ struct level_synchronizer::__synchronizer_instance<grid_level>
   }
 
   template <class _Hierarchy>
+  // Waiting reads the token's phase value without transferring ownership.
+  // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
   _CCCL_DEVICE_API void do_wait(const _Hierarchy& __hier, arrival_token&& __tok) const
   {
     __wait_impl<false>(__hier, __tok.__value());
   }
 
   template <class _Hierarchy>
+  // Waiting reads the token's phase value without transferring ownership.
+  // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
   _CCCL_DEVICE_API void do_wait_aligned(const _Hierarchy& __hier, arrival_token&& __tok) const
   {
     __wait_impl<true>(__hier, __tok.__value());

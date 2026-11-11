@@ -42,12 +42,19 @@
 #include <cuda/std/__algorithm/min.h>
 #include <cuda/std/__cccl/cuda_capabilities.h>
 #include <cuda/std/__type_traits/is_same.h>
+#include <cuda/std/__utility/integer_sequence.h>
 #include <cuda/std/__utility/to_underlying.h>
 #include <cuda/std/array>
 #include <cuda/std/cstddef>
 #include <cuda/std/cstdint>
 
 #include <nv/target>
+
+#if defined(_CUB_LOOKAHEAD_USE_CUDAX_SCAN)
+#  include <cub/detail/warpspeed/squad/group.cuh>
+
+#  include <cuda/experimental/coop/algorithm>
+#endif // defined(_CUB_LOOKAHEAD_USE_CUDAX_SCAN)
 
 #if defined(_CCCL_ENABLE_IKET)
 #  include <cub/agent/agent_scan.cuh>
@@ -159,7 +166,8 @@ allocResources(warpspeed::SyncHandler& syncHandler, warpspeed::SmemAllocator& sm
 
 #if __cccl_ptx_isa >= 860
 
-_CCCL_DEVICE_API inline void squadGetNextBlockIdx(const warpspeed::Squad& squad, warpspeed::SmemRef<uint4>& refDestSmem)
+template <typename SquadT>
+_CCCL_DEVICE_API inline void squadGetNextBlockIdx(const SquadT& squad, warpspeed::SmemRef<uint4>& refDestSmem)
 {
   if (squad.isLeaderThread())
   {
@@ -168,8 +176,9 @@ _CCCL_DEVICE_API inline void squadGetNextBlockIdx(const warpspeed::Squad& squad,
   refDestSmem.squadIncreaseTxCount(squad, refDestSmem.sizeBytes());
 }
 
+template <typename SquadT>
 _CCCL_DEVICE_API inline void squadGetNextBlockIdxAtomic(
-  const warpspeed::Squad& squad, warpspeed::SmemRef<uint4>& refDestSmem, ::cuda::std::uint32_t* atomicCounter)
+  const SquadT& squad, warpspeed::SmemRef<uint4>& refDestSmem, ::cuda::std::uint32_t* atomicCounter)
 {
   if (squad.isLeaderThread())
   {
@@ -197,9 +206,40 @@ _CCCL_DEVICE_API Tp warpReducePartial(const Tp input, ScanOpT& scan_op, const in
   return warp_reduce_t{temp_storage}.Reduce(input, scan_op, num_items);
 }
 
+#  if defined(_CUB_LOOKAHEAD_USE_CUDAX_SCAN)
+template <typename Tp, typename ScanOpT>
+[[nodiscard]] _CCCL_DEVICE_API
+_CCCL_FORCEINLINE Tp warp_scan_exclusive_cudax(Tp input, ScanOpT& scan_op, const int num_items)
+{
+  const auto group = _CUB::detail::warpspeed::make_warp_thread_group();
+  const auto lane  = ::cuda::gpu_thread.rank(group);
+
+  // Keep the operator's left-to-right order, including operators without an identity.
+  _CCCL_PRAGMA_UNROLL_FULL()
+  for (unsigned offset = 1; offset < 32; offset *= 2)
+  {
+    const auto previous = ::cuda::experimental::coop::shuffle_up(group, input, offset);
+    if (previous && lane < static_cast<unsigned>(num_items))
+    {
+      input = scan_op(*previous, input);
+    }
+  }
+  const auto previous = ::cuda::experimental::coop::shuffle_up(group, input, 1);
+  // Lane zero's result is unused: the caller supplies the inter-warp/tile prefix.
+  if (previous)
+  {
+    return *previous;
+  }
+  return input;
+}
+#  endif // defined(_CUB_LOOKAHEAD_USE_CUDAX_SCAN)
+
 template <typename Tp, typename ScanOpT>
 _CCCL_DEVICE_API Tp warpScanExclusive(const Tp regInput, ScanOpT& scan_op)
 {
+#  if defined(_CUB_LOOKAHEAD_USE_CUDAX_SCAN)
+  return __scan_detail::warp_scan_exclusive_cudax(regInput, scan_op, 32);
+#  else // ^^^ defined(_CUB_LOOKAHEAD_USE_CUDAX_SCAN) ^^^ / vvv !defined(_CUB_LOOKAHEAD_USE_CUDAX_SCAN) vvv
   using warp_scan_t = WarpScan<Tp>;
   static_assert(::cuda::std::is_same_v<typename warp_scan_t::TempStorage, Uninitialized<NullType>>,
                 "WarpScan for a full warp must not require temporary storage");
@@ -207,6 +247,7 @@ _CCCL_DEVICE_API Tp warpScanExclusive(const Tp regInput, ScanOpT& scan_op)
   Tp result;
   warp_scan_t{temp_storage}.ExclusiveScan(regInput, result, scan_op);
   return result;
+#  endif // !defined(_CUB_LOOKAHEAD_USE_CUDAX_SCAN)
 }
 
 template <typename Tp, typename ScanOpT>
@@ -224,6 +265,9 @@ warpScanExclusivePartial(Tp regInput, ScanOpT& scan_op, const int num_items, boo
   }
   else
   {
+#  if defined(_CUB_LOOKAHEAD_USE_CUDAX_SCAN)
+    return __scan_detail::warp_scan_exclusive_cudax(regInput, scan_op, num_items);
+#  else // ^^^ defined(_CUB_LOOKAHEAD_USE_CUDAX_SCAN) ^^^ / vvv !defined(_CUB_LOOKAHEAD_USE_CUDAX_SCAN) vvv
     using warp_scan_t = WarpScan<Tp>;
     static_assert(::cuda::std::is_same_v<typename warp_scan_t::TempStorage, Uninitialized<NullType>>,
                   "WarpScan for a full warp must not require temporary storage");
@@ -231,6 +275,7 @@ warpScanExclusivePartial(Tp regInput, ScanOpT& scan_op, const int num_items, boo
     typename warp_scan_t::TempStorage temp_storage;
     warp_scan_t{temp_storage}.ExclusiveScanPartial(regInput, result, scan_op, num_items);
     return result;
+#  endif // !defined(_CUB_LOOKAHEAD_USE_CUDAX_SCAN)
   }
 }
 
@@ -334,8 +379,9 @@ struct lookahead_scan_closure
   const RealInitValueT real_init_value;
   scan_resources_t res; // this is the only shared mutable state
 
+  template <typename SquadT>
   _CCCL_DEVICE_API _CCCL_FORCEINLINE void
-  load_next_tile_index(const warpspeed::Squad& squad, warpspeed::SmemPhase<uint4>& phaseNextBlockIdxW) const
+  load_next_tile_index(const SquadT& squad, warpspeed::SmemPhase<uint4>& phaseNextBlockIdxW) const
   {
     warpspeed::SmemRef refNextBlockIdxW = phaseNextBlockIdxW.acquireRef();
     NV_IF_ELSE_TARGET(NV_PROVIDES_SM_100,
@@ -343,8 +389,9 @@ struct lookahead_scan_closure
                       (__scan_detail::squadGetNextBlockIdxAtomic(squad, refNextBlockIdxW, params.atomicCounter);));
   }
 
+  template <typename SquadT>
   _CCCL_DEVICE_API _CCCL_FORCEINLINE void load_current_tile(
-    const warpspeed::Squad& squad,
+    const SquadT& squad,
     warpspeed::SmemPhase<in_out_t>& phaseInOutL,
     const warpspeed::CpAsyncOobInfo<InputT>& loadInfo) const
   {
@@ -352,8 +399,9 @@ struct lookahead_scan_closure
     _CUB::detail::warpspeed::squadLoadBulk(squad, refInOutL, loadInfo);
   }
 
+  template <typename SquadT>
   _CCCL_DEVICE_API _CCCL_FORCEINLINE void lookahead(
-    const warpspeed::Squad& squad,
+    const SquadT& squad,
     warpspeed::SmemPhase<AccumT>& phaseAggrExclusiveCtaW,
     bool is_first_tile,
     int& idxTilePrev,
@@ -390,8 +438,9 @@ struct lookahead_scan_closure
     }
   }
 
+  template <typename SquadT>
   _CCCL_DEVICE_API _CCCL_FORCEINLINE void reduce_tile(
-    const warpspeed::Squad& squad,
+    const SquadT& squad,
     warpspeed::SmemPhase<in_out_t>& phaseInOutRW,
     warpspeed::SmemPhase<thread_and_warp_aggr_t>& phaseThreadAndWarpAggrW,
     int valid_items,
@@ -498,9 +547,9 @@ struct lookahead_scan_closure
     refThreadAndWarpAggrW.data()[squad.threadRank()] = regThreadAggr;
   }
 
-  template <bool IsLastTile>
+  template <bool IsLastTile, typename SquadT>
   _CCCL_DEVICE_API _CCCL_FORCEINLINE void scan_tile(
-    const warpspeed::Squad& squad,
+    const SquadT& squad,
     warpspeed::SmemPhase<thread_and_warp_aggr_t>& phaseThreadAndWarpAggrR,
     warpspeed::SmemPhase<AccumT>& phaseAggrExclusiveCtaR,
     warpspeed::SmemPhase<in_out_t>& phaseInOutRW,
@@ -509,16 +558,13 @@ struct lookahead_scan_closure
     const warpspeed::CpAsyncOobInfo<InputT>& loadInfo,
     ::cuda::std::size_t idxTileBase) /*const*/ // FIXME(bgruber): this const causes a large SASS diff
   {
-    // need to init these to silence nvcc warning about reading uninitialized data
-    [[maybe_unused]] int valid_items_this_thread = 0;
-    [[maybe_unused]] int valid_threads_this_warp = 0;
-    [[maybe_unused]] int valid_warps             = 0;
+    [[maybe_unused]] const int valid_items_this_thread =
+      ::cuda::std::clamp(valid_items - squad.threadRank() * elemPerThread, 0, +elemPerThread);
+    [[maybe_unused]] const int valid_threads_this_warp =
+      ::cuda::std::clamp(::cuda::ceil_div(valid_items, elemPerThread) - squad.warpRank() * 32, 0, 32);
+    [[maybe_unused]] const int valid_warps = ::cuda::ceil_div(valid_items, elemPerThread * 32);
     if constexpr (IsLastTile)
     {
-      valid_items_this_thread = ::cuda::std::clamp(valid_items - squad.threadRank() * elemPerThread, 0, +elemPerThread);
-      valid_threads_this_warp =
-        ::cuda::std::clamp(::cuda::ceil_div(valid_items, elemPerThread) - squad.warpRank() * 32, 0, 32);
-      valid_warps = ::cuda::ceil_div(valid_items, elemPerThread * 32);
       _CCCL_ASSERT(0 < valid_warps && valid_warps <= squad.warpCount(), "");
     }
 
@@ -546,11 +592,7 @@ struct lookahead_scan_closure
       for (int i = 0; i < squadScan.warpCount(); ++i)
       {
         // We want a predicated unrolled loop here.
-        bool include_warp = i < squad.warpRank();
-        if constexpr (IsLastTile)
-        {
-          include_warp &= i < valid_warps;
-        }
+        const bool include_warp = i < squad.warpRank() && (!IsLastTile || i < valid_warps);
         if (include_warp)
         {
           if (i == 0)
@@ -594,10 +636,7 @@ struct lookahead_scan_closure
                                 // runtime
       {
         aggrExclusiveIntraWarp = __scan_detail::warpScanExclusivePartial(
-          regAggrThread,
-          scan_op,
-          valid_threads_this_warp,
-          specialRegisters.laneIdx < static_cast<uint32_t>(valid_threads_this_warp));
+          regAggrThread, scan_op, valid_threads_this_warp, squad.laneRank() < valid_threads_this_warp);
       }
       else
       {
@@ -614,11 +653,8 @@ struct lookahead_scan_closure
       else
       {
         // lane0 has an undefined value for aggrExclusiveIntraWarp, so skip it
-        bool includeIntraWarpAggr = specialRegisters.laneIdx != 0;
-        if constexpr (IsLastTile)
-        {
-          includeIntraWarpAggr &= specialRegisters.laneIdx < static_cast<uint32_t>(valid_threads_this_warp);
-        }
+        const bool includeIntraWarpAggr =
+          squad.laneRank() != 0 && (!IsLastTile || squad.laneRank() < valid_threads_this_warp);
 
         if (includeIntraWarpAggr)
         {
@@ -715,7 +751,7 @@ struct lookahead_scan_closure
     ::cuda::std::byte* smem_output_tile = refInOutRW.data().inout;
     if constexpr (sizeof(OutputT) <= sizeof(InputT))
     {
-      warpspeed::CpAsyncOobInfo storeInfo =
+      const warpspeed::CpAsyncOobInfo storeInfo =
         _CUB::detail::warpspeed::prepareCpAsyncOob(params.ptrOut + idxTileBase, valid_items);
 
       _CUB::detail::warpspeed::squadStoreSmem(
@@ -729,7 +765,7 @@ struct lookahead_scan_closure
       for (int chunk_offset = 0; chunk_offset < valid_items; chunk_offset += elem_per_chunk)
       {
         const int chunk_size = ::cuda::std::min(valid_items - chunk_offset, elem_per_chunk);
-        warpspeed::CpAsyncOobInfo storeInfo =
+        const warpspeed::CpAsyncOobInfo storeInfo =
           _CUB::detail::warpspeed::prepareCpAsyncOob(params.ptrOut + idxTileBase + chunk_offset, chunk_size);
 
         // only stage elements of the current chunk to SMEM
@@ -759,13 +795,16 @@ struct lookahead_scan_closure
     // needed.
   }
 
+  template <typename SquadT>
   _CCCL_DEVICE_API _CCCL_FORCEINLINE void store_tile(
-    const warpspeed::Squad& squad,
+    const SquadT& squad,
     warpspeed::SmemPhase<in_out_t>& phaseInOutS,
     int valid_items,
     ::cuda::std::size_t idxTileBase) const
   {
     // Wait until the scan squad has written the output tile to shared memory
+    // data() requires a mutable reference when the store squad is active.
+    // NOLINTNEXTLINE(misc-const-correctness)
     warpspeed::SmemRef refInOutS = phaseInOutS.acquireRef();
     if constexpr (!scanSquadStores)
     {
@@ -783,7 +822,8 @@ struct lookahead_scan_closure
   // Using this structure, all code that is not executed by the current squad is DCE (dead-code-eliminated) by the
   // compiler and all warp-specialization dispatch is performed once at the start of the kernel and not in any of the
   // hot loops (even if that may seem the case from a first glance at the code).
-  _CCCL_DEVICE_API _CCCL_FORCEINLINE void dispatch_squad(warpspeed::Squad squad) // const // TODO(bgruber): enable const
+  template <typename SquadT>
+  _CCCL_DEVICE_API _CCCL_FORCEINLINE void dispatch_squad(SquadT squad) // const // TODO(bgruber): enable const
   {
     const int numTiles = static_cast<int>(::cuda::ceil_div(params.numElem, ::cuda::std::size_t(tile_size)));
 
@@ -1004,11 +1044,17 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_scan_lookahead_body(
     RealInitValueT,
     ForceInclusive,
     StableReductionOrder>;
-  _CUB::detail::warpspeed::squadDispatch(
-    specialRegisters, closure_t::scanSquads, [&](warpspeed::Squad squad) _CCCL_FORCEINLINE_LAMBDA {
-      // we load the initial value after the squad dispatch, so only the squads needing it emit an LDG
-      closure_t{specialRegisters, params, scan_op, static_cast<RealInitValueT>(init_value), res}.dispatch_squad(squad);
-    });
+  const auto dispatch = [&](auto squad) _CCCL_FORCEINLINE_LAMBDA {
+    // we load the initial value after the squad dispatch, so only the squads needing it emit an LDG
+    closure_t{specialRegisters, params, scan_op, static_cast<RealInitValueT>(init_value), res}.dispatch_squad(squad);
+  };
+#  if defined(_CUB_WARPSPEED_USE_STATIC_CUDAX_GROUPS)
+  using squad_counts_t =
+    ::cuda::std::index_sequence<policy.reduce_and_scan_warps, policy.reduce_and_scan_warps, 1, 1, 1>;
+  _CUB::detail::warpspeed::squad_dispatch_static(specialRegisters, closure_t::scanSquads, squad_counts_t{}, dispatch);
+#  else // _CUB_WARPSPEED_USE_STATIC_CUDAX_GROUPS
+  _CUB::detail::warpspeed::squadDispatch(specialRegisters, closure_t::scanSquads, dispatch);
+#  endif // _CUB_WARPSPEED_USE_STATIC_CUDAX_GROUPS
 #endif // __cccl_ptx_isa >= 860
 }
 

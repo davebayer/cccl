@@ -1,0 +1,112 @@
+{
+  "rounds": 20,
+  "process_order": [
+    [
+      "baseline",
+      "static_groups",
+      "static_groups_scan"
+    ],
+    [
+      "static_groups",
+      "static_groups_scan",
+      "baseline"
+    ],
+    [
+      "static_groups_scan",
+      "baseline",
+      "static_groups"
+    ],
+    [
+      "static_groups_scan",
+      "static_groups",
+      "baseline"
+    ],
+    [
+      "baseline",
+      "static_groups_scan",
+      "static_groups"
+    ],
+    [
+      "static_groups",
+      "baseline",
+      "static_groups_scan"
+    ],
+    [
+      "baseline",
+      "static_groups",
+      "static_groups_scan"
+    ],
+    [
+      "static_groups",
+      "static_groups_scan",
+      "baseline"
+    ],
+    [
+      "static_groups_scan",
+      "baseline",
+      "static_groups"
+    ],
+    [
+      "static_groups_scan",
+      "static_groups",
+      "baseline"
+    ],
+    [
+      "baseline",
+      "static_groups_scan",
+      "static_groups"
+    ],
+    [
+      "static_groups",
+      "baseline",
+      "static_groups_scan"
+    ],
+    [
+      "baseline",
+      "static_groups",
+      "static_groups_scan"
+    ],
+    [
+      "static_groups",
+      "static_groups_scan",
+      "baseline"
+    ],
+    [
+      "static_groups_scan",
+      "baseline",
+      "static_groups"
+    ],
+    [
+      "static_groups_scan",
+      "static_groups",
+      "baseline"
+    ],
+    [
+      "baseline",
+      "static_groups_scan",
+      "static_groups"
+    ],
+    [
+      "static_groups",
+      "baseline",
+      "static_groups_scan"
+    ],
+    [
+      "baseline",
+      "static_groups",
+      "static_groups_scan"
+    ],
+    [
+      "static_groups",
+      "static_groups_scan",
+      "baseline"
+    ]
+  ],
+  "elapsed_s": 24.812535762786865,
+  "binary_sha256": {
+    "baseline-scan": "5ee21b06b37790f116d51b14dc707d411cfe14cead6ea2af39b24a56218bb86a",
+    "static_groups_scan-scan": "bca656f26b60e36a305654f4fc09c2768475d0a88ea64c566661de94f5967976",
+    "static_groups-scan": "a364126307746318df7e679ae56244827a3684e7c5878b4592de5fe3a61dadc7"
+  },
+  "timing": "Archived pre-refinement binaries, float32 exclusive1K and1M; three graph warmup replays;20 balanced process rounds. This preliminary probe predates the50ms warmup used by the final comparison."
+}

@@ -1,0 +1,10 @@
+variant,type,operation,elements,duration_ns,registers_per_thread,allocated_registers_per_thread,dynamic_shared_bytes,resident_blocks_limit_shared_memory,resident_blocks_limit_registers,resident_blocks_limit_barriers,kernel_sass_bytes,executed_warp_instructions,active_warps_percent
+baseline,float32,exclusive,1024,2976,89,96,98656,1,1,8,24960,3973,17.14
+baseline,float32,exclusive,1048576,5536,89,96,98656,1,1,8,24960,604159,14.37
+baseline,float32,exclusive,67108864,336736,89,96,98656,1,1,8,24960,85658036,22.66
+prior_static_groups,float32,exclusive,1024,3392,89,96,98656,1,1,8,25472,4131,17.25
+prior_static_groups,float32,exclusive,1048576,5120,89,96,98656,1,1,8,25472,638713,14.58
+prior_static_groups,float32,exclusive,67108864,336416,89,96,98656,1,1,8,25472,86318025,22.70
+static_groups,float32,exclusive,1024,3072,89,96,98656,1,1,8,25472,4086,17.18
+static_groups,float32,exclusive,1048576,5440,89,96,98656,1,1,8,25472,627623,14.61
+static_groups,float32,exclusive,67108864,339264,89,96,98656,1,1,8,25472,88905965,22.65

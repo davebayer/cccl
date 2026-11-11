@@ -107,6 +107,7 @@ __group_as_map(const _Unit&, const _PrevMappingResult& __prev_mapping_result, co
       const auto __n          = __i_count;
       const auto __rank       = __prev_unit_rank - __sum;
       const auto __lane_mask =
+        // NOLINTNEXTLINE(readability-redundant-parentheses): keep the ternary condition explicitly grouped.
         (::cuda::std::is_same_v<_Unit, thread_level>)
           ? ::cuda::experimental::coop::__make_lane_mask_for_n<_PrevMappingResult::is_always_contiguous()>(
               __prev_mapping_result.lane_mask(), __n, __rank)
@@ -130,6 +131,8 @@ class group_as
 public:
   _CCCL_TEMPLATE(class _Range)
   _CCCL_REQUIRES(::cuda::std::is_same_v<_RangeView, ::cuda::std::ranges::views::all_t<_Range>>)
+  // The constraint excludes group_as itself and preserves the copy and move constructors.
+  // NOLINTNEXTLINE(bugprone-forwarding-reference-overload)
   _CCCL_DEVICE_API explicit group_as(_Range&& __unit_counts)
       : __unit_counts_{::cuda::std::ranges::views::all(::cuda::std::forward<_Range>(__unit_counts))}
   {}

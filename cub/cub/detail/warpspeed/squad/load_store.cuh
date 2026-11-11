@@ -110,8 +110,8 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE CpAsyncOobInfo<Tp> prepareCpAsyncOob(Tp* ptrG
   };
 }
 
-template <typename ResourceTp, typename Tp>
-_CCCL_DEVICE_API void squadLoadBulk(Squad squad, SmemRef<ResourceTp>& refDestSmem, CpAsyncOobInfo<Tp> cpAsyncOobInfo)
+template <typename ResourceTp, typename Tp, typename SquadT>
+_CCCL_DEVICE_API void squadLoadBulk(SquadT squad, SmemRef<ResourceTp>& refDestSmem, CpAsyncOobInfo<Tp> cpAsyncOobInfo)
 {
   _CCCL_IKET_RANGE_PUSH(LoadBulk);
   ::cuda::std::byte* ptrSmem = refDestSmem.data().inout;
@@ -222,8 +222,9 @@ _CCCL_DEVICE_API void squadLoadBulk(Squad squad, SmemRef<ResourceTp>& refDestSme
   _CCCL_IKET_RANGE_POP();
 }
 
+template <typename SquadT>
 _CCCL_DEVICE_API _CCCL_FORCEINLINE void squadStoreMasked16B(
-  Squad squad,
+  SquadT squad,
   ::cuda::std::byte* dstGmem,
   const ::cuda::std::byte* srcSmem,
   ::cuda::std::uint16_t byteMask,
@@ -245,9 +246,9 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void squadStoreMasked16B(
     }));
 }
 
-template <typename OutputT>
+template <typename OutputT, typename SquadT>
 _CCCL_DEVICE_API void
-squadStoreBulkSync(Squad squad, CpAsyncOobInfo<OutputT> cpAsyncOobInfo, const ::cuda::std::byte* srcSmem)
+squadStoreBulkSync(SquadT squad, CpAsyncOobInfo<OutputT> cpAsyncOobInfo, const ::cuda::std::byte* srcSmem)
 {
   // This function performs either 1 copy, or three copies, depending on the
   // size and alignment of the output tile in global memory.
@@ -371,8 +372,8 @@ squadStoreBulkSync(Squad squad, CpAsyncOobInfo<OutputT> cpAsyncOobInfo, const ::
 
 #endif // __cccl_ptx_isa >= 860
 
-template <typename InputT, typename AccumT, int ElemPerThread>
-_CCCL_DEVICE_API void squadLoadSmem(Squad squad, AccumT (&outReg)[ElemPerThread], const InputT* smemBuf)
+template <typename InputT, typename AccumT, int ElemPerThread, typename SquadT>
+_CCCL_DEVICE_API void squadLoadSmem(SquadT squad, AccumT (&outReg)[ElemPerThread], const InputT* smemBuf)
 {
   _CCCL_IKET_RANGE_PUSH(LoadSmem);
   for (int i = 0; i < ElemPerThread; ++i)
@@ -383,8 +384,8 @@ _CCCL_DEVICE_API void squadLoadSmem(Squad squad, AccumT (&outReg)[ElemPerThread]
   _CCCL_IKET_RANGE_POP();
 }
 
-template <typename OutputT, typename AccumT, int ElemPerThread>
-_CCCL_DEVICE_API void squadStoreSmem(Squad squad, OutputT* smemBuf, const AccumT (&inReg)[ElemPerThread])
+template <typename OutputT, typename AccumT, int ElemPerThread, typename SquadT>
+_CCCL_DEVICE_API void squadStoreSmem(SquadT squad, OutputT* smemBuf, const AccumT (&inReg)[ElemPerThread])
 {
   _CCCL_IKET_RANGE_PUSH(StoreSmem);
   for (int i = 0; i < ElemPerThread; ++i)
@@ -395,9 +396,9 @@ _CCCL_DEVICE_API void squadStoreSmem(Squad squad, OutputT* smemBuf, const AccumT
   _CCCL_IKET_RANGE_POP();
 }
 
-template <typename OutputT, typename AccumT, int ElemPerThread>
-_CCCL_DEVICE_API void
-squadStoreSmemPartial(Squad squad, OutputT* smemBuf, const AccumT (&inReg)[ElemPerThread], int beginIndex, int endIndex)
+template <typename OutputT, typename AccumT, int ElemPerThread, typename SquadT>
+_CCCL_DEVICE_API void squadStoreSmemPartial(
+  SquadT squad, OutputT* smemBuf, const AccumT (&inReg)[ElemPerThread], int beginIndex, int endIndex)
 {
   _CCCL_IKET_RANGE_PUSH(StoreSmem);
   for (int i = 0; i < ElemPerThread; ++i)

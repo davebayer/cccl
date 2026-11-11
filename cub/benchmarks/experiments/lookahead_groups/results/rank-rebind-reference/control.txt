@@ -1,0 +1,17 @@
+Pristine baseline versus current edited tree with all CUB experiment macros disabled:
+Both built with nvcc 13.5.37, explicit GCC 13.3, C++17, -O3 -arch=sm_120 -lineinfo, the same 50 ms warmup harness, and isolated TMPDIR.
+Both contain 13216 SASS instruction rows across all kernels. Exactly 8 instruction differences
+are ISETP.GE.U32.AND -> ISETP.GE.AND signedness comparisons from the laneRank adapter;
+no inserted, deleted or reordered instructions.
+Commands, raw dumps, binary hashes and comparison JSON are in build/lookahead-groups/refined/control/.
+
+{
+  "current-default-scan": "0e5290a74705f7557a4a299631b95e22c0c1c6991e7f63453442fc19fe9ff25b",
+  "baseline-scan": "22c920a5b1effbfd82d9db67a9f4020321b7e63462647be196e528609dc60bc9"
+}
+
+Authoritative final experimental SASS counts are recorded in dispatch-codegen.csv:
+pristine baseline 13216; prior static 13472; prior static+scan 13824;
+current rank rebind 13448; current rank rebind+scan 13808.
+All contain zero BRX/BRXU. These whole-binary counts include compiler alignment NOPs.
+The exact default control baseline SHA256 matches the final measured baseline binary.

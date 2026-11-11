@@ -55,8 +55,10 @@ public:
   _CCCL_DEVICE_API __coalesced_mapping_result()
       : __lane_mask_{::cuda::device::lane_mask::all_active()}
       , __unit_count_{static_cast<::cuda::std::uint32_t>(::cuda::std::popcount(__lane_mask_.value()))}
-      , __unit_rank_{static_cast<::cuda::std::uint32_t>(
-          ::cuda::std::popcount((__lane_mask_ & ::cuda::device::lane_mask::all_less()).value()))}
+      , __unit_rank_{
+          static_cast<::cuda::std::uint32_t>(
+            ::cuda::std::popcount((__lane_mask_ & ::cuda::device::lane_mask::all_less()).value())),
+        }
   {}
 
   [[nodiscard]] _CCCL_DEVICE_API static constexpr ::cuda::std::size_t static_group_count()
@@ -137,7 +139,7 @@ public:
   using hierarchy_type               = _Hierarchy;
   using __mapping_result_type        = _MappingResult;
   using __synchronizer_instance_type = _SynchronizerInstance;
-  using arrival_token                = typename _SynchronizerInstance::arrival_token;
+  using arrival_token                = _SynchronizerInstance::arrival_token;
 
   _CCCL_TEMPLATE(class _HierarchyLike)
   _CCCL_REQUIRES(::cuda::std::is_same_v<_Hierarchy, __hierarchy_type_of<_HierarchyLike>>)
@@ -276,7 +278,7 @@ public:
 
   _CCCL_TEMPLATE(class _InLevel)
   _CCCL_REQUIRES(__is_hierarchy_level_v<_InLevel>)
-  [[nodiscard]] _CCCL_DEVICE_API auto rank(const _InLevel& __in_level) const
+  [[nodiscard]] _CCCL_DEVICE_API typename _InLevel::__product_type rank(const _InLevel& __in_level) const
   {
     return __rank_as_impl<typename _InLevel::__product_type>(__mapping_result_, __hier_, __in_level);
   }

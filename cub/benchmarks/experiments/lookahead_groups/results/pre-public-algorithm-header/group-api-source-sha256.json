@@ -1,0 +1,8 @@
+{
+  "cudax/include/cuda/experimental/coop/__group/group_view.cuh": "02d5f16767188bb0b02fa8f8a215d03435da24018235ec6587d14975981f6e68",
+  "cudax/include/cuda/experimental/coop/__group/this_group.cuh": "47fcef0188bdb5feadf58229772dae5014d46df4f42145af8a32820541d5e390",
+  "cudax/include/cuda/experimental/coop/__group/generic_group.cuh": "71d5c6cfb5bc2d73574c64673d12e907cb4e3cfe72aa8d1a5835f68a9ee8c71d",
+  "cudax/include/cuda/experimental/coop/__group/virtual_group.cuh": "f67c5d484ca602e1faf628ef466cf51502c3364f63ceb8ad2fd4354c2fdcfb38",
+  "cudax/include/cuda/experimental/coop/__group/coalesced_group.cuh": "314505fbc6d0076d20e5b168ca6bb23b2aa287b08f3cfc92972889deb6c09ebc",
+  "cudax/test/coop/group/group_view.cu": "237fb1863f23e4a32c631624b94e286d8f5762fcfe78f8dbd0f363f65e073df0"
+}

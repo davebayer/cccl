@@ -1,0 +1,119 @@
+Static group_as mapper refinement validation
+===========================================
+
+Changed files:
+  cudax/include/cuda/experimental/coop/__group/mapping/group_as.cuh
+  cudax/test/coop/group/mapping/group_as.cu
+
+The binary-prefix selection experiment was rejected after full macro-matrix
+SASS analysis exposed a large optional-scan callback codegen regression.
+Production index_sequence mapping retains the original linear range mapper.
+The added boundary tests and local clang-tidy fixes remain; the public API
+and mapping semantics are unchanged.
+
+Semantic coverage:
+  PASS: existing complete group_as test, including runtime ranges, integer
+        sequences, exhaustive and nonexhaustive mappings, static metadata,
+        uniform sizes, single group, and composed previous mappings.
+  PASS: added repeated empty slots at the beginning, middle, and end; all-zero
+        nonexhaustive mapping; odd and 32-way layouts; interleaved previous
+        groups with noncontiguous lane masks; unequal previous counts; and
+        propagation of invalid previous results through nonexhaustive mapping.
+        Static and runtime selectors are compared for every valid lane, with
+        compile-time assertions for group counts and each subgroup size.
+
+Required toolchain matrix, C++17, CCCL assertions enabled:
+  PASS: nvcc 13.5.37 + /usr/bin/g++-13, sm_120.
+  PASS: nvcc 12.0.76 + /usr/bin/g++-7, compute_90 PTX JIT on RTX PRO 6000.
+  Each CUDA compilation uses its own TMPDIR to prevent nvcc intermediate-file
+  collisions between sandbox process namespaces.
+
+Exact build command (repository root):
+  python3 build/lookahead-groups/static-map/build_group_as.py
+  The script records the exact nvcc invocation as the first line of:
+    build/lookahead-groups/static-map/group-as-latest-build.log
+    build/lookahead-groups/static-map/group-as-cuda12-build.log
+
+GPU execution commands, outside the sandbox on RTX PRO 6000:
+  build/lookahead-groups/static-map/group-as-latest --reporter compact --rng-seed 42
+  build/lookahead-groups/static-map/group-as-cuda12 --reporter compact --rng-seed 42
+  Both pass their single C2H case; device CHECK failures trap, so successful
+  runs do not increment host Catch2 assertion totals. Final output is saved in:
+    build/lookahead-groups/static-map/group-as-latest-run.log
+    build/lookahead-groups/static-map/group-as-cuda12-run.log
+
+Rejected binary-prefix mapper: isolated SASS comparison before the subsequent
+CUB per-leaf rebind, with the optional group-shuffle scan disabled:
+  Full benchmark binary: 13,472 -> 13,408 instruction rows.
+  Integer inclusive scan kernel: 1,528 -> 1,520 instruction rows.
+  Eight scan specializations: six lose eight static instructions, one loses
+  sixteen, and one remains unchanged (instruction padding is included).
+  Integer kernel opcode examples: UMOV 21 -> 14; USEL 17 -> 15;
+  BRA.U 13 -> 12. Selection no longer carries the linear mapper's explicit
+  rank/offset reconstruction chain. Registers, barriers, stack and spills
+  remain unchanged. Static instruction counts alone do not establish a
+  runtime speedup; use the final benchmark report for timing conclusions.
+  Rejected candidate binary/SASS/compiler command and resources:
+    build/lookahead-groups/static-map/static-map-scan
+    build/lookahead-groups/static-map/static-map-scan.sass
+    build/lookahead-groups/static-map/static-map-scan-build.log
+  Previous SASS:
+    build/lookahead-groups/profile/final-static_groups.sass
+
+Optional group-shuffle scan isolation that rejected the binary mapper:
+  Binary mapper + previous CUB squad: 32,912 rows and 15 BRXU.
+  Binary mapper + rebound CUB squad: 35,464 rows and 20 BRXU.
+  Double and affine kernels expand to thousands of instructions with five
+  jump-table branches per affected specialization. All stack and spill
+  records remain zero; this is callback/CFG duplication rather than device
+  function outlining. Explicit force-inline attributes on the binary/static
+  mapper helpers and dispatch helper leave the regression unchanged.
+  The independent old-linear-mapper + rebound-squad optional build has
+  13,808 rows and no BRXU. To isolate the local lint refactor as a possible
+  confound, the linear mapper including an equivalent lane-mask lambda was
+  rebuilt with both prior squad and prior kernel headers: 13,824 rows and
+  no BRXU across all eight optional-scan specializations, matching the prior
+  healthy build. Logs/SASS are under the same isolation directory as
+  current-linear-prior-build.log and current-linear-prior.sass.
+  Final production restores the exact original conditional expression with
+  a precise local clang-tidy annotation. The broader CUB role/type experiments
+  and final retained implementation are evaluated in the final report.
+  No binary mapper helper remains in product code.
+  Isolation command:
+    python3 build/lookahead-groups/static-map/isolate.py
+  Isolation overlays (rejected prototypes):
+    /tmp/static-map-isolation/mapper-only
+    /tmp/static-map-isolation/forceinline
+  Logs and SASS:
+    build/lookahead-groups/static-map/isolation/mapper-only-build.log
+    build/lookahead-groups/static-map/isolation/mapper-only.sass
+    build/lookahead-groups/static-map/isolation/forceinline-build.log
+    build/lookahead-groups/static-map/isolation/forceinline.sass
+
+Style and lint:
+  PASS: full header host-only and device-only clang-tidy, system headers
+        enabled with the changed header selected (no changed-line filter).
+  PASS: complete group_as.cu device-only clang-tidy.
+  Exact commands: build/lookahead-groups/static-map/tidy-commands.txt
+  Logs: build/lookahead-groups/static-map/tidy-header-{host,device}.log
+        build/lookahead-groups/static-map/tidy-test-device.log
+  PASS: pre-commit run --files
+        cudax/include/cuda/experimental/coop/__group/mapping/group_as.cuh
+        cudax/test/coop/group/mapping/group_as.cu
+  PASS: git diff --check
+  Test host-only clang-tidy encounters the existing C2H CHECK macro host-pass
+  issue (Catch2 host handlers inside __device__ functions); device lint is
+  clean. That limitation does not affect the required nvcc builds or runs.
+
+Known pre-existing caveat, not caused or changed by this refinement:
+  Directly applying exhaustive map() to an invalid previous mapping result
+  returns an exhaustive result's invalid sentinel. That result's is_valid()
+  is unconditionally true by its exhaustive type contract. Invalid previous
+  propagation is therefore validated through the nonexhaustive overload;
+  exhaustive composition is tested only on valid previous results. Public
+  group construction supplies a valid initial previous mapping.
+
+The git index was not changed during this refinement.
+The required toolchain tests and lint commands above were rerun after restoring
+the linear delegation and exact original conditional expression; logs refer
+to that final retained implementation.

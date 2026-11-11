@@ -1,0 +1,11 @@
+Final structural source control audit
+
+Fresh original-baseline and current-default (experiment macros disabled) binaries use the same 50 ms warmup harness, nvcc 13.5.37/GCC 13.3, C++17, -O3 -arch=sm_120 -lineinfo and isolated TMPDIR.
+Both contain 13216 SASS instruction rows. Exactly 8 ISETP.GE.U32.AND -> ISETP.GE.AND signedness substitutions remain; no inserted, deleted or reordered instructions.
+Final experimental static groups also total 13216 rows; optional scan 13536; original prior 13472/13824. All have zero BRX/BRXU and no stack/spills. Counts include alignment NOPs and do not imply identical instructions.
+Raw control dumps and binary comparison: build/lookahead-groups/structural-final/control/.
+
+{
+  "baseline": "57fa6ac5886ee7b1e74e31c601902b5909571e9ebe40c0557d46bfbd781315e2",
+  "current-default": "364f7c4eb07ec3ff619383e1e65104517426de41cc8d4f4b49d12d5fa4349b85"
+}

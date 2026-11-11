@@ -1,0 +1,39 @@
+{
+  "status": "passed",
+  "cohort": "public-group-api",
+  "row_counts": {
+    "raw.csv": 1800,
+    "summary.csv": 180,
+    "focused-repeatability/raw.csv": 600,
+    "focused-repeatability/summary.csv": 15,
+    "profiling.csv": 12
+  },
+  "source_files": 2910,
+  "runner_sha256": "5cd207b3ebe4c00c001878fd942e3fe35ca0fcd1ee228ddf297d56b93ae829f0",
+  "harness_sha256": "61c4e56e3f4e269e46523bff7ea7790323038643923eeb324cb15076d08e5d7a",
+  "reference_overlays": {
+    "private_": {
+      "path": "/home/dabayer/cccl/build/lookahead-groups/public-api-final/portable-private-headers",
+      "sha256": "ea64e38c6527e1a9016387f2d4b9b40f6b8279b4857ffa65d3729ad26477b1c2"
+    }
+  },
+  "binary_sha256": {
+    "baseline": "d60ccbcc2a5de053778e8c36c54529561a3ed72c3c879cec2f92dc4acf9d779c",
+    "private_groups": "f1de18fc1823d05860a5ede592dc0cfc442019695540bc97c6841b18322decd2",
+    "private_groups_scan": "773f2f8e03c901824801e7231352c28414644b805c4671aa2566cff5d586f994",
+    "static_groups": "29e767b431469e812c4362bc322bf76f60cac4324278d5845f62d618f56ccf34",
+    "static_groups_scan": "39bb6d218c27fbc6c1429035551d5a763eecb74b37255b8b92e82bce78cba719"
+  },
+  "literal_private_public_scan_instructions": {
+    "static_groups": {
+      "kernels": 8,
+      "identical_kernels": 8,
+      "different_instruction_rows": 0
+    },
+    "static_groups_scan": {
+      "kernels": 8,
+      "identical_kernels": 8,
+      "different_instruction_rows": 0
+    }
+  }
+}

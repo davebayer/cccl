@@ -1,0 +1,234 @@
+SASS path analysis: descriptor selection before static-count specialization
+Toolchain: CUDA 13.5.37, GCC 13.3.0, C++17, -O3 -arch=sm_120 -lineinfo.
+Baseline: committed CUB 24ee635e35caa47b1602e129e49cea60db8b4f05.
+Prior: static cudax groups with cached uniform parent.
+Rank-only: archived intermediate descriptor-local warp-rank rebind.
+Final: physical descriptor selection before constructing its static-count view.
+All use the original generic linear group_as mapper; rejected binary-mapper
+experiments are listed separately below. Counts include alignment NOPs.
+Final reviewed/landed squad.cuh SHA256:
+9c637aff8161166c8006a4dd243b29f238ac39167f0143b60b07fb8d2f2f95a5.
+
+kernel,baseline,prior,rank-only,final
+float64-inclusive,1416,1448,1448,1416
+float64-exclusive,1432,1464,1464,1432
+float32-inclusive,1536,1576,1568,1544
+float32-exclusive,1560,1592,1592,1560
+int32-inclusive,1496,1528,1528,1496
+int32-exclusive,1504,1544,1536,1512
+affine-exclusive,1920,1944,1936,1912
+affine-inclusive,1856,1880,1880,1848
+
+Complete binary: baseline 13,216; prior 13,472; rank-only 13,448; final 13,216.
+Optional cudax warp scan: prior 13,824; rank-only 13,808; final 13,536.
+The final totals remove 256 main and 288 optional instructions versus prior.
+The main total equals baseline; this is not a claim that all kernels are
+byte-identical. Float-inclusive and int-exclusive each have 8 extra padded
+instructions; both affine kernels have 8 fewer, balancing the total.
+
+WHAT CAUSED THE REMAINING OVERHEAD
+
+The prior adapter first created group_as, dispatched through
+with_static_unit_count, then dispatched again to a squad descriptor. That
+structure required a runtime group rank and selected prefix, and exposed
+count/descriptor combinations to the compiler before it could remove them.
+The rank-only intermediate eliminated the selected-prefix value but kept the
+group-rank and count/descriptor dispatch. Final dispatch instead selects the
+descriptor from balanced thresholds on the cached uniform physical warp index.
+Only that leaf constructs the typed count/rank mapping from Counts[Index].
+
+The group_as expression still defines the partition. Debug checks compare
+both selected ordinal and local warp rank against that mapping. Native cudax
+identity-group synchronization and public rank queries remain. The positive
+count/full-block/one-dimensional preconditions prove that the cached prefix
+and static count describe the same group. Descriptor IDs remain independent
+of slots; reversed-ID tests exercise that distinction. The native barrier
+constructor copies its ID, so no pointer to a leaf-local ID escapes.
+
+with_static_unit_count is unnecessary once the selected leaf already knows
+its count from the index_sequence. Removing that outer specialization avoids
+compiling impossible count/descriptor callback combinations and lets NVCC
+eliminate mapper-result materialization from the optimized entry path.
+
+EXACT INT32-INCLUSIVE ENTRY PATH
+
+Addresses are kernel-relative; registers differ between compilations.
+
+BASELINE:
+  0a80: UISETP.GT.U32.AND UP0, UPT, UR4, 0x7, UPT
+  0a90: BRA.U UP0, 0x4550
+  0aa0: UISETP.GT.U32.AND UP0, UPT, UR4, 0x3, UPT
+  0ab0: UIADD3 UR11, UPT, UPT, UR14, -0x1, URZ
+  0ac0: BRA.U UP0, 0x2110
+
+PRIOR: group_as selects dense group rank UR4 and negative prefix UR5;
+UIADD at 0xba0 materializes local warp rank UR14 before count/role dispatch:
+  0a80: UISETP.GE.U32.AND UP1, UPT, UR15, 0x4, UPT
+  0a90: UMOV UR4, URZ
+  0aa0: UPLOP3.LUT UP0, UPT, UPT, UPT, UPT, 0x80, 0x8
+  0ab0: UMOV UR5, URZ
+  0ac0: BRA.U !UP1, 0xba0
+  0ad0: UISETP.GE.U32.AND UP1, UPT, UR15, 0x8, UPT
+  0ae0: UMOV UR5, 0xfffffffc
+  0af0: UMOV UR4, 0x1
+  0b00: BRA.U !UP1, 0xba0
+  0b10: UISETP.NE.U32.AND UP0, UPT, UR15, 0x8, UPT
+  0b20: UMOV UR5, 0xfffffff8
+  0b30: UMOV UR4, 0x2
+  0b40: @UP0 UISETP.GE.U32.AND UP1, UPT, UR15, 0xa, UPT
+  0b50: @UP0 UMOV UR14, 0x3
+  0b60: @UP0 UMOV UR24, 0xfffffff7
+  0b70: @UP0 USEL UR4, UR14, 0x4, !UP1
+  0b80: @UP0 USEL UR5, UR24, 0xfffffff6, !UP1
+  0b90: UPLOP3.LUT UP0, UPT, UPT, UPT, UPT, 0x40, 0x4
+  0ba0: UIADD3 UR14, UPT, UPT, UR15, UR5, URZ
+  0bb0: BRA.U !UP0, 0x4720
+  0bc0: UISETP.GT.U32.AND UP0, UPT, UR15, 0x3, UPT
+  0bd0: UIADD3 UR11, UPT, UPT, UR6, -0x1, URZ
+  0be0: BRA.U UP0, 0x2230
+
+RANK-ONLY INTERMEDIATE: selected-prefix values are gone but group-rank
+materialization and its dispatch remain:
+  0a80: UISETP.GE.U32.AND UP1, UPT, UR5, 0x4, UPT
+  0a90: UMOV UR4, URZ
+  0aa0: UPLOP3.LUT UP0, UPT, UPT, UPT, UPT, 0x80, 0x8
+  0ab0: BRA.U !UP1, 0xb50
+  0ac0: UISETP.GE.U32.AND UP1, UPT, UR5, 0x8, UPT
+  0ad0: UMOV UR4, 0x1
+  0ae0: BRA.U !UP1, 0xb50
+  0af0: UISETP.NE.U32.AND UP0, UPT, UR5, 0x8, UPT
+  0b00: UMOV UR4, 0x2
+  0b10: @UP0 UISETP.GE.U32.AND UP1, UPT, UR5, 0xa, UPT
+  0b20: @UP0 UMOV UR6, 0x3
+  0b30: @UP0 USEL UR4, UR6, 0x4, !UP1
+  0b40: UPLOP3.LUT UP0, UPT, UPT, UPT, UPT, 0x40, 0x4
+  0b50: BRA.U !UP0, 0x46d0
+  0b60: UISETP.GT.U32.AND UP0, UPT, UR5, 0x3, UPT
+  0b70: UIADD3 UR11, UPT, UPT, UR18, -0x1, URZ
+  0b80: BRA.U UP0, 0x21d0
+
+FINAL: original five-instruction role-dispatch shape is recovered:
+  0a80: UISETP.GT.U32.AND UP0, UPT, UR20, 0x7, UPT
+  0a90: BRA.U UP0, 0x45a0
+  0aa0: UISETP.GT.U32.AND UP0, UPT, UR20, 0x3, UPT
+  0ab0: UIADD3 UR11, UPT, UPT, UR12, -0x1, URZ
+  0ac0: BRA.U UP0, 0x2110
+
+Prior reducer warps 0..3 execute 10 uniform entry instructions, rank-only 8,
+and final 5. Scanner warps 4..7 execute 14 prior, 11 rank-only, and 5 final.
+The baseline executes 5 in both cases. Counts include the resource-offset
+UIADD shared by these paths plus taken/not-taken branches. The final path
+needs no dense group-rank UMOV/USEL sequence, selected-negative-prefix values,
+or dynamic prefix UIADD. Branches use the same cached warp-uniform rank as
+baseline, so no new collective or divergent rank-reconstruction step appears.
+
+The rank-only stage specifically removed four UMOVs for prefixes 0/-4/-8/-9,
+one USEL for -9/-10, and the local-rank UIADD from the static prologue. Whole-
+kernel schedules added two MOVs elsewhere, leaving 3 fewer non-NOP instructions
+in each of eight kernels and a 24-instruction aggregate reduction. Its int-
+inclusive padded size stayed 1,528. Final structural dispatch reduces that
+kernel to 1,496, matching the original baseline.
+
+REMAINING THREAD-RANK DEPENDENCY
+
+The public gpu_thread.rank(group) query for a warp-unit group computes
+localWarpRank*32+(threadIdx.x&31). NVCC does not recover the original mask
+from the cached REDUX uniform warp rank. First reducer address setup:
+
+BASELINE:
+  0ad0: LDC R10, c[0x0][0x380]
+  0ae0: IMAD.SHL.U32 R3, R2.reuse, 0x4, RZ
+  0af0: ELECT P0, URZ, PT
+  0b00: HFMA2 R79, -RZ, RZ, 0, 5.9604644775390625e-08
+  0b10: LOP3.LUT R11, R2, 0x7f, RZ, 0xc0, !PT
+  0b20: CS2R R12, SRZ
+  0b30: LOP3.LUT R3, R3, 0x1fc, RZ, 0xc0, !PT
+  0b40: CS2R R14, SRZ
+  0b50: LDC.64 R50, c[0x0][0x3a8]
+  0b60: ACQBULK
+  0b70: USHF.L.U32 UR5, UR4, 0x5, URZ
+  0b80: IADD R16, R3, UR20
+  0b90: ULEA UR12, UR4, UR20, 0x2
+  0ba0: ISETP.NE.U32.OR P1, PT, RZ, UR4, !P0
+  0bb0: UMOV UR4, URZ
+
+FINAL:
+  0ad0: LDC R16, c[0x0][0x380]
+  0ae0: USHF.L.U32 UR5, UR20, 0x5, URZ
+  0af0: ELECT P0, URZ, PT
+  0b00: HFMA2 R79, -RZ, RZ, 0, 5.9604644775390625e-08
+  0b10: MOV R14, RZ
+  0b20: HFMA2 R11, -RZ, RZ, 0, 0
+  0b30: CS2R R12, SRZ
+  0b40: MOV R2, UR5
+  0b50: LDC.64 R52, c[0x0][0x3a8]
+  0b60: ISETP.NE.U32.OR P1, PT, RZ, UR20, !P0
+  0b70: ACQBULK
+  0b80: ULEA UR6, UR20, UR21, 0x2
+  0b90: LOP3.LUT R15, R2, 0x1f, R15, 0xf8, !PT
+  0ba0: UMOV UR4, URZ
+  0bb0: LEA R10, R15, UR21, 0x2
+
+Final dependency: uniform warp rank -> USHF -> uniform-to-vector MOV ->
+LOP3 merge with lane bits -> LEA/shared address. Baseline masks the original
+index with 0x7f. This small local difference remains even though complete
+kernel/binary sizes now match closely; event and NCU measurements determine
+whether it affects the tested cases. Alternative thread-rank caches increased
+register allocation and were rejected rather than assuming fewer operations
+would guarantee better code.
+
+RESOURCES AND VALIDATION
+
+Final main/optional sum kernels retain 86-89 registers, 3 barriers, no stack
+and no spills. Affine main uses 96/95 registers versus rank-only 96/93;
+optional uses 93/95 in both. Sum register allocation/CTA shared memory did not
+change; shared memory already limits these kernels to one resident CTA.
+
+Reviewed overlay and landed bytes are identical. Both complete main/optional
+harnesses passed GPU correctness. Debug squad checks passed CUDA 13.5/GCC 13
+and CUDA 12.0/GCC 7 in C++17: single, uniform, uneven, 1024-thread, subrange,
+and permuted descriptor-ID layouts. Independent review verified count/prefix
+equivalence and native barrier-ID lifetime. Full header host/device clang-tidy
+and post-land pre-commit passed. Root also validated 26,586 Catch2 assertions
+and the shifted-output/legacy/shared-helper smoke tests against this overlay.
+Final source-hashed preflight, event timings and NCU profiles are authoritative
+and are recorded in the main report.
+
+REJECTED EXPERIMENTS AND ATTRIBUTION CORRECTION
+
+Mapper,squad implementation,main instructions,optional instructions
+Linear,previous static squad,13472,13824
+Linear,descriptor-local warp rank,13448,13808
+Linear,warp rank plus constexpr role/type index,13448,13760
+Binary,descriptor-local warp rank,13248,35464
+Binary,warp rank plus constexpr role/type index,13248,13584
+Linear,descriptor-before-count structural dispatch,13216,13536
+
+The binary mapper alone with the previous squad produced 32,912 optional
+instructions and 15 indirect branches; adding the rank rebind produced
+35,464 optional instructions and 20 indirect branches. Double/affine pipeline
+bodies were repeated despite unchanged register/shared-memory allocations.
+Explicit constexpr role pruning made that candidate healthy, but the final
+structural change reaches better code without modifying generic mapping or
+adding role indices to squad types. No role/type-index change remains.
+
+A CUB-only temporary overlay initially reported 13,248 for a prefix rebind,
+but it still read a changing working-tree cudax header. It did not isolate the
+linear mapper. Source-hashed preflights and an exact staged-mapper overlay
+corrected that attribution. Generic lane-mask ternary and if-constexpr lambda
+forms both produced 13,448/13,808 with the rank-only squad; the style rewrite
+did not explain the difference. The original ternary is restored with precise
+lint annotations and its non-comment code tokens match the staged mapper.
+
+Other rejected rank variants:
+- threadIdx - 32*(cachedWarpIdx-groupWarpRank): 13,480 in its original probe;
+  it did not solve the selected-prefix problem.
+- cached laneId for laneRank: 13,464 in its original probe, with mixed affine
+  register-allocation changes.
+- separate descriptor-local thread-unit view: some size reduction, but
+  affine-exclusive allocation reached 128 registers, even after role DCE.
+- scalar cached thread rank: extra callback code or 128-register affine
+  allocation persisted after explicit role pruning.
+- physical-warp thresholds inside the old outer with_static_unit_count
+  dispatch: an earlier probe grew to 58,984 instructions. Final code removes
+  that outer count specialization before selecting the physical descriptor.

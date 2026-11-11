@@ -120,9 +120,11 @@ struct tile_partial_state_t
 
   static _CCCL_DEVICE_API _CCCL_FORCEINLINE tile_partial_state_t pack(int run_count, int open_len)
   {
-    return {(static_cast<::cuda::std::uint64_t>(tile_published) << 32)
-            | (static_cast<::cuda::std::uint64_t>(static_cast<unsigned>(open_len)) << 16)
-            | static_cast<::cuda::std::uint64_t>(static_cast<unsigned>(run_count))};
+    return {
+      (static_cast<::cuda::std::uint64_t>(tile_published) << 32)
+        | (static_cast<::cuda::std::uint64_t>(static_cast<unsigned>(open_len)) << 16)
+        | static_cast<::cuda::std::uint64_t>(static_cast<unsigned>(run_count)),
+    };
   }
 };
 
@@ -133,7 +135,7 @@ publish_state(tile_partial_state_t* tile_state_arr, int tile_idx, int run_count,
 #  if _CCCL_HAS_NV_ATOMIC_BUILTINS()
   __nv_atomic_store(&tile_state_arr[tile_idx].dword, &packed, __NV_ATOMIC_RELAXED, __NV_THREAD_SCOPE_DEVICE);
 #  else // ^^^ _CCCL_HAS_NV_ATOMIC_BUILTINS() ^^^ / vvv !_CCCL_HAS_NV_ATOMIC_BUILTINS() vvv
-  ::cuda::atomic_ref<::cuda::std::uint64_t, ::cuda::thread_scope_device> a(tile_state_arr[tile_idx].dword);
+  const ::cuda::atomic_ref<::cuda::std::uint64_t, ::cuda::thread_scope_device> a(tile_state_arr[tile_idx].dword);
   a.store(packed, ::cuda::memory_order_relaxed);
 #  endif // !_CCCL_HAS_NV_ATOMIC_BUILTINS()
 }
@@ -147,7 +149,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE tile_partial_state_t load_state(tile_partial_
   __nv_atomic_load(&tile_state_arr[tile_idx].dword, &dword, __NV_ATOMIC_RELAXED, __NV_THREAD_SCOPE_DEVICE);
   return {dword};
 #  else // ^^^ _CCCL_HAS_NV_ATOMIC_BUILTINS() ^^^ / vvv !_CCCL_HAS_NV_ATOMIC_BUILTINS() vvv
-  ::cuda::atomic_ref<::cuda::std::uint64_t, ::cuda::thread_scope_device> a(tile_state_arr[tile_idx].dword);
+  const ::cuda::atomic_ref<::cuda::std::uint64_t, ::cuda::thread_scope_device> a(tile_state_arr[tile_idx].dword);
   return {a.load(::cuda::memory_order_relaxed)};
 #  endif // !_CCCL_HAS_NV_ATOMIC_BUILTINS()
 }
@@ -164,8 +166,9 @@ struct prefix_t<OffT, false>
 
   static _CCCL_DEVICE_API _CCCL_FORCEINLINE prefix_t pack(OffT run_count, OffT open_len)
   {
-    return {(static_cast<::cuda::std::uint64_t>(static_cast<unsigned>(open_len)) << 32)
-            | static_cast<unsigned>(run_count)};
+    return {
+      (static_cast<::cuda::std::uint64_t>(static_cast<unsigned>(open_len)) << 32) | static_cast<unsigned>(run_count),
+    };
   }
 
   _CCCL_DEVICE_API _CCCL_FORCEINLINE OffT run_count() const
@@ -234,7 +237,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE warp_tile_run_scan_t
 scan_warp_tile_run_counts(const int* slot_warp_run_counts, int lane_id)
 {
   const int lane_run_count = (lane_id < ComputeWarps) ? slot_warp_run_counts[lane_id] : 0;
-  typename WarpScan<int>::TempStorage warp_scan_storage;
+  WarpScan<int>::TempStorage warp_scan_storage;
   int lane_scan;
   WarpScan<int>(warp_scan_storage).ExclusiveSum(lane_run_count, lane_scan);
   return {lane_run_count, lane_scan};
@@ -394,7 +397,7 @@ stage_head_positions(unsigned my_flags, position_t* pos_dst, int warp_tile_offse
   // we store run R at warp_tile_offset + (R ^ (R>>5)) to avoid bank conflicts for dense cases
   // (CRITICAL for MaxSeg=1,2,4)
   const int word_run_count = __popc(my_flags); // this word's head count
-  typename WarpScan<int>::TempStorage warp_scan_storage;
+  WarpScan<int>::TempStorage warp_scan_storage;
   int runs_before_word;
   // runs_before_word is a running sum of run_count, so each lane know each chunk's base
   WarpScan<int>(warp_scan_storage).ExclusiveSum(word_run_count, runs_before_word);
@@ -427,20 +430,23 @@ template <int ItemsPerThread>
 struct head_flag_decode_t
 {
   unsigned lane_head_flag_word;
-  int lane_runs_before_word;
+  int lane_runs_before_word{};
   int lane_first_head_from_word;
 
   _CCCL_DEVICE_API _CCCL_FORCEINLINE head_flag_decode_t(const unsigned* slot_head_flags, int warp_tile_id, int lane_id)
+      : lane_head_flag_word(slot_head_flags[warp_tile_id * detail::warp_threads + lane_id])
   {
-    lane_head_flag_word           = slot_head_flags[warp_tile_id * detail::warp_threads + lane_id];
     const int lane_word_run_count = __popc(lane_head_flag_word);
-    typename WarpScan<int>::TempStorage warp_scan_storage;
+    WarpScan<int>::TempStorage warp_scan_storage;
     WarpScan<int>(warp_scan_storage).ExclusiveSum(lane_word_run_count, lane_runs_before_word);
     // lane i: # of runs starting in head_flag words [0, i), i.e. in elements [0, i*32)
     // lane i -> first head position in head flag words [i, 32)
     // if our own run_count is >0, the head is here!
     // empty should be +infinity, since we use min
-    lane_first_head_from_word = lane_word_run_count ? (lane_id * 32 + __ffs(lane_head_flag_word) - 1) : 0x7fffffff;
+    lane_first_head_from_word =
+      (lane_word_run_count != 0)
+        ? (lane_id * 32 + __ffs(::cuda::std::bit_cast<int>(lane_head_flag_word)) - 1)
+        : 0x7fffffff;
     // if not, we loop to find the next head in flag word [i, 32). this is just a fold with min
     _CCCL_PRAGMA_UNROLL_FULL()
     for (int offset = 1; offset < 32; offset <<= 1)
@@ -537,7 +543,8 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void poll_fold_windows(
     } while (__any_sync(full_mask, !ready));
 
     constexpr int tile_size = _CUB::detail::current_policy<PolicySelector>().lookahead.tile_size();
-    int lane_run_count = 0, lane_last_packed = -1;
+    int lane_run_count      = 0;
+    int lane_last_packed    = -1;
     // now, we fold the window
     _CCCL_PRAGMA_UNROLL_FULL()
     for (int i = 0; i < poll_items_per_thread; ++i)
@@ -555,7 +562,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void poll_fold_windows(
     const int last_packed = __reduce_max_sync(full_mask, lane_last_packed);
 
     // reduce across the warp, then roll this window into the running prefix
-    const int window_run_count = __reduce_add_sync(full_mask, lane_run_count);
+    const int window_run_count = static_cast<int>(__reduce_add_sync(full_mask, lane_run_count));
     // every folded tile is full, and run-less tiles publish open_len == tile_size, so the open length is the
     // last run-carrying tile's open_len plus tile_size for each tile after it
     const int window_open_length =
@@ -724,8 +731,9 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
   // empty                  W                              A             A        POLL never waits on empty: it is
   //                                                                              transitively gated by LOAD's next full
   __shared__ ::cuda::std::uint64_t full[max_key_ring_stages];
-  __shared__ ::cuda::std::uint64_t computed[max_key_ring_stages], prefixed[max_key_ring_stages],
-    empty[max_key_ring_stages];
+  __shared__ ::cuda::std::uint64_t computed[max_key_ring_stages];
+  __shared__ ::cuda::std::uint64_t prefixed[max_key_ring_stages];
+  __shared__ ::cuda::std::uint64_t empty[max_key_ring_stages];
   // COMPUTE warp w --staged_warp_tile[w]--> STORE: we arrive per warp tile handoff
   // i.e. store warps start working to drain a warp-tile as soon as ITS positions are staged
   __shared__ ::cuda::std::uint64_t staged_warp_tile[max_key_ring_stages][compute_warps];
@@ -740,9 +748,9 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
       <= RleLookaheadPolicy::static_smem_budget,
     "static shared memory exceeds the budget assumed by the floor launch guarantee");
 
-  const int tid     = threadIdx.x;
+  const int tid     = static_cast<int>(threadIdx.x);
   const int lane_id = tid & 31;
-  const int bid     = blockIdx.x;
+  const int bid     = static_cast<int>(blockIdx.x);
   const unsigned base_skip =
     (int{alignof(KeyT)} < detail::bulk_copy_min_align)
       ? (static_cast<unsigned>(::cuda::std::bit_cast<::cuda::std::uintptr_t>(d_keys))
@@ -783,7 +791,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
   constexpr warpspeed::SquadDesc squads[] = {squadLoad, squadCompute, squadPoll, squadStore, squadBookkeeper};
 
   _CUB::detail::warpspeed::squadDispatch(
-    _CUB::detail::warpspeed::getSpecialRegisters(), squads, [&](warpspeed::Squad squad) _CCCL_FORCEINLINE_LAMBDA {
+    _CUB::detail::warpspeed::getSpecialRegisters(), squads, [&](auto squad) _CCCL_FORCEINLINE_LAMBDA {
       // if you are load
       if (squad == squadLoad)
       {
@@ -863,7 +871,9 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
           // slot is ready!
           const int tile_len = static_cast<int>(
             (::cuda::std::min) (static_cast<OffT>(tile_size), num_items - static_cast<OffT>(tile_id) * tile_size));
-          int local_run_count = 0, warp_first_head = -1, warp_last_head = -1;
+          int local_run_count       = 0;
+          int warp_first_head       = -1;
+          int warp_last_head        = -1;
           position_t* const pos_dst = pos_buf + static_cast<size_t>(pos_ring.slot) * tile_size;
           unsigned my_flags;
           if (keys_staged)
@@ -880,13 +890,13 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
               key_buf, warp_tile_offset, tile_len, tile_id, lane_id, 0);
             // ^^^ regressed case ^^^
           }
-          local_run_count = __reduce_add_sync(full_mask, __popc(my_flags));
+          local_run_count = static_cast<int>(__reduce_add_sync(full_mask, __popc(my_flags)));
           // each lane in a warp now has a mask that tells which chunk is non empty
           const unsigned nonempty_chunk_mask = __ballot_sync(full_mask, my_flags != 0u);
           // if warptile is non empty (has heads), we get the location of warps first head and last head
           if (nonempty_chunk_mask)
           {
-            const int first_chunk = __ffs(nonempty_chunk_mask) - 1;
+            const int first_chunk = __ffs(::cuda::std::bit_cast<int>(nonempty_chunk_mask)) - 1;
             const int last_chunk  = 31 - ::cuda::std::countl_zero(nonempty_chunk_mask);
             // measured alternative: letting lanes first_chunk/last_chunk store the heads directly (skipping both
             // shuffles) regresses ~1%: the conditional stores plus the extra __syncwarp needed before the computed
@@ -894,8 +904,9 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
             const unsigned first_chunk_mask = __shfl_sync(full_mask, my_flags, first_chunk);
             const unsigned last_chunk_mask  = __shfl_sync(full_mask, my_flags, last_chunk);
             _CCCL_ASSERT((first_chunk_mask != 0u) && (last_chunk_mask != 0u), "nonempty chunk with an empty mask");
-            warp_first_head = warp_tile_offset + first_chunk * 32 + (__ffs(first_chunk_mask) - 1);
-            warp_last_head  = warp_tile_offset + last_chunk * 32 + 31 - ::cuda::std::countl_zero(last_chunk_mask);
+            warp_first_head =
+              warp_tile_offset + first_chunk * 32 + (__ffs(::cuda::std::bit_cast<int>(first_chunk_mask)) - 1);
+            warp_last_head = warp_tile_offset + last_chunk * 32 + 31 - ::cuda::std::countl_zero(last_chunk_mask);
           }
           // now, we calculate warptile aggregates
           if (lane_id == 0)
@@ -918,14 +929,11 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
           // (otherwise, it is cheaper to recalculate positions from head_flags directly)
           // Paired with STORE's predicate; they intentionally disagree at run_count == 0 (see there).
           const bool stage_flags = (local_run_count < staging_threshold);
-          if (pos_ring_stages < key_ring_stages)
+          // The pos slot is shared by pipeline_gens g, g+pos_ring_stages, ...
+          // Wait for it to be cleared by STORE before reusing it.
+          if (pos_ring_stages < key_ring_stages && pipeline_gen >= pos_ring_stages)
           {
-            // the pos slot is shared by pipeline_gens g, g+pos_ring_stages, ...
-            // need to wait for it to be cleared by STORE
-            if (pipeline_gen >= pos_ring_stages)
-            {
-              _CUB::detail::rle::encode::wait_parity(&pos_buf_free[pos_ring.slot], pos_ring.parity ^ 1u);
-            }
+            _CUB::detail::rle::encode::wait_parity(&pos_buf_free[pos_ring.slot], pos_ring.parity ^ 1u);
           }
           if (stage_flags)
           {
@@ -967,7 +975,8 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
           }
 
           // fold every predecessor tile's published state into this tile's exclusive prefix
-          OffT curr_prefix_run_count, curr_prefix_open_length;
+          OffT curr_prefix_run_count;
+          OffT curr_prefix_open_length;
           _CUB::detail::rle::encode::poll_and_fold<PolicySelector>(
             tile_partial_states,
             tile_id,
@@ -1054,12 +1063,9 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
             }
 
             __syncwarp();
-            if (lane_id == 0)
+            if (lane_id == 0 && pos_ring_stages < key_ring_stages)
             {
-              if (pos_ring_stages < key_ring_stages)
-              {
-                ptx::mbarrier_arrive(&pos_buf_free[pos_ring.slot]);
-              }
+              ptx::mbarrier_arrive(&pos_buf_free[pos_ring.slot]);
             }
 
             // wait for prefixed (3/3)

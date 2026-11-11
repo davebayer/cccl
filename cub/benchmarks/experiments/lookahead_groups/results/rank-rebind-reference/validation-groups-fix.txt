@@ -1,0 +1,87 @@
+Cached-uniform group adapter validation, 2026-11-11
+
+Focused regression coverage
+  PASS: static layouts [1], [1,1,1,1], [1,3,2,1], [2,3,1,4], and [8,8,8,8].
+        These cover one squad, repeated equal sizes, unequal non-power-of-two
+        sizes, and the maximum 1,024-thread CTA.
+  PASS: retained dynamic [1,3,2,1] layout, both exhaustive and with one unused
+        prefix warp and one unused suffix warp.
+  Each layout checks local thread/warp/lane ranks, one elected leader per warp
+  and per squad, and eight repeated shared-memory synchronization rounds.
+  Static layouts also assert constant thread/warp counts and agreement with the
+  public cuda::warp.static_count(group) query.
+
+Toolchains and execution
+  PASS: nvcc 13.5.37, explicitly -ccbin=/usr/bin/g++-13, C++17, -arch=sm_120.
+  PASS: nvcc 12.0.76, explicitly -ccbin=/usr/bin/g++-7, C++17,
+        -gencode=arch=compute_90,code=compute_90.
+  Both focused binaries ran on the RTX PRO 6000 outside the sandbox. CUDA 12.0
+  executes the instantiated group adapter through SM90 PTX JIT; this is not a
+  claim of CUDA 12.0 support for the Blackwell lookahead scan body.
+
+Style and static analysis
+  PASS: full host-only and device-only clang-tidy of all five edited product
+        headers with repository checks, --system-headers, and a header filter:
+          cub/detail/warpspeed/squad/squad.cuh
+          cub/detail/warpspeed/squad/group.cuh
+          cub/detail/warpspeed/squad/load_store.cuh
+          cub/detail/warpspeed/resource/smem_ref.cuh
+          cub/device/dispatch/kernels/kernel_scan_lookahead.cuh
+  PASS: device-only clang-tidy of the expanded squad.cu fixture.
+  PASS: applicable pre-commit hooks on squad.cu.
+  Clang 23 parses the installed CUDA 13.5 headers; its unknown-toolkit-version
+  warning is disabled, with no new check suppression or changed-line filter.
+
+Reproduction
+  Common includes:
+    -Ilibcudacxx/include -Icub -Ithrust -Icudax/include
+  Common definitions, supplied before any CCCL headers:
+    -D_CUDAX_ENABLE_GROUP_FEATURES_IN_LIBCUDACXX
+    -D_CUB_WARPSPEED_USE_CUDAX_GROUPS
+    -D_CUB_WARPSPEED_USE_STATIC_CUDAX_GROUPS
+
+  Compile squad.cu with either toolchain and the flags above, then run the
+  resulting binary outside the sandbox. Full compiler commands, binaries,
+  runtime output, and tidy output are in:
+    build/lookahead-groups/validation-groups-fix/
+
+  Header tidy additionally defines -D_CUB_LOOKAHEAD_USE_CUDAX_SCAN and
+  -D_CCCL_CLANG_TIDY_INVOKED=1, using --cuda-gpu-arch=sm_120,
+  --cuda-path=/usr/local/cuda-13.5, and --cuda-host-only/--cuda-device-only.
+  The translation unit is build/lookahead-groups/validation-static/tidy_product.cu.
+
+  Main scan correctness, determinism, sanitizer, and RLE verification are
+  recorded separately by the parent experiment validation.
+
+Balanced static-count traversal
+  PASS: all four cudax/test/coop/group/with_static_unit_count.cu Catch2 cases
+        with nvcc 13.5/GCC 13 SM120 and nvcc 12.0/GCC 7 compute_90 PTX JIT,
+        C++17, RNG seed 42, RTX PRO 6000 outside the sandbox.
+  Existing cases cover uniform groups, runtime counts, nonuniform groups,
+  coalesced groups, hardware grid/cluster synchronization, mapping preservation,
+  and callable forwarding. The new odd-five-group [1,2,1,2,1] case checks both
+  halves and the last dispatch leaf, repeated counts at different ranks,
+  reference/value/void returns, exactly-once invocation, and an rvalue-only
+  noncopyable callable. Device CHECK statements trap on failure; Catch2 reports
+  four passed cases with no host assertions counted.
+  The mutable lvalue callback also checks non-const lvalue forwarding.
+
+  PASS: full group_view.cuh and level_synchronizer.cuh clang-tidy, without
+        changed-line filters or disabled checks. Device parsing uses the entire
+        grid-containing CUDAX test TU. Host parsing uses tidy_core_headers.cu,
+        a local pure-header TU that instantiates block/static-group/grid paths;
+        this avoids Catch2 host assertion macros inside device functions.
+  PASS: applicable pre-commit hooks on both core headers and the CUDAX test.
+
+  The grid barrier's two int-min-to-uint32 conversions now use explicit casts,
+  preserving the intended bit wrap while avoiding ill-formed list narrowing.
+  Existing mandatory PTX, inline-asm polling outputs, token inspection, and
+  architecture-dependent fallback branches have precise local lint suppressions
+  with intent comments. No synchronization behavior was changed for linting.
+
+  Each final core-test compiler invocation uses an isolated TMPDIR to prevent
+  nvcc temporary-file name collisions between concurrent process namespaces.
+  Exact compile commands and output are in compile-static-count-{latest,cuda12}.log;
+  runtime output is in run-static-count-{latest,cuda12}.log. Full core-header tidy
+  output is in tidy-static-count-device.log and tidy-core-headers-host.log under
+  build/lookahead-groups/validation-groups-fix/.

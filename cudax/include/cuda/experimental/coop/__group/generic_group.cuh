@@ -82,9 +82,9 @@ public:
     const _Unit& __unit, const _ParentGroup& __parent, _Mapping&& __mapping, _Synchronizer&& __synchronizer)
       : __hier_{__parent.hierarchy()}
       , __mapping_result_{::cuda::experimental::coop::__do_group_mapping(
-          __unit, __parent, ::cuda::std::forward<_Mapping>(__mapping))}
+          __unit, __parent, ::cuda::std::forward<_Mapping>(__mapping)),}
       , __synchronizer_instance_{
-          ::cuda::std::forward<_Synchronizer>(__synchronizer).make_instance(__unit, __parent, __mapping_result_)}
+          ::cuda::std::forward<_Synchronizer>(__synchronizer).make_instance(__unit, __parent, __mapping_result_),}
   {}
 
   // internal constructor used by make_group(non_exhaustive_t, ...)
@@ -210,7 +210,7 @@ public:
     return __rank_as_impl<_Tp>(__mapping_result_, __hier_, __parent);
   }
 
-  [[nodiscard]] _CCCL_DEVICE_API auto rank(const _ParentGroup& __parent) const
+  [[nodiscard]] _CCCL_DEVICE_API typename level_type::__product_type rank(const _ParentGroup& __parent) const
   {
     return __rank_as_impl<typename level_type::__product_type>(__mapping_result_, __hier_, __parent);
   }

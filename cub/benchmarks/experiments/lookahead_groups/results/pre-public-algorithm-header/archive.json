@@ -1,0 +1,14 @@
+{
+  "reason": "Replace the private shuffle_up implementation include with the public algorithm umbrella; cohort retained with its original source hashes.",
+  "build_archive": "/home/dabayer/cccl/build/lookahead-groups/pre-public-algorithm-header",
+  "header_files": 2907,
+  "header_manifest_sha256": "0349a8ad9888f0c1782016f31ce98904ee0467c3046720f28c5e0502ad75c2b7",
+  "kernel_header_sha256": "c8532f49fc8ea35b6e82e055e1157ee5c7e7eb8ccab21c8b08da159083e898f3",
+  "binary_sha256": {
+    "baseline": "d60ccbcc2a5de053778e8c36c54529561a3ed72c3c879cec2f92dc4acf9d779c",
+    "private_groups": "f1de18fc1823d05860a5ede592dc0cfc442019695540bc97c6841b18322decd2",
+    "private_groups_scan": "773f2f8e03c901824801e7231352c28414644b805c4671aa2566cff5d586f994",
+    "static_groups": "29e767b431469e812c4362bc322bf76f60cac4324278d5845f62d618f56ccf34",
+    "static_groups_scan": "39bb6d218c27fbc6c1429035551d5a763eecb74b37255b8b92e82bce78cba719"
+  }
+}

@@ -1,0 +1,232 @@
+{
+  "measured_at_utc": "2026-11-11T14:11:37.363409+00:00",
+  "baseline_revision": "24ee635e35caa47b1602e129e49cea60db8b4f05",
+  "rounds": 10,
+  "selected_cases": null,
+  "process_order": [
+    [
+      "baseline",
+      "prior_static_groups",
+      "prior_static_groups_scan",
+      "static_groups",
+      "static_groups_scan"
+    ],
+    [
+      "prior_static_groups",
+      "prior_static_groups_scan",
+      "static_groups",
+      "static_groups_scan",
+      "baseline"
+    ],
+    [
+      "prior_static_groups_scan",
+      "static_groups",
+      "static_groups_scan",
+      "baseline",
+      "prior_static_groups"
+    ],
+    [
+      "static_groups",
+      "static_groups_scan",
+      "baseline",
+      "prior_static_groups",
+      "prior_static_groups_scan"
+    ],
+    [
+      "static_groups_scan",
+      "baseline",
+      "prior_static_groups",
+      "prior_static_groups_scan",
+      "static_groups"
+    ],
+    [
+      "static_groups_scan",
+      "static_groups",
+      "prior_static_groups_scan",
+      "prior_static_groups",
+      "baseline"
+    ],
+    [
+      "baseline",
+      "static_groups_scan",
+      "static_groups",
+      "prior_static_groups_scan",
+      "prior_static_groups"
+    ],
+    [
+      "prior_static_groups",
+      "baseline",
+      "static_groups_scan",
+      "static_groups",
+      "prior_static_groups_scan"
+    ],
+    [
+      "prior_static_groups_scan",
+      "prior_static_groups",
+      "baseline",
+      "static_groups_scan",
+      "static_groups"
+    ],
+    [
+      "static_groups",
+      "prior_static_groups_scan",
+      "prior_static_groups",
+      "baseline",
+      "static_groups_scan"
+    ]
+  ],
+  "definitions": {
+    "baseline": [],
+    "prior_static_groups": [
+      "-D_CUB_WARPSPEED_USE_CUDAX_GROUPS",
+      "-D_CUB_WARPSPEED_USE_STATIC_CUDAX_GROUPS"
+    ],
+    "prior_static_groups_scan": [
+      "-D_CUB_WARPSPEED_USE_CUDAX_GROUPS",
+      "-D_CUB_WARPSPEED_USE_STATIC_CUDAX_GROUPS",
+      "-D_CUB_LOOKAHEAD_USE_CUDAX_SCAN"
+    ],
+    "static_groups": [
+      "-D_CUB_WARPSPEED_USE_CUDAX_GROUPS",
+      "-D_CUB_WARPSPEED_USE_STATIC_CUDAX_GROUPS"
+    ],
+    "static_groups_scan": [
+      "-D_CUB_WARPSPEED_USE_CUDAX_GROUPS",
+      "-D_CUB_WARPSPEED_USE_STATIC_CUDAX_GROUPS",
+      "-D_CUB_LOOKAHEAD_USE_CUDAX_SCAN"
+    ]
+  },
+  "variant_include_overlay": {
+    "baseline": "/home/dabayer/cccl/build/lookahead-groups/refined/baseline",
+    "prior_static_groups": "/home/dabayer/cccl/build/lookahead-groups/refined/portable-prior-headers",
+    "prior_static_groups_scan": "/home/dabayer/cccl/build/lookahead-groups/refined/portable-prior-headers",
+    "static_groups": null,
+    "static_groups_scan": null
+  },
+  "language_standard": "C++17",
+  "architecture": "sm_120",
+  "clock_control": "Application clocks and power limit left unchanged",
+  "build_temporary_directory": "Isolated per nvcc invocation, removed after compilation",
+  "source_sha256": "61c4e56e3f4e269e46523bff7ea7790323038643923eeb324cb15076d08e5d7a",
+  "runner_sha256": "922241645c230e9e67a4037a3641e83a3015f34c30e3847390283fbdd888ff18",
+  "compiled_source_sha256": {
+    "cub/benchmarks/experiments/lookahead_groups/scan.cu": "61c4e56e3f4e269e46523bff7ea7790323038643923eeb324cb15076d08e5d7a",
+    "cub/cub/detail/warpspeed/squad/group.cuh": "84e96e35c2fe5272b2796c6df54de9bd94632be97c65b34998c23be9fdc56d0c",
+    "cub/cub/detail/warpspeed/squad/squad.cuh": "729b8a0a170f7ce8c848128c364977433ccb4e47e17ebfc2f4652dcf900a2cfd",
+    "cub/cub/detail/warpspeed/squad/load_store.cuh": "0a659d413acf40767a14deab8e044e8ca5f8ae31dbfc2eac3d8a6157b7e9999a",
+    "cub/cub/detail/warpspeed/resource/smem_ref.cuh": "155d41db79e97d161eda1865c5401765827167693eea652d141cf5cd61af6afd",
+    "cub/cub/device/dispatch/kernels/kernel_scan_lookahead.cuh": "c8532f49fc8ea35b6e82e055e1157ee5c7e7eb8ccab21c8b08da159083e898f3",
+    "cudax/include/cuda/experimental/coop/__algorithm/any_of.cuh": "28a813c42e8c5a3caab328ab2011d8330d04deb4404bb12cc00f12898f812095",
+    "cudax/include/cuda/experimental/coop/__algorithm/invoke_one.cuh": "e0c2df4dabe2e6ca67482df01eacbc2a8a9e4ae0a1d393538981381f30a3b6a4",
+    "cudax/include/cuda/experimental/coop/__algorithm/reduce.cuh": "f8083e209813be106bd8677400909bd6616f12408c7af23f80b24653ef7d87be",
+    "cudax/include/cuda/experimental/coop/__algorithm/scratch.cuh": "3c0f841fd4715e68e95228a11fd640a254028294d897bdab2cd61e148813c02b",
+    "cudax/include/cuda/experimental/coop/__algorithm/shuffle.cuh": "fd80accf0351d4698bea100df5db581cd8d3a6cccd89f480fde6d24a40830e57",
+    "cudax/include/cuda/experimental/coop/__algorithm/shuffle_down.cuh": "a003030ce376b52985d8b6d64755febba99993dd897907c26c43d4238d631f8c",
+    "cudax/include/cuda/experimental/coop/__algorithm/shuffle_up.cuh": "28b2cadae8677e79143abb434a00834d94bf91077d1cfbfc10d0ac168834e078",
+    "cudax/include/cuda/experimental/coop/__group/coalesced_group.cuh": "be3081ff90813df213b91aee3522fbbf44b2d693d55a620c645e30a2a4857ab9",
+    "cudax/include/cuda/experimental/coop/__group/concepts.cuh": "b3effc1888576d59b8b6842966dabead94ffd7ee696464025d86a467679e78d3",
+    "cudax/include/cuda/experimental/coop/__group/fwd.cuh": "cd1569d1cdd3d4fbab358e2177d23d55b2a8bca1f116c543b53feafea038e7f0",
+    "cudax/include/cuda/experimental/coop/__group/generic_group.cuh": "c31d512aec9a0597b75e4b6b084fde51d104e7ad095cf146468897de6f02b586",
+    "cudax/include/cuda/experimental/coop/__group/group_view.cuh": "ac19f9a41c89f065961224f16b992a9ba35c988859730612a87687cc5642d36e",
+    "cudax/include/cuda/experimental/coop/__group/make_group.cuh": "bfd0809fa9918091d93579da7ad44db8406cf054248e5a24f1e10391a61c1875",
+    "cudax/include/cuda/experimental/coop/__group/mapping/binary_partition.cuh": "bc295ce3d757f6d39142b4076254836f9937f477647890df92fbaf3128950342",
+    "cudax/include/cuda/experimental/coop/__group/mapping/common.cuh": "f5d821e1658965abfe9f6085d7de9e9ca54e9d0ea2367b92ebeb790ac5be9b16",
+    "cudax/include/cuda/experimental/coop/__group/mapping/composite_mapping.cuh": "80b6071abc20f005b2ca13fba82b357b45212d36e7d0fe80bb72e1ba36bb2c28",
+    "cudax/include/cuda/experimental/coop/__group/mapping/group_as.cuh": "3d82bd0d6e5624b879e7f5d36d11aadf11b37441f3645e14393d7d2a78f3bdc6",
+    "cudax/include/cuda/experimental/coop/__group/mapping/group_by.cuh": "8178bb46efc4908f487af260be681e853f5cec59a9821b1c4ebeff9a6bb8c23d",
+    "cudax/include/cuda/experimental/coop/__group/mapping/identity_mapping.cuh": "9dc0bc36be74bb504c629f09d84952548b2aaf8e7537d570423ab6d56df179fa",
+    "cudax/include/cuda/experimental/coop/__group/mapping/labeled_partition.cuh": "ee6e9c93f269d6378ab3ae20d85441e56b3c39f23b04501db86fa40590ca05e6",
+    "cudax/include/cuda/experimental/coop/__group/mapping/mapping_result.cuh": "a82dacfe46325f32e760bb84fd91a6f1bc344c020d4f92f3d1cf9fa3c142f80f",
+    "cudax/include/cuda/experimental/coop/__group/mapping/take.cuh": "225c5ad3195b11a42f37153de2d5a9ad67e94cab5df64f7ca11cd76f23d193a5",
+    "cudax/include/cuda/experimental/coop/__group/queries.cuh": "5275d41475d1360d96f28329d98bbe0b4e85bcdeea8df92952780fea2988e377",
+    "cudax/include/cuda/experimental/coop/__group/synchronizer/arrival_token.cuh": "0e003f1bb9d28c556870b8385f620a694ae849d6392475d2a1de9fc69bf76a8a",
+    "cudax/include/cuda/experimental/coop/__group/synchronizer/barrier_synchronizer.cuh": "89e394f994b5bfb83603acf4abe3119ba0b12fd03c499aeb21f4e3c333fd5eb4",
+    "cudax/include/cuda/experimental/coop/__group/synchronizer/interwarp_synchronizer.cuh": "48bba72237f0ec4c0ed4336575c0e1c4782876c8e2cb1e42ce1e8da6d486799b",
+    "cudax/include/cuda/experimental/coop/__group/synchronizer/lane_synchronizer.cuh": "3cc29cd8b2fb59ca364798ca210531ba180f9b91f99b025239d06c9aa4ea8314",
+    "cudax/include/cuda/experimental/coop/__group/synchronizer/level_synchronizer.cuh": "6f84e5c0541078d8c165ffb17beb57f5a8ca59ee1fb3783a42574d55fa3f10a5",
+    "cudax/include/cuda/experimental/coop/__group/this_group.cuh": "d4561db6cf659000967b07e8503b436febb674246c65e220f741a4df12cb2d31",
+    "cudax/include/cuda/experimental/coop/__group/traits.cuh": "8ffe28ec25cc3cb967530ac2b469dbfe3d2e1babce6e40a1a0647b60529eb0f5",
+    "cudax/include/cuda/experimental/coop/__group/virtual_group.cuh": "df97da6db7144a32a336e4be95b509143ecb18d214d8deb5f7d24f28c7269ad3",
+    "cudax/include/cuda/experimental/coop/algorithm": "ef97d20be67488401bc366239fe5c4ed399a7900226be32df7f7d9b69ec16344",
+    "cudax/include/cuda/experimental/coop/group": "55414089748e79d54947f883b432efdf4b7b10a15ecbdf0e294c4d0417bc8c3c"
+  },
+  "build_provenance": {
+    "source_sha256": {
+      "cub/benchmarks/experiments/lookahead_groups/scan.cu": "61c4e56e3f4e269e46523bff7ea7790323038643923eeb324cb15076d08e5d7a",
+      "cub/cub/detail/warpspeed/squad/group.cuh": "84e96e35c2fe5272b2796c6df54de9bd94632be97c65b34998c23be9fdc56d0c",
+      "cub/cub/detail/warpspeed/squad/squad.cuh": "729b8a0a170f7ce8c848128c364977433ccb4e47e17ebfc2f4652dcf900a2cfd",
+      "cub/cub/detail/warpspeed/squad/load_store.cuh": "0a659d413acf40767a14deab8e044e8ca5f8ae31dbfc2eac3d8a6157b7e9999a",
+      "cub/cub/detail/warpspeed/resource/smem_ref.cuh": "155d41db79e97d161eda1865c5401765827167693eea652d141cf5cd61af6afd",
+      "cub/cub/device/dispatch/kernels/kernel_scan_lookahead.cuh": "c8532f49fc8ea35b6e82e055e1157ee5c7e7eb8ccab21c8b08da159083e898f3",
+      "cudax/include/cuda/experimental/coop/__algorithm/any_of.cuh": "28a813c42e8c5a3caab328ab2011d8330d04deb4404bb12cc00f12898f812095",
+      "cudax/include/cuda/experimental/coop/__algorithm/invoke_one.cuh": "e0c2df4dabe2e6ca67482df01eacbc2a8a9e4ae0a1d393538981381f30a3b6a4",
+      "cudax/include/cuda/experimental/coop/__algorithm/reduce.cuh": "f8083e209813be106bd8677400909bd6616f12408c7af23f80b24653ef7d87be",
+      "cudax/include/cuda/experimental/coop/__algorithm/scratch.cuh": "3c0f841fd4715e68e95228a11fd640a254028294d897bdab2cd61e148813c02b",
+      "cudax/include/cuda/experimental/coop/__algorithm/shuffle.cuh": "fd80accf0351d4698bea100df5db581cd8d3a6cccd89f480fde6d24a40830e57",
+      "cudax/include/cuda/experimental/coop/__algorithm/shuffle_down.cuh": "a003030ce376b52985d8b6d64755febba99993dd897907c26c43d4238d631f8c",
+      "cudax/include/cuda/experimental/coop/__algorithm/shuffle_up.cuh": "28b2cadae8677e79143abb434a00834d94bf91077d1cfbfc10d0ac168834e078",
+      "cudax/include/cuda/experimental/coop/__group/coalesced_group.cuh": "be3081ff90813df213b91aee3522fbbf44b2d693d55a620c645e30a2a4857ab9",
+      "cudax/include/cuda/experimental/coop/__group/concepts.cuh": "b3effc1888576d59b8b6842966dabead94ffd7ee696464025d86a467679e78d3",
+      "cudax/include/cuda/experimental/coop/__group/fwd.cuh": "cd1569d1cdd3d4fbab358e2177d23d55b2a8bca1f116c543b53feafea038e7f0",
+      "cudax/include/cuda/experimental/coop/__group/generic_group.cuh": "c31d512aec9a0597b75e4b6b084fde51d104e7ad095cf146468897de6f02b586",
+      "cudax/include/cuda/experimental/coop/__group/group_view.cuh": "ac19f9a41c89f065961224f16b992a9ba35c988859730612a87687cc5642d36e",
+      "cudax/include/cuda/experimental/coop/__group/make_group.cuh": "bfd0809fa9918091d93579da7ad44db8406cf054248e5a24f1e10391a61c1875",
+      "cudax/include/cuda/experimental/coop/__group/mapping/binary_partition.cuh": "bc295ce3d757f6d39142b4076254836f9937f477647890df92fbaf3128950342",
+      "cudax/include/cuda/experimental/coop/__group/mapping/common.cuh": "f5d821e1658965abfe9f6085d7de9e9ca54e9d0ea2367b92ebeb790ac5be9b16",
+      "cudax/include/cuda/experimental/coop/__group/mapping/composite_mapping.cuh": "80b6071abc20f005b2ca13fba82b357b45212d36e7d0fe80bb72e1ba36bb2c28",
+      "cudax/include/cuda/experimental/coop/__group/mapping/group_as.cuh": "3d82bd0d6e5624b879e7f5d36d11aadf11b37441f3645e14393d7d2a78f3bdc6",
+      "cudax/include/cuda/experimental/coop/__group/mapping/group_by.cuh": "8178bb46efc4908f487af260be681e853f5cec59a9821b1c4ebeff9a6bb8c23d",
+      "cudax/include/cuda/experimental/coop/__group/mapping/identity_mapping.cuh": "9dc0bc36be74bb504c629f09d84952548b2aaf8e7537d570423ab6d56df179fa",
+      "cudax/include/cuda/experimental/coop/__group/mapping/labeled_partition.cuh": "ee6e9c93f269d6378ab3ae20d85441e56b3c39f23b04501db86fa40590ca05e6",
+      "cudax/include/cuda/experimental/coop/__group/mapping/mapping_result.cuh": "a82dacfe46325f32e760bb84fd91a6f1bc344c020d4f92f3d1cf9fa3c142f80f",
+      "cudax/include/cuda/experimental/coop/__group/mapping/take.cuh": "225c5ad3195b11a42f37153de2d5a9ad67e94cab5df64f7ca11cd76f23d193a5",
+      "cudax/include/cuda/experimental/coop/__group/queries.cuh": "5275d41475d1360d96f28329d98bbe0b4e85bcdeea8df92952780fea2988e377",
+      "cudax/include/cuda/experimental/coop/__group/synchronizer/arrival_token.cuh": "0e003f1bb9d28c556870b8385f620a694ae849d6392475d2a1de9fc69bf76a8a",
+      "cudax/include/cuda/experimental/coop/__group/synchronizer/barrier_synchronizer.cuh": "89e394f994b5bfb83603acf4abe3119ba0b12fd03c499aeb21f4e3c333fd5eb4",
+      "cudax/include/cuda/experimental/coop/__group/synchronizer/interwarp_synchronizer.cuh": "48bba72237f0ec4c0ed4336575c0e1c4782876c8e2cb1e42ce1e8da6d486799b",
+      "cudax/include/cuda/experimental/coop/__group/synchronizer/lane_synchronizer.cuh": "3cc29cd8b2fb59ca364798ca210531ba180f9b91f99b025239d06c9aa4ea8314",
+      "cudax/include/cuda/experimental/coop/__group/synchronizer/level_synchronizer.cuh": "6f84e5c0541078d8c165ffb17beb57f5a8ca59ee1fb3783a42574d55fa3f10a5",
+      "cudax/include/cuda/experimental/coop/__group/this_group.cuh": "d4561db6cf659000967b07e8503b436febb674246c65e220f741a4df12cb2d31",
+      "cudax/include/cuda/experimental/coop/__group/traits.cuh": "8ffe28ec25cc3cb967530ac2b469dbfe3d2e1babce6e40a1a0647b60529eb0f5",
+      "cudax/include/cuda/experimental/coop/__group/virtual_group.cuh": "df97da6db7144a32a336e4be95b509143ecb18d214d8deb5f7d24f28c7269ad3",
+      "cudax/include/cuda/experimental/coop/algorithm": "ef97d20be67488401bc366239fe5c4ed399a7900226be32df7f7d9b69ec16344",
+      "cudax/include/cuda/experimental/coop/group": "55414089748e79d54947f883b432efdf4b7b10a15ecbdf0e294c4d0417bc8c3c"
+    },
+    "reference_overlays": {
+      "prior_": {
+        "path": "/home/dabayer/cccl/build/lookahead-groups/refined/portable-prior-headers",
+        "sha256": "02d2e06e3dc3faff5bf4b325de87ef8c81f20e34c6c38477fb629ffe5cd8f97b"
+      }
+    },
+    "binary_sha256": {
+      "baseline": "22c920a5b1effbfd82d9db67a9f4020321b7e63462647be196e528609dc60bc9",
+      "prior_static_groups": "b74cbac44d8edb6b4413640e7dca6a2f98579544726585ba6f6f315b045b8a73",
+      "prior_static_groups_scan": "6b19759711aaf6e3674c3639776de6f2ba7895890bb18ac16254d8149948f16d",
+      "static_groups": "8e1aaf553c358180b9071a54e2fb405981e74e0a890c9586acc1cb05fe5f9deb",
+      "static_groups_scan": "46a891bfc8613c89aa9a04f89c21d23f89b918ade82f144e089dd760bf97f83b"
+    }
+  },
+  "before_header_snapshot": "/home/dabayer/cccl/build/lookahead-groups/refined/portable-before-headers",
+  "before_header_snapshot_sha256": null,
+  "before_header_fixture_sha256": null,
+  "prior_header_snapshot": "/home/dabayer/cccl/build/lookahead-groups/refined/portable-prior-headers",
+  "prior_header_snapshot_sha256": "02d2e06e3dc3faff5bf4b325de87ef8c81f20e34c6c38477fb629ffe5cd8f97b",
+  "prior_header_fixture_sha256": "af6c917829ef5c47b354b3727142206b4fb76176eefe3d713a0903e9eb00e707",
+  "compiler": "nvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2026 NVIDIA Corporation\nBuilt on Mon_Oct_12_19:25:48_PDT_2026\nCuda compilation tools, release 13.5, V13.5.37\nBuild cuda_13.5.r13.5/compiler.39125733_0\n",
+  "host_compiler": "g++-13 (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0\nCopyright (C) 2023 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+  "gpu": "name, uuid, driver_version, memory.total [MiB], clocks.max.sm [MHz], clocks.max.memory [MHz]\nNVIDIA RTX PRO 6000 Blackwell Workstation Edition, GPU-c41cf180-3f53-1f1d-c21a-f7519fd15ffb, 620.70.06, 97887 MiB, 3090 MHz, 14001 MHz\n",
+  "device_properties": {
+    "l2_cache_bytes": 134217728,
+    "multiprocessor_count": 188,
+    "shared_memory_per_multiprocessor_bytes": 102400
+  },
+  "binary_sha256": {
+    "baseline": "22c920a5b1effbfd82d9db67a9f4020321b7e63462647be196e528609dc60bc9",
+    "prior_static_groups": "b74cbac44d8edb6b4413640e7dca6a2f98579544726585ba6f6f315b045b8a73",
+    "prior_static_groups_scan": "6b19759711aaf6e3674c3639776de6f2ba7895890bb18ac16254d8149948f16d",
+    "static_groups": "8e1aaf553c358180b9071a54e2fb405981e74e0a890c9586acc1cb05fe5f9deb",
+    "static_groups_scan": "46a891bfc8613c89aa9a04f89c21d23f89b918ade82f144e089dd760bf97f83b"
+  },
+  "timing": "CUDA graph replay, 64 scans/batch for <=2^20 elements else 8; at least 50ms graph execution warm-up per timed case; median of 9 event batches per round",
+  "comparison_statistics": "Ratio of process medians; 95% percentile bootstrap interval from 2000 paired round resamples with seed42. Intervals describe measured run variation, not systematic clock or cache effects."
+}

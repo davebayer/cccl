@@ -1,0 +1,93 @@
+{
+  "measured_at_utc": "2026-11-11T12:39:55.722342+00:00",
+  "baseline_revision": "24ee635e35caa47b1602e129e49cea60db8b4f05",
+  "rounds": 5,
+  "process_order": [
+    [
+      "baseline",
+      "groups",
+      "groups_scan",
+      "static_groups",
+      "static_groups_scan"
+    ],
+    [
+      "groups",
+      "groups_scan",
+      "static_groups",
+      "static_groups_scan",
+      "baseline"
+    ],
+    [
+      "groups_scan",
+      "static_groups",
+      "static_groups_scan",
+      "baseline",
+      "groups"
+    ],
+    [
+      "static_groups",
+      "static_groups_scan",
+      "baseline",
+      "groups",
+      "groups_scan"
+    ],
+    [
+      "static_groups_scan",
+      "baseline",
+      "groups",
+      "groups_scan",
+      "static_groups"
+    ]
+  ],
+  "definitions": {
+    "baseline": [],
+    "groups": [
+      "-D_CUB_WARPSPEED_USE_CUDAX_GROUPS"
+    ],
+    "groups_scan": [
+      "-D_CUB_WARPSPEED_USE_CUDAX_GROUPS",
+      "-D_CUB_LOOKAHEAD_USE_CUDAX_SCAN"
+    ],
+    "static_groups": [
+      "-D_CUB_WARPSPEED_USE_CUDAX_GROUPS",
+      "-D_CUB_WARPSPEED_USE_STATIC_CUDAX_GROUPS"
+    ],
+    "static_groups_scan": [
+      "-D_CUB_WARPSPEED_USE_CUDAX_GROUPS",
+      "-D_CUB_WARPSPEED_USE_STATIC_CUDAX_GROUPS",
+      "-D_CUB_LOOKAHEAD_USE_CUDAX_SCAN"
+    ]
+  },
+  "language_standard": "C++17",
+  "architecture": "sm_120",
+  "clock_control": "Application clocks and power limit left unchanged",
+  "source_sha256": "afa66918c6959c5dbb63c1fb405d97024573662cd0b6d3073519a44398420083",
+  "runner_sha256": "bc251cc6bfc4700b2c8abfb9f14b8e06bf164bc71050a377dedf0fe803b188ee",
+  "compiled_source_sha256": {
+    "cub/benchmarks/experiments/lookahead_groups/scan.cu": "afa66918c6959c5dbb63c1fb405d97024573662cd0b6d3073519a44398420083",
+    "cub/cub/detail/warpspeed/squad/group.cuh": "84e96e35c2fe5272b2796c6df54de9bd94632be97c65b34998c23be9fdc56d0c",
+    "cub/cub/detail/warpspeed/squad/squad.cuh": "655281ffab5dbcc822f3cb66ccfa4bc1a1375bc97e53cbf9eec7cdef58fca5f5",
+    "cub/cub/detail/warpspeed/squad/load_store.cuh": "0a659d413acf40767a14deab8e044e8ca5f8ae31dbfc2eac3d8a6157b7e9999a",
+    "cub/cub/detail/warpspeed/resource/smem_ref.cuh": "155d41db79e97d161eda1865c5401765827167693eea652d141cf5cd61af6afd",
+    "cub/cub/device/dispatch/kernels/kernel_scan_lookahead.cuh": "c8532f49fc8ea35b6e82e055e1157ee5c7e7eb8ccab21c8b08da159083e898f3"
+  },
+  "compiler": "nvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2026 NVIDIA Corporation\nBuilt on Mon_Oct_12_19:25:48_PDT_2026\nCuda compilation tools, release 13.5, V13.5.37\nBuild cuda_13.5.r13.5/compiler.39125733_0\n",
+  "host_compiler": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0\nCopyright (C) 2023 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+  "gpu": "name, uuid, driver_version, memory.total [MiB], clocks.max.sm [MHz], clocks.max.memory [MHz]\nNVIDIA RTX PRO 6000 Blackwell Workstation Edition, GPU-c41cf180-3f53-1f1d-c21a-f7519fd15ffb, 620.70.06, 97887 MiB, 3090 MHz, 14001 MHz\n",
+  "device_properties": {
+    "l2_cache_bytes": 134217728,
+    "multiprocessor_count": 188,
+    "shared_memory_per_multiprocessor_bytes": 102400
+  },
+  "binary_sha256": {
+    "baseline": "5cbed59248f295eaaecd411d5a83a29f58bc185e0e96637edf70477d75d890ce",
+    "groups": "94e80c3a424480d24be01b4bfe01fccd62d9a26d214f5dc70ccff19f0a8aba91",
+    "groups_scan": "081bfad96b6b010bb0d0c1974105c26a30e53a8ea70a0acb2dcb8ae64b4843e6",
+    "static_groups": "d1e140c6780b0668b5a7fd5260a651ca7f367607a5acd508059364a4420b343c",
+    "static_groups_scan": "19d2c8f2b2b99bd23ebeb7bec3abc78a79f9b02ac7c0ca4c2dd26404603d0888"
+  },
+  "timing": "CUDA graph replay, 64 scans/batch for <=2^20 elements else 8; three warm-up graph replays; median of 9 event batches per round",
+  "default_control": "See control.txt: identical SASS except eight signedness-only comparisons; identical instruction counts and order.",
+  "current_runner_sha256": "c73ca506ce39e70fb257e4d78dccc76850bcb76bfc881f19b3c2ba03b009a874",
+  "runner_postprocessing_note": "After measurement, the three CSV writers were changed to emit LF line endings. runner_sha256 identifies the measured-run script; current_runner_sha256 identifies this serialization-only update. Existing CSVs were normalized to LF without changing numeric data or compiled code."
+}

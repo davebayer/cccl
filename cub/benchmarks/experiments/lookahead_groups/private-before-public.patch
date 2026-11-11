@@ -1,0 +1,726 @@
+--- a/cudax/include/cuda/experimental/coop/__group/group_view.cuh
++++ b/cudax/include/cuda/experimental/coop/__group/group_view.cuh
+@@ -75,3 +75,5 @@
+-  return _MappingResult{__group_mapping_result.group_rank(),
+-                        ::cuda::experimental::coop::__rank_query_group<::cuda::std::uint32_t, _Unit>(__group),
+-                        __group_mapping_result.lane_mask()};
++  return _MappingResult{
++    __group_mapping_result.group_rank(),
++    ::cuda::experimental::coop::__rank_query_group<::cuda::std::uint32_t, _Unit>(__group),
++    __group_mapping_result.lane_mask(),
++  };
+@@ -111 +113,2 @@
+-        __group_mapping_result.lane_mask()};
++        __group_mapping_result.lane_mask(),
++      };
+@@ -120,9 +123,19 @@
+-template <::cuda::std::size_t _Index = 0, class _Group, class _Fn>
+-_CCCL_DEVICE_API decltype(auto) __with_static_unit_count(const _Group& __group, _Fn&& __fn)
+-{
+-  using _MappingResult = typename _Group::__mapping_result_type;
+-  using _Unit          = typename _Group::unit_type;
+-
+-  if constexpr (_MappingResult::has_uniform_static_unit_count())
+-  {
+-    return ::cuda::std::forward<_Fn>(__fn)(group_view{__group});
++template <::cuda::std::size_t _First, ::cuda::std::size_t _Last, class _Group, class _Fn>
++_CCCL_DEVICE_API decltype(auto) __with_static_unit_count_range(const _Group& __group, _Fn&& __fn)
++{
++  using _MappingResult         = typename _Group::__mapping_result_type;
++  using _Unit                  = typename _Group::unit_type;
++  const auto& __mapping_result = __group.__mapping_result();
++
++  if constexpr (_Last - _First > 1)
++  {
++    // Rank thresholds keep large collective callbacks in a branch tree instead
++    // of encouraging jump-table dispatch from a chain of equality comparisons.
++    constexpr auto __mid = _First + (_Last - _First) / 2;
++    if (__mapping_result.group_rank() < __mid)
++    {
++      return ::cuda::experimental::coop::__with_static_unit_count_range<_First, __mid>(
++        __group, ::cuda::std::forward<_Fn>(__fn));
++    }
++    return ::cuda::experimental::coop::__with_static_unit_count_range<__mid, _Last>(
++      __group, ::cuda::std::forward<_Fn>(__fn));
+@@ -132,11 +144,0 @@
+-    const auto& __mapping_result = __group.__mapping_result();
+-
+-    if constexpr (_Index + 1 < _MappingResult::static_group_count())
+-    {
+-      if (__mapping_result.group_rank() != _Index)
+-      {
+-        return ::cuda::experimental::coop::__with_static_unit_count<_Index + 1>(
+-          __group, ::cuda::std::forward<_Fn>(__fn));
+-      }
+-    }
+-
+@@ -144 +146 @@
+-      __uniform_static_unit_count<_MappingResult::static_group_count(), _MappingResult::static_unit_count(_Index)>,
++      __uniform_static_unit_count<_MappingResult::static_group_count(), _MappingResult::static_unit_count(_First)>,
+@@ -153 +155,2 @@
+-      __mapping_result.lane_mask()};
++      __mapping_result.lane_mask(),
++    };
+@@ -156,0 +160,15 @@
++  }
++}
++
++template <::cuda::std::size_t _Index = 0, class _Group, class _Fn>
++_CCCL_DEVICE_API decltype(auto) __with_static_unit_count(const _Group& __group, _Fn&& __fn)
++{
++  using _MappingResult = typename _Group::__mapping_result_type;
++  if constexpr (_MappingResult::has_uniform_static_unit_count())
++  {
++    return ::cuda::std::forward<_Fn>(__fn)(group_view{__group});
++  }
++  else
++  {
++    return ::cuda::experimental::coop::__with_static_unit_count_range<_Index, _MappingResult::static_group_count()>(
++      __group, ::cuda::std::forward<_Fn>(__fn));
+@@ -194,0 +213,2 @@
++  // Views intentionally allow implicit conversion from an owning group.
++  // NOLINTNEXTLINE(cppcoreguidelines-explicit-constructor,misc-explicit-constructor)
+--- a/cudax/include/cuda/experimental/coop/__group/mapping/group_as.cuh
++++ b/cudax/include/cuda/experimental/coop/__group/mapping/group_as.cuh
+@@ -109,0 +110 @@
++        // NOLINTNEXTLINE(readability-redundant-parentheses): keep the ternary condition explicitly grouped.
+@@ -132,0 +134,2 @@
++  // The constraint excludes group_as itself and preserves the copy and move constructors.
++  // NOLINTNEXTLINE(bugprone-forwarding-reference-overload)
+--- a/cudax/include/cuda/experimental/coop/__group/synchronizer/level_synchronizer.cuh
++++ b/cudax/include/cuda/experimental/coop/__group/synchronizer/level_synchronizer.cuh
+@@ -100,0 +101,2 @@
++      // The aligned cluster barrier requires this PTX spelling.
++      // NOLINTNEXTLINE(portability-no-assembler)
+@@ -106,0 +109,2 @@
++  // Dummy tokens are validated without transferring any synchronization state.
++  // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
+@@ -119 +123 @@
+-    {
++    { // NOLINT(bugprone-branch-clone): Matches the pre-SM90 cluster fallback.
+@@ -134,0 +139,2 @@
++  // Dummy tokens are validated without transferring any synchronization state.
++  // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
+@@ -147 +153 @@
+-    {
++    { // NOLINT(bugprone-branch-clone): Matches the pre-SM90 cluster fallback.
+@@ -153,0 +160,2 @@
++                          // The aligned cluster barrier requires this PTX spelling.
++                          // NOLINTNEXTLINE(portability-no-assembler)
+@@ -177,0 +186,2 @@
++  // Cooperative launch provides its workspace through driver ABI environment registers.
++  // NOLINTNEXTLINE(portability-no-assembler)
+@@ -228 +238 @@
+-        __nblocks = ::cuda::std::uint32_t{::cuda::std::numeric_limits<int>::min()} - (__expected - 1);
++        __nblocks = static_cast<::cuda::std::uint32_t>(::cuda::std::numeric_limits<int>::min()) - (__expected - 1);
+@@ -235,0 +246,2 @@
++      // The fallback must retain device-scope release ordering.
++      // NOLINTNEXTLINE(portability-no-assembler)
+@@ -241,0 +254,2 @@
++      // The acquire load below updates the polled value through an asm output.
++      // NOLINTNEXTLINE(bugprone-infinite-loop)
+@@ -246,0 +261,2 @@
++        // The fallback must retain device-scope acquire ordering.
++        // NOLINTNEXTLINE(portability-no-assembler)
+@@ -249 +265 @@
+-      } while (static_cast<int>(__old_barrier_value) < 0 == static_cast<int>(__curr_barrier_value) < 0);
++      } while ((static_cast<int>(__old_barrier_value) < 0) == (static_cast<int>(__curr_barrier_value) < 0));
+@@ -276 +292 @@
+-        __nblocks = ::cuda::std::uint32_t{::cuda::std::numeric_limits<int>::min()} - (__expected - 1);
++        __nblocks = static_cast<::cuda::std::uint32_t>(::cuda::std::numeric_limits<int>::min()) - (__expected - 1);
+@@ -282,0 +299,2 @@
++      // The fallback must retain device-scope release ordering.
++      // NOLINTNEXTLINE(portability-no-assembler)
+@@ -313,0 +332,2 @@
++      // The acquire load below updates the polled value through an asm output.
++      // NOLINTNEXTLINE(bugprone-infinite-loop)
+@@ -318,0 +339,2 @@
++        // The fallback must retain device-scope acquire ordering.
++        // NOLINTNEXTLINE(portability-no-assembler)
+@@ -328,0 +351,2 @@
++  // Waiting reads the token's phase value without transferring ownership.
++  // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
+@@ -334,0 +359,2 @@
++  // Waiting reads the token's phase value without transferring ownership.
++  // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
+--- a/cub/cub/detail/warpspeed/resource/smem_ref.cuh
++++ b/cub/cub/detail/warpspeed/resource/smem_ref.cuh
+@@ -83 +83,2 @@
+-  _CCCL_DEVICE_API void squadIncreaseTxCount(const Squad& squad, int txCount)
++  template <typename SquadT>
++  _CCCL_DEVICE_API void squadIncreaseTxCount(const SquadT& squad, int txCount)
+--- /dev/null
++++ b/cub/cub/detail/warpspeed/squad/group.cuh
+@@ -0,0 +1,61 @@
++// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
++// SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES.
++#pragma once
++
++#include <cub/config.cuh>
++
++#if defined(_CCCL_IMPLICIT_SYSTEM_HEADER_GCC)
++#  pragma GCC system_header
++#elif defined(_CCCL_IMPLICIT_SYSTEM_HEADER_CLANG)
++#  pragma clang system_header
++#elif defined(_CCCL_IMPLICIT_SYSTEM_HEADER_MSVC)
++#  pragma system_header
++#endif // no system header
++
++#include <cuda/hierarchy>
++#include <cuda/std/__mdspan/extents.h>
++#include <cuda/std/cstdint>
++#include <cuda/std/span>
++
++#include <cuda/experimental/coop/group>
++
++CUB_NAMESPACE_BEGIN
++
++namespace detail::warpspeed
++{
++namespace coop = ::cuda::experimental::coop;
++
++// Keep the view type independent of the number of squads. This lets the existing
++// resource and bulk-copy interfaces continue to pass a concrete, copyable Squad.
++using squad_hierarchy_t = decltype(::cuda::make_hierarchy(::cuda::block_dims(1u)));
++using squad_block_t     = coop::this_block<squad_hierarchy_t>;
++using warp_group_t      = coop::this_warp<squad_hierarchy_t>;
++using squad_span_t      = ::cuda::std::span<const ::cuda::std::uint32_t>;
++// Name the result explicitly: namespace-scope decltype on the device-only
++// mapping functions is unavailable during nvcc's host compilation pass.
++using squad_mapping_result_t =
++  coop::__mapping_result<coop::__uniform_static_unit_count<::cuda::std::dynamic_extent, ::cuda::std::dynamic_extent>,
++                         true,
++                         true>;
++using squad_group_t =
++  coop::generic_group<::cuda::warp_level,
++                      squad_block_t,
++                      squad_mapping_result_t,
++                      coop::__interwarp_synchronizer_instance<::cuda::std::dynamic_extent>>;
++using squad_group_view_t           = coop::group_view<::cuda::warp_level, squad_group_t, squad_mapping_result_t>;
++using warp_thread_mapping_result_t = coop::__mapping_result<coop::__uniform_static_unit_count<1, 32>, true, true>;
++using warp_thread_group_t          = coop::group_view<::cuda::thread_level, warp_group_t, warp_thread_mapping_result_t>;
++
++[[nodiscard]] _CCCL_DEVICE_API inline warp_group_t make_warp_group()
++{
++  return warp_group_t{squad_hierarchy_t{::cuda::block_dims(blockDim.x)}};
++}
++
++[[nodiscard]] _CCCL_DEVICE_API inline warp_thread_group_t make_warp_thread_group()
++{
++  const warp_group_t warp = _CUB::detail::warpspeed::make_warp_group();
++  return warp_thread_group_t{::cuda::gpu_thread, warp};
++}
++} // namespace detail::warpspeed
++
++CUB_NAMESPACE_END
+--- a/cub/cub/detail/warpspeed/squad/load_store.cuh
++++ b/cub/cub/detail/warpspeed/squad/load_store.cuh
+@@ -113,2 +113,2 @@
+-template <typename ResourceTp, typename Tp>
+-_CCCL_DEVICE_API void squadLoadBulk(Squad squad, SmemRef<ResourceTp>& refDestSmem, CpAsyncOobInfo<Tp> cpAsyncOobInfo)
++template <typename ResourceTp, typename Tp, typename SquadT>
++_CCCL_DEVICE_API void squadLoadBulk(SquadT squad, SmemRef<ResourceTp>& refDestSmem, CpAsyncOobInfo<Tp> cpAsyncOobInfo)
+@@ -224,0 +225 @@
++template <typename SquadT>
+@@ -226 +227 @@
+-  Squad squad,
++  SquadT squad,
+@@ -248 +249 @@
+-template <typename OutputT>
++template <typename OutputT, typename SquadT>
+@@ -250 +251 @@
+-squadStoreBulkSync(Squad squad, CpAsyncOobInfo<OutputT> cpAsyncOobInfo, const ::cuda::std::byte* srcSmem)
++squadStoreBulkSync(SquadT squad, CpAsyncOobInfo<OutputT> cpAsyncOobInfo, const ::cuda::std::byte* srcSmem)
+@@ -374,2 +375,2 @@
+-template <typename InputT, typename AccumT, int ElemPerThread>
+-_CCCL_DEVICE_API void squadLoadSmem(Squad squad, AccumT (&outReg)[ElemPerThread], const InputT* smemBuf)
++template <typename InputT, typename AccumT, int ElemPerThread, typename SquadT>
++_CCCL_DEVICE_API void squadLoadSmem(SquadT squad, AccumT (&outReg)[ElemPerThread], const InputT* smemBuf)
+@@ -386,2 +387,2 @@
+-template <typename OutputT, typename AccumT, int ElemPerThread>
+-_CCCL_DEVICE_API void squadStoreSmem(Squad squad, OutputT* smemBuf, const AccumT (&inReg)[ElemPerThread])
++template <typename OutputT, typename AccumT, int ElemPerThread, typename SquadT>
++_CCCL_DEVICE_API void squadStoreSmem(SquadT squad, OutputT* smemBuf, const AccumT (&inReg)[ElemPerThread])
+@@ -398,3 +399,3 @@
+-template <typename OutputT, typename AccumT, int ElemPerThread>
+-_CCCL_DEVICE_API void
+-squadStoreSmemPartial(Squad squad, OutputT* smemBuf, const AccumT (&inReg)[ElemPerThread], int beginIndex, int endIndex)
++template <typename OutputT, typename AccumT, int ElemPerThread, typename SquadT>
++_CCCL_DEVICE_API void squadStoreSmemPartial(
++  SquadT squad, OutputT* smemBuf, const AccumT (&inReg)[ElemPerThread], int beginIndex, int endIndex)
+--- a/cub/cub/detail/warpspeed/squad/squad.cuh
++++ b/cub/cub/detail/warpspeed/squad/squad.cuh
+@@ -5,0 +6,4 @@
++
++#if defined(_CUB_WARPSPEED_USE_STATIC_CUDAX_GROUPS) && !defined(_CUB_WARPSPEED_USE_CUDAX_GROUPS)
++#  error "_CUB_WARPSPEED_USE_STATIC_CUDAX_GROUPS requires _CUB_WARPSPEED_USE_CUDAX_GROUPS"
++#endif // static groups require the primary group experiment
+@@ -17,0 +22,4 @@
++#if defined(_CUB_WARPSPEED_USE_CUDAX_GROUPS)
++#  include <cub/detail/warpspeed/squad/group.cuh>
++#endif // _CUB_WARPSPEED_USE_CUDAX_GROUPS
++
+@@ -18,0 +27 @@
++#include <cuda/__warp/lane_mask.h>
+@@ -19,0 +29,2 @@
++#include <cuda/std/__type_traits/remove_cv.h>
++#include <cuda/std/__utility/integer_sequence.h>
+@@ -39,0 +51,12 @@
++
++#if defined(_CUB_WARPSPEED_USE_CUDAX_GROUPS)
++  squad_group_view_t mGroup;
++
++  _CCCL_DEVICE_API Squad(SquadDesc squadStatic, SpecialRegisters specialRegisters, squad_group_view_t group)
++      : SquadDesc(squadStatic)
++      , mSpecialRegisters(specialRegisters)
++      , mIsWarpLeader(::cuda::ptx::elect_sync(~0u))
++      , mIsLeaderWarp(::cuda::warp.is_root_rank(group))
++      , mGroup(group)
++  {}
++#else // _CUB_WARPSPEED_USE_CUDAX_GROUPS
+@@ -46,0 +70 @@
++#endif // _CUB_WARPSPEED_USE_CUDAX_GROUPS
+@@ -49,0 +74,3 @@
++#if defined(_CUB_WARPSPEED_USE_CUDAX_GROUPS)
++    return ::cuda::warp.rank_as<int>(mGroup);
++#else // _CUB_WARPSPEED_USE_CUDAX_GROUPS
+@@ -50,0 +78 @@
++#endif // _CUB_WARPSPEED_USE_CUDAX_GROUPS
+@@ -54,0 +83,3 @@
++#if defined(_CUB_WARPSPEED_USE_CUDAX_GROUPS)
++    return ::cuda::gpu_thread.rank_as<int>(mGroup);
++#else // _CUB_WARPSPEED_USE_CUDAX_GROUPS
+@@ -55,0 +87,11 @@
++#endif // _CUB_WARPSPEED_USE_CUDAX_GROUPS
++  }
++
++  [[nodiscard]] _CCCL_DEVICE_API int laneRank() const
++  {
++#if defined(_CUB_WARPSPEED_USE_CUDAX_GROUPS)
++    const warp_group_t warp{mGroup.hierarchy()};
++    return ::cuda::gpu_thread.rank_as<int>(warp);
++#else // _CUB_WARPSPEED_USE_CUDAX_GROUPS
++    return static_cast<int>(mSpecialRegisters.laneIdx);
++#endif // _CUB_WARPSPEED_USE_CUDAX_GROUPS
+@@ -74,0 +117,3 @@
++#if defined(_CUB_WARPSPEED_USE_CUDAX_GROUPS)
++    mGroup.sync();
++#else // _CUB_WARPSPEED_USE_CUDAX_GROUPS
+@@ -78,0 +124 @@
++#endif // _CUB_WARPSPEED_USE_CUDAX_GROUPS
+@@ -80,0 +127,232 @@
++
++#if defined(_CUB_WARPSPEED_USE_STATIC_CUDAX_GROUPS)
++template <typename Group>
++struct static_squad : SquadDesc
++{
++  using group_type          = Group;
++  using mapping_result_type = typename Group::__mapping_result_type;
++  static_assert(mapping_result_type::static_unit_count() != ::cuda::std::dynamic_extent);
++
++  SpecialRegisters mSpecialRegisters;
++  bool mIsWarpLeader;
++  bool mIsLeaderWarp;
++  Group mGroup;
++
++  _CCCL_DEVICE_API static_squad(SquadDesc descriptor, SpecialRegisters registers, Group group)
++      : SquadDesc(descriptor)
++      , mSpecialRegisters(registers)
++      , mIsWarpLeader(::cuda::ptx::elect_sync(~0u))
++      , mIsLeaderWarp(::cuda::warp.is_root_rank(group))
++      , mGroup(group)
++  {}
++
++  [[nodiscard]] _CCCL_DEVICE_API static constexpr int warpCount() noexcept
++  {
++    return static_cast<int>(mapping_result_type::static_unit_count());
++  }
++
++  [[nodiscard]] _CCCL_DEVICE_API static constexpr int threadCount() noexcept
++  {
++    return 32 * warpCount();
++  }
++
++  [[nodiscard]] _CCCL_DEVICE_API int warpRank() const
++  {
++    return ::cuda::warp.rank_as<int>(mGroup);
++  }
++
++  [[nodiscard]] _CCCL_DEVICE_API int threadRank() const
++  {
++    return ::cuda::gpu_thread.rank_as<int>(mGroup);
++  }
++
++  [[nodiscard]] _CCCL_DEVICE_API int laneRank() const
++  {
++    const warp_group_t warp{mGroup.hierarchy()};
++    return ::cuda::gpu_thread.rank_as<int>(warp);
++  }
++
++  [[nodiscard]] _CCCL_DEVICE_API bool isLeaderThread() const
++  {
++    return mIsWarpLeader && mIsLeaderWarp;
++  }
++
++  [[nodiscard]] _CCCL_DEVICE_API bool isLeaderWarp() const
++  {
++    return mIsLeaderWarp;
++  }
++
++  [[nodiscard]] _CCCL_DEVICE_API bool isLeaderThreadOfWarp() const
++  {
++    return mIsWarpLeader;
++  }
++
++  _CCCL_DEVICE_API void syncThreads() const
++  {
++    mGroup.sync();
++  }
++};
++
++template <::cuda::std::size_t End, ::cuda::std::size_t... Counts>
++_CCCL_HOST_DEVICE_API constexpr ::cuda::std::size_t squad_static_prefix(::cuda::std::index_sequence<Counts...>)
++{
++  constexpr ::cuda::std::size_t values[]{Counts...};
++  ::cuda::std::size_t prefix = 0;
++  for (::cuda::std::size_t i = 0; i < End; ++i)
++  {
++    prefix += values[i];
++  }
++  return prefix;
++}
++
++template <::cuda::std::size_t First,
++          ::cuda::std::size_t Last,
++          int NumSquads,
++          ::cuda::std::size_t... Counts,
++          typename ParentGroup,
++          typename Group,
++          typename F>
++_CCCL_DEVICE_API _CCCL_FORCEINLINE void squad_dispatch_static_leaf(
++  SpecialRegisters registers,
++  const SquadDesc (&squads)[NumSquads],
++  const ParentGroup& parent,
++  const Group& group,
++  ::cuda::std::index_sequence<Counts...> counts,
++  F f)
++{
++  // Static squads cover this one-dimensional block contiguously. Select the
++  // descriptor before specializing its count so the heavy callback avoids a
++  // cross-product of count and descriptor dispatches.
++  if constexpr (Last - First > 1)
++  {
++    constexpr auto mid = First + (Last - First) / 2;
++    constexpr auto mid_warp =
++      _CUB::detail::warpspeed::squad_static_prefix<mid>(::cuda::std::index_sequence<Counts...>{});
++    if (registers.warpIdx < mid_warp)
++    {
++      _CUB::detail::warpspeed::squad_dispatch_static_leaf<First, mid>(registers, squads, parent, group, counts, f);
++    }
++    else
++    {
++      _CUB::detail::warpspeed::squad_dispatch_static_leaf<mid, Last>(registers, squads, parent, group, counts, f);
++    }
++  }
++  else
++  {
++    // group_as defines the partition; the static pack expresses this leaf's
++    // equivalent count and prefix directly in its view's mapping type.
++    constexpr ::cuda::std::size_t static_counts[]{Counts...};
++    constexpr auto count = static_counts[First];
++    constexpr auto prefix =
++      _CUB::detail::warpspeed::squad_static_prefix<First>(::cuda::std::index_sequence<Counts...>{});
++    const auto warp_rank = registers.warpIdx - static_cast<::cuda::std::uint32_t>(prefix);
++    _CCCL_ASSERT(group.rank(parent) == First, "the selected static squad must match the group mapping");
++    _CCCL_ASSERT(warp_rank == ::cuda::warp.rank(group), "the cached squad rank must match the group mapping");
++    using leaf_mapping_t = coop::__mapping_result<coop::__uniform_static_unit_count<NumSquads, count>, true, true>;
++    using leaf_view_t    = coop::group_view<::cuda::warp_level, Group, leaf_mapping_t>;
++    const leaf_mapping_t leaf_mapping{
++      NumSquads,
++      static_cast<::cuda::std::uint32_t>(First),
++      static_cast<::cuda::std::uint32_t>(count),
++      warp_rank,
++      ::cuda::device::lane_mask::all()};
++    const leaf_view_t leaf_group{group, leaf_mapping};
++    const ::cuda::std::uint32_t barrier_id = static_cast<::cuda::std::uint32_t>(squads[First].mSquadIdx + 1);
++    using barrier_span_t                   = ::cuda::std::span<const ::cuda::std::uint32_t, 1>;
++    const auto synchronized_group          = coop::make_group<coop::generic_group>(
++      ::cuda::warp,
++      leaf_group,
++      coop::identity_mapping{},
++      coop::interwarp_synchronizer<barrier_span_t>{barrier_span_t{&barrier_id, 1}});
++    using synchronized_group_t = ::cuda::std::remove_cv_t<decltype(synchronized_group)>;
++    using view_t =
++      coop::group_view<::cuda::warp_level, synchronized_group_t, typename synchronized_group_t::__mapping_result_type>;
++    f(static_squad<view_t>{squads[First], registers, view_t{synchronized_group}});
++  }
++}
++
++template <int NumSquads, ::cuda::std::size_t... Counts, typename F>
++_CCCL_DEVICE_API _CCCL_FORCEINLINE void squad_dispatch_static(
++  SpecialRegisters registers, const SquadDesc (&squads)[NumSquads], ::cuda::std::index_sequence<Counts...> counts, F f)
++{
++  static_assert(NumSquads == sizeof...(Counts));
++  static_assert(((Counts > 0) && ...), "each static squad must contain at least one warp");
++  [[maybe_unused]] constexpr ::cuda::std::size_t static_counts[]{Counts...};
++  for (int i = 0; i < NumSquads; ++i)
++  {
++    _CCCL_ASSERT(static_cast<::cuda::std::size_t>(squads[i].warpCount()) == static_counts[i],
++                 "static squad counts must match the descriptors");
++  }
++  constexpr auto total_warps = (Counts + ...);
++  static_assert(total_warps <= 32, "a static squad partition must fit within one block");
++  _CCCL_ASSERT(blockDim.x == total_warps * 32 && blockDim.y == 1 && blockDim.z == 1,
++               "static squad partition must cover a one-dimensional block");
++  const squad_block_t block{squad_hierarchy_t{::cuda::block_dims(blockDim.x)}};
++
++  // Preserve the cached warp-uniform rank. Recomputing threadIdx.x / 32 through
++  // a thread-unit block group loses compiler uniformity, causing divergent
++  // squad dispatch and reconvergence around the collective operations.
++  using warp_mapping_t = coop::__mapping_result<coop::__uniform_static_unit_count<1, total_warps>, true, true>;
++  using warp_parent_t  = coop::group_view<::cuda::warp_level, squad_block_t, warp_mapping_t>;
++  const warp_mapping_t mapping{1, 0, total_warps, registers.warpIdx, ::cuda::device::lane_mask::all()};
++  const warp_parent_t parent{block, mapping};
++  const auto group = coop::make_group<coop::virtual_group>(
++    ::cuda::warp, parent, coop::group_as<::cuda::std::index_sequence<Counts...>>{counts});
++  _CUB::detail::warpspeed::squad_dispatch_static_leaf<0, NumSquads>(registers, squads, parent, group, counts, f);
++}
++
++template <::cuda::std::size_t NumSquads, ::cuda::std::size_t... Counts, typename F>
++_CCCL_DEVICE_API _CCCL_FORCEINLINE void squad_dispatch_static(
++  SpecialRegisters registers,
++  ::cuda::std::array<SquadDesc, NumSquads> squads,
++  ::cuda::std::index_sequence<Counts...> counts,
++  F f)
++{
++  _CUB::detail::warpspeed::squad_dispatch_static(registers, squads.__elems_, counts, f);
++}
++#endif // defined(_CUB_WARPSPEED_USE_STATIC_CUDAX_GROUPS)
++
++#if defined(_CUB_WARPSPEED_USE_CUDAX_GROUPS)
++template <int NumSquads, typename F>
++_CCCL_DEVICE_API _CCCL_FORCEINLINE void squad_dispatch_group(
++  SpecialRegisters sr, const SquadDesc (&squads)[NumSquads], F f, squad_group_view_t group, int warpIdxStart)
++{
++  static_assert(NumSquads > 0);
++  if constexpr (NumSquads == 1)
++  {
++    const SquadDesc squad = squads[0];
++    if (static_cast<unsigned>(warpIdxStart) <= sr.warpIdx
++        && sr.warpIdx < static_cast<unsigned>(warpIdxStart + squad.warpCount()))
++    {
++      f(Squad(squad, sr, group));
++    }
++  }
++  else
++  {
++    constexpr int mid   = NumSquads / 2;
++    int warpIdxStartMid = warpIdxStart;
++    for (int gi = 0; gi < mid; ++gi)
++    {
++      warpIdxStartMid += squads[gi].warpCount();
++    }
++    if (sr.warpIdx < static_cast<unsigned>(warpIdxStartMid))
++    {
++      SquadDesc squadsLeft[mid];
++      for (int gi = 0; gi < mid; ++gi)
++      {
++        squadsLeft[gi] = squads[gi];
++      }
++      _CUB::detail::warpspeed::squad_dispatch_group(sr, squadsLeft, f, group, warpIdxStart);
++    }
++    else
++    {
++      SquadDesc squadsRight[NumSquads - mid]{};
++      for (int gi = 0; gi < NumSquads - mid; ++gi)
++      {
++        squadsRight[gi] = squads[mid + gi];
++      }
++      _CUB::detail::warpspeed::squad_dispatch_group(sr, squadsRight, f, group, warpIdxStartMid);
++    }
++  }
++}
++#endif // _CUB_WARPSPEED_USE_CUDAX_GROUPS
+@@ -106,0 +385,22 @@
++#if defined(_CUB_WARPSPEED_USE_CUDAX_GROUPS)
++  // Prefix and suffix groups preserve dispatches over a subrange of the block.
++  // Empty groups contain no threads and therefore never use their barrier id.
++  ::cuda::std::uint32_t warpCounts[NumSquads + 2]{};
++  ::cuda::std::uint32_t barrierIds[NumSquads + 2]{};
++  warpCounts[0]  = static_cast<::cuda::std::uint32_t>(warpIdxStart);
++  int warpIdxEnd = warpIdxStart;
++  for (int gi = 0; gi < NumSquads; ++gi)
++  {
++    warpCounts[gi + 1] = static_cast<::cuda::std::uint32_t>(squads[gi].warpCount());
++    barrierIds[gi + 1] = static_cast<::cuda::std::uint32_t>(squads[gi].mSquadIdx + 1);
++    warpIdxEnd += squads[gi].warpCount();
++  }
++  warpCounts[NumSquads + 1] = blockDim.x / 32 - static_cast<::cuda::std::uint32_t>(warpIdxEnd);
++  const squad_block_t block{squad_hierarchy_t{::cuda::block_dims(blockDim.x)}};
++  const squad_group_t group{
++    ::cuda::warp,
++    block,
++    coop::group_as<squad_span_t>{squad_span_t{warpCounts}},
++    coop::interwarp_synchronizer<squad_span_t>{squad_span_t{barrierIds}}};
++  _CUB::detail::warpspeed::squad_dispatch_group(sr, squads, f, squad_group_view_t{group}, warpIdxStart);
++#else // _CUB_WARPSPEED_USE_CUDAX_GROUPS
+@@ -148,0 +449 @@
++#endif // _CUB_WARPSPEED_USE_CUDAX_GROUPS
+--- a/cub/cub/device/dispatch/kernels/kernel_scan_lookahead.cuh
++++ b/cub/cub/device/dispatch/kernels/kernel_scan_lookahead.cuh
+@@ -44,0 +45 @@
++#include <cuda/std/__utility/integer_sequence.h>
+@@ -50,0 +52,6 @@
++
++#if defined(_CUB_LOOKAHEAD_USE_CUDAX_SCAN)
++#  include <cub/detail/warpspeed/squad/group.cuh>
++
++#  include <cuda/experimental/coop/__algorithm/shuffle_up.cuh>
++#endif // defined(_CUB_LOOKAHEAD_USE_CUDAX_SCAN)
+@@ -162 +169,2 @@
+-_CCCL_DEVICE_API inline void squadGetNextBlockIdx(const warpspeed::Squad& squad, warpspeed::SmemRef<uint4>& refDestSmem)
++template <typename SquadT>
++_CCCL_DEVICE_API inline void squadGetNextBlockIdx(const SquadT& squad, warpspeed::SmemRef<uint4>& refDestSmem)
+@@ -170,0 +179 @@
++template <typename SquadT>
+@@ -172 +181 @@
+-  const warpspeed::Squad& squad, warpspeed::SmemRef<uint4>& refDestSmem, ::cuda::std::uint32_t* atomicCounter)
++  const SquadT& squad, warpspeed::SmemRef<uint4>& refDestSmem, ::cuda::std::uint32_t* atomicCounter)
+@@ -199,0 +209,28 @@
++#  if defined(_CUB_LOOKAHEAD_USE_CUDAX_SCAN)
++template <typename Tp, typename ScanOpT>
++[[nodiscard]] _CCCL_DEVICE_API
++_CCCL_FORCEINLINE Tp warp_scan_exclusive_cudax(Tp input, ScanOpT& scan_op, const int num_items)
++{
++  const auto group = _CUB::detail::warpspeed::make_warp_thread_group();
++  const auto lane  = ::cuda::gpu_thread.rank(group);
++
++  // Keep the operator's left-to-right order, including operators without an identity.
++  _CCCL_PRAGMA_UNROLL_FULL()
++  for (unsigned offset = 1; offset < 32; offset *= 2)
++  {
++    const auto previous = ::cuda::experimental::coop::shuffle_up(group, input, offset);
++    if (previous && lane < static_cast<unsigned>(num_items))
++    {
++      input = scan_op(*previous, input);
++    }
++  }
++  const auto previous = ::cuda::experimental::coop::shuffle_up(group, input, 1);
++  // Lane zero's result is unused: the caller supplies the inter-warp/tile prefix.
++  if (previous)
++  {
++    return *previous;
++  }
++  return input;
++}
++#  endif // defined(_CUB_LOOKAHEAD_USE_CUDAX_SCAN)
++
+@@ -202,0 +240,3 @@
++#  if defined(_CUB_LOOKAHEAD_USE_CUDAX_SCAN)
++  return __scan_detail::warp_scan_exclusive_cudax(regInput, scan_op, 32);
++#  else // ^^^ defined(_CUB_LOOKAHEAD_USE_CUDAX_SCAN) ^^^ / vvv !defined(_CUB_LOOKAHEAD_USE_CUDAX_SCAN) vvv
+@@ -209,0 +250 @@
++#  endif // !defined(_CUB_LOOKAHEAD_USE_CUDAX_SCAN)
+@@ -226,0 +268,3 @@
++#  if defined(_CUB_LOOKAHEAD_USE_CUDAX_SCAN)
++    return __scan_detail::warp_scan_exclusive_cudax(regInput, scan_op, num_items);
++#  else // ^^^ defined(_CUB_LOOKAHEAD_USE_CUDAX_SCAN) ^^^ / vvv !defined(_CUB_LOOKAHEAD_USE_CUDAX_SCAN) vvv
+@@ -233,0 +278 @@
++#  endif // !defined(_CUB_LOOKAHEAD_USE_CUDAX_SCAN)
+@@ -336,0 +382 @@
++  template <typename SquadT>
+@@ -338 +384 @@
+-  load_next_tile_index(const warpspeed::Squad& squad, warpspeed::SmemPhase<uint4>& phaseNextBlockIdxW) const
++  load_next_tile_index(const SquadT& squad, warpspeed::SmemPhase<uint4>& phaseNextBlockIdxW) const
+@@ -345,0 +392 @@
++  template <typename SquadT>
+@@ -347 +394 @@
+-    const warpspeed::Squad& squad,
++    const SquadT& squad,
+@@ -354,0 +402 @@
++  template <typename SquadT>
+@@ -356 +404 @@
+-    const warpspeed::Squad& squad,
++    const SquadT& squad,
+@@ -392,0 +441 @@
++  template <typename SquadT>
+@@ -394 +443 @@
+-    const warpspeed::Squad& squad,
++    const SquadT& squad,
+@@ -501 +550 @@
+-  template <bool IsLastTile>
++  template <bool IsLastTile, typename SquadT>
+@@ -503 +552 @@
+-    const warpspeed::Squad& squad,
++    const SquadT& squad,
+@@ -512,4 +561,5 @@
+-    // need to init these to silence nvcc warning about reading uninitialized data
+-    [[maybe_unused]] int valid_items_this_thread = 0;
+-    [[maybe_unused]] int valid_threads_this_warp = 0;
+-    [[maybe_unused]] int valid_warps             = 0;
++    [[maybe_unused]] const int valid_items_this_thread =
++      ::cuda::std::clamp(valid_items - squad.threadRank() * elemPerThread, 0, +elemPerThread);
++    [[maybe_unused]] const int valid_threads_this_warp =
++      ::cuda::std::clamp(::cuda::ceil_div(valid_items, elemPerThread) - squad.warpRank() * 32, 0, 32);
++    [[maybe_unused]] const int valid_warps = ::cuda::ceil_div(valid_items, elemPerThread * 32);
+@@ -518,4 +567,0 @@
+-      valid_items_this_thread = ::cuda::std::clamp(valid_items - squad.threadRank() * elemPerThread, 0, +elemPerThread);
+-      valid_threads_this_warp =
+-        ::cuda::std::clamp(::cuda::ceil_div(valid_items, elemPerThread) - squad.warpRank() * 32, 0, 32);
+-      valid_warps = ::cuda::ceil_div(valid_items, elemPerThread * 32);
+@@ -549,5 +595 @@
+-        bool include_warp = i < squad.warpRank();
+-        if constexpr (IsLastTile)
+-        {
+-          include_warp &= i < valid_warps;
+-        }
++        const bool include_warp = i < squad.warpRank() && (!IsLastTile || i < valid_warps);
+@@ -597,4 +639 @@
+-          regAggrThread,
+-          scan_op,
+-          valid_threads_this_warp,
+-          specialRegisters.laneIdx < static_cast<uint32_t>(valid_threads_this_warp));
++          regAggrThread, scan_op, valid_threads_this_warp, squad.laneRank() < valid_threads_this_warp);
+@@ -617,5 +656,2 @@
+-        bool includeIntraWarpAggr = specialRegisters.laneIdx != 0;
+-        if constexpr (IsLastTile)
+-        {
+-          includeIntraWarpAggr &= specialRegisters.laneIdx < static_cast<uint32_t>(valid_threads_this_warp);
+-        }
++        const bool includeIntraWarpAggr =
++          squad.laneRank() != 0 && (!IsLastTile || squad.laneRank() < valid_threads_this_warp);
+@@ -718 +754 @@
+-      warpspeed::CpAsyncOobInfo storeInfo =
++      const warpspeed::CpAsyncOobInfo storeInfo =
+@@ -732 +768 @@
+-        warpspeed::CpAsyncOobInfo storeInfo =
++        const warpspeed::CpAsyncOobInfo storeInfo =
+@@ -761,0 +798 @@
++  template <typename SquadT>
+@@ -763 +800 @@
+-    const warpspeed::Squad& squad,
++    const SquadT& squad,
+@@ -768,0 +806,2 @@
++    // data() requires a mutable reference when the store squad is active.
++    // NOLINTNEXTLINE(misc-const-correctness)
+@@ -786 +825,2 @@
+-  _CCCL_DEVICE_API _CCCL_FORCEINLINE void dispatch_squad(warpspeed::Squad squad) // const // TODO(bgruber): enable const
++  template <typename SquadT>
++  _CCCL_DEVICE_API _CCCL_FORCEINLINE void dispatch_squad(SquadT squad) // const // TODO(bgruber): enable const
+@@ -1007,5 +1047,11 @@
+-  _CUB::detail::warpspeed::squadDispatch(
+-    specialRegisters, closure_t::scanSquads, [&](warpspeed::Squad squad) _CCCL_FORCEINLINE_LAMBDA {
+-      // we load the initial value after the squad dispatch, so only the squads needing it emit an LDG
+-      closure_t{specialRegisters, params, scan_op, static_cast<RealInitValueT>(init_value), res}.dispatch_squad(squad);
+-    });
++  const auto dispatch = [&](auto squad) _CCCL_FORCEINLINE_LAMBDA {
++    // we load the initial value after the squad dispatch, so only the squads needing it emit an LDG
++    closure_t{specialRegisters, params, scan_op, static_cast<RealInitValueT>(init_value), res}.dispatch_squad(squad);
++  };
++#  if defined(_CUB_WARPSPEED_USE_STATIC_CUDAX_GROUPS)
++  using squad_counts_t =
++    ::cuda::std::index_sequence<policy.reduce_and_scan_warps, policy.reduce_and_scan_warps, 1, 1, 1>;
++  _CUB::detail::warpspeed::squad_dispatch_static(specialRegisters, closure_t::scanSquads, squad_counts_t{}, dispatch);
++#  else // _CUB_WARPSPEED_USE_STATIC_CUDAX_GROUPS
++  _CUB::detail::warpspeed::squadDispatch(specialRegisters, closure_t::scanSquads, dispatch);
++#  endif // _CUB_WARPSPEED_USE_STATIC_CUDAX_GROUPS

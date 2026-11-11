@@ -1,0 +1,104 @@
+Public-only CUB group integration validation, 2026-11-11
+
+Retained implementation
+  All CUB group use goes through public group_view_t, make_group, group_as,
+  with_static_unit_count<N>(), with_unit_rank(), static_unit_count(), and
+  standard public rank/count/synchronization queries.
+  Dynamic group_squad<Group> replaces the concrete private-type alias.
+  RLE uses a generic squad callback. Array forwarding uses public data().
+  Rank-subtraction, aligned thread-mask and singleton-getter experiments are
+  rejected and are not part of production sources.
+
+Passed targeted latest-compiler GPU checks
+  CUB existing scan cases: 26,586 assertions across 12 cases, RNG seed 42.
+    Alignment, tails, deterministic floating-point, noncommutative operations.
+  Existing RLE main cases except huge-input stress cases:
+    3,331 assertions across 41 cases, RNG seed 42.
+    Empty/singleton, mixed counting types, unique/equal keys, iterators,
+    segment-length grids, pipeline-scale sizes, all input misalignments,
+    last-key output semantics and signed floating-point zeros.
+  Latest and CUDA12 shifted-output regressions: PASS.
+  CUDA12 full legacy/header scan correctness harness: PASS.
+  Warp scan helper valid-lane counts0..32: PASS.
+  Forced lookahead RLE smoke with shifted buffers and guards: PASS.
+  Dynamic/static squad tests with reversedIDs, single/uniform/uneven layouts,
+  1024-thread blocks and subrange dispatch: both compiler matrices PASS.
+
+Compiler matrix and environment
+  C++17 in both matrices:
+    CUDA13.5.37 + /usr/bin/g++-13 (GCC13.3), -O3 -arch=sm_120
+    CUDA12.0.76 + /usr/bin/g++-7, -O3 -gencode=arch=compute_90,code=compute_90
+  GPU execution outside sandbox on RTX PRO 6000 Blackwell, GPU0.
+  Every nvcc invocation uses a private TMPDIR to prevent tmpxft collisions.
+  CUDA12 cannot compile Blackwell/PTX8.6 lookahead; its scan tests check
+  legacy/header compatibility, while actual group code is tested as compute90
+  PTX and JIT-executed on RTX in separate squad/core tests.
+
+Exact build commands and results
+  build/lookahead-groups/validation-public-api/build_tests.py
+  build/lookahead-groups/validation-public-api/build_auxiliary.py
+  build/lookahead-groups/validation-public-api/build_rle_tests.py
+  Individual compile logs begin with exact nvcc commands.
+  Runtime logs: build/lookahead-groups/validation-public-api/run-*.log
+  RLE filter: '~*large number*,~*large runs*'
+  Common definitions:
+    -D_CUDAX_ENABLE_GROUP_FEATURES_IN_LIBCUDACXX
+    -D_CUB_WARPSPEED_USE_CUDAX_GROUPS
+    -D_CUB_WARPSPEED_USE_STATIC_CUDAX_GROUPS
+    -D_CUB_LOOKAHEAD_USE_CUDAX_SCAN
+  Latest RLE smoke/test compilation also uses --expt-relaxed-constexpr.
+
+Style and source audit
+  Full CUB edited-header host/device clang-tidy passes for group.cuh,
+  squad.cuh and kernel_rle_encode_lookahead.cuh, no changed-line filter.
+  RLE whole-file findings required scoped cleanup: const atomic references,
+  explicit bounded integer conversions, bit-preserving ffs mask casts,
+  output initialization, independent declarations and equivalent condition
+  merges. RLE functional coverage above passes after this cleanup.
+  The five edited group-library headers pass host/device clang-tidy and the
+  amended group-view test passes device lint. Details: validation-group-api.txt.
+  Clang23 uses -Wno-unknown-cuda-version for installed CUDA13.5 headers;
+  repository checks remain enabled. Applicable pre-commit hooks pass.
+  Source audit finds no group-private names, private mapping/synchronizer
+  aliases, metadata getters or array.__elems_ in CUB integration.
+  No agent writes to the Git index.
+
+Final measured-binary validation
+  compute-sanitizer --tool memcheck --error-exitcode 1
+    build/lookahead-groups/public-api-final/static_groups_scan-scan --correctness-only
+  PASS: all lookahead correctness checks pass; ERROR SUMMARY: 0 errors.
+  Log: build/lookahead-groups/validation-public-api/memcheck-final.log
+  Final full matrix: 1,800 timing rows,180 summaries,10 balanced rounds.
+  Final focused matrix: 600 rows,15 summaries,40 rounds for1K/65K/1M.
+  All process correctness checks pass;12 measured-binary NCU profiles complete.
+  Full/focus/profile binaries and all2,910 live source hashes match final audit.
+  Public/private normalized instruction+operand comparison: all16 kernels identical.
+  See measurement-audit.json and literal-private-public-comparison.json.
+
+Final public include surface
+  kernel_scan_lookahead.cuh includes public <cuda/experimental/coop/algorithm>
+  instead of the private shuffle implementation header.
+  All current sources pass the private-group-type/member/include audit.
+  Full scan-header clang-tidy host/device and pre-commit pass.
+  Both compiler auxiliary matrices were rebuilt and rerun after this change;
+  latest existing CUB scan and RLE suites pass again with unchanged totals.
+  Fresh full shader comparison: all kernel instructions unchanged.
+  Broader public umbrella adds only unused module data, not instructions or
+  per-kernel registers/shared memory/barriers.
+  Pre-include-change cohort is archived in results/pre-public-algorithm-header.
+
+Actual final public-header cohort
+  After the public algorithm-header replacement, all seven targeted GPU checks
+  were rebuilt and rerun: same 26,586 scan and 3,331 RLE assertions pass.
+  The actual final measured optional binary passes compute-sanitizer memcheck
+  again with ERROR SUMMARY: 0 errors (validation-public-api/memcheck-final.log).
+  Final cohort: 1,800 full timing records +600 focused records +12 NCU profiles.
+  Final per-kernel source/body audit and source/full/focus/profile SHA audit pass.
+  Main and optional totals remain 13,216 and 13,536 with identical private/public
+  scan instructions and operands; no stack/spills/indirect branches.
+
+Final integrated hooks and integrity
+  All 164 edited/report/result files pass applicable pre-commit hooks.
+  Log: build/lookahead-groups/validation-public-api/precommit-final.log
+  Post-hook audit: all live source and five measured binary hashes match;
+  full/focused/profile binaries match; git diff --check passes.

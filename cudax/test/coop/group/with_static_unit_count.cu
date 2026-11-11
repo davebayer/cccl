@@ -127,7 +127,11 @@ struct UniformKernel
 
     {
       const cudax::coop::generic_group group{
-        cuda::warp, parent, static_mapping, cudax::coop::barrier_synchronizer{barriers}};
+        cuda::warp,
+        parent,
+        static_mapping,
+        cudax::coop::barrier_synchronizer{barriers},
+      };
       test_uniform(group);
 
       // Changing to thread units must preserve any available static count.
@@ -141,7 +145,11 @@ struct UniformKernel
     // Repeat with a runtime unit count and the same synchronization mechanism.
     {
       const cudax::coop::generic_group group{
-        cuda::warp, parent, cudax::coop::group_by{2}, cudax::coop::barrier_synchronizer{barriers}};
+        cuda::warp,
+        parent,
+        cudax::coop::group_by{2},
+        cudax::coop::barrier_synchronizer{barriers},
+      };
       test_uniform(group);
     }
   }
@@ -186,7 +194,7 @@ __device__ void test_nonuniform(const Group& group, unsigned units_per_warp)
   unsigned calls      = 0;
 
   // Capture the address to avoid older NVCC's false dangling-reference diagnostic.
-  auto callback = [&, calls_ptr = &calls](auto view) -> unsigned& {
+  auto callback = [&, calls_ptr = &calls](auto view) mutable -> unsigned& {
     ++*calls_ptr;
 
     constexpr auto unit  = Unit{};
@@ -225,7 +233,7 @@ __device__ void test_nonuniform(const Group& group, unsigned units_per_warp)
 
 // Split four warps into groups of one, two, and one warp, exercising all dispatch
 // positions and two groups that share the same static unit count.
-template <class Config, class Counts>
+template <cuda::std::size_t NumGroups, class Config, class Counts>
 __device__ void test_nonuniform_groups(Config config, Counts counts)
 {
   const cudax::coop::this_block parent{config};
@@ -234,16 +242,16 @@ __device__ void test_nonuniform_groups(Config config, Counts counts)
   // Check nonuniform mappings while retaining the parent block synchronizer.
   const cudax::coop::virtual_group virtual_group{cuda::warp, parent, mapping};
   test_nonuniform(virtual_group, 1);
-  CHECK(virtual_group.count(parent) == 3);
+  CHECK(virtual_group.count(parent) == NumGroups);
 
   const cudax::coop::group_view threads{cuda::gpu_thread, virtual_group};
   test_nonuniform(threads, 32);
 
   // Repeat with independent barriers for the three groups.
-  auto& barriers = get_barriers<3>(cuda::warp);
+  auto& barriers = get_barriers<NumGroups>(cuda::warp);
   const cudax::coop::generic_group group{cuda::warp, parent, mapping, cudax::coop::barrier_synchronizer{barriers}};
   test_nonuniform(group, 1);
-  CHECK(group.count(parent) == 3);
+  CHECK(group.count(parent) == NumGroups);
 
   const cudax::coop::group_view group_threads{cuda::gpu_thread, group};
   test_nonuniform(group_threads, 32);
@@ -262,14 +270,14 @@ struct NonuniformKernel
   __device__ void operator()(Config config) const
   {
     // Integer sequences retain per-group static counts in C++17 and newer.
-    test_nonuniform_groups(config, cuda::std::integer_sequence<int, 1, 2, 1>{});
+    test_nonuniform_groups<3>(config, cuda::std::integer_sequence<int, 1, 2, 1>{});
 
 #if _CCCL_STD_VER >= 2020
     // All groups must finish before the next case reuses their barrier storage.
     cudax::coop::this_block{config}.sync();
 
     // Compile-time ranges must provide the same dispatch through cw.
-    test_nonuniform_groups(config, cuda::std::cw<cuda::std::array{1, 2, 1}>);
+    test_nonuniform_groups<3>(config, cuda::std::cw<cuda::std::array{1, 2, 1}>);
 #endif // _CCCL_STD_VER >= 2020
   }
 };
@@ -301,6 +309,46 @@ struct ForwardedCallable
     return calls;
   }
 };
+
+struct OddNonuniformKernel
+{
+  template <class Config>
+  __device__ void operator()(Config config) const
+  {
+    // An odd number of groups covers both halves and the final leaf of the
+    // dispatch tree, including repeated counts at different group ranks.
+    const cuda::std::integer_sequence<int, 1, 2, 1, 2, 1> counts{};
+    test_nonuniform_groups<5>(config, counts);
+
+    const cudax::coop::this_block parent{config};
+    const cudax::coop::virtual_group group{cuda::warp, parent, cudax::coop::group_as{counts}};
+
+    // The tree must preserve value, reference, and void returns while invoking
+    // an rvalue-only, noncopyable callable exactly once.
+    unsigned calls = 0;
+    ForwardedCallable callable{calls};
+    static_assert(cuda::std::is_same_v<decltype(group.with_static_unit_count(cuda::std::move(callable))), unsigned&>);
+    CHECK(&group.with_static_unit_count(cuda::std::move(callable)) == &calls);
+    CHECK(calls == 1);
+
+    group.with_static_unit_count([&](auto) {
+      ++calls;
+    });
+    CHECK(calls == 2);
+
+    const auto count = group.with_static_unit_count([](auto view) {
+      return cuda::warp.count(view);
+    });
+    CHECK(count == cuda::warp.count(group));
+  }
+};
+
+C2H_TEST("Static unit count dispatch for five nonuniform groups", "[with_static_unit_count]")
+{
+  const cuda::stream stream{cuda::devices[0]};
+  cuda::launch(stream, cuda::make_config(cuda::grid_dims<2>(), cuda::block_dims<224>()), OddNonuniformKernel{});
+  stream.sync();
+}
 
 struct CoalescedKernel
 {

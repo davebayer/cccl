@@ -1,0 +1,13 @@
+variant,reference,type,operation,elements,shift,rounds,overhead_percent,bootstrap_95_low_percent,bootstrap_95_high_percent
+prior_static_groups,baseline,float32,exclusive,1024,0,40,1.693395,1.592285,2.589507
+prior_static_groups,baseline,float32,exclusive,1048576,0,40,1.635788,1.518349,1.817862
+prior_static_groups_scan,baseline,float32,exclusive,1024,0,40,1.401817,1.132541,1.846431
+prior_static_groups_scan,baseline,float32,exclusive,1048576,0,40,2.714587,2.579132,2.950147
+static_groups,baseline,float32,exclusive,1024,0,40,-0.011215,-0.168218,0.428121
+static_groups,prior_static_groups,float32,exclusive,1024,0,40,-1.676224,-2.230769,-1.567329
+static_groups,baseline,float32,exclusive,1048576,0,40,-0.017589,-0.328311,0.023459
+static_groups,prior_static_groups,float32,exclusive,1048576,0,40,-1.626767,-1.993317,-1.535797
+static_groups_scan,baseline,float32,exclusive,1024,0,40,0.000000,-0.291545,0.450653
+static_groups_scan,prior_static_groups_scan,float32,exclusive,1024,0,40,-1.382438,-1.680301,-1.108893
+static_groups_scan,baseline,float32,exclusive,1048576,0,40,0.310741,0.134850,0.381142
+static_groups_scan,prior_static_groups_scan,float32,exclusive,1048576,0,40,-2.340316,-2.605919,-2.217396

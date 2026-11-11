@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "raw_full_records": 1800,
+  "raw_focused_records": 400,
+  "profile_records": 9,
+  "final_squad_header_sha256": "9c637aff8161166c8006a4dd243b29f238ac39167f0143b60b07fb8d2f2f95a5",
+  "harness_sha256": "61c4e56e3f4e269e46523bff7ea7790323038643923eeb324cb15076d08e5d7a",
+  "runner_sha256": "922241645c230e9e67a4037a3641e83a3015f34c30e3847390283fbdd888ff18",
+  "binary_sha256": {
+    "baseline": "57fa6ac5886ee7b1e74e31c601902b5909571e9ebe40c0557d46bfbd781315e2",
+    "prior_static_groups": "056589435c915e594bac4eb64ae15063d647254f56b434745bc4417930bec5b3",
+    "prior_static_groups_scan": "449d45004a4e16dd07a67e3c9fbecea28b7cef9f1827c342e2a4076e4774edd0",
+    "static_groups": "a7d12f1a8bb7843bb99361ae10012dc0b5cf5af77effd19241d3ab4b5d0e85c7",
+    "static_groups_scan": "28017076836226fdd61ec9c3d2f65a4f8ee6899aecdf2ee9744fdafdd3bed230"
+  }
+}

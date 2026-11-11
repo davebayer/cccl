@@ -1,0 +1,19 @@
+Benchmark tooling validation
+
+PASS: strict clang-tidy 23 host and device checks for edited scan.cu with all experiment macros, C++17, SM120, --warnings-as-errors=*.
+clang-tidy-23 cub/benchmarks/experiments/lookahead_groups/scan.cu --quiet '--warnings-as-errors=*' -- --cuda-device-only -x cuda --cuda-gpu-arch=sm_120 --cuda-path=/usr/local/cuda-13.5 -std=c++17 -D_CCCL_CLANG_TIDY_INVOKED=1 -Wno-unknown-cuda-version -D_CUDAX_ENABLE_GROUP_FEATURES_IN_LIBCUDACXX -D_CUB_WARPSPEED_USE_CUDAX_GROUPS -D_CUB_WARPSPEED_USE_STATIC_CUDAX_GROUPS -D_CUB_LOOKAHEAD_USE_CUDAX_SCAN -Ilibcudacxx/include -Icub -Ithrust -Icudax/include
+clang-tidy-23 cub/benchmarks/experiments/lookahead_groups/scan.cu --quiet '--warnings-as-errors=*' -- --cuda-host-only -x cuda --cuda-gpu-arch=sm_120 --cuda-path=/usr/local/cuda-13.5 -std=c++17 -D_CCCL_CLANG_TIDY_INVOKED=1 -Wno-unknown-cuda-version -D_CUDAX_ENABLE_GROUP_FEATURES_IN_LIBCUDACXX -D_CUB_WARPSPEED_USE_CUDAX_GROUPS -D_CUB_WARPSPEED_USE_STATIC_CUDAX_GROUPS -D_CUB_LOOKAHEAD_USE_CUDAX_SCAN -Ilibcudacxx/include -Icub -Ithrust -Icudax/include
+
+PASS: full pre-commit for benchmark.py, scan.cu and both portable reference fixtures (including Ruff, clang-format, secret scan).
+PASS: portable references reconstruct all selected historical header bytes exactly.
+PASS: stale source, changed snapshot contents and duplicate selected cases are rejected.
+PASS: known-ratio bootstrap sanity check: candidate=2*baseline gives 100% point/interval.
+PASS: SASS parser reproduced archived 13216 baseline / 13472 prior totals before final run.
+PASS: default-current versus pristine baseline comparison has 13216 instructions each with only 8 signedness substitutions; final baseline binary SHA256 matches the control audit.
+PASS: authoritative final preflight baseline 13216, prior 13472/13824, current 13448/13808; no BRX/BRXU, no stack/spills.
+
+Compiler subprocesses use a private TMPDIR and explicit GCC 13, avoiding shared /tmp collisions from sandbox namespace PID reuse.
+
+PASS: final rank-only 5-variant full matrix: 10 balanced rotating/reversed process rounds, 1800 timing records, 180 case summaries; all process correctness checks passed.
+PASS: focused float32 exclusive 1K/1M repetition: 40 balanced rounds, 400 timing records, 10 summaries, paired-round bootstrap confidence intervals.
+PASS: final measured baseline/prior/rank-only Nsight Compute diagnostics at 1K/1M/64M; 9 profiles, no clock/cache control.

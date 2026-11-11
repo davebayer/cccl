@@ -1,0 +1,16 @@
+variant,type,operation,elements,shift,median_us,min_round_us,max_round_us,speedup
+baseline,float32,exclusive,1024,0,2.232250,2.216000,2.251000,1.000000
+baseline,float32,exclusive,65536,0,3.319000,3.285500,3.380500,1.000000
+baseline,float32,exclusive,1048576,0,4.279500,4.237000,4.334000,1.000000
+private_groups,float32,exclusive,1024,0,2.241500,2.217000,2.261500,0.995873
+private_groups,float32,exclusive,65536,0,3.349000,3.303500,3.413000,0.991042
+private_groups,float32,exclusive,1048576,0,4.279250,4.248500,4.326000,1.000058
+private_groups_scan,float32,exclusive,1024,0,2.246500,2.216000,2.262000,0.993657
+private_groups_scan,float32,exclusive,65536,0,3.342000,3.303000,3.413500,0.993118
+private_groups_scan,float32,exclusive,1048576,0,4.280500,4.261000,4.309500,0.999766
+static_groups,float32,exclusive,1024,0,2.245750,2.217000,2.262000,0.993989
+static_groups,float32,exclusive,65536,0,3.349000,3.302500,3.406000,0.991042
+static_groups,float32,exclusive,1048576,0,4.278250,4.250000,4.327500,1.000292
+static_groups_scan,float32,exclusive,1024,0,2.242750,2.221000,2.261000,0.995318
+static_groups_scan,float32,exclusive,65536,0,3.350000,3.299500,3.417500,0.990746
+static_groups_scan,float32,exclusive,1048576,0,4.280500,4.268500,4.312500,0.999766

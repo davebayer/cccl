@@ -1,0 +1,11 @@
+variant,type,operation,elements,shift,median_us,min_round_us,max_round_us,speedup
+baseline,float32,exclusive,1024,0,2.229500,2.214500,2.245000,1.000000
+baseline,float32,exclusive,1048576,0,4.267250,4.247500,4.296000,1.000000
+prior_static_groups,float32,exclusive,1024,0,2.273750,2.262000,2.286000,0.980539
+prior_static_groups,float32,exclusive,1048576,0,4.330750,4.311000,4.345000,0.985337
+prior_static_groups_scan,float32,exclusive,1024,0,2.263750,2.248000,2.312500,0.984870
+prior_static_groups_scan,float32,exclusive,1048576,0,4.380500,4.362500,4.394000,0.974147
+static_groups,float32,exclusive,1024,0,2.278250,2.261500,2.281000,0.978602
+static_groups,float32,exclusive,1048576,0,4.313250,4.297000,4.332500,0.989335
+static_groups_scan,float32,exclusive,1024,0,2.249250,2.246000,2.267000,0.991219
+static_groups_scan,float32,exclusive,1048576,0,4.311500,4.293000,4.329500,0.989737

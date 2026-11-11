@@ -327,6 +327,83 @@ __device__ void test_static_previous_mappings(Config config)
   CHECK(dynamic_result.unit_count() == (dynamic_prev.unit_rank() < 4 ? 4 : 12));
 }
 
+// Compare compile-time selection with runtime selection for the same previous mapping.
+template <bool Exhaustive, class Config, class Prev, cuda::std::size_t... Counts>
+__device__ void test_static_selection(Config config, const Prev& prev, cuda::std::index_sequence<Counts...> counts)
+{
+  const cudax::coop::this_warp parent{config};
+  const cudax::coop::group_as static_mapping{counts};
+  constexpr cuda::std::array runtime_counts{static_cast<unsigned>(Counts)...};
+  const cudax::coop::group_as runtime_mapping{runtime_counts};
+  const auto result    = map_group_as<Exhaustive>(static_mapping, parent, prev);
+  const auto reference = map_group_as<Exhaustive>(runtime_mapping, parent, prev);
+  using Result         = decltype(result);
+
+  static_assert(Result::is_always_exhaustive() == Exhaustive);
+  static_assert(Result::is_always_contiguous() == Prev::is_always_contiguous());
+  static_assert(Result::static_group_count() == Prev::static_group_count() * sizeof...(Counts));
+  static_assert([] {
+    constexpr cuda::std::array expected{Counts...};
+    for (cuda::std::size_t i = 0; i < Result::static_group_count(); ++i)
+    {
+      if (Result::static_unit_count(i) != expected[i % expected.size()])
+      {
+        return false;
+      }
+    }
+    return true;
+  }());
+
+  CHECK(result.is_valid() == reference.is_valid());
+  if (result.is_valid())
+  {
+    CHECK(result.group_count() == reference.group_count());
+    CHECK(result.group_rank() == reference.group_rank());
+    CHECK(result.unit_count() == reference.unit_count());
+    CHECK(result.unit_rank() == reference.unit_rank());
+    CHECK(result.lane_mask() == reference.lane_mask());
+  }
+}
+
+template <class Config>
+__device__ void test_static_selection_boundaries(Config config)
+{
+  const ThreadsInWarpMappingResult prev;
+  // Repeated prefix sums must skip empty slots without renumbering the groups.
+  using EmptySlots = cuda::std::index_sequence<0, 0, 3, 0, 5, 0, 0, 24, 0>;
+  test_static_selection<true>(config, prev, EmptySlots{});
+  test_static_selection<false>(config, prev, EmptySlots{});
+  test_static_selection<false>(config, prev, cuda::std::index_sequence<0, 0, 0, 0, 0>{});
+  test_static_selection<false>(config, prev, cuda::std::index_sequence<0, 2, 0, 3, 0>{});
+  test_static_selection<true>(config, prev, cuda::std::index_sequence<1, 2, 3, 4, 22>{});
+  test_static_selection<true>(
+    config,
+    prev,
+    cuda::std::
+      index_sequence<1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1>{});
+
+  const auto lane = cuda::gpu_thread.rank_as<unsigned>(cuda::warp);
+  // Interleaved previous groups exercise rank-based selection with noncontiguous masks.
+  using Interleaved = cudax::coop::__mapping_result<cudax::coop::__uniform_static_unit_count<2, 16>, true, false>;
+  const unsigned parity_masks[]{0x55555555u, 0xaaaaaaaau};
+  const Interleaved interleaved{2, lane % 2, 16, lane / 2, cuda::device::lane_mask{parity_masks[lane % 2]}};
+  test_static_selection<true>(config, interleaved, cuda::std::index_sequence<0, 3, 0, 5, 8, 0>{});
+  test_static_selection<false>(config, interleaved, cuda::std::index_sequence<1, 0, 2, 0, 3>{});
+
+  // Different previous group sizes retain repeated static metadata and exclusion.
+  const cudax::coop::this_warp parent{config};
+  const auto nonuniform =
+    cudax::coop::group_as{cuda::std::index_sequence<4, 12, 16>{}}.map(cuda::gpu_thread, parent, prev);
+  test_static_selection<false>(config, nonuniform, cuda::std::index_sequence<0, 1, 0, 3, 0>{});
+  const auto partial =
+    cudax::coop::take{cuda::std::cw<16>}.map(cudax::coop::non_exhaustive, cuda::gpu_thread, parent, prev);
+  if (partial.is_valid())
+  {
+    test_static_selection<true>(config, partial, cuda::std::index_sequence<0, 3, 5, 8, 0>{});
+  }
+  test_static_selection<false>(config, partial, cuda::std::index_sequence<0, 1, 0, 3, 0>{});
+}
+
 struct TestKernel
 {
   template <class Config>
@@ -376,6 +453,7 @@ struct TestKernel
     test_static_composition(config);
     test_static_group_as_special_cases(config);
     test_static_previous_mappings(config);
+    test_static_selection_boundaries(config);
   }
 };
 } // namespace

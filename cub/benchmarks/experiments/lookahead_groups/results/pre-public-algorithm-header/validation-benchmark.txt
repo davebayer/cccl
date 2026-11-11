@@ -1,0 +1,69 @@
+Public group API benchmark validation, 2026-11-11
+
+Reference isolation and portability: PASS
+  Original CUB baseline: 24ee635e35caa47b1602e129e49cea60db8b4f05.
+  The complete private adapter dependency snapshot contains 2,907 headers:
+    CUB, CUDAX, libcu++, and Thrust.
+  Frozen before product edits, with its original harness, runner, data and binaries:
+    build/lookahead-groups/public-api-before/
+  private-before-public.patch reconstructs that snapshot from the pinned baseline
+  revision. All 2,907 file contents compare byte-for-byte; no private reference
+  depends on current public group implementation headers.
+  Reference manifest SHA256: ea64e38c6527e1a9016387f2d4b9b40f6b8279b4857ffa65d3729ad26477b1c2
+  Portable private fixture SHA256: 09695c5b691ba987e1866d2f69d49bb347b46e1851a24e29049385aa70fa116f
+
+Compiler/provenance checks: PASS
+  Latest installed CUDA13.5.37 + explicit /usr/bin/g++-13 (13.3), C++17,
+    -O3 -arch=sm_120 -lineinfo; private TMPDIR per nvcc invocation.
+  All current CUB/CUDAX/libcu++/Thrust headers, harness, runner and private fixture
+  are hashed before and after compilation and timing (2,910 files).
+  Immutable snapshots reject content changes and added/deleted headers.
+  Known-ratio synthetic checks verify private/public comparison ratios and paired
+  bootstrap intervals. Private materialization is independent of current headers.
+  Runner + fixture + preserved historical report pre-commit checks pass.
+  Logs: build/lookahead-groups/public-api-before/precommit-tooling.log
+
+Authoritative final code generation: PASS
+  Baseline 13,216; private main 13,216; public main 13,216 SASS instructions.
+  Private optional 13,536; public optional 13,536.
+  All eight public main kernels and eight public optional kernels have exactly
+  the same normalized instructions, opcodes and operands as the corresponding
+  freshly rebuilt private controls. No additional device work comes from the
+  public API integration.
+  All 40 scan resource rows have zero stack and zero spill loads/stores;
+  all five binaries have no indirect branches.
+  Literal comparison: build/lookahead-groups/public-api-final/literal-private-public-comparison.json
+  Current default versus original CUB: 13,216 instructions each, identical order,
+  exactly eight previously known signedness substitutions and no inserted/deleted
+  instructions. Details: build/lookahead-groups/public-api-final/control/.
+
+Rejected probe evidence is separate from final product/data
+  public-cub-rank-timing: 20 paired rounds, 180 validated measurements;
+    subtracting a derived origin removes instructions but trades 1K improvement
+    for 1M regression and does not reduce the 65K gap.
+  public-cub-mask-timing: same protocol; mask version has an uncertain 65K gain
+    and retains significant baseline overhead. It was not adopted.
+  public-cub-singleton-probe: normalized instructions identical to the plain
+    public implementation; core experiment was reverted before final builds.
+  Probe headers/binaries are frozen in build/lookahead-groups/ with manifests;
+  no probe implementation is included in final product sources.
+
+Final measured artifacts: PASS
+  Full matrix: 10 rotating/reversed process rounds, 1,800 raw records,
+  180 summaries. All process correctness checks passed.
+  Focused float32 exclusive1K/65K/1M: 40 rotating/reversed rounds, 600 records,
+  15 summaries. All process correctness checks passed.
+  Nsight Compute: 12 profiles, baseline/private/public at1K/65K/1M/64M.
+  Clock control and cache control are disabled.
+  Full and focused binary hashes are identical; all profiled binary hashes match
+  the measured binaries. All 2,910 source files, harness and runner are unchanged.
+  Private reference contains exactly the frozen 2,907 files and identical bytes.
+  Detailed audit: measurement-audit.json.
+  Raw profiler files and exact commands: build/lookahead-groups/public-api-final/ncu/
+  Build/provenance/resource logs: build/lookahead-groups/public-api-final/
+
+Final owned lint/style checks: PASS
+  pre-commit on runner, portable fixture, historical report and every generated
+  final/focused public API data artifact (27 files); no formatter mutations.
+  Log: build/lookahead-groups/public-api-final/precommit-final.log
+  No source or binary hashes changed after measured-artifact audit.

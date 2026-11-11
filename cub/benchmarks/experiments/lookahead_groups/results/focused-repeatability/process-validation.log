@@ -1,0 +1,1999 @@
+round 0, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 0, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 0, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 0, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 0, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 0, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 0, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 0, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 0, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 0, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 1, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 1, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 1, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 1, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 1, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 1, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 1, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 1, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 1, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 1, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 2, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 2, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 2, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 2, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 2, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 2, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 2, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 2, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 2, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 2, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 3, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 3, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 3, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 3, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 3, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 3, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 3, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 3, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 3, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 3, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 4, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 4, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 4, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 4, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 4, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 4, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 4, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 4, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 4, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 4, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 5, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 5, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 5, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 5, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 5, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 5, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 5, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 5, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 5, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 5, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 6, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 6, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 6, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 6, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 6, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 6, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 6, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 6, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 6, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 6, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 7, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 7, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 7, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 7, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 7, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 7, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 7, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 7, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 7, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 7, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 8, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 8, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 8, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 8, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 8, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 8, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 8, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 8, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 8, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 8, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 9, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 9, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 9, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 9, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 9, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 9, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 9, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 9, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 9, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 9, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 10, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 10, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 10, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 10, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 10, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 10, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 10, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 10, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 10, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 10, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 11, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 11, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 11, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 11, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 11, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 11, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 11, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 11, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 11, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 11, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 12, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 12, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 12, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 12, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 12, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 12, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 12, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 12, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 12, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 12, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 13, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 13, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 13, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 13, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 13, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 13, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 13, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 13, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 13, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 13, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 14, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 14, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 14, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 14, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 14, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 14, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 14, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 14, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 14, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 14, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 15, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 15, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 15, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 15, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 15, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 15, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 15, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 15, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 15, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 15, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 16, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 16, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 16, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 16, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 16, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 16, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 16, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 16, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 16, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 16, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 17, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 17, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 17, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 17, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 17, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 17, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 17, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 17, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 17, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 17, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 18, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 18, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 18, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 18, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 18, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 18, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 18, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 18, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 18, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 18, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 19, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 19, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 19, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 19, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 19, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 19, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 19, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 19, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 19, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 19, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 20, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 20, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 20, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 20, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 20, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 20, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 20, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 20, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 20, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 20, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 21, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 21, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 21, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 21, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 21, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 21, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 21, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 21, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 21, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 21, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 22, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 22, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 22, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 22, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 22, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 22, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 22, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 22, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 22, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 22, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 23, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 23, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 23, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 23, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 23, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 23, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 23, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 23, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 23, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 23, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 24, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 24, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 24, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 24, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 24, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 24, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 24, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 24, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 24, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 24, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 25, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 25, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 25, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 25, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 25, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 25, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 25, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 25, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 25, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 25, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 26, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 26, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 26, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 26, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 26, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 26, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 26, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 26, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 26, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 26, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 27, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 27, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 27, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 27, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 27, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 27, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 27, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 27, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 27, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 27, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 28, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 28, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 28, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 28, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 28, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 28, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 28, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 28, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 28, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 28, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 29, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 29, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 29, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 29, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 29, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 29, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 29, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 29, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 29, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 29, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 30, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 30, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 30, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 30, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 30, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 30, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 30, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 30, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 30, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 30, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 31, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 31, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 31, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 31, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 31, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 31, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 31, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 31, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 31, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 31, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 32, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 32, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 32, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 32, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 32, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 32, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 32, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 32, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 32, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 32, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 33, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 33, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 33, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 33, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 33, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 33, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 33, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 33, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 33, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 33, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 34, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 34, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 34, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 34, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 34, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 34, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 34, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 34, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 34, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 34, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 35, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 35, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 35, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 35, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 35, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 35, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 35, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 35, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 35, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 35, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 36, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 36, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 36, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 36, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 36, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 36, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 36, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 36, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 36, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 36, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 37, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 37, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 37, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 37, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 37, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 37, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 37, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 37, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 37, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 37, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 38, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 38, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 38, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 38, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 38, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 38, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 38, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 38, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 38, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 38, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 39, static_groups, ['float32', 'exclusive', '1024']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 39, static_groups, ['float32', 'exclusive', '1048576']
+static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 39, prior_static_groups_scan, ['float32', 'exclusive', '1024']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 39, prior_static_groups_scan, ['float32', 'exclusive', '1048576']
+prior_static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 39, prior_static_groups, ['float32', 'exclusive', '1024']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 39, prior_static_groups, ['float32', 'exclusive', '1048576']
+prior_static_groups: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 39, baseline, ['float32', 'exclusive', '1024']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 39, baseline, ['float32', 'exclusive', '1048576']
+baseline: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 39, static_groups_scan, ['float32', 'exclusive', '1024']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed
+
+round 39, static_groups_scan, ['float32', 'exclusive', '1048576']
+static_groups_scan: NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM 12.0, CUDA 13050, C++ 201703
+device_properties: l2_cache_bytes=134217728 multiprocessor_count=188 shared_memory_per_multiprocessor_bytes=102400
+selected case correctness checks passed

@@ -80,7 +80,8 @@ struct SmemRef
     return mSmemResourceRaw.ptrCurBarrierRelease(mCurPhase);
   }
 
-  _CCCL_DEVICE_API void squadIncreaseTxCount(const Squad& squad, int txCount)
+  template <typename SquadT>
+  _CCCL_DEVICE_API void squadIncreaseTxCount(const SquadT& squad, int txCount)
   {
     mTxCountIsSet = true;
     // Only leader thread increments txCount

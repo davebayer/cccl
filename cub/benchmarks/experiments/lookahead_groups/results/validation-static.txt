@@ -1,0 +1,115 @@
+Static-count follow-up validation, 2026-11-11
+
+Environment
+  NVIDIA RTX PRO 6000 Blackwell Workstation Edition, SM120.
+  All GPU executions used the RTX PRO 6000 outside the sandbox.
+  Latest compiler: nvcc 13.5.37 + GCC 13.3.0, C++17, -arch=sm_120.
+  Compatibility compiler: nvcc 12.0.76 + g++-7, C++17, compute_90 PTX JIT.
+  clang-tidy 23.1.6, repository .clang-tidy configuration.
+
+Experiment definitions
+  -D_CUDAX_ENABLE_GROUP_FEATURES_IN_LIBCUDACXX
+  -D_CUB_WARPSPEED_USE_CUDAX_GROUPS
+  -D_CUB_WARPSPEED_USE_STATIC_CUDAX_GROUPS
+  -D_CUB_LOOKAHEAD_USE_CUDAX_SCAN
+  The early cudax feature definition is supplied on the compiler command line.
+  The focused squad test does not need the final scan definition.
+
+Results
+  PASS: final implementation after adding _CCCL_FORCEINLINE_LAMBDA to the
+        with_static_unit_count callback: 26,586 assertions in 12 existing
+        Catch2 scan test cases, RNG seed 42:
+          catch2_test_device_scan_alignment.cu
+          catch2_test_device_scan_deterministic.cu
+          catch2_test_device_scan_noncommutative.cu
+          catch2_test_device_exclusive_scan_noncommutative.cu
+        This repeats the full suite after the optimization changed generated code,
+        including floating-point run-to-run reproducibility and host references.
+  PASS: shifted-output regression with latest compiler and CUDA 12.0/GCC 7.
+  PASS: focused squad.cu with both compiler toolchains.
+        The same binary checks the static exhaustive [1,3,2,1]-warp layout and
+        existing dynamic full/subrange layouts, including prefix/suffix warps.
+        Compile-time assertions check that the typed wrapper's warp/thread sizes
+        are constant and agree with cuda::warp.static_count(squad.mGroup).
+        Runtime checks cover local thread/warp/lane ranks, one elected leader
+        per warp/squad, and eight repeated shared-memory synchronization rounds.
+  PASS: focused warp_scan.cu for every valid-lane count 0..32 across 12 physical
+        warps, integer addition and noncommutative affine composition without a
+        registered identity, and no operator calls on invalid destination lanes.
+  PASS: full scan.cu correctness-only harness with CUDA 12.0/GCC 7.
+  PASS: shared-consumer RLE smoke using the existing group-backed lookahead RLE
+        path and generalized shared-memory/bulk-copy interfaces.
+        Sizes 0,1,31,33,4097,1000003; shifted buffers, unique keys, run lengths,
+        run counts and guards checked. The small lookahead policy is the same as
+        in validation.txt. RLE still uses dynamic squad dispatch; this is not a
+        static-dispatch RLE test or an RLE performance measurement.
+  PASS: full edited product-header clang-tidy, host-only and device-only SM120,
+        after the final callback inlining change. Header filter covers:
+          cub/detail/warpspeed/squad/squad.cuh
+          cub/detail/warpspeed/squad/group.cuh
+          cub/detail/warpspeed/squad/load_store.cuh
+          cub/detail/warpspeed/resource/smem_ref.cuh
+          cub/device/dispatch/kernels/kernel_scan_lookahead.cuh
+        No changed-line filter or new check suppressions were used.
+  PASS: clang-tidy on scan.cu, squad.cu and warp_scan.cu with all static experiment
+        definitions, device-only SM120 parsing.
+  PASS: final measured static_groups_scan-scan binary under compute-sanitizer
+        memcheck, correctness-only mode, ERROR SUMMARY: 0 errors.
+        The harness reported lookahead selection for int32/float32/float64 sums
+        and the forced three-warp affine operation before validating outputs.
+
+Compatibility limit
+  CUDA 12.0 cannot target SM120 or compile the PTX ISA 8.6 lookahead body.
+  Its full scan harness and shifted-output test therefore validate header/legacy
+  scan compatibility, not lookahead execution. The separate squad.cu binary
+  actually instantiates static group_as/index_sequence and with_static_unit_count
+  on compute_90 PTX and executes the new adapter through the driver's JIT.
+
+Clang-tidy frontend note
+  Clang 23 officially recognizes CUDA Toolkit versions through 13.2, while these
+  checks parse the installed 13.5 headers with PTX ISA 9.2. Only its
+  unknown-toolkit-version warning is disabled. Repository checks stay enabled.
+  The pre-existing, specifically documented mutable-SmemRef template false
+  positive suppression in store_tile is described in validation.txt.
+
+Commands and local artifacts
+  Common include arguments:
+    -Ilibcudacxx/include -Icub -Ithrust -Icudax/include
+
+  Latest focused static/dynamic squads (plus common includes and first three
+  experiment definitions listed above):
+    /usr/local/cuda-13.5/bin/nvcc -std=c++17 -O3 -arch=sm_120 \
+      cub/benchmarks/experiments/lookahead_groups/squad.cu \
+      -o build/lookahead-groups/validation-static/squad-latest
+    build/lookahead-groups/validation-static/squad-latest
+
+  CUDA 12.0 focused static/dynamic squads (same includes/definitions):
+    /usr/local/cuda-12.0/bin/nvcc -ccbin=g++-7 -std=c++17 -O3 \
+      -gencode=arch=compute_90,code=compute_90 \
+      cub/benchmarks/experiments/lookahead_groups/squad.cu \
+      -o build/lookahead-groups/validation-static/squad-cuda12
+    build/lookahead-groups/validation-static/squad-cuda12
+
+  Existing Catch2 suite, all four definitions:
+    python3 build/lookahead-groups/validation-static/build_tests.py
+    build/lookahead-groups/validation-static/scan-catch2 --reporter compact --rng-seed 42
+    The local script reuses existing build/cudax-cpp20 C2H/Catch2 libraries.
+    Exact per-source compiler and linker commands are in the compile-*.log and
+    link.log files in the validation-static directory.
+
+  Memcheck of the final benchmark binary:
+    /usr/local/cuda-13.5/bin/compute-sanitizer --tool memcheck --error-exitcode 1 \
+      build/lookahead-groups/static_groups_scan-scan --correctness-only
+
+  Full header tidy, all definitions and common include arguments:
+    clang-tidy build/lookahead-groups/validation-static/tidy_product.cu --quiet \
+      --header-filter='cub/cub/(detail/warpspeed/(squad/(squad|group|load_store)|resource/smem_ref)|device/dispatch/kernels/kernel_scan_lookahead)[.]cuh' \
+      --system-headers -- -x cuda --cuda-device-only --cuda-gpu-arch=sm_120 \
+      --cuda-path=/usr/local/cuda-13.5 -std=c++17 \
+      -D_CCCL_CLANG_TIDY_INVOKED=1 -Wno-unknown-cuda-version
+    Repeated with --cuda-host-only; the local TU instantiates int ExclusiveScan.
+
+  Ignored local binaries, source fixtures, exact commands, and complete logs:
+    build/lookahead-groups/validation-static/
+  Earlier dynamic experiment validation remains in validation.txt and
+  build/lookahead-groups/validation/.

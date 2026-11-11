@@ -1,0 +1,53 @@
+Public group view API validation, 2026-11-11
+
+Implemented public APIs:
+  group_view_t<Unit, Group>: host-side type query without a device function body.
+  view.with_static_unit_count<N>(): checked explicit compile-time count refinement.
+  view.with_unit_rank(rank): checked equivalent cached rank, preserving mapping state.
+  View::static_unit_count(): host/device constexpr query, dynamic_extent when unknown.
+  Refinement keeps the original underlying group type and synchronizer; no nesting
+  or additional instance state. Nonexhaustive invalid views remain invalid.
+
+Compatibility fix:
+  this_group, virtual_group, generic_group and coalesced_group rank return types
+  are explicit, matching the pre-existing __product_type result exactly. This
+  permits namespace-scope view types in nvcc's host pass. Mapping-result type
+  computation is a pure trait rather than decltype of an auto device function.
+
+PASS: C++17 nvcc 13.5.37 + explicit /usr/bin/g++-13, -O3 -arch=sm_120.
+PASS: C++17 nvcc 12.0.76 + explicit /usr/bin/g++-7,
+      -O3 -gencode=arch=compute_90,code=compute_90.
+Both matrices define CCCL_ENABLE_ASSERTIONS and _CCCL_NO_SYSTEM_HEADER.
+Each nvcc invocation uses a private TMPDIR.
+
+PASS on RTX PRO 6000 outside sandbox, both compiler matrices:
+  group_view.cu: all three C2H cases, including new refinement semantics;
+    namespace-scope aliases/static queries for warp/thread/block/grouped views;
+    native warp/block/grid/cluster synchronization through refined views;
+    dynamic counts made static, unequal static partitions, cached ranks;
+    noncontiguous interleaved lane masks and native lane synchronization;
+    invalid nonexhaustive uniform and nonuniform sentinel propagation;
+    idempotent refinements and type flattening; original metadata/public queries.
+  with_static_unit_count.cu: all four existing C2H cases, including native synchronization,
+    unequal-count callback specialization, noncopyable callbacks and exact
+    reference/value/void return semantics.
+
+PASS: all five edited headers, full host-only and device-only clang-tidy 23,
+      --system-headers, no changed-line filter, repository checks enabled.
+PASS: complete group_view.cu device-only clang-tidy 23.
+      -Wno-unknown-cuda-version permits installed CUDA 13.5 headers.
+PASS: all applicable pre-commit hooks for all six owned files and git diff --check.
+
+Commands and logs:
+  python3 build/lookahead-groups/public-group-api/build_tests.py
+  python3 build/lookahead-groups/public-group-api/build_static_tests.py
+  Exact commands are the first line of each *-build.log.
+  group-view-{latest,cuda12} --reporter compact --rng-seed 42
+  static-count-{latest,cuda12} --reporter compact --rng-seed 42
+  Corresponding *-run.log files record successful GPU checks.
+  python3 build/lookahead-groups/public-group-api/run_tidy.py
+  tidy-header-{host,device}.log and tidy-test-device.log contain exact commands.
+  precommit-final.log records the complete final hook pass.
+  final-source-sha256.json pins all five headers and amended test.
+
+No Git index writes were performed. No product changes are pending.

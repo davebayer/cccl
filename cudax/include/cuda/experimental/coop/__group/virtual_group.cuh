@@ -60,7 +60,8 @@ template <class _Unit, class _ParentGroup>
     /*initial group rank*/ 0,
     ::cuda::experimental::coop::__count_query_group<::cuda::std::uint32_t, _Unit>(__parent_group),
     ::cuda::experimental::coop::__rank_query_group<::cuda::std::uint32_t, _Unit>(__parent_group),
-    __parent_group.__mapping_result().lane_mask()};
+    __parent_group.__mapping_result().lane_mask(),
+  };
 }
 
 template <class _Unit, class _MappingResult>
@@ -143,7 +144,7 @@ public:
   _CCCL_DEVICE_API explicit virtual_group(const _Unit& __unit, const _ParentGroup& __parent, _Mapping&& __mapping)
       : __hier_{__parent.hierarchy()}
       , __mapping_result_{::cuda::experimental::coop::__do_group_mapping(
-          __unit, __parent, ::cuda::std::forward<_Mapping>(__mapping))}
+          __unit, __parent, ::cuda::std::forward<_Mapping>(__mapping)),}
       , __synchronizer_instance_{__parent.__synchronizer_instance()}
   {
     _CCCL_ASSERT(__mapping_result_.is_valid(), "virtual_group requires all units to be part of the group");
@@ -255,7 +256,7 @@ public:
     return __rank_as_impl<_Tp>(__mapping_result_, __hier_, __parent);
   }
 
-  [[nodiscard]] _CCCL_DEVICE_API auto rank(const _ParentGroup& __parent) const
+  [[nodiscard]] _CCCL_DEVICE_API typename level_type::__product_type rank(const _ParentGroup& __parent) const
   {
     return __rank_as_impl<typename level_type::__product_type>(__mapping_result_, __hier_, __parent);
   }

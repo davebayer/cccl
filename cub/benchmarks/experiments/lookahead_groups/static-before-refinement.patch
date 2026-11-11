@@ -1,0 +1,98 @@
+--- cub/detail/warpspeed/squad/squad.cuh
++++ cub/detail/warpspeed/squad/squad.cuh
+@@ -196,19 +196 @@
+-template <::cuda::std::size_t End, ::cuda::std::size_t... Counts>
+-_CCCL_HOST_DEVICE_API constexpr ::cuda::std::size_t squad_static_prefix(::cuda::std::index_sequence<Counts...>)
+-{
+-  constexpr ::cuda::std::size_t values[]{Counts...};
+-  ::cuda::std::size_t prefix = 0;
+-  for (::cuda::std::size_t i = 0; i < End; ++i)
+-  {
+-    prefix += values[i];
+-  }
+-  return prefix;
+-}
+-
+-template <::cuda::std::size_t First,
+-          ::cuda::std::size_t Last,
+-          int NumSquads,
+-          ::cuda::std::size_t... Counts,
+-          typename ParentGroup,
+-          typename Group,
+-          typename F>
++template <int Index = 0, int NumSquads, typename ParentGroup, typename Group, typename F>
+@@ -216,45 +198,7 @@
+-  SpecialRegisters registers,
+-  const SquadDesc (&squads)[NumSquads],
+-  const ParentGroup& parent,
+-  const Group& group,
+-  ::cuda::std::index_sequence<Counts...> counts,
+-  F f)
+-{
+-  // Static squads cover this one-dimensional block contiguously. Select the
+-  // descriptor before specializing its count so the heavy callback avoids a
+-  // cross-product of count and descriptor dispatches.
+-  if constexpr (Last - First > 1)
+-  {
+-    constexpr auto mid = First + (Last - First) / 2;
+-    constexpr auto mid_warp =
+-      _CUB::detail::warpspeed::squad_static_prefix<mid>(::cuda::std::index_sequence<Counts...>{});
+-    if (registers.warpIdx < mid_warp)
+-    {
+-      _CUB::detail::warpspeed::squad_dispatch_static_leaf<First, mid>(registers, squads, parent, group, counts, f);
+-    }
+-    else
+-    {
+-      _CUB::detail::warpspeed::squad_dispatch_static_leaf<mid, Last>(registers, squads, parent, group, counts, f);
+-    }
+-  }
+-  else
+-  {
+-    // group_as defines the partition; the static pack expresses this leaf's
+-    // equivalent count and prefix directly in its view's mapping type.
+-    constexpr ::cuda::std::size_t static_counts[]{Counts...};
+-    constexpr auto count = static_counts[First];
+-    constexpr auto prefix =
+-      _CUB::detail::warpspeed::squad_static_prefix<First>(::cuda::std::index_sequence<Counts...>{});
+-    const auto warp_rank = registers.warpIdx - static_cast<::cuda::std::uint32_t>(prefix);
+-    _CCCL_ASSERT(group.rank(parent) == First, "the selected static squad must match the group mapping");
+-    _CCCL_ASSERT(warp_rank == ::cuda::warp.rank(group), "the cached squad rank must match the group mapping");
+-    using leaf_mapping_t = coop::__mapping_result<coop::__uniform_static_unit_count<NumSquads, count>, true, true>;
+-    using leaf_view_t    = coop::group_view<::cuda::warp_level, Group, leaf_mapping_t>;
+-    const leaf_mapping_t leaf_mapping{
+-      NumSquads,
+-      static_cast<::cuda::std::uint32_t>(First),
+-      static_cast<::cuda::std::uint32_t>(count),
+-      warp_rank,
+-      ::cuda::device::lane_mask::all()};
+-    const leaf_view_t leaf_group{group, leaf_mapping};
+-    const ::cuda::std::uint32_t barrier_id = static_cast<::cuda::std::uint32_t>(squads[First].mSquadIdx + 1);
++  SpecialRegisters registers, const SquadDesc (&squads)[NumSquads], const ParentGroup& parent, const Group& group, F f)
++{
++  if (group.rank(parent) == Index)
++  {
++    // Construct after selecting the descriptor: both the thread count and the
++    // native barrier ID stay constant in this leaf, without a runtime ID table.
++    const ::cuda::std::uint32_t barrier_id = static_cast<::cuda::std::uint32_t>(squads[Index].mSquadIdx + 1);
+@@ -264 +208 @@
+-      leaf_group,
++      group,
+@@ -270 +214,5 @@
+-    f(static_squad<view_t>{squads[First], registers, view_t{synchronized_group}});
++    f(static_squad<view_t>{squads[Index], registers, view_t{synchronized_group}});
++  }
++  else if constexpr (Index + 1 < NumSquads)
++  {
++    _CUB::detail::warpspeed::squad_dispatch_static_leaf<Index + 1>(registers, squads, parent, group, f);
+@@ -301 +249,3 @@
+-  _CUB::detail::warpspeed::squad_dispatch_static_leaf<0, NumSquads>(registers, squads, parent, group, counts, f);
++  group.with_static_unit_count([&](const auto& specialized_group) _CCCL_FORCEINLINE_LAMBDA {
++    _CUB::detail::warpspeed::squad_dispatch_static_leaf(registers, squads, parent, specialized_group, f);
++  });
+--- cuda/experimental/coop/__group/mapping/group_as.cuh
++++ cuda/experimental/coop/__group/mapping/group_as.cuh
+@@ -110 +109,0 @@
+-        // NOLINTNEXTLINE(readability-redundant-parentheses): keep the ternary condition explicitly grouped.
+@@ -134,2 +132,0 @@
+-  // The constraint excludes group_as itself and preserves the copy and move constructors.
+-  // NOLINTNEXTLINE(bugprone-forwarding-reference-overload)

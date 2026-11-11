@@ -1,0 +1,12 @@
+{
+  "static_groups": {
+    "kernels": 8,
+    "identical_kernels": 8,
+    "different_instruction_rows": 0
+  },
+  "static_groups_scan": {
+    "kernels": 8,
+    "identical_kernels": 8,
+    "different_instruction_rows": 0
+  }
+}
