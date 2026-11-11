@@ -117,34 +117,20 @@ template <class _Unit, class _Group>
 using __group_view_mapping_result_t =
   decltype(::cuda::experimental::coop::__do_group_view_mapping(_Unit{}, ::cuda::std::declval<_Group>()));
 
-template <::cuda::std::size_t _Index = 0, class _Group, class _Fn>
-_CCCL_DEVICE_API decltype(auto) __with_static_unit_count(const _Group& __group, _Fn&& __fn)
+template <::cuda::std::size_t _Index, class _Fn, class _Group>
+[[nodiscard]] _CCCL_DEVICE_API bool __invoke_with_static_unit_count(const _Group& __group, _Fn& __fn)
 {
   using _MappingResult = typename _Group::__mapping_result_type;
   using _Unit          = typename _Group::unit_type;
 
-  if constexpr (_MappingResult::has_uniform_static_unit_count())
+  if constexpr (_MappingResult::static_unit_count(_Index) != 0)
   {
-    return ::cuda::std::forward<_Fn>(__fn)(group_view{__group});
-  }
-  else
-  {
-    const auto& __mapping_result = __group.__mapping_result();
-
-    if constexpr (_Index + 1 < _MappingResult::static_group_count())
-    {
-      if (__mapping_result.group_rank() != _Index)
-      {
-        return ::cuda::experimental::coop::__with_static_unit_count<_Index + 1>(
-          __group, ::cuda::std::forward<_Fn>(__fn));
-      }
-    }
-
     using _StaticMappingResult = ::cuda::experimental::coop::__mapping_result<
       __uniform_static_unit_count<_MappingResult::static_group_count(), _MappingResult::static_unit_count(_Index)>,
       _MappingResult::is_always_exhaustive(),
       _MappingResult::is_always_contiguous()>;
 
+    const auto& __mapping_result = __group.__mapping_result();
     const _StaticMappingResult __static_mapping_result{
       __mapping_result.group_count(),
       __mapping_result.group_rank(),
@@ -152,8 +138,40 @@ _CCCL_DEVICE_API decltype(auto) __with_static_unit_count(const _Group& __group, 
       __mapping_result.unit_rank(),
       __mapping_result.lane_mask()};
 
-    return ::cuda::std::forward<_Fn>(__fn)(
+    (void) ::cuda::std::forward<_Fn>(__fn)(
       group_view<_Unit, _Group, _StaticMappingResult>{__group, __static_mapping_result});
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+template <class _Group, class _Fn, ::cuda::std::size_t... _Is>
+_CCCL_DEVICE_API void __with_static_unit_count(const _Group& __group, _Fn&& __fn, ::cuda::std::index_sequence<_Is...>)
+{
+  const auto __group_rank = __group.__mapping_result().group_rank();
+  // Only the selected invocation forwards the callable.
+  (void) (((__group_rank == _Is)
+           && ::cuda::experimental::coop::__invoke_with_static_unit_count<_Is, _Fn>(__group, __fn))
+          || ...);
+}
+
+template <class _Group, class _Fn>
+_CCCL_DEVICE_API void __with_static_unit_count(const _Group& __group, _Fn&& __fn)
+{
+  using _MappingResult = typename _Group::__mapping_result_type;
+  if constexpr (_MappingResult::has_uniform_static_unit_count())
+  {
+    (void) ::cuda::std::forward<_Fn>(__fn)(group_view{__group});
+  }
+  else
+  {
+    ::cuda::experimental::coop::__with_static_unit_count(
+      __group,
+      ::cuda::std::forward<_Fn>(__fn),
+      ::cuda::std::make_index_sequence<_MappingResult::static_group_count()>{});
   }
 }
 
@@ -225,9 +243,9 @@ public:
   //! @brief Invokes the callable with a view specialized for this group's static unit count.
   //! Counts that are only known at runtime remain dynamic.
   template <class _Fn>
-  _CCCL_DEVICE_API decltype(auto) with_static_unit_count(_Fn&& __fn) const
+  _CCCL_DEVICE_API void with_static_unit_count(_Fn&& __fn) const
   {
-    return ::cuda::experimental::coop::__with_static_unit_count(*this, ::cuda::std::forward<_Fn>(__fn));
+    ::cuda::experimental::coop::__with_static_unit_count(*this, ::cuda::std::forward<_Fn>(__fn));
   }
 
   [[nodiscard]] _CCCL_DEVICE_API const hierarchy_type& hierarchy() const
