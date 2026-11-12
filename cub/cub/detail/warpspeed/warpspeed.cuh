@@ -15,15 +15,13 @@
 // IWYU pragma: begin_exports
 #include <cub/detail/warpspeed/allocators/smem_allocator.cuh>
 #include <cub/detail/warpspeed/constant_assert.cuh>
-#include <cub/detail/warpspeed/make_warp_uniform.cuh>
+#include <cub/detail/warpspeed/groups.cuh>
+#include <cub/detail/warpspeed/load_store.cuh>
 #include <cub/detail/warpspeed/resource/smem_phase.cuh>
 #include <cub/detail/warpspeed/resource/smem_ref.cuh>
 #include <cub/detail/warpspeed/resource/smem_resource.cuh>
 #include <cub/detail/warpspeed/resource/smem_resource_raw.cuh>
 #include <cub/detail/warpspeed/resource/smem_stage.cuh>
-#include <cub/detail/warpspeed/special_registers.cuh>
-#include <cub/detail/warpspeed/squad/squad.cuh>
-#include <cub/detail/warpspeed/squad/squad_desc.cuh>
 #include <cub/detail/warpspeed/sync_handler.cuh>
 #include <cub/detail/warpspeed/values.cuh>
 // IWYU pragma: end_exports

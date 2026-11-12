@@ -17,14 +17,13 @@
 #include <cub/detail/null_type.cuh>
 #include <cub/detail/uninitialized.cuh>
 #include <cub/detail/warpspeed/allocators/smem_allocator.cuh>
+#include <cub/detail/warpspeed/groups.cuh>
+#include <cub/detail/warpspeed/load_store.cuh>
 #include <cub/detail/warpspeed/look_ahead.cuh>
 #include <cub/detail/warpspeed/resource/smem_phase.cuh>
 #include <cub/detail/warpspeed/resource/smem_ref.cuh>
 #include <cub/detail/warpspeed/resource/smem_resource.cuh>
 #include <cub/detail/warpspeed/resource/smem_stage.cuh>
-#include <cub/detail/warpspeed/special_registers.cuh>
-#include <cub/detail/warpspeed/squad/load_store.cuh>
-#include <cub/detail/warpspeed/squad/squad.cuh>
 #include <cub/detail/warpspeed/sync_handler.cuh>
 #include <cub/detail/warpspeed/values.cuh>
 #include <cub/device/dispatch/tuning/tuning_scan.cuh>
@@ -37,15 +36,17 @@
 #include <cuda/__cmath/ceil_div.h>
 #include <cuda/__functional/operator_properties.h>
 #include <cuda/__ptx/instructions/clusterlaunchcontrol.h> // IWYU pragma: keep
+#include <cuda/hierarchy>
 #include <cuda/std/__algorithm/clamp.h>
 #include <cuda/std/__algorithm/max.h>
 #include <cuda/std/__algorithm/min.h>
 #include <cuda/std/__cccl/cuda_capabilities.h>
 #include <cuda/std/__type_traits/is_same.h>
 #include <cuda/std/__utility/to_underlying.h>
-#include <cuda/std/array>
 #include <cuda/std/cstddef>
 #include <cuda/std/cstdint>
+
+#include <cuda/experimental/coop/group>
 
 #include <nv/target>
 
@@ -112,8 +113,7 @@ struct ScanResources
   };
   static_assert(alignof(in_out_t) >= alignof(InputT));
   static_assert(alignof(in_out_t) >= alignof(OutputT));
-  using thread_and_warp_aggr_t = AccumT[_CUB::detail::scan::squad_reduce(policy).threadCount()
-                                        + _CUB::detail::scan::squad_reduce(policy).warpCount()];
+  using thread_and_warp_aggr_t = AccumT[(policy.reduce_and_scan_warps * warp_threads) + policy.reduce_and_scan_warps];
 
   _CUB::detail::warpspeed::SmemResource<in_out_t> smemInOut; // will also be used to stage the output (as
                                                              // OutputT) for the bulk copy
@@ -159,19 +159,21 @@ allocResources(warpspeed::SyncHandler& syncHandler, warpspeed::SmemAllocator& sm
 
 #if __cccl_ptx_isa >= 860
 
-_CCCL_DEVICE_API inline void squadGetNextBlockIdx(const warpspeed::Squad& squad, warpspeed::SmemRef<uint4>& refDestSmem)
+template <typename Group>
+_CCCL_DEVICE_API inline void group_get_next_block_idx(const Group& group, warpspeed::SmemRef<uint4>& refDestSmem)
 {
-  if (squad.isLeaderThread())
+  if (::cuda::gpu_thread.is_root_rank(group))
   {
     ::cuda::ptx::clusterlaunchcontrol_try_cancel(&refDestSmem.data(), refDestSmem.ptrCurBarrierRelease());
   }
-  refDestSmem.squadIncreaseTxCount(squad, refDestSmem.sizeBytes());
+  refDestSmem.expect_transaction(group, refDestSmem.sizeBytes());
 }
 
-_CCCL_DEVICE_API inline void squadGetNextBlockIdxAtomic(
-  const warpspeed::Squad& squad, warpspeed::SmemRef<uint4>& refDestSmem, ::cuda::std::uint32_t* atomicCounter)
+template <typename Group>
+_CCCL_DEVICE_API inline void group_get_next_block_idx_atomic(
+  const Group& group, warpspeed::SmemRef<uint4>& refDestSmem, ::cuda::std::uint32_t* atomicCounter)
 {
-  if (squad.isLeaderThread())
+  if (::cuda::gpu_thread.is_root_rank(group))
   {
     refDestSmem.data().x = ::atomicAdd(atomicCounter, 1u);
   }
@@ -282,7 +284,7 @@ threadScanPartial(Tp (&regAggrInclusive)[ElemPerThread], ScanOpT& scan_op, Tp pr
 }
 
 // Similar to CUB agents, this closure just aggregates common constants so the device functions implementing the
-// lookahead scan kernel can have lighter signatures. Each squad uses an instance of this to provide its context. In
+// lookahead scan kernel can have lighter signatures. Each group uses an instance of this to provide its context. In
 // principle, it does not hold any mutable state. But it refers to the shared scan resources (SMEM + barriers etc.).
 template <typename PolicySelector,
           typename InputT,
@@ -294,31 +296,24 @@ template <typename PolicySelector,
           bool StableReductionOrder = false>
 struct lookahead_scan_closure
 {
-  static constexpr ScanLookaheadPolicy policy               = _CUB::detail::current_policy<PolicySelector>().lookahead;
-  static constexpr warpspeed::SquadDesc squadReduce         = _CUB::detail::scan::squad_reduce(policy);
-  static constexpr warpspeed::SquadDesc squadScan           = _CUB::detail::scan::squad_scan(policy);
-  static constexpr warpspeed::SquadDesc squadLoadAndNextIdx = _CUB::detail::scan::squad_load_and_next_idx(policy);
-  static constexpr warpspeed::SquadDesc squadLookahead      = _CUB::detail::scan::squad_lookahead(policy);
-  static constexpr warpspeed::SquadDesc squadStore          = _CUB::detail::scan::squad_store(policy);
-
-  static constexpr ::cuda::std::array<warpspeed::SquadDesc, 5> scanSquads = {
-    _CUB::detail::scan::squad_reduce(policy),
-    _CUB::detail::scan::squad_scan(policy),
-    _CUB::detail::scan::squad_load_and_next_idx(policy),
-    _CUB::detail::scan::squad_lookahead(policy),
-    _CUB::detail::scan::squad_store(policy),
-  };
+  static constexpr ScanLookaheadPolicy policy = _CUB::detail::current_policy<PolicySelector>().lookahead;
+  using group_layout_t = warpspeed::group_layout<policy.reduce_and_scan_warps, policy.reduce_and_scan_warps, 1, 1, 1>;
+  static constexpr int reduce_group    = 0;
+  static constexpr int scan_group      = 1;
+  static constexpr int load_group      = 2;
+  static constexpr int lookahead_group = 3;
+  static constexpr int store_group     = 4;
 
   // If the output elements are larger than the input elements, the output of a tile does not fit into the SMEM tile
-  // buffer at once and the scan squad has to issue multiple bulk stores itself. Otherwise, the store squad does it.
-  static constexpr bool scanSquadStores = sizeof(OutputT) > sizeof(InputT);
+  // buffer at once and the scan group has to issue multiple bulk stores itself. Otherwise, the store group does it.
+  static constexpr bool scan_group_stores = sizeof(OutputT) > sizeof(InputT);
 
   static constexpr int tile_size                  = policy.tile_size();
   static constexpr int lookahead_items_per_thread = policy.lookahead_items_per_thread;
 
   // We might try to instantiate the kernel with huge types which would lead to a small tile size. Ensure its never 0
   static constexpr int elemPerThread = policy.items_per_thread;
-  static_assert(elemPerThread * squadReduce.threadCount() == tile_size, "Invalid tuning policy");
+  static_assert(elemPerThread * group_layout_t::template thread_count<0>() == tile_size, "Invalid tuning policy");
 
   // Inclusive scan if no init_value type is provided
   static constexpr bool hasInit     = !::cuda::std::is_same_v<RealInitValueT, NullType>;
@@ -328,32 +323,35 @@ struct lookahead_scan_closure
   using in_out_t               = typename scan_resources_t::in_out_t;
   using thread_and_warp_aggr_t = typename scan_resources_t::thread_and_warp_aggr_t;
 
-  const warpspeed::SpecialRegisters specialRegisters;
+  const int first_tile;
   const scanKernelParams<InputT, OutputT, AccumT> params;
   mutable ScanOpT scan_op; // mutable, so we can support non-const operator()
   const RealInitValueT real_init_value;
   scan_resources_t res; // this is the only shared mutable state
 
+  template <typename Group>
   _CCCL_DEVICE_API _CCCL_FORCEINLINE void
-  load_next_tile_index(const warpspeed::Squad& squad, warpspeed::SmemPhase<uint4>& phaseNextBlockIdxW) const
+  load_next_tile_index(const Group& group, warpspeed::SmemPhase<uint4>& phaseNextBlockIdxW) const
   {
     warpspeed::SmemRef refNextBlockIdxW = phaseNextBlockIdxW.acquireRef();
     NV_IF_ELSE_TARGET(NV_PROVIDES_SM_100,
-                      (__scan_detail::squadGetNextBlockIdx(squad, refNextBlockIdxW);),
-                      (__scan_detail::squadGetNextBlockIdxAtomic(squad, refNextBlockIdxW, params.atomicCounter);));
+                      (__scan_detail::group_get_next_block_idx(group, refNextBlockIdxW);),
+                      (__scan_detail::group_get_next_block_idx_atomic(group, refNextBlockIdxW, params.atomicCounter);));
   }
 
+  template <typename Group>
   _CCCL_DEVICE_API _CCCL_FORCEINLINE void load_current_tile(
-    const warpspeed::Squad& squad,
+    const Group& group,
     warpspeed::SmemPhase<in_out_t>& phaseInOutL,
     const warpspeed::CpAsyncOobInfo<InputT>& loadInfo) const
   {
     warpspeed::SmemRef refInOutL = phaseInOutL.acquireRef();
-    _CUB::detail::warpspeed::squadLoadBulk(squad, refInOutL, loadInfo);
+    _CUB::detail::warpspeed::group_load_bulk(group, refInOutL, loadInfo);
   }
 
+  template <typename Group>
   _CCCL_DEVICE_API _CCCL_FORCEINLINE void lookahead(
-    const warpspeed::Squad& squad,
+    const Group& group,
     warpspeed::SmemPhase<AccumT>& phaseAggrExclusiveCtaW,
     bool is_first_tile,
     int& idxTilePrev,
@@ -361,6 +359,7 @@ struct lookahead_scan_closure
     int idxTile,
     int num_tiles) /*const*/ // FIXME(bgruber): this const causes a large SASS diff
   {
+    const ::cuda::experimental::coop::this_warp<typename Group::hierarchy_type> warp{group.hierarchy()};
     warpspeed::SmemRef refAggrExclusiveCtaW = phaseAggrExclusiveCtaW.acquireRef();
 
     if (!is_first_tile)
@@ -370,8 +369,8 @@ struct lookahead_scan_closure
         // The stable-order version updates idxTilePrev/AggrExclusiveCtaPrev itself
         AccumT regAggrExclusiveCta =
           _CUB::detail::warpspeed::warpIncrementalLookaheadStable<lookahead_items_per_thread>(
-            specialRegisters, params.ptrTileStates, idxTilePrev, AggrExclusiveCtaPrev, idxTile, scan_op, num_tiles);
-        if (squad.isLeaderThread())
+            warp, params.ptrTileStates, idxTilePrev, AggrExclusiveCtaPrev, idxTile, scan_op, num_tiles);
+        if (::cuda::gpu_thread.is_root_rank(group))
         {
           refAggrExclusiveCtaW.data() = regAggrExclusiveCta;
         }
@@ -379,8 +378,8 @@ struct lookahead_scan_closure
       else
       {
         AccumT regAggrExclusiveCta = _CUB::detail::warpspeed::warpIncrementalLookahead<lookahead_items_per_thread>(
-          specialRegisters, params.ptrTileStates, idxTilePrev, AggrExclusiveCtaPrev, idxTile, scan_op, num_tiles);
-        if (squad.isLeaderThread())
+          warp, params.ptrTileStates, idxTilePrev, AggrExclusiveCtaPrev, idxTile, scan_op, num_tiles);
+        if (::cuda::gpu_thread.is_root_rank(group))
         {
           refAggrExclusiveCtaW.data() = regAggrExclusiveCta;
         }
@@ -390,8 +389,9 @@ struct lookahead_scan_closure
     }
   }
 
+  template <typename Group>
   _CCCL_DEVICE_API _CCCL_FORCEINLINE void reduce_tile(
-    const warpspeed::Squad& squad,
+    const Group& group,
     warpspeed::SmemPhase<in_out_t>& phaseInOutRW,
     warpspeed::SmemPhase<thread_and_warp_aggr_t>& phaseThreadAndWarpAggrW,
     int valid_items,
@@ -402,11 +402,11 @@ struct lookahead_scan_closure
     int num_tiles) const
   {
     const int valid_items_this_thread =
-      cuda::std::clamp(valid_items - (squad.threadRank() * elemPerThread), 0, +elemPerThread);
+      cuda::std::clamp(valid_items - (::cuda::gpu_thread.rank_as<int>(group) * elemPerThread), 0, +elemPerThread);
     const int valid_threads_this_warp =
-      cuda::std::clamp(::cuda::ceil_div(valid_items, elemPerThread) - (squad.warpRank() * 32), 0, 32);
+      cuda::std::clamp(::cuda::ceil_div(valid_items, elemPerThread) - (::cuda::warp.rank_as<int>(group) * 32), 0, 32);
     const int valid_warps = ::cuda::ceil_div(valid_items, elemPerThread * 32);
-    _CCCL_ASSERT(0 < valid_warps && valid_warps <= squad.warpCount(), "");
+    _CCCL_ASSERT(0 < valid_warps && valid_warps <= ::cuda::warp.count_as<int>(group), "");
 
     // Load tile from shared memory and reduce across thread and warp
     AccumT regThreadAggr;
@@ -418,7 +418,7 @@ struct lookahead_scan_closure
       const auto* smem_data_start =
         reinterpret_cast<const InputT*>(&refInOutRW.data().inout[0] + loadInfo.smemStartSkipBytes);
       // in the last tile, we load some invalid elements, but don't process them later
-      _CUB::detail::warpspeed::squadLoadSmem(squad, regInput, smem_data_start);
+      _CUB::detail::warpspeed::group_load_smem(group, regInput, smem_data_start);
 
       // Reduce across thread and warp
       _CCCL_IKET_RANGE_PUSH(ReduceThreadWarp);
@@ -438,69 +438,73 @@ struct lookahead_scan_closure
 
     // Store warp aggregate to shared memory
     warpspeed::SmemRef refThreadAndWarpAggrW = phaseThreadAndWarpAggrW.acquireRef();
-    if (squad.isLeaderThreadOfWarp())
+    if ((::cuda::gpu_thread.rank(::cuda::warp, group.hierarchy()) == 0))
     {
-      refThreadAndWarpAggrW.data()[squadReduce.threadCount() + squad.warpRank()] = regWarpAggr;
+      refThreadAndWarpAggrW.data()[group_layout_t::template thread_count<0>() + ::cuda::warp.rank_as<int>(group)] =
+        regWarpAggr;
     }
-    squad.syncThreads();
+    group.sync();
 
-    // Reduce across squad
+    // Reduce across group
     // We need to accumulate the first element by hand because of the potential initial element and partial tiles
     _CCCL_IKET_RANGE_PUSH(ReduceSquad);
-    AccumT regSquadAggr;
+    AccumT group_aggregate;
     if constexpr (hasInit)
     {
       if (is_first_tile)
       {
-        regSquadAggr = scan_op(real_init_value, refThreadAndWarpAggrW.data()[squadReduce.threadCount()]);
+        group_aggregate =
+          scan_op(real_init_value, refThreadAndWarpAggrW.data()[group_layout_t::template thread_count<0>()]);
       }
       else
       {
-        regSquadAggr = refThreadAndWarpAggrW.data()[squadReduce.threadCount()];
+        group_aggregate = refThreadAndWarpAggrW.data()[group_layout_t::template thread_count<0>()];
       }
     }
     else
     {
-      regSquadAggr = refThreadAndWarpAggrW.data()[squadReduce.threadCount()];
+      group_aggregate = refThreadAndWarpAggrW.data()[group_layout_t::template thread_count<0>()];
     }
 
     if (is_last_tile)
     {
       _CCCL_PRAGMA_UNROLL_FULL()
-      for (int i = 1; i < squadReduce.warpCount(); ++i)
+      for (int i = 1; i < policy.reduce_and_scan_warps; ++i)
       {
         if (i < valid_warps)
         {
-          regSquadAggr = scan_op(regSquadAggr, refThreadAndWarpAggrW.data()[squadReduce.threadCount() + i]);
+          group_aggregate =
+            scan_op(group_aggregate, refThreadAndWarpAggrW.data()[group_layout_t::template thread_count<0>() + i]);
         }
       }
     }
     else
     {
       _CCCL_PRAGMA_UNROLL_FULL()
-      for (int i = 1; i < squadReduce.warpCount(); ++i)
+      for (int i = 1; i < policy.reduce_and_scan_warps; ++i)
       {
-        regSquadAggr = scan_op(regSquadAggr, refThreadAndWarpAggrW.data()[squadReduce.threadCount() + i]);
+        group_aggregate =
+          scan_op(group_aggregate, refThreadAndWarpAggrW.data()[group_layout_t::template thread_count<0>() + i]);
       }
     }
     _CCCL_IKET_RANGE_POP();
 
     // Store tile aggregate for lookahead
     _CCCL_IKET_RANGE_PUSH(StoreTileAggregate);
-    if (squad.isLeaderThread())
+    if (::cuda::gpu_thread.is_root_rank(group))
     {
       _CUB::detail::warpspeed::storeTileAggregate(
-        params.ptrTileStates, warpspeed::scan_state::tile_aggregate, regSquadAggr, idxTile, num_tiles);
+        params.ptrTileStates, warpspeed::scan_state::tile_aggregate, group_aggregate, idxTile, num_tiles);
     }
     _CCCL_IKET_RANGE_POP();
 
     // Store thread aggregate
-    refThreadAndWarpAggrW.data()[squad.threadRank()] = regThreadAggr;
+    refThreadAndWarpAggrW.data()[::cuda::gpu_thread.rank_as<int>(group)] = regThreadAggr;
   }
 
-  template <bool IsLastTile>
+  template <bool IsLastTile, typename Group>
   _CCCL_DEVICE_API _CCCL_FORCEINLINE void scan_tile(
-    const warpspeed::Squad& squad,
+    const Group& group,
     warpspeed::SmemPhase<thread_and_warp_aggr_t>& phaseThreadAndWarpAggrR,
     warpspeed::SmemPhase<AccumT>& phaseAggrExclusiveCtaR,
     warpspeed::SmemPhase<in_out_t>& phaseInOutRW,
@@ -516,11 +520,11 @@ struct lookahead_scan_closure
     if constexpr (IsLastTile)
     {
       valid_items_this_thread =
-        ::cuda::std::clamp(valid_items - (squad.threadRank() * elemPerThread), 0, +elemPerThread);
-      valid_threads_this_warp =
-        ::cuda::std::clamp(::cuda::ceil_div(valid_items, elemPerThread) - (squad.warpRank() * 32), 0, 32);
+        ::cuda::std::clamp(valid_items - (::cuda::gpu_thread.rank_as<int>(group) * elemPerThread), 0, +elemPerThread);
+      valid_threads_this_warp = ::cuda::std::clamp(
+        ::cuda::ceil_div(valid_items, elemPerThread) - (::cuda::warp.rank_as<int>(group) * 32), 0, 32);
       valid_warps = ::cuda::ceil_div(valid_items, elemPerThread * 32);
-      _CCCL_ASSERT(0 < valid_warps && valid_warps <= squad.warpCount(), "");
+      _CCCL_ASSERT(0 < valid_warps && valid_warps <= ::cuda::warp.count_as<int>(group), "");
     }
 
     // Fill the registers with the scan identity, if there is one, before acquiring/waiting on any resources
@@ -539,15 +543,15 @@ struct lookahead_scan_closure
       warpspeed::SmemRef refThreadAndWarpAggrR = phaseThreadAndWarpAggrR.acquireRef();
       _CCCL_IKET_RANGE_PUSH(IncludeThreadWarpAggr);
       // Add the aggregates of the preceding warps in this CTA to the cumulative aggregate. These have been calculated
-      // in reduce squad. We need the reduce and scan squads to be the same size to do this.
-      static_assert(squadReduce.warpCount() == squadScan.warpCount());
+      // in reduce group. We need the reduce and scan groups to be the same size to do this.
+      static_assert(group_layout_t::template thread_count<0>() == group_layout_t::template thread_count<1>());
 
       // Include warp aggregates
       _CCCL_PRAGMA_UNROLL_FULL()
-      for (int i = 0; i < squadScan.warpCount(); ++i)
+      for (int i = 0; i < policy.reduce_and_scan_warps; ++i)
       {
         // We want a predicated unrolled loop here.
-        bool include_warp = i < squad.warpRank();
+        bool include_warp = i < ::cuda::warp.rank_as<int>(group);
         if constexpr (IsLastTile)
         {
           include_warp &= i < valid_warps;
@@ -557,12 +561,13 @@ struct lookahead_scan_closure
           if (i == 0)
           {
             // The first iteration initializes aggrExclusive
-            aggrExclusive = refThreadAndWarpAggrR.data()[squadReduce.threadCount()];
+            aggrExclusive = refThreadAndWarpAggrR.data()[group_layout_t::template thread_count<0>()];
           }
           else
           {
             // If loaded value belongs to previous warp, include it in aggrExclusive.
-            aggrExclusive = scan_op(aggrExclusive, refThreadAndWarpAggrR.data()[squadReduce.threadCount() + i]);
+            aggrExclusive =
+              scan_op(aggrExclusive, refThreadAndWarpAggrR.data()[group_layout_t::template thread_count<0>() + i]);
           }
         }
       }
@@ -589,7 +594,7 @@ struct lookahead_scan_closure
       // If the warp contains partial data, we pass invalid elements to
       // scan_op, and aggrExclusiveIntraWarp is invalid when the inputs were
       // invalid.
-      AccumT regAggrThread = refThreadAndWarpAggrR.data()[squad.threadRank()];
+      AccumT regAggrThread = refThreadAndWarpAggrR.data()[::cuda::gpu_thread.rank_as<int>(group)];
       AccumT aggrExclusiveIntraWarp;
       if constexpr (IsLastTile) // this branch would cost up to 4% BW for I8 and I16 if it were at
                                 // runtime
@@ -598,14 +603,14 @@ struct lookahead_scan_closure
           regAggrThread,
           scan_op,
           valid_threads_this_warp,
-          specialRegisters.laneIdx < static_cast<uint32_t>(valid_threads_this_warp));
+          ::cuda::gpu_thread.rank(::cuda::warp, group.hierarchy()) < static_cast<uint32_t>(valid_threads_this_warp));
       }
       else
       {
         aggrExclusiveIntraWarp = __scan_detail::warpScanExclusive(regAggrThread, scan_op);
       }
 
-      if (squad.warpRank() == 0)
+      if (::cuda::warp.rank_as<int>(group) == 0)
       {
         // Warp0 does not yet have a valid value for aggrExclusive. We set it
         // here. This ensures that lane1,..,31 of tile0::warp0 have a valid
@@ -615,10 +620,11 @@ struct lookahead_scan_closure
       else
       {
         // lane0 has an undefined value for aggrExclusiveIntraWarp, so skip it
-        bool includeIntraWarpAggr = specialRegisters.laneIdx != 0;
+        bool includeIntraWarpAggr = ::cuda::gpu_thread.rank(::cuda::warp, group.hierarchy()) != 0;
         if constexpr (IsLastTile)
         {
-          includeIntraWarpAggr &= specialRegisters.laneIdx < static_cast<uint32_t>(valid_threads_this_warp);
+          includeIntraWarpAggr &=
+            ::cuda::gpu_thread.rank(::cuda::warp, group.hierarchy()) < static_cast<uint32_t>(valid_threads_this_warp);
         }
 
         if (includeIntraWarpAggr)
@@ -648,7 +654,7 @@ struct lookahead_scan_closure
         AccumT regAggrExclusiveCta = refAggrExclusiveCtaR.data();
         // aggrExclusive is invalid in warp_0/thread_0, so only include it in other threads/warps. Skip it, when this
         // thread has no valid items to process in the last tile.
-        if (squad.threadRank() == 0 || (IsLastTile && valid_items_this_thread == 0))
+        if (::cuda::gpu_thread.rank_as<int>(group) == 0 || (IsLastTile && valid_items_this_thread == 0))
         {
           aggrExclusive = regAggrExclusiveCta;
         }
@@ -665,7 +671,7 @@ struct lookahead_scan_closure
       {
         // The first thread cannot use scan_op because aggrExclusive holds garbage data. Also skip sumExclusive when
         // this thread has no valid items to process in the last tile.
-        if (squad.threadRank() == 0 || (IsLastTile && valid_items_this_thread == 0))
+        if (::cuda::gpu_thread.rank_as<int>(group) == 0 || (IsLastTile && valid_items_this_thread == 0))
         {
           aggrExclusive = static_cast<AccumT>(real_init_value);
         }
@@ -695,20 +701,20 @@ struct lookahead_scan_closure
     warpspeed::SmemRef refInOutRW = phaseInOutRW.acquireRef();
 
     // We are always loading a full tile even for the last tile, so we are loading invalid data
-    _CUB::detail::warpspeed::squadLoadSmem(
-      squad,
+    _CUB::detail::warpspeed::group_load_smem(
+      group,
       regAggrInclusive,
       reinterpret_cast<const InputT*>(&refInOutRW.data().inout[0] + loadInfo.smemStartSkipBytes));
 
     _CCCL_IKET_RANGE_PUSH(ThreadScan);
     // Perform inclusive scan of register array in current thread.
     // warp_0/thread_0 in the first tile when there is no initial value, we MUST NOT use aggrExclusive
-    const bool use_prefix = hasInit || !is_first_tile || squad.threadRank() != 0;
+    const bool use_prefix = hasInit || !is_first_tile || ::cuda::gpu_thread.rank_as<int>(group) != 0;
     __scan_detail::threadScanPartial<isInclusive, IsLastTile>(
       regAggrInclusive, scan_op, aggrExclusive, use_prefix, valid_items_this_thread);
 
     // Sync before storing to avoid data races on SMEM
-    squad.syncThreads();
+    group.sync();
     _CCCL_IKET_RANGE_POP();
 
     // Store result to shared memory
@@ -719,8 +725,8 @@ struct lookahead_scan_closure
       warpspeed::CpAsyncOobInfo storeInfo =
         _CUB::detail::warpspeed::prepareCpAsyncOob(params.ptrOut + idxTileBase, valid_items);
 
-      _CUB::detail::warpspeed::squadStoreSmem(
-        squad, reinterpret_cast<OutputT*>(smem_output_tile + storeInfo.smemStartSkipBytes), regAggrInclusive);
+      _CUB::detail::warpspeed::group_store_smem(
+        group, reinterpret_cast<OutputT*>(smem_output_tile + storeInfo.smemStartSkipBytes), regAggrInclusive);
     }
     else
     {
@@ -736,8 +742,8 @@ struct lookahead_scan_closure
         // only stage elements of the current chunk to SMEM
         // storeInfo.smemStartSkipBytes < 16 and smem_output_tile contains extra 16 bytes, so we should fit
         _CCCL_ASSERT(storeInfo.smemStartSkipBytes + (elem_per_chunk * sizeof(OutputT)) <= res.smemInOut.mSizeBytes, "");
-        _CUB::detail::warpspeed::squadStoreSmemPartial(
-          squad,
+        _CUB::detail::warpspeed::group_store_smem_partial(
+          group,
           reinterpret_cast<OutputT*>(smem_output_tile + storeInfo.smemStartSkipBytes), // different in each
                                                                                        // iteration
           regAggrInclusive,
@@ -745,70 +751,57 @@ struct lookahead_scan_closure
           chunk_offset + chunk_size);
 
         // We do *not* release refSmemInOut here, because we will issue a TMA
-        // instruction below. Instead, we issue a squad-local syncthreads +
+        // instruction below. Instead, we issue a group-local syncthreads +
         // fence.proxy.async to sync the shared memory writes with the TMA store.
-        squad.syncThreads();
+        group.sync();
 
         // Store result to global memory using TMA
-        _CUB::detail::warpspeed::squadStoreBulkSync(squad, storeInfo, smem_output_tile);
+        _CUB::detail::warpspeed::group_store_bulk_sync(group, storeInfo, smem_output_tile);
 
-        squad.syncThreads();
+        group.sync();
       }
     }
 
-    // Release refInOut. Will be reused by the load squad for another tile in the async proxy as well, so no fence
+    // Release refInOut. Will be reused by the load group for another tile in the async proxy as well, so no fence
     // needed.
   }
 
+  template <typename Group>
   _CCCL_DEVICE_API _CCCL_FORCEINLINE void store_tile(
-    const warpspeed::Squad& squad,
+    const Group& group,
     warpspeed::SmemPhase<in_out_t>& phaseInOutS,
     int valid_items,
     ::cuda::std::size_t idxTileBase) const
   {
-    // Wait until the scan squad has written the output tile to shared memory
+    // Wait until the scan group has written the output tile to shared memory
     warpspeed::SmemRef refInOutS = phaseInOutS.acquireRef();
-    if constexpr (!scanSquadStores)
+    if constexpr (!scan_group_stores)
     {
       const warpspeed::CpAsyncOobInfo storeInfo =
         _CUB::detail::warpspeed::prepareCpAsyncOob(params.ptrOut + idxTileBase, valid_items);
       // Blocks until the bulk store finished reading from shared memory, then refInOutS is released for the next load
-      _CUB::detail::warpspeed::squadStoreBulkSync(squad, storeInfo, refInOutS.data().inout);
+      _CUB::detail::warpspeed::group_store_bulk_sync(group, storeInfo, refInOutS.data().inout);
     }
   }
 
   // This function is a straight-line implementation of the warp-specialized kernel.
   //
-  // It is called from the __global__ kernel body with a squad argument that is the active squad on the current thread.
+  // It is called from the __global__ kernel body with a group argument that is the active group on the current thread.
   //
-  // Using this structure, all code that is not executed by the current squad is DCE (dead-code-eliminated) by the
+  // Using this structure, all code that is not executed by the current group is DCE (dead-code-eliminated) by the
   // compiler and all warp-specialization dispatch is performed once at the start of the kernel and not in any of the
   // hot loops (even if that may seem the case from a first glance at the code).
-  _CCCL_DEVICE_API _CCCL_FORCEINLINE void dispatch_squad(warpspeed::Squad squad) // const // TODO(bgruber): enable const
+  template <typename Group>
+  _CCCL_DEVICE_API _CCCL_FORCEINLINE void dispatch_group(const Group& group) // const // TODO(bgruber): enable const
   {
+    const ::cuda::experimental::coop::this_block<typename Group::hierarchy_type> block{group.hierarchy()};
     const int numTiles = static_cast<int>(::cuda::ceil_div(params.numElem, ::cuda::std::size_t(tile_size)));
 
     // Lookahead-specific variables:
     int idxTilePrev = 0;
-    AccumT AggrExclusiveCtaPrev; // only valid in squadLookahead lane_0
+    AccumT AggrExclusiveCtaPrev; // only valid in lookahead group lane 0
 
-    _CCCL_PDL_GRID_DEPENDENCY_SYNC();
-
-    // Start with the tile indicated by blockIdx.x for sm100, but for sm90+, we use an atomic counter to determine the
-    // first tile
-    int idxTile = [&] {
-      int first_tile;
-      NV_IF_ELSE_TARGET(NV_PROVIDES_SM_100, (first_tile = specialRegisters.blockIdxX;), ({
-                          __shared__ int s_first_tile;
-                          if (specialRegisters.threadIdxX == 0)
-                          {
-                            s_first_tile = static_cast<int>(::atomicAdd(params.atomicCounter, 1u));
-                          }
-                          __syncthreads();
-                          first_tile = s_first_tile;
-                        }));
-      return first_tile;
-    }();
+    int idxTile = first_tile;
 
     _CCCL_IKET_RANGE_POP();
 
@@ -846,25 +839,24 @@ struct lookahead_scan_closure
       const warpspeed::CpAsyncOobInfo loadInfo =
         _CUB::detail::warpspeed::prepareCpAsyncOob(const_cast<InputT*>(params.ptrIn) + idxTileBase, valid_items);
 
-      // Async loading and async tile index stealing are very lightweight, so one squad is enough to do both
-      // slice is intentional, see SquadDesc::operator==()
-      if (squad == squadLoadAndNextIdx) // NOLINT(cppcoreguidelines-slicing)
+      // Async loading and async tile index stealing are very lightweight, so one group is enough to do both
+      if (group.rank(block) == load_group)
       {
         _CCCL_IKET_RANGE_START(SquadLoadAndNextIdx);
 
         _CCCL_IKET_RANGE_PUSH(Load);
-        load_current_tile(squad, phaseInOutL, loadInfo);
+        load_current_tile(group, phaseInOutL, loadInfo);
         _CCCL_IKET_RANGE_POP();
 
         _CCCL_IKET_RANGE_PUSH(NextIdx);
-        load_next_tile_index(squad, phaseNextBlockIdxW);
+        load_next_tile_index(group, phaseNextBlockIdxW);
         _CCCL_IKET_RANGE_POP();
 
         _CCCL_IKET_RANGE_END(SquadLoadAndNextIdx);
       }
 
       _CCCL_IKET_RANGE_PUSH(GetNextIdx);
-      // Get next tile index from shared memory (all squads)
+      // Get next tile index from shared memory (all groups)
       uint4 regNextBlockIdx{};
       {
         warpspeed::SmemRef refNextBlockIdxR = phaseNextBlockIdxR.acquireRef();
@@ -878,12 +870,11 @@ struct lookahead_scan_closure
       }();
       _CCCL_IKET_RANGE_POP();
 
-      // slice is intentional, see SquadDesc::operator==()
-      if (squad == squadReduce) // NOLINT(cppcoreguidelines-slicing)
+      if (group.rank(block) == reduce_group)
       {
         _CCCL_IKET_RANGE_START(SquadReduce);
         reduce_tile(
-          squad,
+          group,
           phaseInOutRW,
           phaseThreadAndWarpAggrW,
           valid_items,
@@ -895,23 +886,21 @@ struct lookahead_scan_closure
         _CCCL_IKET_RANGE_END(SquadReduce);
       }
 
-      // slice is intentional, see SquadDesc::operator==()
-      if (squad == squadLookahead) // NOLINT(cppcoreguidelines-slicing)
+      if (group.rank(block) == lookahead_group)
       {
         _CCCL_IKET_RANGE_START(SquadLookahead);
-        lookahead(squad, phaseAggrExclusiveCtaW, is_first_tile, idxTilePrev, AggrExclusiveCtaPrev, idxTile, numTiles);
+        lookahead(group, phaseAggrExclusiveCtaW, is_first_tile, idxTilePrev, AggrExclusiveCtaPrev, idxTile, numTiles);
         _CCCL_IKET_RANGE_END(SquadLookahead);
       }
 
-      // slice is intentional, see SquadDesc::operator==()
-      if (squad == squadScan) // NOLINT(cppcoreguidelines-slicing)
+      if (group.rank(block) == scan_group)
       {
-        static_assert(tile_size % squadScan.threadCount() == 0);
+        static_assert(tile_size % group_layout_t::template thread_count<1>() == 0);
         _CCCL_IKET_RANGE_START(SquadScan);
         if (is_last_tile)
         {
           scan_tile<true>(
-            squad,
+            group,
             phaseThreadAndWarpAggrR,
             phaseAggrExclusiveCtaR,
             phaseInOutRW,
@@ -923,7 +912,7 @@ struct lookahead_scan_closure
         else
         {
           scan_tile<false>(
-            squad,
+            group,
             phaseThreadAndWarpAggrR,
             phaseAggrExclusiveCtaR,
             phaseInOutRW,
@@ -935,15 +924,14 @@ struct lookahead_scan_closure
         _CCCL_IKET_RANGE_END(SquadScan);
       }
 
-      // slice is intentional, see SquadDesc::operator==()
-      if (squad == squadStore) // NOLINT(cppcoreguidelines-slicing)
+      if (group.rank(block) == store_group)
       {
         _CCCL_IKET_RANGE_START(SquadStore);
-        store_tile(squad, phaseInOutS, valid_items, idxTileBase);
+        store_tile(group, phaseInOutS, valid_items, idxTileBase);
         _CCCL_IKET_RANGE_END(SquadStore);
       }
 
-      // All squads: Check loop condition and update next tile index
+      // All groups: Check loop condition and update next tile index
       if (!nextIdxTileValid)
       {
         break;
@@ -954,9 +942,8 @@ struct lookahead_scan_closure
         (idxTile = static_cast<int>(regNextBlockIdx.x);));
     }
 
-    // epilogue: after the load squad finished, we can start ramping up the next kernel
-    // slice is intentional, see SquadDesc::operator==()
-    if (squad == squadLoadAndNextIdx) // NOLINT(cppcoreguidelines-slicing)
+    // epilogue: after the load group finished, we can start ramping up the next kernel
+    if (group.rank(block) == load_group)
     {
       _CCCL_PDL_TRIGGER_NEXT_LAUNCH();
     }
@@ -980,10 +967,14 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_scan_lookahead_body(
 #if __cccl_ptx_isa >= 860
   _CCCL_IKET_RANGE_PUSH(Prologue);
 
-  // Cache special registers at the start of kernel, since getting them takes a few cycles
-  warpspeed::SpecialRegisters specialRegisters = _CUB::detail::warpspeed::getSpecialRegisters();
-
   static constexpr ScanLookaheadPolicy policy = _CUB::detail::current_policy<PolicySelector>().lookahead;
+  using hierarchy_t =
+    ::cuda::hierarchy<::cuda::thread_level,
+                      decltype(::cuda::grid_dims(gridDim.x)),
+                      decltype(::cuda::block_dims<__scan_detail::num_total_threads(policy)>())>;
+  const hierarchy_t hierarchy{
+    ::cuda::grid_dims(gridDim.x), ::cuda::block_dims<__scan_detail::num_total_threads(policy)>()};
+  const ::cuda::experimental::coop::this_block<hierarchy_t> block{hierarchy};
 
   // Set up the shared memory resources
   auto res = [&] {
@@ -991,11 +982,11 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_scan_lookahead_body(
     warpspeed::SmemAllocator smemAllocator{};
     auto r = __scan_detail::allocResources<PolicySelector, InputT, OutputT, AccumT>(
       syncHandler, smemAllocator, params.numStages);
-    syncHandler.clusterInitSync<__scan_detail::num_total_threads(policy)>(specialRegisters);
+    syncHandler.init(block);
     return r;
   }();
 
-  // Dispatch each warp to its respective squad
+  // Dispatch each warp to its respective group
   using closure_t = lookahead_scan_closure<
     PolicySelector,
     InputT,
@@ -1005,11 +996,23 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_scan_lookahead_body(
     RealInitValueT,
     ForceInclusive,
     StableReductionOrder>;
-  _CUB::detail::warpspeed::squadDispatch(
-    specialRegisters, closure_t::scanSquads, [&](warpspeed::Squad squad) _CCCL_FORCEINLINE_LAMBDA {
-      // we load the initial value after the squad dispatch, so only the squads needing it emit an LDG
-      closure_t{specialRegisters, params, scan_op, static_cast<RealInitValueT>(init_value), res}.dispatch_squad(squad);
-    });
+  _CCCL_PDL_GRID_DEPENDENCY_SYNC();
+  int first_tile;
+  NV_IF_ELSE_TARGET(NV_PROVIDES_SM_100, (first_tile = block.template rank_as<int>(::cuda::grid);), ({
+                      __shared__ int initial_tile;
+                      if (::cuda::gpu_thread.is_root_rank(block))
+                      {
+                        initial_tile = static_cast<int>(::atomicAdd(params.atomicCounter, 1u));
+                      }
+                      block.sync();
+                      first_tile = initial_tile;
+                    }));
+
+  const auto work_group = closure_t::group_layout_t::make_group(block);
+  work_group.with_static_unit_count([&](const auto& group) _CCCL_FORCEINLINE_LAMBDA {
+    // Load the initial value after dispatch, so only the groups needing it emit an LDG.
+    closure_t{first_tile, params, scan_op, static_cast<RealInitValueT>(init_value), res}.dispatch_group(group);
+  });
 #endif // __cccl_ptx_isa >= 860
 }
 

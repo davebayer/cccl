@@ -13,19 +13,16 @@
 #endif // no system header
 
 #include <cub/detail/warpspeed/constant_assert.cuh>
-#include <cub/detail/warpspeed/special_registers.cuh>
 
 #include <cuda/__ptx/instructions/mbarrier_init.h>
+#include <cuda/hierarchy>
 #include <cuda/std/cstdint>
-
-#include <nv/target>
 
 CUB_NAMESPACE_BEGIN
 
 namespace detail::warpspeed
 {
-// SkipSync is a tag type that is used to indicate that a SyncHandler.blockInit
-// should forgo syncing.
+// SkipSync leaves synchronization after barrier initialization to the caller.
 struct SkipSync
 {};
 
@@ -93,9 +90,9 @@ struct SyncHandler
     mNumPhases[resourceHandle]++;
   }
 
-  // clusterInitSync can only be called on device.
-  template <int NumThreads>
-  _CCCL_DEVICE_API void clusterInitSync(SpecialRegisters sr, SkipSync)
+  // Every thread in the group participates in barrier initialization.
+  template <typename Group>
+  _CCCL_DEVICE_API void init(const Group& group, SkipSync)
   {
     _WS_CONSTANT_ASSERT(!mHasInitialized, "Cannot initialize SyncHandler twice.");
     mHasInitialized = true;
@@ -121,7 +118,8 @@ struct SyncHandler
         uint64_t* ptrBar           = mPtrBar[ri][pi];
         const int numOwningThreads = mNumOwningThreads[ri][pi];
         // use block strided iteration to vectorize setup of barriers
-        for (int si = static_cast<int>(sr.threadIdxX); si < numStages; si += NumThreads)
+        for (int si = ::cuda::gpu_thread.rank_as<int>(group); si < numStages;
+             si += ::cuda::gpu_thread.count_as<int>(group))
         {
           ::cuda::ptx::mbarrier_init(&ptrBar[si], numOwningThreads);
         }
@@ -129,14 +127,11 @@ struct SyncHandler
     }
   }
 
-  template <int NumThreads>
-  _CCCL_DEVICE_API void clusterInitSync(SpecialRegisters sr)
+  template <typename Group>
+  _CCCL_DEVICE_API void init(const Group& group)
   {
-    NV_IF_TARGET(NV_PROVIDES_SM_90, ({
-                   clusterInitSync<NumThreads>(sr, SkipSync{});
-                   __cluster_barrier_arrive_relaxed();
-                   __cluster_barrier_wait();
-                 }))
+    init(group, SkipSync{});
+    group.sync();
   }
 };
 } // namespace detail::warpspeed

@@ -22,6 +22,7 @@
 #endif // no system header
 
 #include <cuda/__fwd/hierarchy.h>
+#include <cuda/__hierarchy/group_queries.h>
 #include <cuda/__warp/lane_mask.h>
 #include <cuda/std/__concepts/concept_macros.h>
 #include <cuda/std/__concepts/same_as.h>
@@ -37,28 +38,7 @@
 namespace cuda::experimental::coop
 {
 template <class _Group>
-_CCCL_CONCEPT group = _CCCL_REQUIRES_EXPR((_Group), _Group&& __g, const _Group&& __cg)(
-  // Member types.
-  typename(typename _Group::unit_type),
-  requires(__is_hierarchy_level_v<typename _Group::unit_type>),
-  typename(typename _Group::level_type),
-  requires(__is_hierarchy_level_v<typename _Group::level_type>),
-  typename(typename _Group::hierarchy_type),
-  requires(__is_hierarchy_v<typename _Group::hierarchy_type>),
-
-  // Getters.
-  _Same_as(const typename _Group::hierarchy_type&) __cg.hierarchy(),
-
-  // Synchronization.
-  _Same_as(void) __g.sync(),
-  _Same_as(void) __g.sync_aligned(),
-
-  // Properties.
-  _Same_as(bool) _Group::is_always_contiguous(),
-  (::cuda::std::bool_constant<_Group::is_always_contiguous()>::value)
-
-  // todo: add __sub_unit_queryable and __super_unit_queryable
-);
+_CCCL_CONCEPT group = ::cuda::__coop_group<_Group>;
 
 //! @brief Semantic requirement: @c is_always_contiguous() is true only if each group
 //! occupies a contiguous range of physical units and @c unit_rank() numbers them

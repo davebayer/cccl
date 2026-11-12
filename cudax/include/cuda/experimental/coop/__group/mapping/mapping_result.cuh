@@ -256,8 +256,12 @@ struct __mapping_result<__static_unit_counts<_StaticUnitCounts...>, _IsAlwaysExh
   [[nodiscard]] _CCCL_DEVICE_API static constexpr ::cuda::std::size_t static_unit_count(::cuda::std::size_t __i)
   {
     _CCCL_ASSERT(__i < _StaticGroupCount, "__i out of range");
-    constexpr ::cuda::std::size_t __counts[]{_StaticUnitCounts...};
-    return __counts[__i];
+    // Keep runtime queries in registers. Dynamically indexing a local constexpr
+    // array otherwise materializes the count table in each thread's stack.
+    ::cuda::std::size_t __index  = 0;
+    ::cuda::std::size_t __result = 0;
+    ((__result = (__i == __index++) ? _StaticUnitCounts : __result), ...);
+    return __result;
   }
 
   [[nodiscard]] _CCCL_DEVICE_API ::cuda::std::uint32_t unit_count() const

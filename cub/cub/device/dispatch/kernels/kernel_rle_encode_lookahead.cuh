@@ -14,9 +14,7 @@
 #endif // no system header
 
 #if __cccl_ptx_isa >= 920
-#  include <cub/detail/warpspeed/special_registers.cuh>
-#  include <cub/detail/warpspeed/squad/squad.cuh>
-#  include <cub/detail/warpspeed/squad/squad_desc.cuh>
+#  include <cub/detail/warpspeed/groups.cuh>
 #  include <cub/device/dispatch/tuning/tuning_rle_encode.cuh>
 #  include <cub/util_arch.cuh>
 #  include <cub/util_device.cuh>
@@ -25,6 +23,7 @@
 
 #  include <cuda/__cmath/ceil_div.h>
 #  include <cuda/__memory/ptr_rebind.h>
+#  include <cuda/hierarchy>
 #  include <cuda/ptx>
 #  include <cuda/std/__algorithm/max.h>
 #  include <cuda/std/__algorithm/min.h>
@@ -36,6 +35,8 @@
 #  include <cuda/std/__limits/numeric_limits.h>
 #  include <cuda/std/__type_traits/is_same.h>
 #  include <cuda/std/cstdint>
+
+#  include <cuda/experimental/coop/group>
 
 #  include <nv/target>
 #  if !_CCCL_HAS_NV_ATOMIC_BUILTINS()
@@ -740,9 +741,17 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
       <= RleLookaheadPolicy::static_smem_budget,
     "static shared memory exceeds the budget assumed by the floor launch guarantee");
 
-  const int tid     = threadIdx.x;
-  const int lane_id = tid & 31;
-  const int bid     = blockIdx.x;
+  using group_layout = warpspeed::group_layout<1, compute_warps, 1, store_warps, 1>;
+  using hierarchy_t =
+    ::cuda::hierarchy<::cuda::thread_level,
+                      decltype(::cuda::grid_dims(gridDim.x)),
+                      decltype(::cuda::block_dims<group_layout::total_threads>())>;
+  const hierarchy_t hierarchy{::cuda::grid_dims(gridDim.x), ::cuda::block_dims<group_layout::total_threads>()};
+  const auto block  = ::cuda::experimental::coop::make_this_group(::cuda::block, hierarchy);
+  const auto warp   = ::cuda::experimental::coop::make_this_group(::cuda::warp, hierarchy);
+  const int tid     = ::cuda::gpu_thread.rank_as<int>(block);
+  const int lane_id = ::cuda::gpu_thread.rank_as<int>(warp);
+  const int bid     = block.template rank_as<int>(::cuda::grid);
   const unsigned base_skip =
     (int{alignof(KeyT)} < detail::bulk_copy_min_align)
       ? (static_cast<unsigned>(::cuda::std::bit_cast<::cuda::std::uintptr_t>(d_keys))
@@ -773,19 +782,15 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
   // the TMA operations access shared memory through the async proxy. these are separate visibility domains,
   // so the init writes are not automatically visible to TMA.
   ptx::fence_proxy_async(ptx::space_shared);
-  __syncthreads();
+  block.sync();
 
-  constexpr warpspeed::SquadDesc squadLoad{0, 1};
-  constexpr warpspeed::SquadDesc squadCompute{1, compute_warps};
-  constexpr warpspeed::SquadDesc squadPoll{2, 1};
-  constexpr warpspeed::SquadDesc squadStore{3, store_warps};
-  constexpr warpspeed::SquadDesc squadBookkeeper{4, 1};
-  constexpr warpspeed::SquadDesc squads[] = {squadLoad, squadCompute, squadPoll, squadStore, squadBookkeeper};
-
-  _CUB::detail::warpspeed::squadDispatch(
-    _CUB::detail::warpspeed::getSpecialRegisters(), squads, [&](warpspeed::Squad squad) _CCCL_FORCEINLINE_LAMBDA {
+  const auto work_group = group_layout::make_group(block);
+  work_group.with_static_unit_count(
+    // Keep the owning group alive while each callback uses its statically sized view.
+    [&](const auto& group) _CCCL_FORCEINLINE_LAMBDA {
+      const auto group_rank = group.rank(block);
       // if you are load
-      if (squad == squadLoad)
+      if (group_rank == 0)
       {
         // CLC tile assignment: gen0 tile = this CTA's launch id (blockIdx.x)
         int tile_id = bid;
@@ -814,7 +819,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
             {
               ptx::mbarrier_arrive(&full[slot_id]);
             }
-            __syncwarp();
+            warp.sync();
             break;
           }
           // over-fetch one 16B chunk to the left, so that we get last tiles last key
@@ -838,9 +843,9 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
         }
       }
       // if you are compute
-      else if (squad == squadCompute)
+      else if (group_rank == 1)
       {
-        const int compute_warp_id  = squad.warpRank();
+        const int compute_warp_id  = ::cuda::warp.rank_as<int>(group);
         const int warp_tile_offset = compute_warp_id * warp_tile_size;
         ring_cursor_t key_ring;
         ring_cursor_t pos_ring;
@@ -936,7 +941,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
             _CUB::detail::rle::encode::stage_head_positions<items_per_thread>(
               my_flags, pos_dst, warp_tile_offset, lane_id);
           } // stage flags
-          __syncwarp();
+          warp.sync();
           if (lane_id == 0)
           {
             ptx::mbarrier_arrive(&staged_warp_tile[slot_id][compute_warp_id]); // this warp-tile's positions ready
@@ -944,7 +949,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
         }
       }
       // if you are poll
-      else if (squad == squadPoll)
+      else if (group_rank == 2)
       {
         // running prefix state: everything folded so far, i.e. tiles [0, first_unseen_tile_id)
         int first_unseen_tile_id          = 0;
@@ -978,7 +983,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
             poll_dense_mode,
             curr_prefix_run_count,
             curr_prefix_open_length);
-          __syncwarp();
+          warp.sync();
 
           // hand the prefix to the STORE warps and the bookkeeper
           if (lane_id == 0)
@@ -991,9 +996,9 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
         }
       }
       // if you are store
-      else if (squad == squadStore)
+      else if (group_rank == 3)
       {
-        const int store_warp_idx = squad.warpRank();
+        const int store_warp_idx = ::cuda::warp.rank_as<int>(group);
         ring_cursor_t key_ring;
         ring_cursor_t pos_ring;
         for (int pipeline_gen = 0;;
@@ -1053,7 +1058,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
               buf_run_length[it] = run.next_head_pos - run.head_pos_in_warp_tile;
             }
 
-            __syncwarp();
+            warp.sync();
             if (lane_id == 0)
             {
               if (pos_ring_stages < key_ring_stages)
@@ -1082,7 +1087,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
                 d_counts[global_run_idx] = buf_run_length[it];
               }
             }
-            __syncwarp();
+            warp.sync();
             if (lane_id == 0)
             {
               ptx::mbarrier_arrive(&empty[slot_id]);
@@ -1162,7 +1167,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
             }
             // ^^^ regressed case ^^^
           }
-          __syncwarp();
+          warp.sync();
           if (lane_id == 0)
           {
             if (pos_ring_stages < key_ring_stages)
@@ -1233,7 +1238,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
             }
             // else: this run is open in this tile, now this became a job for the next tile (see below)
           }
-          __syncwarp();
+          warp.sync();
           // now we need to finish last tile's open run
           if (lane_id == 0)
           {

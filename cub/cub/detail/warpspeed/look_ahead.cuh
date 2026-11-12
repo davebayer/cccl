@@ -17,7 +17,6 @@
 #include <cub/detail/strong_load.cuh>
 #include <cub/detail/strong_store.cuh>
 #include <cub/detail/uninitialized.cuh>
-#include <cub/detail/warpspeed/special_registers.cuh>
 #include <cub/thread/thread_load.cuh>
 #include <cub/thread/thread_store.cuh>
 #include <cub/warp/specializations/warp_redux.cuh> // IWYU pragma: keep
@@ -25,9 +24,10 @@
 
 #include <cuda/__cmath/pow2.h>
 #include <cuda/__functional/operator_properties.h>
+#include <cuda/__hierarchy/group_queries.h>
 #include <cuda/__memory/is_aligned.h>
-#include <cuda/__ptx/instructions/get_sreg.h>
 #include <cuda/__type_traits/is_trivially_copyable.h>
+#include <cuda/hierarchy>
 #include <cuda/std/__algorithm/min.h>
 #include <cuda/std/__atomic/order.h>
 #include <cuda/std/__atomic/scopes.h>
@@ -155,9 +155,9 @@ _CCCL_DEVICE_API tile_state_t<AccumT> loadTileAggregate(tile_state_t<AccumT>* pt
 //
 // If the index idxTileCur + ii of the loaded state is equal to or exceeds idxTileNext, i.e., idxTileCur + ii >=
 // idxTileNext, then the state is not loaded from memory and set to empty.
-template <int NumTileStatesPerThread, typename AccumT>
+template <int NumTileStatesPerThread, typename WarpGroup, typename AccumT>
 _CCCL_DEVICE_API void warpLoadLookahead(
-  int laneIdx,
+  const WarpGroup& group,
   tile_state_t<AccumT> (&outTileStates)[NumTileStatesPerThread],
   tile_state_t<AccumT>* ptrTileStates,
   int idxTileCur,
@@ -165,6 +165,7 @@ _CCCL_DEVICE_API void warpLoadLookahead(
   int num_tiles)
 {
   _CCCL_IKET_RANGE_PUSH(LoadTileStates);
+  const int laneIdx = ::cuda::gpu_thread.rank_as<int>(group);
   for (int i = 0; i < NumTileStatesPerThread; ++i)
   {
     const int idxTileLookahead = idxTileCur + (32 * i) + laneIdx;
@@ -190,9 +191,9 @@ _CCCL_DEVICE_API void warpLoadLookahead(
 // calculate the value of aggrExclusiveCta from the preceding states.
 //
 // The function must be called from a single warp. All passed arguments must be warp-uniform.
-template <int NumTileStatesPerThread, typename AccumT, typename ScanOpT>
+template <int NumTileStatesPerThread, typename WarpGroup, typename AccumT, typename ScanOpT>
 [[nodiscard]] _CCCL_DEVICE_API _CCCL_FORCEINLINE AccumT warpIncrementalLookahead(
-  SpecialRegisters specialRegisters,
+  const WarpGroup& group,
   tile_state_t<AccumT>* ptrTileStates,
   const int idxTilePrev,
   const AccumT aggrExclusiveCtaPrev,
@@ -200,8 +201,11 @@ template <int NumTileStatesPerThread, typename AccumT, typename ScanOpT>
   ScanOpT& scan_op,
   const int num_tiles)
 {
-  const int laneIdx                                       = static_cast<int>(specialRegisters.laneIdx);
-  [[maybe_unused]] const ::cuda::std::uint32_t lanemaskEq = ::cuda::ptx::get_sreg_lanemask_eq();
+  static_assert(::cuda::__static_count_query_group<::cuda::thread_level, WarpGroup>() == 32,
+                "Lookahead requires a full warp.");
+  static_assert(WarpGroup::is_always_contiguous(), "Lookahead requires contiguous lanes.");
+  const auto lane_mask                   = group.__mapping_result().lane_mask().value();
+  [[maybe_unused]] const auto lanemaskEq = 1u << ::cuda::gpu_thread.rank_as<unsigned>(group);
 
   int idxTileCur             = idxTilePrev;
   AccumT aggrExclusiveCtaCur = aggrExclusiveCtaPrev;
@@ -214,13 +218,13 @@ template <int NumTileStatesPerThread, typename AccumT, typename ScanOpT>
   while (idxTileCur < idxTileNext)
   {
     tile_state_t<AccumT> regTmpStates[NumTileStatesPerThread];
-    _CUB::detail::warpspeed::warpLoadLookahead(laneIdx, regTmpStates, ptrTileStates, idxTileCur, idxTileNext, num_tiles);
+    _CUB::detail::warpspeed::warpLoadLookahead(group, regTmpStates, ptrTileStates, idxTileCur, idxTileNext, num_tiles);
 
     for (int idx = 0; idx < NumTileStatesPerThread; ++idx)
     {
       // Bitmask with 1 bits indicating which lane has a tile aggregate
       const ::cuda::std::uint32_t warp_has_aggregate_mask =
-        __ballot_sync(0xffffffffu, regTmpStates[idx].state == scan_state::tile_aggregate);
+        __ballot_sync(lane_mask, regTmpStates[idx].state == scan_state::tile_aggregate);
 
       // Bitmask with 1 bits for all rightmost lanes having a tile aggregate
       const ::cuda::std::uint32_t warp_right_aggregates_mask = warp_has_aggregate_mask & (~warp_has_aggregate_mask - 1);
@@ -243,7 +247,7 @@ template <int NumTileStatesPerThread, typename AccumT, typename ScanOpT>
           {
             const bool use_value = lanemaskEq & warp_right_aggregates_mask;
             const AccumT value   = use_value ? regTmpStates[idx].value : cuda::identity_element<ScanOpT, AccumT>();
-            local_aggr           = _CUB::detail::warp_redux_sm80(value, ~0, scan_op);
+            local_aggr           = _CUB::detail::warp_redux_sm80(value, lane_mask, scan_op);
           }
           else
           {
@@ -276,9 +280,9 @@ template <int NumTileStatesPerThread, typename AccumT, typename ScanOpT>
 // from there directly. Because every reduction begins at the same fixed tiles, no matter which tiles happened to finish
 // first, the order in which values are summed is always the same and the result is identical on every run.
 // idxTilePrev/aggrExclusiveCtaPrev are updated by reference to the last multiple of 32.
-template <int NumTileStatesPerThread, typename AccumT, typename ScanOpT>
+template <int NumTileStatesPerThread, typename WarpGroup, typename AccumT, typename ScanOpT>
 [[nodiscard]] _CCCL_DEVICE_API _CCCL_FORCEINLINE AccumT warpIncrementalLookaheadStable(
-  SpecialRegisters specialRegisters,
+  const WarpGroup& group,
   tile_state_t<AccumT>* ptrTileStates,
   int& idxTilePrev,
   AccumT& aggrExclusiveCtaPrev,
@@ -286,8 +290,11 @@ template <int NumTileStatesPerThread, typename AccumT, typename ScanOpT>
   ScanOpT& scan_op,
   const int num_tiles)
 {
-  const int laneIdx                      = static_cast<int>(specialRegisters.laneIdx);
-  const ::cuda::std::uint32_t lanemaskEq = ::cuda::ptx::get_sreg_lanemask_eq();
+  static_assert(::cuda::__static_count_query_group<::cuda::thread_level, WarpGroup>() == 32,
+                "Lookahead requires a full warp.");
+  static_assert(WarpGroup::is_always_contiguous(), "Lookahead requires contiguous lanes.");
+  const auto lane_mask  = group.__mapping_result().lane_mask().value();
+  const auto lanemaskEq = 1u << ::cuda::gpu_thread.rank_as<unsigned>(group);
 
   int idxTileCur             = idxTilePrev;
   AccumT aggrExclusiveCtaCur = aggrExclusiveCtaPrev;
@@ -300,13 +307,13 @@ template <int NumTileStatesPerThread, typename AccumT, typename ScanOpT>
   while (idxTileCur < idxTileNext)
   {
     tile_state_t<AccumT> regTmpStates[NumTileStatesPerThread];
-    _CUB::detail::warpspeed::warpLoadLookahead(laneIdx, regTmpStates, ptrTileStates, idxTileCur, idxTileNext, num_tiles);
+    _CUB::detail::warpspeed::warpLoadLookahead(group, regTmpStates, ptrTileStates, idxTileCur, idxTileNext, num_tiles);
 
     for (int idx = 0; idx < NumTileStatesPerThread; ++idx)
     {
       // Bitmask with 1 bits indicating which lane has a tile aggregate
       const ::cuda::std::uint32_t warp_has_aggregate_mask =
-        __ballot_sync(0xffffffffu, regTmpStates[idx].state == scan_state::tile_aggregate);
+        __ballot_sync(lane_mask, regTmpStates[idx].state == scan_state::tile_aggregate);
 
       // Bitmask with 1 bits for the contiguous run of lanes having a tile aggregate starting from LSB
       const ::cuda::std::uint32_t warp_right_aggregates_mask = warp_has_aggregate_mask & (~warp_has_aggregate_mask - 1);

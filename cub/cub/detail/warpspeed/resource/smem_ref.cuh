@@ -14,8 +14,8 @@
 
 #include <cub/detail/iket_support.cuh>
 #include <cub/detail/warpspeed/resource/smem_resource_raw.cuh>
-#include <cub/detail/warpspeed/squad/squad.cuh>
 
+#include <cuda/hierarchy>
 #include <cuda/std/cstdint>
 
 CUB_NAMESPACE_BEGIN
@@ -80,11 +80,12 @@ struct SmemRef
     return mSmemResourceRaw.ptrCurBarrierRelease(mCurPhase);
   }
 
-  _CCCL_DEVICE_API void squadIncreaseTxCount(const Squad& squad, int txCount)
+  template <typename Group>
+  _CCCL_DEVICE_API void expect_transaction(const Group& group, int txCount)
   {
     mTxCountIsSet = true;
     // Only leader thread increments txCount
-    txCount = squad.isLeaderThread() ? txCount : 0;
+    txCount = ::cuda::gpu_thread.is_root_rank(group) ? txCount : 0;
     mTxCount += txCount;
   }
 

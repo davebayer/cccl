@@ -16,6 +16,13 @@ This living document serves as a guide to the design of the internal structure o
 CUB provides layered algorithms that correspond to the thread/warp/block/device hierarchy of threads in CUDA.
 There are distinct algorithms for each layer and higher-level layers build on top of those below.
 
+The warp-specialized lookahead kernels use :doc:`CCCL Cooperative Groups <../cudax/coop/group/index>`
+from ``<cuda/experimental/coop/group>``.
+The ``CUB::CUB`` CMake target supplies the required include path,
+and CUB installations include these group headers even when experimental library installation is disabled.
+When using headers directly from the repository, add ``cudax/include`` to the include paths
+alongside ``cub``, ``thrust``, and ``libcudacxx/include``.
+
 For example, CUB has four flavors of ``reduce``,
 one for each layer: ``ThreadReduce, WarpReduce, BlockReduce``, and ``DeviceReduce``.
 Each is unique in how it is invoked,

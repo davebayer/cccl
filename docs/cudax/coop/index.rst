@@ -12,5 +12,3 @@ These APIs are successors to both the original cooperative groups (``<cooperativ
 
   group/index
   algorithm/index
-
-.. warning:: The CCCL Cooperative Groups implementation requires some experimental code to be enabled in libcu++ by defining ``_CUDAX_ENABLE_GROUP_FEATURES_IN_LIBCUDACXX`` before including any CCCL header.

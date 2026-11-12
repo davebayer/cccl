@@ -15,7 +15,6 @@
 #include <cub/detail/iket_support.cuh>
 #include <cub/detail/warpspeed/allocators/smem_allocator.cuh>
 #include <cub/detail/warpspeed/constant_assert.cuh>
-#include <cub/detail/warpspeed/squad/squad_desc.cuh>
 #include <cub/detail/warpspeed/sync_handler.cuh>
 
 #include <cuda/__ptx/instructions/fence.h>
@@ -66,45 +65,27 @@ struct SmemResourceRaw
     }
   }
 
-  template <int NumSquads>
   _CCCL_HOST_DEVICE_API constexpr void
-  addPhase(SyncHandler& syncHandler, ::cuda::std::uint64_t* ptrBarrier, const SquadDesc (&squads)[NumSquads])
+  addPhase(SyncHandler& syncHandler, ::cuda::std::uint64_t* ptrBarrier, int owning_threads)
   {
-    const int numOwningThreads = _CUB::detail::warpspeed::squadCountThreads(squads);
-
-    const int curPhase = mNumPhases;
-    mNumPhases++;
-
-    syncHandler.registerPhase(mResourceHandle, numOwningThreads, ptrBarrier);
+    _WS_CONSTANT_ASSERT(mNumPhases < mMaxNumPhases, "Cannot register more phases than maximum.");
+    _WS_CONSTANT_ASSERT(owning_threads > 0, "A phase must have at least one owning thread.");
+    const int curPhase = mNumPhases++;
+    syncHandler.registerPhase(mResourceHandle, owning_threads, ptrBarrier);
     mPtrBar[curPhase] = ptrBarrier;
   }
 
-  template <int NumSquads>
   _CCCL_HOST_DEVICE_API constexpr void
-  addPhase(SyncHandler& syncHandler, SmemAllocator& smemAllocator, const SquadDesc (&squads)[NumSquads])
+  addPhase(SyncHandler& syncHandler, SmemAllocator& smemAllocator, int owning_threads)
   {
     void* ptrBar_raw = smemAllocator.alloc(mStageCount * sizeof(::cuda::std::uint64_t), alignof(::cuda::std::uint64_t));
-    // we don't need the pointer during constant evaluation (and casting is not allowed)
+    // Pointer casts are unnecessary and unavailable during constant evaluation of shared memory sizing.
     ::cuda::std::uint64_t* ptrBar = nullptr;
     if (!::cuda::std::is_constant_evaluated())
     {
       ptrBar = static_cast<::cuda::std::uint64_t*>(ptrBar_raw);
     }
-    addPhase(syncHandler, ptrBar, squads);
-  }
-
-  _CCCL_HOST_DEVICE_API void
-  addPhase(SyncHandler& syncHandler, ::cuda::std::uint64_t* ptrBarrier, const SquadDesc& squad)
-  {
-    const SquadDesc squads[] = {squad};
-    addPhase(syncHandler, ptrBarrier, squads);
-  }
-
-  _CCCL_HOST_DEVICE_API constexpr void
-  addPhase(SyncHandler& syncHandler, SmemAllocator& smemAllocator, const SquadDesc& squad)
-  {
-    const SquadDesc squads[] = {squad};
-    addPhase(syncHandler, smemAllocator, squads);
+    addPhase(syncHandler, ptrBar, owning_threads);
   }
 
   _CCCL_DEVICE_API void incrementStage()

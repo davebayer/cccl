@@ -23,7 +23,6 @@
 #include <cub/detail/numeric_traits.cuh>
 #include <cub/detail/warpspeed/allocators/smem_allocator.cuh>
 #include <cub/detail/warpspeed/resource/smem_resource_raw.cuh>
-#include <cub/detail/warpspeed/squad/squad_desc.cuh>
 #include <cub/detail/warpspeed/sync_handler.cuh>
 #include <cub/device/dispatch/tuning/common.cuh>
 #include <cub/thread/thread_load.cuh>
@@ -764,31 +763,6 @@ _CCCL_HOST_DEVICE_API constexpr auto make_mem_scaled_lookback_scan_policy(
     ScanLookaheadPolicy{}};
 }
 
-_CCCL_HOST_DEVICE_API constexpr warpspeed::SquadDesc squad_reduce(const ScanLookaheadPolicy& policy)
-{
-  return warpspeed::SquadDesc{0, policy.reduce_and_scan_warps};
-}
-
-_CCCL_HOST_DEVICE_API constexpr warpspeed::SquadDesc squad_scan(const ScanLookaheadPolicy& policy)
-{
-  return warpspeed::SquadDesc{1, policy.reduce_and_scan_warps};
-}
-
-_CCCL_HOST_DEVICE_API constexpr warpspeed::SquadDesc squad_load_and_next_idx(const ScanLookaheadPolicy&)
-{
-  return warpspeed::SquadDesc{2, 1}; // no point in being more than 1 warp
-}
-
-_CCCL_HOST_DEVICE_API constexpr warpspeed::SquadDesc squad_lookahead(const ScanLookaheadPolicy&)
-{
-  return warpspeed::SquadDesc{3, 1}; // must have 1 warp
-}
-
-_CCCL_HOST_DEVICE_API constexpr warpspeed::SquadDesc squad_store(const ScanLookaheadPolicy&)
-{
-  return warpspeed::SquadDesc{4, 1}; // issues the bulk store, so 1 warp is enough
-}
-
 // TODO(bgruber): put this somewhere else
 constexpr _CCCL_HOST_DEVICE_API bool is_arithmetic_type(type_t type)
 {
@@ -833,27 +807,21 @@ _CCCL_HOST_DEVICE_API constexpr void setup_scan_resources(
   SmemSumExclusiveCtaT& smemSumExclusiveCta,
   SmemSumThreadAndWarpT& smemSumThreadAndWarp)
 {
-  const warpspeed::SquadDesc scanSquads[] = {
-    _CUB::detail::scan::squad_reduce(policy),
-    _CUB::detail::scan::squad_scan(policy),
-    _CUB::detail::scan::squad_load_and_next_idx(policy),
-    _CUB::detail::scan::squad_lookahead(policy),
-    _CUB::detail::scan::squad_store(policy),
-  };
+  const int compute_threads = policy.reduce_and_scan_warps * warp_threads;
+  const int total_threads   = 2 * compute_threads + 3 * warp_threads;
 
-  smemInOut.addPhase(syncHandler, smemAllocator, _CUB::detail::scan::squad_load_and_next_idx(policy));
-  smemInOut.addPhase(
-    syncHandler, smemAllocator, {_CUB::detail::scan::squad_reduce(policy), _CUB::detail::scan::squad_scan(policy)});
-  smemInOut.addPhase(syncHandler, smemAllocator, _CUB::detail::scan::squad_store(policy));
+  smemInOut.addPhase(syncHandler, smemAllocator, warp_threads);
+  smemInOut.addPhase(syncHandler, smemAllocator, 2 * compute_threads);
+  smemInOut.addPhase(syncHandler, smemAllocator, warp_threads);
 
-  smemNextBlockIdx.addPhase(syncHandler, smemAllocator, _CUB::detail::scan::squad_load_and_next_idx(policy));
-  smemNextBlockIdx.addPhase(syncHandler, smemAllocator, scanSquads);
+  smemNextBlockIdx.addPhase(syncHandler, smemAllocator, warp_threads);
+  smemNextBlockIdx.addPhase(syncHandler, smemAllocator, total_threads);
 
-  smemSumExclusiveCta.addPhase(syncHandler, smemAllocator, _CUB::detail::scan::squad_lookahead(policy));
-  smemSumExclusiveCta.addPhase(syncHandler, smemAllocator, _CUB::detail::scan::squad_scan(policy));
+  smemSumExclusiveCta.addPhase(syncHandler, smemAllocator, warp_threads);
+  smemSumExclusiveCta.addPhase(syncHandler, smemAllocator, compute_threads);
 
-  smemSumThreadAndWarp.addPhase(syncHandler, smemAllocator, _CUB::detail::scan::squad_reduce(policy));
-  smemSumThreadAndWarp.addPhase(syncHandler, smemAllocator, _CUB::detail::scan::squad_scan(policy));
+  smemSumThreadAndWarp.addPhase(syncHandler, smemAllocator, compute_threads);
+  smemSumThreadAndWarp.addPhase(syncHandler, smemAllocator, compute_threads);
 }
 
 _CCCL_HOST_DEVICE_API constexpr auto smem_for_stages(
@@ -872,8 +840,7 @@ _CCCL_HOST_DEVICE_API constexpr auto smem_for_stages(
   const int inout_bytes = (policy.tile_size() * input_size) + 16;
   // Match sizeof(InOutT): round up to the alignment so each stage matches SmemResource<InOutT>.
   const int inout_stride    = (inout_bytes + align_inout - 1) & ~(align_inout - 1);
-  const auto reduce_squad   = _CUB::detail::scan::squad_reduce(policy);
-  const int sum_thread_warp = (reduce_squad.threadCount() + reduce_squad.warpCount()) * accum_size;
+  const int sum_thread_warp = (policy.reduce_and_scan_warps * (warp_threads + 1)) * accum_size;
 
   const int num_sum_exclusive_cta_stages =
     policy.lookahead_stages > 0 ? policy.lookahead_stages : ::cuda::std::max(1, num_stages + policy.lookahead_stages);

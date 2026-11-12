@@ -101,6 +101,25 @@ if (NOT TARGET CUB::libcudacxx)
   target_link_libraries(_CUB_libcudacxx INTERFACE libcudacxx::libcudacxx)
 endif()
 
+# Warpspeed needs the cooperative group headers, which are bundled with CUB
+# installations even when the remaining experimental libraries are disabled.
+if (NOT TARGET CUB::coop)
+  unset(_CUB_COOP_INCLUDE_DIR CACHE)
+  find_path(
+    _CUB_COOP_INCLUDE_DIR
+    cuda/experimental/coop/group
+    REQUIRED
+    NO_CMAKE_FIND_ROOT_PATH
+    NO_DEFAULT_PATH
+    HINTS
+      "${_CUB_INCLUDE_DIR}" # Install
+      "${_CUB_INCLUDE_DIR}/../cudax/include" # Source
+  )
+  set_property(CACHE _CUB_COOP_INCLUDE_DIR PROPERTY TYPE INTERNAL)
+  _cub_declare_interface_alias(CUB::coop _CUB_coop)
+  target_include_directories(_CUB_coop INTERFACE "${_CUB_COOP_INCLUDE_DIR}")
+endif()
+
 #
 # Setup targets
 #
@@ -111,6 +130,7 @@ target_link_libraries(
   INTERFACE #
     CUB::libcudacxx
     CUB::Thrust
+    CUB::coop
 )
 
 function(_cub_test_flag_option flag)

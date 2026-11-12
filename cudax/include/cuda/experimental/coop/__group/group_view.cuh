@@ -145,7 +145,9 @@ _CCCL_DEVICE_API decltype(auto) __with_static_unit_count_range(const _Group& __g
 
     const _StaticMappingResult __static_mapping_result{
       __mapping_result.group_count(),
-      __mapping_result.group_rank(),
+      // This leaf selects exactly one group. Preserve its identity as a constant as well as its size,
+      // so role-specific code in the callback can be eliminated before the kernel's hot loop.
+      static_cast<::cuda::std::uint32_t>(_First),
       __mapping_result.unit_count(),
       __mapping_result.unit_rank(),
       __mapping_result.lane_mask()};
