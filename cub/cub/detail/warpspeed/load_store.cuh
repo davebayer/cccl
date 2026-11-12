@@ -27,6 +27,9 @@
 #include <cuda/std/__type_traits/conditional.h>
 #include <cuda/std/cstdint>
 
+#include <cuda/experimental/coop/__algorithm/invoke_one.cuh>
+#include <cuda/experimental/coop/__group/this_group.cuh>
+
 #include <nv/target>
 
 #if __cccl_ptx_isa < 920
@@ -121,8 +124,7 @@ group_load_bulk(const Group& group, SmemRef<ResourceTp>& refDestSmem, CpAsyncOob
   if constexpr (alignof(Tp) >= 16)
   {
     // for alignments larger than 16, we can just bulk copy, even just a single element
-    if (::cuda::gpu_thread.is_root_rank(group))
-    {
+    ::cuda::experimental::coop::invoke_one(group, [&] {
       ::cuda::ptx::cp_async_bulk(
         ::cuda::std::conditional_t<__cccl_ptx_isa >= 860, ::cuda::ptx::space_shared_t, ::cuda::ptx::space_cluster_t>{},
         ::cuda::ptx::space_global,
@@ -130,15 +132,14 @@ group_load_bulk(const Group& group, SmemRef<ResourceTp>& refDestSmem, CpAsyncOob
         cpAsyncOobInfo.ptrGmem,
         cpAsyncOobInfo.origCopySizeBytes,
         ptrBar);
-    }
+    });
     refDestSmem.expect_transaction(group, cpAsyncOobInfo.underCopySizeBytes);
   }
   else
   {
     // for alignments smaller than 16, we can overcopy but need to declare the ignored bytes left and right
 #  if __cccl_ptx_isa >= 920
-    if (::cuda::gpu_thread.is_root_rank(group))
-    {
+    ::cuda::experimental::coop::invoke_one(group, [&] {
       ::cuda::ptx::cp_async_bulk_ignore_oob(
         ::cuda::ptx::space_shared,
         ::cuda::ptx::space_global,
@@ -148,7 +149,7 @@ group_load_bulk(const Group& group, SmemRef<ResourceTp>& refDestSmem, CpAsyncOob
         /* ignore left */ cpAsyncOobInfo.smemStartSkipBytes,
         /* ignore right */ cpAsyncOobInfo.ptrGmemEndAlignUp - cpAsyncOobInfo.ptrGmemEnd,
         ptrBar);
-    }
+    });
     refDestSmem.expect_transaction(group, cpAsyncOobInfo.overCopySizeBytes);
 #  else // __cccl_ptx_isa >= 920
     // if we don't have cp_async_bulk_ignore_oob, we have to undercopy and copy head and tail elements manually
@@ -178,8 +179,7 @@ group_load_bulk(const Group& group, SmemRef<ResourceTp>& refDestSmem, CpAsyncOob
     }
 
     // TODO(bgruber): we could skip the middle if underCopySizeBytes is zero
-    if (::cuda::gpu_thread.is_root_rank(group))
-    {
+    ::cuda::experimental::coop::invoke_one(group, [&] {
       ::cuda::ptx::cp_async_bulk(
         ::cuda::std::conditional_t<__cccl_ptx_isa >= 860, ::cuda::ptx::space_shared_t, ::cuda::ptx::space_cluster_t>{},
         ::cuda::ptx::space_global,
@@ -187,7 +187,7 @@ group_load_bulk(const Group& group, SmemRef<ResourceTp>& refDestSmem, CpAsyncOob
         cpAsyncOobInfo.ptrGmemStartAlignUp,
         cpAsyncOobInfo.underCopySizeBytes,
         ptrBar);
-    }
+    });
     refDestSmem.expect_transaction(group, cpAsyncOobInfo.underCopySizeBytes);
 
     // we cannot use Tp to load the head and tail elements, because sizeof(Tp) may be larger than alignof(Tp)
@@ -235,10 +235,12 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void group_store_masked_16b(
 {
   NV_IF_ELSE_TARGET(
     NV_PROVIDES_SM_100,
-    (if (::cuda::gpu_thread.is_root_rank(group)) {
-      ::cuda::ptx::cp_async_bulk_cp_mask(
-        ::cuda::ptx::space_global, ::cuda::ptx::space_shared, dstGmem, srcSmem, /*size*/ 16, byteMask);
-    }),
+    (::cuda::experimental::coop::invoke_one(
+       ::cuda::experimental::coop::make_this_group(::cuda::warp, group.hierarchy()),
+       [&] {
+         ::cuda::ptx::cp_async_bulk_cp_mask(
+           ::cuda::ptx::space_global, ::cuda::ptx::space_shared, dstGmem, srcSmem, /*size*/ 16, byteMask);
+       });),
     ({
       const int rank = ::cuda::gpu_thread.rank_as<int>(group);
       if (firstByte <= rank && rank < lastByte)
@@ -306,19 +308,19 @@ group_store_bulk_sync(const Group& group, CpAsyncOobInfo<OutputT> cpAsyncOobInfo
       // Copy the middle part. Starting at byte 0 or 16 in shared memory. This
       // is the large copy. We perform this one first, so that the compiler can
       // (hopefully) hide all the arithmetic behind this instruction.
-      if (::cuda::gpu_thread.is_root_rank(group))
-      {
-        // need to work around another optimizer bug, see: https://github.com/NVIDIA/cccl/issues/8644
+      // need to work around another optimizer bug, see: https://github.com/NVIDIA/cccl/issues/8644
+      ::cuda::experimental::coop::invoke_one(
+        ::cuda::experimental::coop::make_this_group(::cuda::warp, group.hierarchy()), [&] {
 #  if _CCCL_CUDA_COMPILER(NVCC, <, 13, 3)
-        asm volatile("" : "+l"(cpAsyncOobInfo.ptrGmemStartAlignUp));
+          asm volatile("" : "+l"(cpAsyncOobInfo.ptrGmemStartAlignUp));
 #  endif // _CCCL_CUDA_COMPILER(NVCC, <, 13, 3)
-        ::cuda::ptx::cp_async_bulk(
-          ::cuda::ptx::space_global,
-          ::cuda::ptx::space_shared,
-          cpAsyncOobInfo.ptrGmemStartAlignUp,
-          ptrSmemMiddle,
-          cpAsyncOobInfo.underCopySizeBytes);
-      }
+          ::cuda::ptx::cp_async_bulk(
+            ::cuda::ptx::space_global,
+            ::cuda::ptx::space_shared,
+            cpAsyncOobInfo.ptrGmemStartAlignUp,
+            ptrSmemMiddle,
+            cpAsyncOobInfo.underCopySizeBytes);
+        });
       if (doStartCopy)
       {
         // need to work around yet another optimizer bug, see: https://github.com/NVIDIA/cccl/issues/8838

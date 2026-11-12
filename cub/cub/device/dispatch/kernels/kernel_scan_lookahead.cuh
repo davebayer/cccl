@@ -546,9 +546,9 @@ struct lookahead_scan_closure
       // in reduce group. We need the reduce and scan groups to be the same size to do this.
       static_assert(group_layout_t::template thread_count<0>() == group_layout_t::template thread_count<1>());
 
-      // Include warp aggregates
+      // The last warp aggregate cannot contribute to another warp's prefix.
       _CCCL_PRAGMA_UNROLL_FULL()
-      for (int i = 0; i < policy.reduce_and_scan_warps; ++i)
+      for (int i = 0; i < policy.reduce_and_scan_warps - 1; ++i)
       {
         // We want a predicated unrolled loop here.
         bool include_warp = i < ::cuda::warp.rank_as<int>(group);
@@ -792,9 +792,9 @@ struct lookahead_scan_closure
   // compiler and all warp-specialization dispatch is performed once at the start of the kernel and not in any of the
   // hot loops (even if that may seem the case from a first glance at the code).
   template <typename Group>
-  _CCCL_DEVICE_API _CCCL_FORCEINLINE void dispatch_group(const Group& group) // const // TODO(bgruber): enable const
+  _CCCL_DEVICE_API _CCCL_FORCEINLINE void dispatch_group(const Group& group, int group_role) // const // TODO(bgruber):
+                                                                                             // enable const
   {
-    const ::cuda::experimental::coop::this_block<typename Group::hierarchy_type> block{group.hierarchy()};
     const int numTiles = static_cast<int>(::cuda::ceil_div(params.numElem, ::cuda::std::size_t(tile_size)));
 
     // Lookahead-specific variables:
@@ -840,7 +840,7 @@ struct lookahead_scan_closure
         _CUB::detail::warpspeed::prepareCpAsyncOob(const_cast<InputT*>(params.ptrIn) + idxTileBase, valid_items);
 
       // Async loading and async tile index stealing are very lightweight, so one group is enough to do both
-      if (group.rank(block) == load_group)
+      if (group_role == load_group)
       {
         _CCCL_IKET_RANGE_START(SquadLoadAndNextIdx);
 
@@ -870,7 +870,7 @@ struct lookahead_scan_closure
       }();
       _CCCL_IKET_RANGE_POP();
 
-      if (group.rank(block) == reduce_group)
+      if (group_role == reduce_group)
       {
         _CCCL_IKET_RANGE_START(SquadReduce);
         reduce_tile(
@@ -886,14 +886,14 @@ struct lookahead_scan_closure
         _CCCL_IKET_RANGE_END(SquadReduce);
       }
 
-      if (group.rank(block) == lookahead_group)
+      if (group_role == lookahead_group)
       {
         _CCCL_IKET_RANGE_START(SquadLookahead);
         lookahead(group, phaseAggrExclusiveCtaW, is_first_tile, idxTilePrev, AggrExclusiveCtaPrev, idxTile, numTiles);
         _CCCL_IKET_RANGE_END(SquadLookahead);
       }
 
-      if (group.rank(block) == scan_group)
+      if (group_role == scan_group)
       {
         static_assert(tile_size % group_layout_t::template thread_count<1>() == 0);
         _CCCL_IKET_RANGE_START(SquadScan);
@@ -924,7 +924,7 @@ struct lookahead_scan_closure
         _CCCL_IKET_RANGE_END(SquadScan);
       }
 
-      if (group.rank(block) == store_group)
+      if (group_role == store_group)
       {
         _CCCL_IKET_RANGE_START(SquadStore);
         store_tile(group, phaseInOutS, valid_items, idxTileBase);
@@ -943,7 +943,7 @@ struct lookahead_scan_closure
     }
 
     // epilogue: after the load group finished, we can start ramping up the next kernel
-    if (group.rank(block) == load_group)
+    if (group_role == load_group)
     {
       _CCCL_PDL_TRIGGER_NEXT_LAUNCH();
     }
@@ -976,6 +976,18 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_scan_lookahead_body(
     ::cuda::grid_dims(gridDim.x), ::cuda::block_dims<__scan_detail::num_total_threads(policy)>()};
   const ::cuda::experimental::coop::this_block<hierarchy_t> block{hierarchy};
 
+  using closure_t = lookahead_scan_closure<
+    PolicySelector,
+    InputT,
+    OutputT,
+    AccumT,
+    ScanOpT,
+    RealInitValueT,
+    ForceInclusive,
+    StableReductionOrder>;
+  // Resolve group membership early to overlap the rank query with resource initialization.
+  const auto work_group = closure_t::group_layout_t::make_group(block);
+
   // Set up the shared memory resources
   auto res = [&] {
     warpspeed::SyncHandler syncHandler{};
@@ -987,15 +999,6 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_scan_lookahead_body(
   }();
 
   // Dispatch each warp to its respective group
-  using closure_t = lookahead_scan_closure<
-    PolicySelector,
-    InputT,
-    OutputT,
-    AccumT,
-    ScanOpT,
-    RealInitValueT,
-    ForceInclusive,
-    StableReductionOrder>;
   _CCCL_PDL_GRID_DEPENDENCY_SYNC();
   int first_tile;
   NV_IF_ELSE_TARGET(NV_PROVIDES_SM_100, (first_tile = block.template rank_as<int>(::cuda::grid);), ({
@@ -1008,10 +1011,12 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_scan_lookahead_body(
                       first_tile = initial_tile;
                     }));
 
-  const auto work_group = closure_t::group_layout_t::make_group(block);
   work_group.with_static_unit_count([&](const auto& group) _CCCL_FORCEINLINE_LAMBDA {
     // Load the initial value after dispatch, so only the groups needing it emit an LDG.
-    closure_t{first_tile, params, scan_op, static_cast<RealInitValueT>(init_value), res}.dispatch_group(group);
+    const auto role         = group.rank(block);
+    const auto static_group = closure_t::group_layout_t::make_static_group(group, role);
+    closure_t{first_tile, params, scan_op, static_cast<RealInitValueT>(init_value), res}.dispatch_group(
+      static_group, role);
   });
 #endif // __cccl_ptx_isa >= 860
 }

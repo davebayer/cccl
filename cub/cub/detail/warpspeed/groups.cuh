@@ -44,6 +44,18 @@ struct group_layout
     return 32 * counts[Index];
   }
 
+  template <typename Group>
+  [[nodiscard]] _CCCL_DEVICE_API static auto make_static_group(const Group& group, ::cuda::std::uint32_t role)
+  {
+    using barrier_ids_t = ::cuda::std::ranges::iota_view<::cuda::std::uint32_t, ::cuda::std::uint32_t>;
+    // Identity mapping retains this view's static size, so the native barrier count is an immediate.
+    return ::cuda::experimental::coop::make_group<::cuda::experimental::coop::generic_group>(
+      ::cuda::warp,
+      group,
+      ::cuda::experimental::coop::identity_mapping{},
+      ::cuda::experimental::coop::interwarp_synchronizer<barrier_ids_t>{barrier_ids_t{role + 1, role + 2}});
+  }
+
   template <typename Block>
   [[nodiscard]] _CCCL_DEVICE_API static auto make_group(const Block& block)
   {

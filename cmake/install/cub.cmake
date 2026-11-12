@@ -12,4 +12,8 @@ if (CUB_ENABLE_INSTALL_RULES)
   set(coop_dest_dir "${CMAKE_INSTALL_INCLUDEDIR}/cuda/experimental/coop")
   install(DIRECTORY "${coop_source_dir}/__group" DESTINATION "${coop_dest_dir}")
   install(FILES "${coop_source_dir}/group" DESTINATION "${coop_dest_dir}")
+  install(
+    FILES "${coop_source_dir}/__algorithm/invoke_one.cuh"
+    DESTINATION "${coop_dest_dir}/__algorithm"
+  )
 endif()
