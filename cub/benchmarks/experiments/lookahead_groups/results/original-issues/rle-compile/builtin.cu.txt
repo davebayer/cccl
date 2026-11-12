@@ -1,0 +1,6 @@
+#include <cub/device/device_run_length_encode.cuh>
+cudaError_t instantiate(void* storage, std::size_t& bytes, const int* input, int* unique, int* counts, int* num_runs)
+{
+  return cub::DeviceRunLengthEncode::Encode(storage, bytes, input, unique, counts, num_runs, 4097);
+}
+int main() {}

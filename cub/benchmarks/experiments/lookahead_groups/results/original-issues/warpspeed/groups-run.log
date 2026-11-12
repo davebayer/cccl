@@ -1,0 +1,16 @@
+shape=(224,1,1)
+physical warp 0: descriptor=0 warpRank=0 firstThreadRank=0
+physical warp 1: descriptor=1 warpRank=0 firstThreadRank=0
+physical warp 2: descriptor=1 warpRank=1 firstThreadRank=32
+physical warp 3: descriptor=1 warpRank=2 firstThreadRank=64
+physical warp 4: descriptor=2 warpRank=0 firstThreadRank=0
+physical warp 5: descriptor=2 warpRank=1 firstThreadRank=32
+physical warp 6: descriptor=3 warpRank=0 firstThreadRank=0
+shape=(32,7,1)
+physical warp 0: descriptor=0 warpRank=0 firstThreadRank=0
+physical warp 1: descriptor=0 warpRank=0 firstThreadRank=0
+physical warp 2: descriptor=0 warpRank=0 firstThreadRank=0
+physical warp 3: descriptor=0 warpRank=0 firstThreadRank=0
+physical warp 4: descriptor=0 warpRank=0 firstThreadRank=0
+physical warp 5: descriptor=0 warpRank=0 firstThreadRank=0
+physical warp 6: descriptor=0 warpRank=0 firstThreadRank=0

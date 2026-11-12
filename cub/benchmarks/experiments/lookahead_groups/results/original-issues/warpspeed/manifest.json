@@ -1,0 +1,87 @@
+{
+  "original_commit": "24ee635e35caa47b1602e129e49cea60db8b4f05",
+  "original_squad_sha256": "1a4e1ba25d5e6a58ee6f794cd44e969a1da947985038a80b0c852f26edfdbcae",
+  "source_sha256": "13357093709f3bded18509b0b3dcebaab9dc357301c80d9cfbe41c32dda47371",
+  "builds": [
+    {
+      "name": "original",
+      "exit": 0,
+      "args": [
+        "/usr/local/cuda-13.5/bin/nvcc",
+        "-ccbin=/usr/bin/g++-13",
+        "-std=c++17",
+        "-O3",
+        "-arch=sm_120",
+        "-I/home/dabayer/cccl/build/lookahead-groups/public-api-final/baseline",
+        "-Ilibcudacxx/include",
+        "-Ithrust",
+        "-Icudax/include",
+        "/home/dabayer/cccl/build/lookahead-groups/original-warpspeed-issues/rank_repro.cu",
+        "-o",
+        "/home/dabayer/cccl/build/lookahead-groups/original-warpspeed-issues/original"
+      ],
+      "binary_sha256": "4d03ea68bfa0bdea74a28d73962fb4d1b5baddcd3c0a076bd761817e5869ea62"
+    },
+    {
+      "name": "groups",
+      "exit": 0,
+      "args": [
+        "/usr/local/cuda-13.5/bin/nvcc",
+        "-ccbin=/usr/bin/g++-13",
+        "-std=c++17",
+        "-O3",
+        "-arch=sm_120",
+        "-I/home/dabayer/cccl/build/lookahead-groups/public-cub-public-header-final/include",
+        "-Ilibcudacxx/include",
+        "-Ithrust",
+        "-Icudax/include",
+        "-D_CUDAX_ENABLE_GROUP_FEATURES_IN_LIBCUDACXX",
+        "-D_CUB_WARPSPEED_USE_CUDAX_GROUPS",
+        "/home/dabayer/cccl/build/lookahead-groups/original-warpspeed-issues/rank_repro.cu",
+        "-o",
+        "/home/dabayer/cccl/build/lookahead-groups/original-warpspeed-issues/groups"
+      ],
+      "binary_sha256": "55d1e928668666707b579fd4fbb5019ebed9f0840ade26732f514acd9fabba41"
+    },
+    {
+      "name": "original-cuda12",
+      "exit": 0,
+      "args": [
+        "/usr/local/cuda-12.0/bin/nvcc",
+        "-ccbin=/usr/bin/g++-7",
+        "-std=c++17",
+        "-O3",
+        "-gencode=arch=compute_90,code=compute_90",
+        "-I/home/dabayer/cccl/build/lookahead-groups/public-api-final/baseline",
+        "-Ilibcudacxx/include",
+        "-Ithrust",
+        "-Icudax/include",
+        "/home/dabayer/cccl/build/lookahead-groups/original-warpspeed-issues/rank_repro.cu",
+        "-o",
+        "/home/dabayer/cccl/build/lookahead-groups/original-warpspeed-issues/original-cuda12"
+      ],
+      "binary_sha256": "1b5fa083dc2fee7f7b321e7a14cdb2ac6002f5598e22412cebeb0f925d3c0c74"
+    },
+    {
+      "name": "groups-cuda12",
+      "exit": 0,
+      "args": [
+        "/usr/local/cuda-12.0/bin/nvcc",
+        "-ccbin=/usr/bin/g++-7",
+        "-std=c++17",
+        "-O3",
+        "-gencode=arch=compute_90,code=compute_90",
+        "-I/home/dabayer/cccl/build/lookahead-groups/public-cub-public-header-final/include",
+        "-Ilibcudacxx/include",
+        "-Ithrust",
+        "-Icudax/include",
+        "-D_CUDAX_ENABLE_GROUP_FEATURES_IN_LIBCUDACXX",
+        "-D_CUB_WARPSPEED_USE_CUDAX_GROUPS",
+        "/home/dabayer/cccl/build/lookahead-groups/original-warpspeed-issues/rank_repro.cu",
+        "-o",
+        "/home/dabayer/cccl/build/lookahead-groups/original-warpspeed-issues/groups-cuda12"
+      ],
+      "binary_sha256": "ec446e5523c973f5f5e10f8caf89111592ec79707c0d4596adc1781c61939a1e"
+    }
+  ]
+}

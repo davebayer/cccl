@@ -3,6 +3,12 @@
 
 # CUB lookahead scan using public cudax group APIs
 
+The measurements below describe the frozen 2026-11-11 implementation. The current
+follow-up moves rank reduction into `group_as`; its changes, validation and
+measured performance gap are in [MAPPING_OWNED_RANK.md](MAPPING_OWNED_RANK.md).
+Original-code defects and contract hazards found during the experiment are
+documented separately in [ORIGINAL_IMPLEMENTATION_ISSUES.md](ORIGINAL_IMPLEMENTATION_ISSUES.md).
+
 Experiment date: 2026-11-11. Original CUB baseline:
 `24ee635e35caa47b1602e129e49cea60db8b4f05`.
 

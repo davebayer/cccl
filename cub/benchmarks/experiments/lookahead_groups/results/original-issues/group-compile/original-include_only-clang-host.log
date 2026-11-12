@@ -1,0 +1,20 @@
+/usr/bin/clang++-23 -x cuda --cuda-host-only --cuda-gpu-arch=sm_120 --cuda-path=/usr/local/cuda-13.5 -fsyntax-only -Wno-unknown-cuda-version -D_CCCL_CLANG_TIDY_INVOKED=1 -std=c++17 -D_CCCL_NO_SYSTEM_HEADER -D_CUDAX_ENABLE_GROUP_FEATURES_IN_LIBCUDACXX -I/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/original -Icudax/include -Ilibcudacxx/include /home/dabayer/cccl/cub/benchmarks/experiments/lookahead_groups/results/original-issues/group-reproducers/include_only.cu
+In file included from /home/dabayer/cccl/cub/benchmarks/experiments/lookahead_groups/results/original-issues/group-reproducers/include_only.cu:4:
+In file included from /home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/original/cuda/experimental/coop/group:34:
+In file included from /home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/original/cuda/experimental/coop/__group/make_group.cuh:43:
+In file included from /home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/original/cuda/experimental/coop/__group/this_group.cuh:37:
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/original/cuda/experimental/coop/__group/synchronizer/level_synchronizer.cuh:228:43: error: constant expression evaluates to -2147483648 which cannot be narrowed to type '::cuda::std::uint32_t' (aka 'unsigned int') [-Wc++11-narrowing]
+  228 |         __nblocks = ::cuda::std::uint32_t{::cuda::std::numeric_limits<int>::min()} - (__expected - 1);
+      |                                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/original/cuda/experimental/coop/__group/synchronizer/level_synchronizer.cuh:228:43: note: insert an explicit cast to silence this issue
+  228 |         __nblocks = ::cuda::std::uint32_t{::cuda::std::numeric_limits<int>::min()} - (__expected - 1);
+      |                                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                           static_cast<uint32_t>(                 )
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/original/cuda/experimental/coop/__group/synchronizer/level_synchronizer.cuh:276:43: error: constant expression evaluates to -2147483648 which cannot be narrowed to type '::cuda::std::uint32_t' (aka 'unsigned int') [-Wc++11-narrowing]
+  276 |         __nblocks = ::cuda::std::uint32_t{::cuda::std::numeric_limits<int>::min()} - (__expected - 1);
+      |                                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/original/cuda/experimental/coop/__group/synchronizer/level_synchronizer.cuh:276:43: note: insert an explicit cast to silence this issue
+  276 |         __nblocks = ::cuda::std::uint32_t{::cuda::std::numeric_limits<int>::min()} - (__expected - 1);
+      |                                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                           static_cast<uint32_t>(                 )
+2 errors generated when compiling for host.

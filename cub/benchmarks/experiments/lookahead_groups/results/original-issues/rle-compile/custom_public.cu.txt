@@ -1,0 +1,19 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+#include <cub/device/device_run_length_encode.cuh>
+#include <cuda/execution>
+struct forced_lookahead_policy
+{
+  __host__ __device__ constexpr cub::RleEncodePolicy operator()(cuda::compute_capability) const
+  {
+    return {cub::RleAlgorithm::lookahead,
+            {128, 1, cub::BLOCK_LOAD_DIRECT, cub::LOAD_DEFAULT, cub::BLOCK_SCAN_WARP_SCANS, {}},
+            {8, 2, 3, 2, 5, 3, 128, 32}};
+  }
+};
+cudaError_t instantiate(void* storage, std::size_t& bytes, const int* input, int* unique, int* counts, int* num_runs)
+{
+  const auto env = cuda::execution::tune(forced_lookahead_policy{});
+  return cub::DeviceRunLengthEncode::Encode(storage, bytes, input, unique, counts, num_runs, 4097, env);
+}
+int main() {}

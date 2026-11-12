@@ -36,7 +36,12 @@ struct SpecialRegisters
 {
   ::cuda::std::uint32_t clusterCtaRank = ::cuda::ptx::get_sreg_cluster_ctarank();
   ::cuda::std::uint32_t threadIdxX     = threadIdx.x;
-  ::cuda::std::uint32_t warpIdx        = _CUB::detail::warpspeed::makeWarpUniform(threadIdxX / 32);
+#if defined(_CUB_WARPSPEED_USE_CUDAX_GROUPS)
+  // group_as establishes warp uniformity when constructing the partition.
+  ::cuda::std::uint32_t warpIdx = threadIdxX / 32;
+#else
+  ::cuda::std::uint32_t warpIdx = _CUB::detail::warpspeed::makeWarpUniform(threadIdxX / 32);
+#endif
   return {clusterCtaRank, blockIdx.x, threadIdxX, warpIdx, ::cuda::ptx::get_sreg_laneid()};
 }
 } // namespace detail::warpspeed

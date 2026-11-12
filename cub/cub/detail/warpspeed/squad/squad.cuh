@@ -226,18 +226,6 @@ struct static_squad : SquadDesc
   }
 };
 
-template <::cuda::std::size_t End, ::cuda::std::size_t... Counts>
-_CCCL_HOST_DEVICE_API constexpr ::cuda::std::size_t squad_static_prefix(::cuda::std::index_sequence<Counts...>)
-{
-  constexpr ::cuda::std::size_t values[]{Counts...};
-  ::cuda::std::size_t prefix = 0;
-  for (::cuda::std::size_t i = 0; i < End; ++i)
-  {
-    prefix += values[i];
-  }
-  return prefix;
-}
-
 template <::cuda::std::size_t First,
           ::cuda::std::size_t Last,
           int NumSquads,
@@ -253,15 +241,12 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void squad_dispatch_static_leaf(
   ::cuda::std::index_sequence<Counts...> counts,
   F f)
 {
-  // Static squads cover this one-dimensional block contiguously. Select the
-  // descriptor before specializing its count so the heavy callback avoids a
-  // cross-product of count and descriptor dispatches.
+  // Dispatch on the ordinal produced by group_as, which retains the mapping's
+  // warp-uniform rank. Specialize each descriptor before invoking the callback.
   if constexpr (Last - First > 1)
   {
     constexpr auto mid = First + (Last - First) / 2;
-    constexpr auto mid_warp =
-      _CUB::detail::warpspeed::squad_static_prefix<mid>(::cuda::std::index_sequence<Counts...>{});
-    if (registers.warpIdx < mid_warp)
+    if (group.rank(parent) < mid)
     {
       _CUB::detail::warpspeed::squad_dispatch_static_leaf<First, mid, NumSquads>(
         registers, squads, parent, group, counts, f);
@@ -274,17 +259,12 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void squad_dispatch_static_leaf(
   }
   else
   {
-    // group_as defines the partition; the static pack expresses this leaf's
-    // equivalent count and prefix directly in its view's mapping type.
+    // group_as owns the partition and local rank; only its count is specialized.
     constexpr ::cuda::std::size_t static_counts[]{Counts...};
     constexpr auto count = static_counts[First];
-    constexpr auto prefix =
-      _CUB::detail::warpspeed::squad_static_prefix<First>(::cuda::std::index_sequence<Counts...>{});
-    const auto warp_rank = registers.warpIdx - static_cast<::cuda::std::uint32_t>(prefix);
     _CCCL_ASSERT(group.rank(parent) == First, "the selected static squad must match the group mapping");
-    _CCCL_ASSERT(warp_rank == ::cuda::warp.rank(group), "the cached squad rank must match the group mapping");
-    using partition_view_t = coop::group_view_t<::cuda::warp_level, Group>;
-    const auto leaf_group  = partition_view_t{group}.template with_static_unit_count<count>().with_unit_rank(warp_rank);
+    using partition_view_t                 = coop::group_view_t<::cuda::warp_level, Group>;
+    const auto leaf_group                  = partition_view_t{group}.template with_static_unit_count<count>();
     const ::cuda::std::uint32_t barrier_id = static_cast<::cuda::std::uint32_t>(squads[First].mSquadIdx + 1);
     using barrier_span_t                   = ::cuda::std::span<const ::cuda::std::uint32_t, 1>;
     const auto synchronized_group          = coop::make_group<coop::generic_group>(
@@ -316,13 +296,9 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void squad_dispatch_static_impl(
                "static squad partition must cover a one-dimensional block");
   const squad_block_t block{squad_hierarchy_t{::cuda::block_dims(blockDim.x)}};
 
-  // Preserve the cached warp-uniform rank. Recomputing threadIdx.x / 32 through
-  // a thread-unit block group loses compiler uniformity, causing divergent
-  // squad dispatch and reconvergence around the collective operations.
   using warp_view_t = coop::group_view_t<::cuda::warp_level, squad_block_t>;
-  const auto parent =
-    warp_view_t{::cuda::warp, block}.template with_static_unit_count<total_warps>().with_unit_rank(registers.warpIdx);
-  const auto group = coop::make_group<coop::virtual_group>(
+  const auto parent = warp_view_t{::cuda::warp, block}.template with_static_unit_count<total_warps>();
+  const auto group  = coop::make_group<coop::virtual_group>(
     ::cuda::warp, parent, coop::group_as<::cuda::std::index_sequence<Counts...>>{counts});
   _CUB::detail::warpspeed::squad_dispatch_static_leaf<0, NumSquads, NumSquads>(
     registers, squads, parent, group, counts, f);
@@ -349,34 +325,24 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void squad_dispatch_static(
 #if defined(_CUB_WARPSPEED_USE_CUDAX_GROUPS)
 template <int NumSquads, typename F, typename Group>
 _CCCL_DEVICE_API _CCCL_FORCEINLINE void
-squad_dispatch_group(SpecialRegisters sr, const SquadDesc* squads, F f, Group group, int warpIdxStart)
+squad_dispatch_group(SpecialRegisters sr, const SquadDesc* squads, F f, Group group, int group_rank)
 {
   static_assert(NumSquads > 0);
   if constexpr (NumSquads == 1)
   {
-    const SquadDesc squad = squads[0];
-    if (static_cast<unsigned>(warpIdxStart) <= sr.warpIdx
-        && sr.warpIdx < static_cast<unsigned>(warpIdxStart + squad.warpCount()))
-    {
-      f(group_squad<Group>{squad, sr, group});
-    }
+    f(group_squad<Group>{squads[0], sr, group});
   }
   else
   {
-    constexpr int mid   = NumSquads / 2;
-    int warpIdxStartMid = warpIdxStart;
-    for (int gi = 0; gi < mid; ++gi)
-    {
-      warpIdxStartMid += squads[gi].warpCount();
-    }
-    if (sr.warpIdx < static_cast<unsigned>(warpIdxStartMid))
+    constexpr int mid = NumSquads / 2;
+    if (group_rank < mid)
     {
       SquadDesc squadsLeft[mid];
       for (int gi = 0; gi < mid; ++gi)
       {
         squadsLeft[gi] = squads[gi];
       }
-      _CUB::detail::warpspeed::squad_dispatch_group<mid>(sr, squadsLeft, f, group, warpIdxStart);
+      _CUB::detail::warpspeed::squad_dispatch_group<mid>(sr, squadsLeft, f, group, group_rank);
     }
     else
     {
@@ -385,7 +351,7 @@ squad_dispatch_group(SpecialRegisters sr, const SquadDesc* squads, F f, Group gr
       {
         squadsRight[gi] = squads[mid + gi];
       }
-      _CUB::detail::warpspeed::squad_dispatch_group<NumSquads - mid>(sr, squadsRight, f, group, warpIdxStartMid);
+      _CUB::detail::warpspeed::squad_dispatch_group<NumSquads - mid>(sr, squadsRight, f, group, group_rank - mid);
     }
   }
 }
@@ -436,9 +402,13 @@ squad_dispatch_impl(SpecialRegisters sr, const SquadDesc* squads, F f, int warpI
     block,
     coop::group_as<squad_span_t>{squad_span_t{warpCounts}},
     coop::interwarp_synchronizer<squad_span_t>{squad_span_t{barrierIds}});
-  using group_t = ::cuda::std::remove_cv_t<decltype(group)>;
-  using view_t  = coop::group_view_t<::cuda::warp_level, group_t>;
-  _CUB::detail::warpspeed::squad_dispatch_group<NumSquads>(sr, squads, f, view_t{group}, warpIdxStart);
+  using group_t         = ::cuda::std::remove_cv_t<decltype(group)>;
+  using view_t          = coop::group_view_t<::cuda::warp_level, group_t>;
+  const auto group_rank = group.template rank_as<int>(block) - 1;
+  if (group_rank >= 0 && group_rank < NumSquads)
+  {
+    _CUB::detail::warpspeed::squad_dispatch_group<NumSquads>(sr, squads, f, view_t{group}, group_rank);
+  }
 #else // _CUB_WARPSPEED_USE_CUDAX_GROUPS
   if (NumSquads == 1)
   {

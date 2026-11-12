@@ -1,0 +1,236 @@
+[
+  {
+    "name": "original-smoke-strict",
+    "exit": 2,
+    "command": [
+      "/usr/local/cuda-13.5/bin/nvcc",
+      "-ccbin=/usr/bin/g++-13",
+      "-std=c++17",
+      "-O3",
+      "-arch=sm_120",
+      "-I/home/dabayer/cccl/build/lookahead-groups/public-api-final/baseline",
+      "-Ilibcudacxx/include",
+      "-Ithrust",
+      "-Icudax/include",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/smoke.cu",
+      "-o",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/original-smoke-strict"
+    ],
+    "binary_sha256": null
+  },
+  {
+    "name": "original-smoke-relaxed",
+    "exit": 0,
+    "command": [
+      "/usr/local/cuda-13.5/bin/nvcc",
+      "-ccbin=/usr/bin/g++-13",
+      "-std=c++17",
+      "-O3",
+      "-arch=sm_120",
+      "--expt-relaxed-constexpr",
+      "-I/home/dabayer/cccl/build/lookahead-groups/public-api-final/baseline",
+      "-Ilibcudacxx/include",
+      "-Ithrust",
+      "-Icudax/include",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/smoke.cu",
+      "-o",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/original-smoke-relaxed"
+    ],
+    "binary_sha256": "bd9815df8e41544abba3fa4ef4ae77240c549c0ddfd5e80a28f72027b5c0db6a"
+  },
+  {
+    "name": "original-builtin-strict",
+    "exit": 0,
+    "command": [
+      "/usr/local/cuda-13.5/bin/nvcc",
+      "-ccbin=/usr/bin/g++-13",
+      "-std=c++17",
+      "-O3",
+      "-arch=sm_120",
+      "-I/home/dabayer/cccl/build/lookahead-groups/public-api-final/baseline",
+      "-Ilibcudacxx/include",
+      "-Ithrust",
+      "-Icudax/include",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/builtin.cu",
+      "-o",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/original-builtin-strict"
+    ],
+    "binary_sha256": "3244c614117c6372a54ed4c77b3a49afc64f0b428633c0c562255f330c8a0564"
+  },
+  {
+    "name": "original-builtin-relaxed",
+    "exit": 0,
+    "command": [
+      "/usr/local/cuda-13.5/bin/nvcc",
+      "-ccbin=/usr/bin/g++-13",
+      "-std=c++17",
+      "-O3",
+      "-arch=sm_120",
+      "--expt-relaxed-constexpr",
+      "-I/home/dabayer/cccl/build/lookahead-groups/public-api-final/baseline",
+      "-Ilibcudacxx/include",
+      "-Ithrust",
+      "-Icudax/include",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/builtin.cu",
+      "-o",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/original-builtin-relaxed"
+    ],
+    "binary_sha256": "2b6c88392923a987f27d18269122a05665ad6576a223990261f70d29740c9f28"
+  },
+  {
+    "name": "original-bounds-strict",
+    "exit": 2,
+    "command": [
+      "/usr/local/cuda-13.5/bin/nvcc",
+      "-ccbin=/usr/bin/g++-13",
+      "-std=c++17",
+      "-O3",
+      "-arch=sm_120",
+      "-I/home/dabayer/cccl/build/lookahead-groups/public-api-final/baseline",
+      "-Ilibcudacxx/include",
+      "-Ithrust",
+      "-Icudax/include",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/bounds.cu",
+      "-o",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/original-bounds-strict"
+    ],
+    "binary_sha256": null
+  },
+  {
+    "name": "original-bounds-relaxed",
+    "exit": 0,
+    "command": [
+      "/usr/local/cuda-13.5/bin/nvcc",
+      "-ccbin=/usr/bin/g++-13",
+      "-std=c++17",
+      "-O3",
+      "-arch=sm_120",
+      "--expt-relaxed-constexpr",
+      "-I/home/dabayer/cccl/build/lookahead-groups/public-api-final/baseline",
+      "-Ilibcudacxx/include",
+      "-Ithrust",
+      "-Icudax/include",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/bounds.cu",
+      "-o",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/original-bounds-relaxed"
+    ],
+    "binary_sha256": "00aea153c65abb4f299026d45369b575a654e7d2771c790c512af0d048d0d452"
+  },
+  {
+    "name": "current-smoke-strict",
+    "exit": 2,
+    "command": [
+      "/usr/local/cuda-13.5/bin/nvcc",
+      "-ccbin=/usr/bin/g++-13",
+      "-std=c++17",
+      "-O3",
+      "-arch=sm_120",
+      "-I/home/dabayer/cccl/cub",
+      "-Ilibcudacxx/include",
+      "-Ithrust",
+      "-Icudax/include",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/smoke.cu",
+      "-o",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/current-smoke-strict"
+    ],
+    "binary_sha256": null
+  },
+  {
+    "name": "current-smoke-relaxed",
+    "exit": 0,
+    "command": [
+      "/usr/local/cuda-13.5/bin/nvcc",
+      "-ccbin=/usr/bin/g++-13",
+      "-std=c++17",
+      "-O3",
+      "-arch=sm_120",
+      "--expt-relaxed-constexpr",
+      "-I/home/dabayer/cccl/cub",
+      "-Ilibcudacxx/include",
+      "-Ithrust",
+      "-Icudax/include",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/smoke.cu",
+      "-o",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/current-smoke-relaxed"
+    ],
+    "binary_sha256": "f5849b025687aa4fe3beddb11c84bfe5a1765ad33e2822e4eb2cbc704588cad7"
+  },
+  {
+    "name": "current-builtin-strict",
+    "exit": 0,
+    "command": [
+      "/usr/local/cuda-13.5/bin/nvcc",
+      "-ccbin=/usr/bin/g++-13",
+      "-std=c++17",
+      "-O3",
+      "-arch=sm_120",
+      "-I/home/dabayer/cccl/cub",
+      "-Ilibcudacxx/include",
+      "-Ithrust",
+      "-Icudax/include",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/builtin.cu",
+      "-o",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/current-builtin-strict"
+    ],
+    "binary_sha256": "fc1c401d23caf0cd6c80665d204d7461bbd292c8b9fa5369504b31b8555f15c9"
+  },
+  {
+    "name": "current-builtin-relaxed",
+    "exit": 0,
+    "command": [
+      "/usr/local/cuda-13.5/bin/nvcc",
+      "-ccbin=/usr/bin/g++-13",
+      "-std=c++17",
+      "-O3",
+      "-arch=sm_120",
+      "--expt-relaxed-constexpr",
+      "-I/home/dabayer/cccl/cub",
+      "-Ilibcudacxx/include",
+      "-Ithrust",
+      "-Icudax/include",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/builtin.cu",
+      "-o",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/current-builtin-relaxed"
+    ],
+    "binary_sha256": "91bcc3cc628b13f37eac8354c9ce6023984d9e24bd9aebc80c4dc264cdc17a46"
+  },
+  {
+    "name": "current-bounds-strict",
+    "exit": 2,
+    "command": [
+      "/usr/local/cuda-13.5/bin/nvcc",
+      "-ccbin=/usr/bin/g++-13",
+      "-std=c++17",
+      "-O3",
+      "-arch=sm_120",
+      "-I/home/dabayer/cccl/cub",
+      "-Ilibcudacxx/include",
+      "-Ithrust",
+      "-Icudax/include",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/bounds.cu",
+      "-o",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/current-bounds-strict"
+    ],
+    "binary_sha256": null
+  },
+  {
+    "name": "current-bounds-relaxed",
+    "exit": 0,
+    "command": [
+      "/usr/local/cuda-13.5/bin/nvcc",
+      "-ccbin=/usr/bin/g++-13",
+      "-std=c++17",
+      "-O3",
+      "-arch=sm_120",
+      "--expt-relaxed-constexpr",
+      "-I/home/dabayer/cccl/cub",
+      "-Ilibcudacxx/include",
+      "-Ithrust",
+      "-Icudax/include",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/bounds.cu",
+      "-o",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/current-bounds-relaxed"
+    ],
+    "binary_sha256": "48f6633cec5564870f6baf96a0999647cb1a510714183fb7f2cb76470a0315c4"
+  }
+]

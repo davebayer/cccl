@@ -1,0 +1,80 @@
+[
+  {
+    "name": "original-builtin-sm100-strict",
+    "exit": 0,
+    "command": [
+      "/usr/local/cuda-13.5/bin/nvcc",
+      "-ccbin=/usr/bin/g++-13",
+      "-std=c++17",
+      "-O3",
+      "-arch=sm_100",
+      "-I/home/dabayer/cccl/build/lookahead-groups/public-api-final/baseline",
+      "-Ilibcudacxx/include",
+      "-Ithrust",
+      "-Icudax/include",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/builtin.cu",
+      "-o",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/original-builtin-sm100-strict"
+    ],
+    "binary_sha256": "b0e41c047b68c3f0df2596baca3cf124e10c2478b6312e1ada4d035470447e03"
+  },
+  {
+    "name": "original-builtin-sm100-relaxed",
+    "exit": 0,
+    "command": [
+      "/usr/local/cuda-13.5/bin/nvcc",
+      "-ccbin=/usr/bin/g++-13",
+      "-std=c++17",
+      "-O3",
+      "-arch=sm_100",
+      "--expt-relaxed-constexpr",
+      "-I/home/dabayer/cccl/build/lookahead-groups/public-api-final/baseline",
+      "-Ilibcudacxx/include",
+      "-Ithrust",
+      "-Icudax/include",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/builtin.cu",
+      "-o",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/original-builtin-sm100-relaxed"
+    ],
+    "binary_sha256": "b0e11d1365338a0db74b566c0e893e2209eebb20744f5f967454e0b86054ddf2"
+  },
+  {
+    "name": "current-builtin-sm100-strict",
+    "exit": 0,
+    "command": [
+      "/usr/local/cuda-13.5/bin/nvcc",
+      "-ccbin=/usr/bin/g++-13",
+      "-std=c++17",
+      "-O3",
+      "-arch=sm_100",
+      "-I/home/dabayer/cccl/cub",
+      "-Ilibcudacxx/include",
+      "-Ithrust",
+      "-Icudax/include",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/builtin.cu",
+      "-o",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/current-builtin-sm100-strict"
+    ],
+    "binary_sha256": "e9c6302e52196a465efdf1315acd1cdf65c68f5ed3407770091da3a888279b1d"
+  },
+  {
+    "name": "current-builtin-sm100-relaxed",
+    "exit": 0,
+    "command": [
+      "/usr/local/cuda-13.5/bin/nvcc",
+      "-ccbin=/usr/bin/g++-13",
+      "-std=c++17",
+      "-O3",
+      "-arch=sm_100",
+      "--expt-relaxed-constexpr",
+      "-I/home/dabayer/cccl/cub",
+      "-Ilibcudacxx/include",
+      "-Ithrust",
+      "-Icudax/include",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/builtin.cu",
+      "-o",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/current-builtin-sm100-relaxed"
+    ],
+    "binary_sha256": "08c92b0229e03df92bb6599b740c5d5ef9f37dc3c9b84f7fe3c23a52849bf0d1"
+  }
+]

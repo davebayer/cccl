@@ -1,0 +1,6 @@
+variant,instruction_rows,brx,brxu,bssy,bsync,uniform_bra
+baseline,13216,0,0,67,67,91
+prior_static_groups,13216,0,0,69,69,85
+prior_static_groups_scan,13536,0,0,67,67,85
+static_groups,13480,0,0,69,69,109
+static_groups_scan,13808,0,0,67,67,109

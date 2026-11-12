@@ -1,0 +1,80 @@
+[
+  {
+    "name": "original-custom-public-strict",
+    "exit": 0,
+    "command": [
+      "/usr/local/cuda-13.5/bin/nvcc",
+      "-ccbin=/usr/bin/g++-13",
+      "-std=c++17",
+      "-O3",
+      "-arch=sm_120",
+      "-I/home/dabayer/cccl/build/lookahead-groups/public-api-final/baseline",
+      "-Ilibcudacxx/include",
+      "-Ithrust",
+      "-Icudax/include",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/custom_public.cu",
+      "-o",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/original-custom-public-strict"
+    ],
+    "binary_sha256": "596b33037568d450f7d62f1ea9449f63e32d89ad315a49e75a315f4e5e7bcde2"
+  },
+  {
+    "name": "original-custom-public-relaxed",
+    "exit": 0,
+    "command": [
+      "/usr/local/cuda-13.5/bin/nvcc",
+      "-ccbin=/usr/bin/g++-13",
+      "-std=c++17",
+      "-O3",
+      "-arch=sm_120",
+      "--expt-relaxed-constexpr",
+      "-I/home/dabayer/cccl/build/lookahead-groups/public-api-final/baseline",
+      "-Ilibcudacxx/include",
+      "-Ithrust",
+      "-Icudax/include",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/custom_public.cu",
+      "-o",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/original-custom-public-relaxed"
+    ],
+    "binary_sha256": "dbd41735ff1338211f01954be4fd3e22d44934827efd909f6bbfcb3f712d5191"
+  },
+  {
+    "name": "current-custom-public-strict",
+    "exit": 0,
+    "command": [
+      "/usr/local/cuda-13.5/bin/nvcc",
+      "-ccbin=/usr/bin/g++-13",
+      "-std=c++17",
+      "-O3",
+      "-arch=sm_120",
+      "-I/home/dabayer/cccl/cub",
+      "-Ilibcudacxx/include",
+      "-Ithrust",
+      "-Icudax/include",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/custom_public.cu",
+      "-o",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/current-custom-public-strict"
+    ],
+    "binary_sha256": "8b8e2b921644bdc2d467edd8ddd37ae31b736d89a04329d658967f4162485679"
+  },
+  {
+    "name": "current-custom-public-relaxed",
+    "exit": 0,
+    "command": [
+      "/usr/local/cuda-13.5/bin/nvcc",
+      "-ccbin=/usr/bin/g++-13",
+      "-std=c++17",
+      "-O3",
+      "-arch=sm_120",
+      "--expt-relaxed-constexpr",
+      "-I/home/dabayer/cccl/cub",
+      "-Ilibcudacxx/include",
+      "-Ithrust",
+      "-Icudax/include",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/custom_public.cu",
+      "-o",
+      "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/current-custom-public-relaxed"
+    ],
+    "binary_sha256": "d713a70f7a7700507daa54146e1d02a4b825bff7cd9d5e7cc7a63be607aea9e4"
+  }
+]

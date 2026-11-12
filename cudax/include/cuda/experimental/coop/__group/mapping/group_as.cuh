@@ -44,6 +44,8 @@
 #include <cuda/experimental/coop/__group/mapping/common.cuh>
 #include <cuda/experimental/coop/__group/mapping/mapping_result.cuh>
 
+#include <nv/target>
+
 #include <cuda/std/__cccl/prologue.h>
 
 #if !defined(_CCCL_DOXYGEN_INVOKED)
@@ -69,9 +71,23 @@ __group_as_map(const _Unit&, const _PrevMappingResult& __prev_mapping_result, co
   }
 
   const auto __prev_nunits    = __prev_mapping_result.unit_count();
-  const auto __prev_unit_rank = __prev_mapping_result.unit_rank();
-  const auto __curr_ngroups   = static_cast<::cuda::std::uint32_t>(::cuda::std::ranges::size(__unit_counts));
-  const auto __ngroups        = __prev_mapping_result.group_count() * __curr_ngroups;
+  const auto __prev_unit_rank = [&] {
+    if constexpr (::cuda::std::is_same_v<_Unit, thread_level>)
+    {
+      return __prev_mapping_result.unit_rank();
+    }
+    else
+    {
+      // A warp has one rank for warp-sized or larger units. Preserve that
+      // uniformity in compiler-visible form before selecting a subgroup.
+      // The active mask also supports separately scheduled construction paths.
+      NV_IF_ELSE_TARGET(NV_PROVIDES_SM_90,
+                        (return ::__reduce_min_sync(::__activemask(), __prev_mapping_result.unit_rank());),
+                        (return __prev_mapping_result.unit_rank();));
+    }
+  }();
+  const auto __curr_ngroups = static_cast<::cuda::std::uint32_t>(::cuda::std::ranges::size(__unit_counts));
+  const auto __ngroups      = __prev_mapping_result.group_count() * __curr_ngroups;
 
   // If the mapping is exhaustive, check the preconditions, otherwise remove the last partial group.
   if constexpr (_Exhaustive)

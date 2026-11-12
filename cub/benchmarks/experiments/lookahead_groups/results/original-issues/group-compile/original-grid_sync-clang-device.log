@@ -1,0 +1,52 @@
+/usr/bin/clang++-23 -x cuda --cuda-device-only --cuda-gpu-arch=sm_120 --cuda-path=/usr/local/cuda-13.5 -fsyntax-only -Wno-unknown-cuda-version -D_CCCL_CLANG_TIDY_INVOKED=1 -std=c++17 -D_CCCL_NO_SYSTEM_HEADER -D_CUDAX_ENABLE_GROUP_FEATURES_IN_LIBCUDACXX -I/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/original -Icudax/include -Ilibcudacxx/include /home/dabayer/cccl/cub/benchmarks/experiments/lookahead_groups/results/original-issues/group-reproducers/grid_sync.cu
+In file included from /home/dabayer/cccl/cub/benchmarks/experiments/lookahead_groups/results/original-issues/group-reproducers/grid_sync.cu:6:
+In file included from /home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/original/cuda/experimental/coop/group:34:
+In file included from /home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/original/cuda/experimental/coop/__group/make_group.cuh:43:
+In file included from /home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/original/cuda/experimental/coop/__group/this_group.cuh:37:
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/original/cuda/experimental/coop/__group/synchronizer/level_synchronizer.cuh:228:43: error: constant expression evaluates to -2147483648 which cannot be narrowed to type '::cuda::std::uint32_t' (aka 'unsigned int') [-Wc++11-narrowing]
+  228 |         __nblocks = ::cuda::std::uint32_t{::cuda::std::numeric_limits<int>::min()} - (__expected - 1);
+      |                                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/original/cuda/experimental/coop/__group/synchronizer/level_synchronizer.cuh:228:43: note: insert an explicit cast to silence this issue
+  228 |         __nblocks = ::cuda::std::uint32_t{::cuda::std::numeric_limits<int>::min()} - (__expected - 1);
+      |                                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                           static_cast<uint32_t>(                 )
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/original/cuda/experimental/coop/__group/synchronizer/level_synchronizer.cuh:276:43: error: constant expression evaluates to -2147483648 which cannot be narrowed to type '::cuda::std::uint32_t' (aka 'unsigned int') [-Wc++11-narrowing]
+  276 |         __nblocks = ::cuda::std::uint32_t{::cuda::std::numeric_limits<int>::min()} - (__expected - 1);
+      |                                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/original/cuda/experimental/coop/__group/synchronizer/level_synchronizer.cuh:276:43: note: insert an explicit cast to silence this issue
+  276 |         __nblocks = ::cuda::std::uint32_t{::cuda::std::numeric_limits<int>::min()} - (__expected - 1);
+      |                                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                           static_cast<uint32_t>(                 )
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/original/cuda/experimental/coop/__group/synchronizer/level_synchronizer.cuh:228:43: error: constant expression evaluates to -2147483648 which cannot be narrowed to type '::cuda::std::uint32_t' (aka 'unsigned int') [-Wc++11-narrowing]
+  228 |         __nblocks = ::cuda::std::uint32_t{::cuda::std::numeric_limits<int>::min()} - (__expected - 1);
+      |                                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/original/cuda/experimental/coop/__group/synchronizer/level_synchronizer.cuh:201:5: note: in instantiation of function template specialization 'cuda::experimental::coop::level_synchronizer::__synchronizer_instance<cuda::grid_level>::__sync_impl<false, cuda::hierarchy<cuda::thread_level, cuda::hierarchy_level_desc<cuda::grid_level, cuda::std::extents<unsigned int, 18446744073709551615, 1, 1>>, cuda::hierarchy_level_desc<cuda::block_level, cuda::std::extents<unsigned int, 18446744073709551615, 1, 1>>>>' requested here
+  201 |     __sync_impl<false>(__hier);
+      |     ^
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/original/cuda/experimental/coop/__group/this_group.cuh:186:30: note: in instantiation of function template specialization 'cuda::experimental::coop::level_synchronizer::__synchronizer_instance<cuda::grid_level>::do_sync<cuda::hierarchy<cuda::thread_level, cuda::hierarchy_level_desc<cuda::grid_level, cuda::std::extents<unsigned int, 18446744073709551615, 1, 1>>, cuda::hierarchy_level_desc<cuda::block_level, cuda::std::extents<unsigned int, 18446744073709551615, 1, 1>>>>' requested here
+  186 |     __synchronizer_instance_.do_sync(__hier_);
+      |                              ^
+/home/dabayer/cccl/cub/benchmarks/experiments/lookahead_groups/results/original-issues/group-reproducers/grid_sync.cu:11:8: note: in instantiation of member function 'cuda::experimental::coop::__this_group_base<cuda::grid_level, cuda::hierarchy<cuda::thread_level, cuda::hierarchy_level_desc<cuda::grid_level, cuda::std::extents<unsigned int, 18446744073709551615, 1, 1>>, cuda::hierarchy_level_desc<cuda::block_level, cuda::std::extents<unsigned int, 18446744073709551615, 1, 1>>>>::sync' requested here
+   11 |   grid.sync();
+      |        ^
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/original/cuda/experimental/coop/__group/synchronizer/level_synchronizer.cuh:228:43: note: insert an explicit cast to silence this issue
+  228 |         __nblocks = ::cuda::std::uint32_t{::cuda::std::numeric_limits<int>::min()} - (__expected - 1);
+      |                                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                           static_cast<uint32_t>(                 )
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/original/cuda/experimental/coop/__group/synchronizer/level_synchronizer.cuh:276:43: error: constant expression evaluates to -2147483648 which cannot be narrowed to type '::cuda::std::uint32_t' (aka 'unsigned int') [-Wc++11-narrowing]
+  276 |         __nblocks = ::cuda::std::uint32_t{::cuda::std::numeric_limits<int>::min()} - (__expected - 1);
+      |                                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/original/cuda/experimental/coop/__group/synchronizer/level_synchronizer.cuh:295:12: note: in instantiation of function template specialization 'cuda::experimental::coop::level_synchronizer::__synchronizer_instance<cuda::grid_level>::__arrive_impl<false, cuda::hierarchy<cuda::thread_level, cuda::hierarchy_level_desc<cuda::grid_level, cuda::std::extents<unsigned int, 18446744073709551615, 1, 1>>, cuda::hierarchy_level_desc<cuda::block_level, cuda::std::extents<unsigned int, 18446744073709551615, 1, 1>>>>' requested here
+  295 |     return __arrive_impl<false>(__hier);
+      |            ^
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/original/cuda/experimental/coop/__group/this_group.cuh:196:37: note: in instantiation of function template specialization 'cuda::experimental::coop::level_synchronizer::__synchronizer_instance<cuda::grid_level>::do_arrive<cuda::hierarchy<cuda::thread_level, cuda::hierarchy_level_desc<cuda::grid_level, cuda::std::extents<unsigned int, 18446744073709551615, 1, 1>>, cuda::hierarchy_level_desc<cuda::block_level, cuda::std::extents<unsigned int, 18446744073709551615, 1, 1>>>>' requested here
+  196 |     return __synchronizer_instance_.do_arrive(__hier_);
+      |                                     ^
+/home/dabayer/cccl/cub/benchmarks/experiments/lookahead_groups/results/original-issues/group-reproducers/grid_sync.cu:12:18: note: in instantiation of member function 'cuda::experimental::coop::__this_group_base<cuda::grid_level, cuda::hierarchy<cuda::thread_level, cuda::hierarchy_level_desc<cuda::grid_level, cuda::std::extents<unsigned int, 18446744073709551615, 1, 1>>, cuda::hierarchy_level_desc<cuda::block_level, cuda::std::extents<unsigned int, 18446744073709551615, 1, 1>>>>::arrive' requested here
+   12 |   grid.wait(grid.arrive());
+      |                  ^
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/original/cuda/experimental/coop/__group/synchronizer/level_synchronizer.cuh:276:43: note: insert an explicit cast to silence this issue
+  276 |         __nblocks = ::cuda::std::uint32_t{::cuda::std::numeric_limits<int>::min()} - (__expected - 1);
+      |                                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                           static_cast<uint32_t>(                 )
+4 errors generated when compiling for sm_120.

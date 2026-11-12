@@ -1,0 +1,5 @@
+#include <cub/device/device_run_length_encode.cuh>
+using S = cub::detail::rle::encode::policy_selector_from_types<int, int, int*, int*, int*, int*, int>;
+constexpr int threads = cub::detail::rle::encode::device_rle_encode_lookahead_launch_bounds<S>;
+static_assert(threads > 0);
+int main() {}

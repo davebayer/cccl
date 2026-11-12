@@ -456,6 +456,72 @@ struct TestKernel
     test_static_selection_boundaries(config);
   }
 };
+
+// Keep the static and runtime mapping call sites distinct when lanes construct
+// the same warp assignments along separate control-flow paths.
+template <class ParentGroup, class Mapping>
+__device__ __noinline__ void test_warp_group_as(const ParentGroup& parent, const Mapping& mapping, unsigned warp_rank)
+{
+  const auto group              = cudax::coop::make_group<cudax::coop::virtual_group>(cuda::warp, parent, mapping);
+  const unsigned expected_group = (warp_rank < 1) ? 0u : ((warp_rank < 3) ? 1u : 2u);
+  const unsigned expected_start = (warp_rank < 1) ? 0u : ((warp_rank < 3) ? 1u : 3u);
+  CHECK(group.rank(parent) == expected_group);
+  CHECK(cuda::warp.rank(group) == warp_rank - expected_start);
+  CHECK(cuda::warp.count(group) == expected_group + 1);
+  CHECK(cuda::gpu_thread.rank(group)
+        == 32 * (warp_rank - expected_start) + cuda::gpu_thread.rank_as<unsigned>(parent) % 32);
+}
+
+struct WarpTestKernel
+{
+  template <class Config>
+  __device__ void operator()(const Config& config)
+  {
+    const cudax::coop::this_block parent{config};
+    const auto thread_rank = cuda::gpu_thread.rank_as<unsigned>(parent);
+    const auto warp_rank   = thread_rank / 32;
+    const cudax::coop::group_as static_mapping{cuda::std::index_sequence<1, 2, 3>{}};
+    const cuda::std::array<unsigned, 3> counts{1, 2, 3};
+    const cudax::coop::group_as runtime_mapping{cuda::std::span{counts}};
+
+    test_warp_group_as(parent, static_mapping, warp_rank);
+    test_warp_group_as(parent, runtime_mapping, warp_rank);
+    if ((thread_rank & 1u) == 0)
+    {
+      test_warp_group_as(parent, static_mapping, warp_rank);
+    }
+    else
+    {
+      test_warp_group_as(parent, runtime_mapping, warp_rank);
+    }
+
+    // Composition retains the previous group ordinal, including nonzero ones.
+    const auto nested = cudax::coop::make_group<cudax::coop::virtual_group>(
+      cuda::warp,
+      parent,
+      cudax::coop::group_as{cuda::std::index_sequence<3, 3>{}}
+        | cudax::coop::group_as{cuda::std::index_sequence<1, 2>{}});
+    const auto rank_in_parent_group = warp_rank % 3;
+    CHECK(nested.rank(parent) == 2 * (warp_rank / 3) + ((rank_in_parent_group == 0) ? 0u : 1u));
+    CHECK(cuda::warp.rank(nested) == ((rank_in_parent_group == 0) ? 0u : rank_in_parent_group - 1));
+    CHECK(cuda::warp.count(nested) == ((rank_in_parent_group == 0) ? 1u : 2u));
+
+    // A second non-exhaustive mapping must preserve already excluded warps.
+    const auto initial = cudax::coop::__make_init_group_mapping_result<cuda::warp_level>(parent);
+    const auto partial = cudax::coop::group_as{cuda::std::index_sequence<1, 3>{}}.map(
+      cudax::coop::non_exhaustive, cuda::warp, parent, initial);
+    const auto selected = cudax::coop::group_as{cuda::std::index_sequence<1>{}}.map(
+      cudax::coop::non_exhaustive, cuda::warp, parent, partial);
+    CHECK(partial.is_valid() == (warp_rank < 4));
+    CHECK(selected.is_valid() == (warp_rank < 2));
+    if (selected.is_valid())
+    {
+      CHECK(selected.group_rank() == warp_rank);
+      CHECK(selected.unit_rank() == 0);
+      CHECK(selected.unit_count() == 1);
+    }
+  }
+};
 } // namespace
 
 C2H_TEST("Group-as mapping", "[group]")
@@ -475,5 +541,14 @@ C2H_TEST("Group-as mapping", "[group]")
     cuda::launch(stream, config, TestKernel{});
   }
 
+  stream.sync();
+}
+
+C2H_TEST("Group-as warp mapping", "[group]")
+{
+  const auto device = cuda::devices[0];
+  const cuda::stream stream{device};
+  cuda::launch(stream, cuda::make_config(cuda::grid_dims<1>(), cuda::block_dims<16, 12>()), WarpTestKernel{});
+  cuda::launch(stream, cuda::make_config(cuda::grid_dims<1>(), cuda::block_dims(dim3{16, 12})), WarpTestKernel{});
   stream.sync();
 }

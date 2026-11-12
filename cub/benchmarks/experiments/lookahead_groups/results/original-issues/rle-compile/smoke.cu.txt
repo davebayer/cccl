@@ -1,0 +1,64 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#include <cub/device/device_run_length_encode.cuh>
+#include <cub/device/dispatch/dispatch_rle_encode.cuh>
+
+#include <cassert>
+#include <cstdio>
+#include <cuda_runtime.h>
+
+struct small_lookahead_policy
+{
+  __host__ __device__ constexpr cub::RleEncodePolicy operator()(cuda::compute_capability) const
+  {
+    using default_selector = cub::detail::rle::encode::policy_selector_from_types<int, int, int*, int*, int*, int*, int>;
+    auto policy = default_selector{}(cuda::compute_capability{10, 0});
+    policy.algorithm = cub::RleAlgorithm::lookahead;
+    policy.lookahead = cub::RleLookaheadPolicy{8, 2, 3, 2, 5, 3, 128, 32};
+    return policy;
+  }
+};
+
+int main()
+{
+  for (const int size : {0, 1, 31, 33, 4097, 1000003})
+  {
+    int* input{};
+    int* unique{};
+    int* counts{};
+    int* runs{};
+    assert(cudaMallocManaged(&input, (size + 2) * sizeof(int)) == cudaSuccess);
+    assert(cudaMallocManaged(&unique, (size + 2) * sizeof(int)) == cudaSuccess);
+    assert(cudaMallocManaged(&counts, (size + 2) * sizeof(int)) == cudaSuccess);
+    assert(cudaMallocManaged(&runs, sizeof(int)) == cudaSuccess);
+    for (int index = 0; index < size + 2; ++index)
+    {
+      input[index] = (index - 1) / 5 % 17;
+      unique[index] = -1;
+      counts[index] = -1;
+    }
+    void* storage{};
+    std::size_t bytes{};
+    assert(cub::detail::rle::encode::dispatch(storage, bytes, input + 1, unique + 1, counts + 1, runs, size, nullptr, small_lookahead_policy{}) == cudaSuccess);
+    assert(cudaMalloc(&storage, bytes) == cudaSuccess);
+    assert(cub::detail::rle::encode::dispatch(storage, bytes, input + 1, unique + 1, counts + 1, runs, size, nullptr, small_lookahead_policy{}) == cudaSuccess);
+    assert(cudaDeviceSynchronize() == cudaSuccess);
+    const int expected_runs = (size + 4) / 5;
+    assert(*runs == expected_runs);
+    for (int index = 0; index < expected_runs; ++index)
+    {
+      const int expected_count = (index + 1 == expected_runs) ? size - index * 5 : 5;
+      assert(unique[index + 1] == index % 17);
+      assert(counts[index + 1] == expected_count);
+    }
+    assert(unique[0] == -1 && unique[expected_runs + 1] == -1);
+    assert(counts[0] == -1 && counts[expected_runs + 1] == -1);
+    assert(cudaFree(storage) == cudaSuccess);
+    assert(cudaFree(input) == cudaSuccess);
+    assert(cudaFree(unique) == cudaSuccess);
+    assert(cudaFree(counts) == cudaSuccess);
+    assert(cudaFree(runs) == cudaSuccess);
+  }
+  std::puts("RLE forced lookahead shifted-input/tail smoke: passed");
+}

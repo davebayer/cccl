@@ -1,0 +1,9 @@
+/usr/local/cuda-13.5/bin/nvcc -ccbin=/usr/bin/g++-13 -std=c++17 -O3 -arch=sm_120 -I/home/dabayer/cccl/cub -Ilibcudacxx/include -Ithrust -Icudax/include /home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/bounds.cu -o /home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/current-bounds-strict
+/home/dabayer/cccl/cub/cub/device/dispatch/kernels/kernel_rle_encode_lookahead.cuh(1286): error: calling a constexpr __device__ function("auto cub::_V_300700_SM_1200::detail::current_policy< ::cub::_V_300700_SM_1200::detail::rle::encode::policy_selector_from_types<int, int, int *, int *, int *, int *, int> > ()") from a __host__ __device__ function("get_device_rle_encode_lookahead_launch_bounds") is not allowed. The experimental flag '--expt-relaxed-constexpr' can be used to allow this (note: for a __tile__/__tile_global__ caller, the flag guarantees support only for calls that are required by language rules to be evaluated at compile time).
+    return ::cub::detail::rle::encode::num_total_threads(::cub::detail::current_policy<PolicySelector>().lookahead);
+                                                         ^
+          detected during:
+            instantiation of "int cub::_V_300700_SM_1200::detail::rle::encode::get_device_rle_encode_lookahead_launch_bounds<PolicySelector>() noexcept [with PolicySelector=S]" at line 1293
+            instantiation of "const int cub::_V_300700_SM_1200::detail::rle::encode::device_rle_encode_lookahead_launch_bounds [with PolicySelector=S]" at line 3 of /home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/bounds.cu
+
+1 error detected in the compilation of "/home/dabayer/cccl/build/lookahead-groups/rle-constexpr-audit/bounds.cu".

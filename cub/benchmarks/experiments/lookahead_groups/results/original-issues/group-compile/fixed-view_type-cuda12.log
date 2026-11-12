@@ -1,0 +1,121 @@
+/usr/local/cuda-12.0/bin/nvcc -ccbin=/usr/bin/g++-7 -gencode=arch=compute_90,code=compute_90 -std=c++17 -D_CCCL_NO_SYSTEM_HEADER -D_CUDAX_ENABLE_GROUP_FEATURES_IN_LIBCUDACXX -I/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed -Icudax/include -Ilibcudacxx/include -c /home/dabayer/cccl/cub/benchmarks/experiments/lookahead_groups/results/original-issues/group-reproducers/view_type.cu -o /home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed-view_type-cuda12.o
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/group_view.cuh:331:32: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::group_view<_Unit, _Group, _MappingResult>::with_static_unit_count() const' with void return type [-Wattributes]
+   [[nodiscard]] _CCCL_DEVICE_API auto with_static_unit_count() const noexcept
+                                ^~~~~~~~
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/group_view.cuh:364:44: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::group_view<_Unit, _Group, _MappingResult>::with_unit_rank(uint32_t) const' with void return type [-Wattributes]
+   [[nodiscard]] _CCCL_DEVICE_API auto with_unit_rank(::cuda::std::uint32_t __unit_rank) const noexcept
+                                            ^~~~~~~~
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/group_by.cuh:109:116: warning: 'nodiscard' attribute applied to 'static void cuda::experimental::coop::group_by<_StaticUnitCount>::__do_map(const _Unit&, const _PrevMappingResult&, cuda::std::__4::index_sequence<_Is ...>&)' with void return type [-Wattributes]
+   __do_map(const _Unit&, const _PrevMappingResult& __prev_mapping_result, const ::cuda::std::index_sequence<_Is...>&)
+                                                                                                                    ^
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/group_by.cuh:169:72: warning: 'nodiscard' attribute applied to 'static void cuda::experimental::coop::group_by<_StaticUnitCount>::__do_map(const _Unit&, const _PrevMappingResult&)' with void return type [-Wattributes]
+   [[nodiscard]] _CCCL_DEVICE_API static auto __do_map(const _Unit&, const _PrevMappingResult& __prev_mapping_result)
+                                                                        ^
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/group_by.cuh:240:105: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::group_by<_StaticUnitCount>::map(const _Unit&, const _ParentGroup&, const _PrevMappingResult&) const' with void return type [-Wattributes]
+   map(const _Unit& __unit, const _ParentGroup& __parent, const _PrevMappingResult& __prev_mapping_result) const
+                                                                                                         ^~~~~
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/group_by.cuh:266:24: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::group_by<_StaticUnitCount>::map(const cuda::experimental::coop::non_exhaustive_t&, const _Unit&, const _ParentGroup&, const _PrevMappingResult&) const' with void return type [-Wattributes]
+       const _PrevMappingResult& __prev_mapping_result) const
+                        ^~~~~
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/group_by.cuh:301:74: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::group_by<18446744073709551615>::__do_map(const _Unit&, const _PrevMappingResult&) const' with void return type [-Wattributes]
+   [[nodiscard]] _CCCL_DEVICE_API auto __do_map(const _Unit&, const _PrevMappingResult& __prev_mapping_result) const
+                                                                          ^~~~~
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/group_by.cuh:365:105: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::group_by<18446744073709551615>::map(const _Unit&, const _ParentGroup&, const _PrevMappingResult&) const' with void return type [-Wattributes]
+   map(const _Unit& __unit, const _ParentGroup& __parent, const _PrevMappingResult& __prev_mapping_result) const
+                                                                                                         ^~~~~
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/group_by.cuh:383:24: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::group_by<18446744073709551615>::map(const cuda::experimental::coop::non_exhaustive_t&, const _Unit&, const _ParentGroup&, const _PrevMappingResult&) const' with void return type [-Wattributes]
+       const _PrevMappingResult& __prev_mapping_result) const
+                        ^~~~~
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/synchronizer/level_synchronizer.cuh:50:76: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::level_synchronizer::make_instance(const _Unit&, const _ParentGroup&, const _MappingResult&) const' with void return type [-Wattributes]
+   [[nodiscard]] _CCCL_DEVICE_API auto make_instance(const _Unit&, const _ParentGroup&, const _MappingResult&) const
+                                                                            ^~~~~
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/this_group.cuh:354:66: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::make_this_group(const _Level&, const _HierarchyLike&)' with void return type [-Wattributes]
+ [[nodiscard]] _CCCL_DEVICE_API auto make_this_group(const _Level&, const _HierarchyLike& __hier_like)
+                                                                  ^
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/make_group.cuh:109:91: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::make_group(const cooperative_groups::__v1::grid_group&, const _HierarchyLike&)' with void return type [-Wattributes]
+ make_group(const ::cooperative_groups::grid_group&, const _HierarchyLike& __hier_like)
+                                                                                           ^
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/make_group.cuh:118:94: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::make_group(const cooperative_groups::__v1::cluster_group&, const _HierarchyLike&)' with void return type [-Wattributes]
+ make_group(const ::cooperative_groups::cluster_group&, const _HierarchyLike& __hier_like)
+                                                                                              ^
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/make_group.cuh:127:93: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::make_group(const cooperative_groups::__v1::thread_block&, const _HierarchyLike&)' with void return type [-Wattributes]
+ make_group(const ::cooperative_groups::thread_block&, const _HierarchyLike& __hier_like)
+                                                                                             ^
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/make_group.cuh:135:102: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::make_group(cuda::std::__4::type_identity_t<_CgGroup>&, const _HierarchyLike&)' with void return type [-Wattributes]
+ make_group(const ::cuda::std::type_identity_t<_CgGroup>& __cg_group, const _HierarchyLike& __hier_like)
+                                                                                                      ^
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/make_group.cuh:147:117: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::make_group(const cooperative_groups::__v1::thread_block_tile<Size, ParentT>&, const _HierarchyLike&)' with void return type [-Wattributes]
+ make_group(const ::cooperative_groups::thread_block_tile<_Size, _ParentT>&, const _HierarchyLike& __hier_like)
+                                                                                                                     ^
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/binary_partition.cuh:57:97: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::binary_partition<_Fn>::map(const _Unit&, const _ParentGroup&, const _PrevMappingResult&)' with void return type [-Wattributes]
+   map(const _Unit&, const _ParentGroup& __parent, const _PrevMappingResult& __prev_mapping_result)
+                                                                                                 ^
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/binary_partition.cuh:103:22: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::binary_partition<_Fn>::map(const cuda::experimental::coop::non_exhaustive_t&, const _Unit&, const _ParentGroup&, const _PrevMappingResult&)' with void return type [-Wattributes]
+       const _PrevMappingResult& __prev_mapping_result)
+                      ^
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/composite_mapping.cuh:46:83: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::composite_mapping<_Mappings>::__map_impl(const _PrevMappingResult&, const _Args& ...)' with void return type [-Wattributes]
+   [[nodiscard]] _CCCL_DEVICE_API auto __map_impl(const _PrevMappingResult& __prev_mapping_result, const _Args&... __args)
+                                                                                   ^
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/composite_mapping.cuh:71:103: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::composite_mapping<_Mappings>::map(const _Unit&, const _ParentGroup&, const _PrevMappingResult&)' with void return type [-Wattributes]
+   map(const _Unit& __unit, const _ParentGroup& __parent, const _PrevMappingResult& __prev_mapping_result)
+                                                                                                       ^
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/composite_mapping.cuh:88:22: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::composite_mapping<_Mappings>::map(const cuda::experimental::coop::non_exhaustive_t&, const _Unit&, const _ParentGroup&, const _PrevMappingResult&)' with void return type [-Wattributes]
+       const _PrevMappingResult& __prev_mapping_result)
+                      ^
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/group_as.cuh:55:107: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::__group_as_map(const _Unit&, const _PrevMappingResult&, const _Range&)' with void return type [-Wattributes]
+ __group_as_map(const _Unit&, const _PrevMappingResult& __prev_mapping_result, const _Range& __unit_counts)
+                                                                                                           ^
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/group_as.cuh:142:97: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::group_as<_RangeView>::map(const _Unit&, const _ParentGroup&, const _PrevMappingResult&) const' with void return type [-Wattributes]
+   map(const _Unit& __unit, const _ParentGroup&, const _PrevMappingResult& __prev_mapping_result) const
+                                                                                                 ^~~~~
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/group_as.cuh:152:24: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::group_as<_RangeView>::map(const cuda::experimental::coop::non_exhaustive_t&, const _Unit&, const _ParentGroup&, const _PrevMappingResult&) const' with void return type [-Wattributes]
+       const _PrevMappingResult& __prev_mapping_result) const
+                        ^~~~~
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/group_as.cuh:179:101: warning: 'nodiscard' attribute applied to 'static void cuda::experimental::coop::group_as<cuda::std::__4::integer_sequence<long unsigned int, _Ip ...> >::__make_non_uniform_mapping_result(const _DynamicResult&, cuda::std::__4::index_sequence<_Is ...>)' with void return type [-Wattributes]
+   __make_non_uniform_mapping_result(const _DynamicResult& __result, ::cuda::std::index_sequence<_Is...>)
+                                                                                                     ^
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/group_as.cuh:194:65: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::group_as<cuda::std::__4::integer_sequence<long unsigned int, _Ip ...> >::__do_map(const _Unit&, const _PrevMappingResult&) const' with void return type [-Wattributes]
+   [[nodiscard]] _CCCL_DEVICE_API auto __do_map(const _Unit& __unit, const _PrevMappingResult& __prev) const
+                                                                 ^~~~~
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/group_as.cuh:245:82: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::group_as<cuda::std::__4::integer_sequence<long unsigned int, _Ip ...> >::map(const _Unit&, const _ParentGroup&, const _PrevMappingResult&) const' with void return type [-Wattributes]
+   map(const _Unit& __unit, const _ParentGroup&, const _PrevMappingResult& __prev) const
+                                                                                  ^~~~~
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/group_as.cuh:252:108: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::group_as<cuda::std::__4::integer_sequence<long unsigned int, _Ip ...> >::map(const cuda::experimental::coop::non_exhaustive_t&, const _Unit&, const _ParentGroup&, const _PrevMappingResult&) const' with void return type [-Wattributes]
+   map(const non_exhaustive_t&, const _Unit& __unit, const _ParentGroup&, const _PrevMappingResult& __prev) const
+                                                                                                            ^~~~~
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/identity_mapping.cuh:39:91: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::identity_mapping::map(const _Unit&, const _ParentGroup&, const _PrevMappingResult&) const' with void return type [-Wattributes]
+   map(const _Unit&, const _ParentGroup&, const _PrevMappingResult& __prev_mapping_result) const
+                                                                                           ^~~~~
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/identity_mapping.cuh:46:117: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::identity_mapping::map(const cuda::experimental::coop::non_exhaustive_t&, const _Unit&, const _ParentGroup&, const _PrevMappingResult&) const' with void return type [-Wattributes]
+   map(const non_exhaustive_t&, const _Unit&, const _ParentGroup&, const _PrevMappingResult& __prev_mapping_result) const
+                                                                                                                     ^~~~
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/labeled_partition.cuh:50:24: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::__extract_label(_Tp)' with void return type [-Wattributes]
+ [[nodiscard]] _CCCL_DEVICE_API auto __extract_label(_Tp __v)
+                        ^
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/labeled_partition.cuh:82:97: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::labeled_partition<_Fn>::map(const _Unit&, const _ParentGroup&, const _PrevMappingResult&)' with void return type [-Wattributes]
+   map(const _Unit&, const _ParentGroup& __parent, const _PrevMappingResult& __prev_mapping_result)
+                                                                                                 ^
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/labeled_partition.cuh:172:22: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::labeled_partition<_Fn>::map(const cuda::experimental::coop::non_exhaustive_t&, const _Unit&, const _ParentGroup&, const _PrevMappingResult&)' with void return type [-Wattributes]
+       const _PrevMappingResult& __prev_mapping_result)
+                      ^
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/take.cuh:56:72: warning: 'nodiscard' attribute applied to 'static void cuda::experimental::coop::take<_StaticUnitCount>::__do_map(const _Unit&, const _PrevMappingResult&)' with void return type [-Wattributes]
+   [[nodiscard]] _CCCL_DEVICE_API static auto __do_map(const _Unit&, const _PrevMappingResult& __prev_mapping_result)
+                                                                        ^
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/take.cuh:126:97: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::take<_StaticUnitCount>::map(const _Unit&, const _ParentGroup&, const _PrevMappingResult&) const' with void return type [-Wattributes]
+   map(const _Unit& __unit, const _ParentGroup&, const _PrevMappingResult& __prev_mapping_result) const
+                                                                                                 ^~~~~
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/take.cuh:136:24: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::take<_StaticUnitCount>::map(const cuda::experimental::coop::non_exhaustive_t&, const _Unit&, const _ParentGroup&, const _PrevMappingResult&) const' with void return type [-Wattributes]
+       const _PrevMappingResult& __prev_mapping_result) const
+                        ^~~~~
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/take.cuh:153:74: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::take<18446744073709551615>::__do_map(const _Unit&, const _PrevMappingResult&) const' with void return type [-Wattributes]
+   [[nodiscard]] _CCCL_DEVICE_API auto __do_map(const _Unit&, const _PrevMappingResult& __prev_mapping_result) const
+                                                                          ^~~~~
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/take.cuh:201:97: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::take<18446744073709551615>::map(const _Unit&, const _ParentGroup&, const _PrevMappingResult&) const' with void return type [-Wattributes]
+   map(const _Unit& __unit, const _ParentGroup&, const _PrevMappingResult& __prev_mapping_result) const
+                                                                                                 ^~~~~
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/mapping/take.cuh:211:24: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::take<18446744073709551615>::map(const cuda::experimental::coop::non_exhaustive_t&, const _Unit&, const _ParentGroup&, const _PrevMappingResult&) const' with void return type [-Wattributes]
+       const _PrevMappingResult& __prev_mapping_result) const
+                        ^~~~~
+/home/dabayer/cccl/build/lookahead-groups/original-issues-final-validation/fixed/cuda/experimental/coop/__group/synchronizer/interwarp_synchronizer.cuh:196:92: warning: 'nodiscard' attribute applied to 'void cuda::experimental::coop::interwarp_synchronizer<_RangeView>::make_instance(const _Unit&, const _ParentGroup&, const _MappingResult&) const' with void return type [-Wattributes]
+   make_instance(const _Unit&, const _ParentGroup&, const _MappingResult& __mapping_result) const
+                                                                                            ^~~~~
