@@ -22,10 +22,13 @@
 #endif // no system header
 
 #include <cuda/hierarchy>
+#include <cuda/std/__type_traits/is_same.h>
 #include <cuda/std/__type_traits/remove_cvref.h>
 #include <cuda/std/__type_traits/void_t.h>
 #include <cuda/std/__utility/declval.h>
 #include <cuda/std/span>
+
+#include <cuda/experimental/coop/__group/fwd.cuh>
 
 #include <cuda/std/__cccl/prologue.h>
 
@@ -33,11 +36,13 @@
 
 namespace cuda::experimental::coop
 {
-template <class _Tp, class = void>
-inline constexpr bool __is_spannable = false;
-template <class _Tp>
+template <class _Group, class _ParentGroup>
+inline constexpr bool __is_same_underlying_group_v = false;
+template <class _Group>
+inline constexpr bool __is_same_underlying_group_v<_Group, _Group> = true;
+template <class _Unit, class _Group, class _MappingResult>
 inline constexpr bool
-  __is_spannable<_Tp, ::cuda::std::void_t<decltype(::cuda::std::span(::cuda::std::declval<_Tp>()))>> = true;
+  __is_same_underlying_group_v<group_view<typename _Group::unit_type, _Group, _MappingResult>, _Group> = true;
 
 template <class _Span>
 using _SpanElementType _CCCL_NODEBUG = typename _Span::element_type;

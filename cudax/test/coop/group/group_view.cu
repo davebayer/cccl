@@ -231,7 +231,7 @@ __device__ void test_group_view(Config config, Level level)
 
     const cudax::coop::group_view g2_view{g2};
     REQUIRE(cuda::warp.count(g2_view) == n);
-    REQUIRE(g2_view.count(g2) == cuda::warp.count(level) / n);
+    REQUIRE(g2_view.count(g) == cuda::warp.count(level) / n);
     static_assert(g2_view.is_always_contiguous());
     g2_view.sync();
     g2_view.wait(g2_view.arrive());
@@ -240,13 +240,155 @@ __device__ void test_group_view(Config config, Level level)
 
     const cudax::coop::group_view g2_view_threads{cuda::gpu_thread, g2_view};
     REQUIRE(cuda::gpu_thread.count(g2_view_threads) == n * cuda::gpu_thread.count(cuda::warp));
-    REQUIRE(g2_view_threads.count(g2) == n);
+    REQUIRE(g2_view_threads.count(g) == cuda::warp.count(level) / n);
     static_assert(g2_view_threads.is_always_contiguous());
     g2_view_threads.sync();
     g2_view_threads.wait(g2_view_threads.arrive());
     g2_view_threads.sync_aligned();
     g2_view_threads.wait_aligned(g2_view_threads.arrive_aligned());
   }
+}
+
+template <class Group, class Parent, class = void>
+inline constexpr bool can_static_count_parent = false;
+
+template <class Group, class Parent>
+inline constexpr bool can_static_count_parent<
+  Group,
+  Parent,
+  cuda::std::void_t<decltype(cuda::std::declval<const Group&>().static_count(cuda::std::declval<const Parent&>()))>> =
+  true;
+
+template <class Group, class Parent, class = void>
+inline constexpr bool can_static_rank_parent = false;
+
+template <class Group, class Parent>
+inline constexpr bool can_static_rank_parent<
+  Group,
+  Parent,
+  cuda::std::void_t<decltype(cuda::std::declval<const Group&>().static_rank(cuda::std::declval<const Parent&>()))>> =
+  true;
+
+template <class Group, class Parent, class = void>
+inline constexpr bool can_count_parent = false;
+
+template <class Group, class Parent>
+inline constexpr bool can_count_parent<
+  Group,
+  Parent,
+  cuda::std::void_t<decltype(cuda::std::declval<const Group&>().count(cuda::std::declval<const Parent&>()))>> = true;
+
+template <class Group, class Parent, class = void>
+inline constexpr bool can_rank_parent = false;
+
+template <class Group, class Parent>
+inline constexpr bool can_rank_parent<
+  Group,
+  Parent,
+  cuda::std::void_t<decltype(cuda::std::declval<const Group&>().rank(cuda::std::declval<const Parent&>()))>> = true;
+
+template <class Group, class Parent, class = void>
+inline constexpr bool can_count_as_parent = false;
+
+template <class Group, class Parent>
+inline constexpr bool
+  can_count_as_parent<Group,
+                      Parent,
+                      cuda::std::void_t<decltype(cuda::std::declval<const Group&>().template count_as<unsigned>(
+                        cuda::std::declval<const Parent&>()))>> = true;
+
+template <class Group, class Parent, class = void>
+inline constexpr bool can_rank_as_parent = false;
+
+template <class Group, class Parent>
+inline constexpr bool
+  can_rank_as_parent<Group,
+                     Parent,
+                     cuda::std::void_t<decltype(cuda::std::declval<const Group&>().template rank_as<unsigned>(
+                       cuda::std::declval<const Parent&>()))>> = true;
+
+template <class Group, class Parent>
+__device__ void check_parent_view_queries(const Group& group, const Parent& parent)
+{
+  const auto check = [&](const auto& query_parent) {
+    const cudax::coop::group_view view{query_parent};
+    static_assert(Group::static_count(view) == Group::__mapping_result_type::static_group_count());
+    static_assert(Group::static_rank(view) == Group::__mapping_result_type::static_group_rank());
+    static_assert(cuda::std::is_same_v<decltype(group.count(query_parent)), decltype(group.count(parent))>);
+    static_assert(cuda::std::is_same_v<decltype(group.rank(query_parent)), decltype(group.rank(parent))>);
+    static_assert(
+      cuda::std::is_same_v<decltype(group.template count_as<unsigned long long>(query_parent)), unsigned long long>);
+    static_assert(
+      cuda::std::is_same_v<decltype(group.template rank_as<unsigned long long>(query_parent)), unsigned long long>);
+    CHECK(group.count(query_parent) == group.__mapping_result().group_count());
+    CHECK(group.template count_as<unsigned long long>(query_parent) == group.__mapping_result().group_count());
+    CHECK(group.rank(query_parent) == group.__mapping_result().group_rank());
+    CHECK(group.template rank_as<unsigned long long>(query_parent) == group.__mapping_result().group_rank());
+  };
+
+  check(parent);
+  check(cudax::coop::group_view{parent});
+  const cudax::coop::group_view parent_view{parent};
+  using View = decltype(parent_view);
+  const cudax::coop::group_view<typename View::unit_type, View, typename View::__mapping_result_type> nested{
+    parent_view};
+  check(nested);
+  check(cudax::coop::group_view{cuda::gpu_thread, parent_view});
+
+  // A child group and its view are not the parent, even when they share a hierarchy.
+  using Unrelated = cudax::coop::group_view<typename Group::unit_type, Group, typename Group::__mapping_result_type>;
+  static_assert(!can_static_count_parent<Group, Unrelated>);
+  static_assert(!can_static_rank_parent<Group, Unrelated>);
+  static_assert(!can_count_parent<Group, Unrelated>);
+  static_assert(!can_rank_parent<Group, Unrelated>);
+  static_assert(!can_count_as_parent<Group, Unrelated>);
+  static_assert(!can_rank_as_parent<Group, Unrelated>);
+}
+
+struct ParentViewQueryKernel
+{
+  template <class Config>
+  __device__ void operator()(Config config) const
+  {
+    const cudax::coop::this_block parent{config};
+    const cudax::coop::group_view parent_view{parent};
+    const cudax::coop::virtual_group group{cuda::warp, parent, cudax::coop::group_by{cuda::std::cw<2>}};
+    check_parent_view_queries(group, parent);
+    check_parent_view_queries(cudax::coop::group_view{group}, parent);
+    check_parent_view_queries(cudax::coop::group_view{cuda::gpu_thread, group}, parent);
+
+    const cudax::coop::virtual_group single{cuda::warp, parent, cudax::coop::identity_mapping{}};
+    check_parent_view_queries(single, parent);
+    check_parent_view_queries(cudax::coop::group_view{single}, parent);
+
+    // Parent identity also survives construction from a view.
+    const cudax::coop::virtual_group from_view{cuda::warp, parent_view, cudax::coop::group_by{cuda::std::cw<2>}};
+    check_parent_view_queries(from_view, parent);
+    check_parent_view_queries(cudax::coop::group_view{from_view}, parent);
+
+    auto& barriers = get_barriers<2>(cuda::warp);
+    {
+      const cudax::coop::generic_group synchronized{
+        cuda::warp, parent, cudax::coop::group_by{cuda::std::cw<2>}, cudax::coop::barrier_synchronizer{barriers}};
+      check_parent_view_queries(synchronized, parent);
+      check_parent_view_queries(cudax::coop::group_view{synchronized}, parent);
+      check_parent_view_queries(cudax::coop::group_view{cuda::gpu_thread, synchronized}, parent);
+    }
+    {
+      const cudax::coop::generic_group synchronized{
+        cuda::warp, parent_view, cudax::coop::group_by{cuda::std::cw<2>}, cudax::coop::barrier_synchronizer{barriers}};
+      check_parent_view_queries(synchronized, parent);
+      check_parent_view_queries(cudax::coop::group_view{synchronized}, parent);
+    }
+  }
+};
+
+C2H_TEST("Group queries accept parent views", "[group_view]")
+{
+  const cuda::stream stream{cuda::devices[0]};
+  cuda::launch(stream, cuda::make_config(cuda::grid_dims<2>(), cuda::block_dims<128>()), ParentViewQueryKernel{});
+  cuda::launch(stream, cuda::make_config(cuda::grid_dims<2>(), cuda::block_dims(128)), ParentViewQueryKernel{});
+  stream.sync();
 }
 
 struct TestKernel
