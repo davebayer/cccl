@@ -37,12 +37,20 @@
 namespace cuda::experimental::coop
 {
 template <class _Group, class _ParentGroup>
-inline constexpr bool __is_same_underlying_group_v = false;
-template <class _Group>
-inline constexpr bool __is_same_underlying_group_v<_Group, _Group> = true;
-template <class _Unit, class _Group, class _MappingResult>
-inline constexpr bool
-  __is_same_underlying_group_v<group_view<typename _Group::unit_type, _Group, _MappingResult>, _Group> = true;
+inline constexpr bool __is_same_underlying_group_v = ::cuda::std::is_same_v<_Group, _ParentGroup>;
+
+template <class _Unit, class _Group, class _MappingResult, class _ParentGroup>
+inline constexpr bool __is_same_underlying_group_v<group_view<_Unit, _Group, _MappingResult>, _ParentGroup> =
+  __is_same_underlying_group_v<_Group, _ParentGroup>;
+
+template <class _Group, class _Unit, class _ParentGroup, class _MappingResult>
+inline constexpr bool __is_same_underlying_group_v<_Group, group_view<_Unit, _ParentGroup, _MappingResult>> =
+  __is_same_underlying_group_v<_Group, _ParentGroup>;
+
+template <class _Unit, class _Group, class _MappingResult, class _ParentUnit, class _ParentGroup, class _ParentMappingResult>
+inline constexpr bool __is_same_underlying_group_v<group_view<_Unit, _Group, _MappingResult>,
+                                                   group_view<_ParentUnit, _ParentGroup, _ParentMappingResult>> =
+  __is_same_underlying_group_v<_Group, _ParentGroup>;
 
 template <class _Span>
 using _SpanElementType _CCCL_NODEBUG = typename _Span::element_type;

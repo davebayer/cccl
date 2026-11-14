@@ -329,7 +329,7 @@ __device__ void check_parent_view_queries(const Group& group, const Parent& pare
   check(parent);
   check(cudax::coop::group_view{parent});
   const cudax::coop::group_view parent_view{parent};
-  using View = decltype(parent_view);
+  using View = cuda::std::remove_cv_t<decltype(parent_view)>;
   const cudax::coop::group_view<typename View::unit_type, View, typename View::__mapping_result_type> nested{
     parent_view};
   check(nested);
@@ -361,10 +361,19 @@ struct ParentViewQueryKernel
     check_parent_view_queries(single, parent);
     check_parent_view_queries(cudax::coop::group_view{single}, parent);
 
-    // Parent identity also survives construction from a view.
+    // Construction from a view retains the underlying parent type.
     const cudax::coop::virtual_group from_view{cuda::warp, parent_view, cudax::coop::group_by{cuda::std::cw<2>}};
+    static_assert(cuda::std::is_same_v<decltype(group), decltype(from_view)>);
     check_parent_view_queries(from_view, parent);
     check_parent_view_queries(cudax::coop::group_view{from_view}, parent);
+
+    const cudax::coop::group_view thread_parent{cuda::gpu_thread, parent_view};
+    const cudax::coop::virtual_group thread_group{cuda::gpu_thread, parent, cudax::coop::group_by{cuda::std::cw<32>}};
+    const cudax::coop::virtual_group from_thread_view{
+      cuda::gpu_thread, thread_parent, cudax::coop::group_by{cuda::std::cw<32>}};
+    static_assert(cuda::std::is_same_v<decltype(thread_group), decltype(from_thread_view)>);
+    check_parent_view_queries(from_thread_view, parent);
+    check_parent_view_queries(cudax::coop::group_view{from_thread_view}, parent);
 
     auto& barriers = get_barriers<2>(cuda::warp);
     {
@@ -373,10 +382,29 @@ struct ParentViewQueryKernel
       check_parent_view_queries(synchronized, parent);
       check_parent_view_queries(cudax::coop::group_view{synchronized}, parent);
       check_parent_view_queries(cudax::coop::group_view{cuda::gpu_thread, synchronized}, parent);
+
+      using FromView = decltype(cudax::coop::generic_group{
+        cuda::warp, parent_view, cudax::coop::group_by{cuda::std::cw<2>}, cudax::coop::barrier_synchronizer{barriers}});
+      static_assert(cuda::std::is_same_v<cuda::std::remove_cv_t<decltype(synchronized)>, FromView>);
     }
     {
       const cudax::coop::generic_group synchronized{
         cuda::warp, parent_view, cudax::coop::group_by{cuda::std::cw<2>}, cudax::coop::barrier_synchronizer{barriers}};
+      check_parent_view_queries(synchronized, parent);
+      check_parent_view_queries(cudax::coop::group_view{synchronized}, parent);
+    }
+    {
+      const cudax::coop::generic_group synchronized{
+        cuda::gpu_thread,
+        thread_parent,
+        cudax::coop::group_by{cuda::std::cw<64>},
+        cudax::coop::barrier_synchronizer{barriers}};
+      using FromParent = decltype(cudax::coop::generic_group{
+        cuda::gpu_thread,
+        parent,
+        cudax::coop::group_by{cuda::std::cw<64>},
+        cudax::coop::barrier_synchronizer{barriers}});
+      static_assert(cuda::std::is_same_v<cuda::std::remove_cv_t<decltype(synchronized)>, FromParent>);
       check_parent_view_queries(synchronized, parent);
       check_parent_view_queries(cudax::coop::group_view{synchronized}, parent);
     }
@@ -574,6 +602,8 @@ __device__ void test_viewed_parent(const Parent& parent, const View& view)
     CHECK(child.template count_as<unsigned>(parent) == cuda::gpu_thread.count(view) / 32);
     CHECK(child.rank(parent) == cuda::gpu_thread.rank(view) / 32);
     CHECK(child.template rank_as<unsigned>(parent) == cuda::gpu_thread.rank(view) / 32);
+    check_parent_view_queries(child, parent);
+    check_parent_view_queries(child_view, parent);
     CHECK(cuda::gpu_thread.count(child) == 32);
     CHECK(cuda::gpu_thread.rank(child) == cuda::gpu_thread.rank(view) % 32);
   };
