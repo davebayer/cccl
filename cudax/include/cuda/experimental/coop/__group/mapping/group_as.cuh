@@ -111,7 +111,7 @@ __group_as_map(const _Unit&, const _PrevMappingResult& __prev_mapping_result, _R
       const auto __n          = __i_count;
       const auto __rank       = __prev_unit_rank - __sum;
       const auto __lane_mask =
-        (::cuda::std::is_same_v<_Unit, thread_level>)
+        (::cuda::std::is_same_v<_Unit, thread_level> && !(_Exhaustive && __curr_static_group_count == 1))
           ? ::cuda::experimental::coop::__make_lane_mask_for_n<_PrevMappingResult::is_always_contiguous()>(
               __prev_mapping_result.lane_mask(), __n, __rank)
           : __prev_mapping_result.lane_mask();
@@ -271,8 +271,10 @@ class group_as<::cuda::std::index_sequence<_Counts...>>
         const auto __group_rank =
           __prev.group_rank() * __curr_ngroups + (__curr_ngroups == 1 ? 0u : __prev_unit_rank / __n);
         const auto __rank = (__curr_ngroups == 1) ? __prev_unit_rank : __prev_unit_rank % __n;
+        constexpr bool __identity =
+          __curr_ngroups == 1 && (_Exhaustive || _PrevMappingResult::static_unit_count() == __n);
         const auto __lane_mask =
-          (::cuda::std::is_same_v<_Unit, thread_level>)
+          (::cuda::std::is_same_v<_Unit, thread_level> && !__identity)
             ? ::cuda::experimental::coop::__make_lane_mask_for_n<_PrevMappingResult::is_always_contiguous()>(
                 __prev.lane_mask(), __n, __rank)
             : __prev.lane_mask();

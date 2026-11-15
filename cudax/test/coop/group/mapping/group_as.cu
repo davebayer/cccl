@@ -478,6 +478,80 @@ __device__ void test_static_previous_mappings(Config config)
   CHECK(dynamic_uniform.group_rank() == cuda::gpu_thread.rank(parent) / 4);
 }
 
+struct observed_count
+{
+  unsigned value;
+  unsigned* reads;
+
+  __device__ operator unsigned() const
+  {
+    ++*reads;
+    return value;
+  }
+};
+
+template <class Result>
+__device__ void check_sparse_single_group(const Result& result, unsigned rank, unsigned count, unsigned mask)
+{
+  CHECK(result.is_valid() == (rank < count));
+  if (rank < count)
+  {
+    CHECK(result.group_count() == 1);
+    CHECK(result.group_rank() == 0);
+    CHECK(result.unit_count() == count);
+    CHECK(result.unit_rank() == rank);
+    CHECK(result.lane_mask() == cuda::device::lane_mask{mask});
+  }
+}
+
+template <unsigned Mask, class Config>
+__device__ void test_sparse_single_group(Config config)
+{
+  constexpr auto count = static_cast<unsigned>(cuda::std::popcount(Mask));
+  constexpr auto kept  = count / 2;
+  const auto lane      = cuda::gpu_thread.rank_as<unsigned>(cuda::warp);
+  if (Mask & (1u << lane))
+  {
+    const cudax::coop::coalesced_group parent{config};
+    const auto& prev = parent.__mapping_result();
+    unsigned rank    = 0;
+    unsigned prefix  = 0;
+    unsigned seen    = 0;
+    for (unsigned i = 0; i < 32; ++i)
+    {
+      if (Mask & (1u << i))
+      {
+        rank += i < lane;
+        if (seen++ < kept)
+        {
+          prefix |= 1u << i;
+        }
+      }
+    }
+
+    const cudax::coop::group_as identity{cuda::std::index_sequence<count>{}};
+    check_sparse_single_group(identity.map(cuda::gpu_thread, parent, prev), rank, count, Mask);
+    const auto selected = identity.map(cudax::coop::non_exhaustive, cuda::gpu_thread, parent, prev);
+    check_sparse_single_group(
+      identity.map(cudax::coop::non_exhaustive, cuda::gpu_thread, parent, selected), rank, count, Mask);
+
+    unsigned reads = 0;
+    const observed_count counts[]{{count, &reads}};
+    check_sparse_single_group(cudax::coop::group_as{counts}.map(cuda::gpu_thread, parent, prev), rank, count, Mask);
+    CHECK(reads > 0);
+
+    const cudax::coop::group_as partial{cuda::std::index_sequence<kept>{}};
+    check_sparse_single_group(
+      partial.map(cudax::coop::non_exhaustive, cuda::gpu_thread, parent, prev), rank, kept, prefix);
+    const unsigned partial_counts[]{kept};
+    check_sparse_single_group(
+      cudax::coop::group_as{partial_counts}.map(cudax::coop::non_exhaustive, cuda::gpu_thread, parent, prev),
+      rank,
+      kept,
+      prefix);
+  }
+}
+
 template <bool Exhaustive, class Config>
 __device__ void test_runtime_ranges(Config config)
 {
@@ -548,6 +622,11 @@ struct TestKernel
     test_static_composition(config);
     test_static_group_as_special_cases(config);
     test_static_previous_mappings(config);
+    test_sparse_single_group<0x80000000u>(config);
+    test_sparse_single_group<0x80000001u>(config);
+    test_sparse_single_group<0x84218421u>(config);
+    test_sparse_single_group<0x55555555u>(config);
+    test_sparse_single_group<0xfffffffeu>(config);
   }
 };
 } // namespace
