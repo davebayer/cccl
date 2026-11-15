@@ -79,6 +79,13 @@ __device__ void test_group(const Group& group)
 
   // Test getting value from out of range offset.
   REQUIRE(cudax::coop::shuffle_down(group, my_value, ~0u) == cuda::std::nullopt);
+
+  // A lane-dependent offset also exercises the general runtime path.
+  const auto offset = cuda::gpu_thread.rank_as<unsigned>(cuda::warp) % 3;
+  const auto ref    = offset < cuda::gpu_thread.count(group) - my_rank
+                      ? cuda::std::optional{make_instance_for<T>(my_rank + offset)}
+                      : cuda::std::nullopt;
+  REQUIRE(cudax::coop::shuffle_down(group, my_value, offset) == ref);
 }
 
 struct CustomBinaryPartition
