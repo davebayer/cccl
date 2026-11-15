@@ -25,6 +25,7 @@
 #include <cuda/__ptx/instructions/get_sreg.h>
 #include <cuda/__warp/warp_shuffle.h>
 #include <cuda/hierarchy>
+#include <cuda/std/__bit/countr.h>
 #include <cuda/std/__concepts/concept_macros.h>
 #include <cuda/std/__type_traits/is_same.h>
 #include <cuda/std/optional>
@@ -71,6 +72,12 @@ __shuffle_down_impl(const _Group& __group, const _Tp& __value, unsigned __offset
     {
       __src_lane        = __lane;
       __offset_is_valid = true;
+    }
+    else if (_CCCL_IS_CONSTANT_P(__offset) && __offset == 1)
+    {
+      const auto __next = __lane_mask.value() & ::cuda::ptx::get_sreg_lanemask_gt();
+      __offset_is_valid = __next != 0;
+      __src_lane        = (__offset_is_valid) ? ::cuda::std::countr_zero(__next) : __lane;
     }
     else
     {
