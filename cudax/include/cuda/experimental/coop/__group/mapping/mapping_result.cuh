@@ -21,7 +21,6 @@
 #  pragma system_header
 #endif // no system header
 
-#include <cuda/__bit/bit_fns.h>
 #include <cuda/__ptx/instructions/get_sreg.h>
 #include <cuda/__warp/lane_mask.h>
 #include <cuda/std/__algorithm/min.h>
@@ -328,6 +327,24 @@ struct __mapping_result<__static_unit_counts<_StaticUnitCounts...>, _IsAlwaysExh
   }
 };
 
+// Return the low-bit prefix ending at the set bit with the given rank. Keeping
+// the prefix as a mask avoids converting it to a bit position and back.
+[[nodiscard]] _CCCL_DEVICE_API constexpr ::cuda::std::uint32_t
+__prefix_mask_for_rank(::cuda::std::uint32_t __value, ::cuda::std::uint32_t __rank) noexcept
+{
+  ::cuda::std::uint32_t __mask = ~0u;
+  _CCCL_PRAGMA_UNROLL_FULL()
+  for (unsigned __step = 16; __step != 0; __step /= 2)
+  {
+    const auto __candidate = __mask >> __step;
+    if (static_cast<::cuda::std::uint32_t>(::cuda::std::popcount(__value & __candidate)) > __rank)
+    {
+      __mask = __candidate;
+    }
+  }
+  return __mask;
+}
+
 template <bool _IsAlwaysContiguous>
 [[nodiscard]] _CCCL_DEVICE_API ::cuda::device::lane_mask __make_lane_mask_for_n(
   ::cuda::device::lane_mask __prev_lane_mask, ::cuda::std::uint32_t __n, ::cuda::std::uint32_t __rank)
@@ -342,36 +359,26 @@ template <bool _IsAlwaysContiguous>
   }
   else
   {
-    auto __lane_mask = ::cuda::device::lane_mask::this_lane();
     if (_CCCL_IS_CONSTANT_P(__n) && __n == 1)
     {
-      return __lane_mask;
+      return ::cuda::device::lane_mask::this_lane();
     }
 
-    const auto __less_mask = __prev_lane_mask & ::cuda::device::lane_mask::all_less();
-    const auto __nless     = ::cuda::std::popcount(__less_mask.value());
-    if (__nless > __rank)
+    const auto __mask = __prev_lane_mask.value();
+    const auto __nless =
+      static_cast<::cuda::std::uint32_t>(::cuda::std::popcount(__mask & ::cuda::ptx::get_sreg_lanemask_lt()));
+    const auto __ngreater  = static_cast<::cuda::std::uint32_t>(::cuda::std::popcount(__mask)) - __nless - 1;
+    const auto __remaining = __n - __rank;
+    if (__nless <= __rank && __ngreater < __remaining)
     {
-      const auto __last_to_remove = ::cuda::bit_fns(__less_mask.value(), __nless - __rank - 1);
-      __lane_mask |= ::cuda::device::lane_mask{__less_mask.value() & (~0u << (__last_to_remove + 1))};
-    }
-    else
-    {
-      __lane_mask |= __less_mask;
+      return __prev_lane_mask;
     }
 
-    const auto __greater_mask = __prev_lane_mask & ::cuda::device::lane_mask::all_greater();
-    const auto __ngreater     = ::cuda::std::popcount(__greater_mask.value());
-    if (__rank + __ngreater >= __n)
-    {
-      const auto __first_to_remove = ::cuda::bit_fns(__greater_mask.value(), __n - __rank - 1);
-      __lane_mask |= ::cuda::device::lane_mask{__greater_mask.value() & ((1u << __first_to_remove) - 1u)};
-    }
-    else
-    {
-      __lane_mask |= __greater_mask;
-    }
-    return __lane_mask;
+    const auto __first_rank = __nless - ::cuda::std::min(__nless, __rank);
+    const auto __last_rank  = __nless + ::cuda::std::min(__ngreater, __remaining - 1);
+    const auto __first_mask = ::cuda::experimental::coop::__prefix_mask_for_rank(__mask, __first_rank);
+    const auto __last_mask  = ::cuda::experimental::coop::__prefix_mask_for_rank(__mask, __last_rank);
+    return ::cuda::device::lane_mask{__mask & ~(__first_mask >> 1) & __last_mask};
   }
 }
 } // namespace cuda::experimental::coop
