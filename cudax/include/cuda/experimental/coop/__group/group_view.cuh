@@ -155,6 +155,118 @@ _CCCL_DEVICE_API decltype(auto) __with_static_unit_count_range(const _Group& __g
   }
 }
 
+template <class _Group, ::cuda::std::size_t _Index>
+using __static_unit_count_view_t =
+  group_view<typename _Group::unit_type,
+             _Group,
+             __mapping_result<__uniform_static_unit_count<_Group::__mapping_result_type::static_group_count(),
+                                                          _Group::__mapping_result_type::static_unit_count(_Index)>,
+                              _Group::__mapping_result_type::is_always_exhaustive(),
+                              _Group::__mapping_result_type::is_always_contiguous()>>;
+
+template <class _MappingResult, ::cuda::std::size_t _First = 0>
+[[nodiscard]] _CCCL_DEVICE_API constexpr ::cuda::std::size_t __next_unique_unit_count()
+{
+  for (::cuda::std::size_t __i = _First; __i < _MappingResult::static_group_count(); ++__i)
+  {
+    bool __unique = true;
+    for (::cuda::std::size_t __j = 0; __j < __i; ++__j)
+    {
+      if (_MappingResult::static_unit_count(__i) == _MappingResult::static_unit_count(__j))
+      {
+        __unique = false;
+        break;
+      }
+    }
+    if (__unique)
+    {
+      return __i;
+    }
+  }
+  return _MappingResult::static_group_count();
+}
+
+template <class _MappingResult>
+[[nodiscard]] _CCCL_DEVICE_API constexpr bool __should_deduplicate_unit_counts()
+{
+  ::cuda::std::size_t __unique = 0;
+  for (::cuda::std::size_t __i = 0; __i < _MappingResult::static_group_count(); ++__i)
+  {
+    bool __seen = false;
+    for (::cuda::std::size_t __j = 0; __j < __i; ++__j)
+    {
+      if (_MappingResult::static_unit_count(__i) == _MappingResult::static_unit_count(__j))
+      {
+        __seen = true;
+        break;
+      }
+    }
+    __unique += !__seen;
+  }
+  return __unique <= _MappingResult::static_group_count() / 2;
+}
+
+template <class _Group, class _Fn, ::cuda::std::size_t... _Is>
+[[nodiscard]] _CCCL_DEVICE_API constexpr bool __static_unit_count_results_match(::cuda::std::index_sequence<_Is...>)
+{
+  using _Result = decltype(::cuda::std::declval<_Fn>()(::cuda::std::declval<__static_unit_count_view_t<_Group, 0>>()));
+  return (::cuda::std::is_same_v<
+            _Result,
+            decltype(::cuda::std::declval<_Fn>()(::cuda::std::declval<__static_unit_count_view_t<_Group, _Is>>()))>
+          && ...);
+}
+
+template <class _MappingResult, ::cuda::std::size_t _Count, ::cuda::std::size_t _Word = 0>
+[[nodiscard]] _CCCL_DEVICE_API bool __rank_has_unit_count(::cuda::std::uint32_t __rank)
+{
+  constexpr auto __bits = [] {
+    ::cuda::std::uint32_t __mask = 0;
+    for (::cuda::std::size_t __i = 0; __i < 32 && _Word * 32 + __i < _MappingResult::static_group_count(); ++__i)
+    {
+      if (_MappingResult::static_unit_count(_Word * 32 + __i) == _Count)
+      {
+        __mask |= ::cuda::std::uint32_t{1} << __i;
+      }
+    }
+    return __mask;
+  }();
+
+  if constexpr (_MappingResult::static_group_count() <= 32)
+  {
+    return (__bits & (::cuda::std::uint32_t{1} << (__rank % 32))) != 0;
+  }
+  const bool __matches = (__rank / 32 == _Word) && ((__bits & (::cuda::std::uint32_t{1} << (__rank % 32))) != 0);
+  if constexpr ((_Word + 1) * 32 < _MappingResult::static_group_count())
+  {
+    return __matches || ::cuda::experimental::coop::__rank_has_unit_count<_MappingResult, _Count, _Word + 1>(__rank);
+  }
+  else
+  {
+    return __matches;
+  }
+}
+
+template <::cuda::std::size_t _Index = 0, class _Group, class _Fn>
+_CCCL_DEVICE_API decltype(auto) __with_unique_static_unit_count(const _Group& __group, _Fn&& __fn)
+{
+  using _MappingResult  = typename _Group::__mapping_result_type;
+  constexpr auto __next = ::cuda::experimental::coop::__next_unique_unit_count<_MappingResult, _Index + 1>();
+  if constexpr (__next < _MappingResult::static_group_count())
+  {
+    return ::cuda::experimental::coop::__rank_has_unit_count<_MappingResult, _MappingResult::static_unit_count(_Index)>(
+             __group.__mapping_result().group_rank())
+           ? ::cuda::experimental::coop::__with_static_unit_count_range<_Index, _Index + 1>(
+               __group, ::cuda::std::forward<_Fn>(__fn))
+           : ::cuda::experimental::coop::__with_unique_static_unit_count<__next>(
+               __group, ::cuda::std::forward<_Fn>(__fn));
+  }
+  else
+  {
+    return ::cuda::experimental::coop::__with_static_unit_count_range<_Index, _Index + 1>(
+      __group, ::cuda::std::forward<_Fn>(__fn));
+  }
+}
+
 template <class _Group, class _Fn>
 _CCCL_DEVICE_API decltype(auto) __with_static_unit_count(const _Group& __group, _Fn&& __fn)
 {
@@ -162,6 +274,21 @@ _CCCL_DEVICE_API decltype(auto) __with_static_unit_count(const _Group& __group, 
   if constexpr (_MappingResult::has_uniform_static_unit_count())
   {
     return ::cuda::std::forward<_Fn>(__fn)(group_view{__group});
+  }
+  else if constexpr (::cuda::experimental::coop::__should_deduplicate_unit_counts<_MappingResult>())
+  {
+    // Share callback bodies for repeated sizes. Heterogeneous return types keep
+    // the original rank tree and its conditional common-type association.
+    if constexpr (::cuda::experimental::coop::__static_unit_count_results_match<_Group, _Fn&&>(
+                    ::cuda::std::make_index_sequence<_MappingResult::static_group_count()>{}))
+    {
+      return ::cuda::experimental::coop::__with_unique_static_unit_count(__group, ::cuda::std::forward<_Fn>(__fn));
+    }
+    else
+    {
+      return ::cuda::experimental::coop::__with_static_unit_count_range<0, _MappingResult::static_group_count()>(
+        __group, ::cuda::std::forward<_Fn>(__fn));
+    }
   }
   else
   {

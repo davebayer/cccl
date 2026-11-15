@@ -337,6 +337,113 @@ struct CoalescedKernel
   }
 };
 
+template <class Group, class Parent>
+__device__ void test_repeated_dispatch(const Group& group, const Parent& parent)
+{
+  test_nonuniform(group, 32);
+
+  unsigned calls = 0;
+  ForwardedCallable callable{calls};
+  static_assert(cuda::std::is_same_v<decltype(group.with_static_unit_count(cuda::std::move(callable))), unsigned&>);
+  CHECK(&group.with_static_unit_count(cuda::std::move(callable)) == &calls);
+  CHECK(calls == 1);
+
+  group.with_static_unit_count([&](auto view) {
+    constexpr auto count = cuda::gpu_thread.static_count(view);
+    using Original       = typename Group::__mapping_result_type;
+    using Mapping =
+      cudax::coop::__mapping_result<cudax::coop::__uniform_static_unit_count<Original::static_group_count(), count>,
+                                    Original::is_always_exhaustive(),
+                                    Original::is_always_contiguous()>;
+    using ExpectedView = cudax::coop::group_view<typename Group::unit_type, Group, Mapping>;
+    static_assert(cuda::std::is_same_v<decltype(view), ExpectedView>);
+
+    CHECK(view.count(parent) == group.count(parent));
+    CHECK(view.rank(parent) == group.rank(parent));
+    view.sync();
+  });
+
+  // Different leaf result types must retain the original conditional common type.
+  auto heterogeneous = [](auto view) {
+    constexpr auto count = cuda::gpu_thread.static_count(view);
+    if constexpr (count == 1)
+    {
+      return short{1};
+    }
+    else
+    {
+      return static_cast<long>(count);
+    }
+  };
+  static_assert(cuda::std::is_same_v<decltype(group.with_static_unit_count(heterogeneous)), long>);
+  CHECK(group.with_static_unit_count(heterogeneous) == static_cast<long>(cuda::gpu_thread.count(group)));
+}
+
+struct RepeatedWarpKernel
+{
+  template <class Config>
+  __device__ void operator()(const Config& config) const
+  {
+    const cudax::coop::this_warp parent{config};
+    const cudax::coop::generic_group group{
+      cuda::gpu_thread,
+      parent,
+      cudax::coop::group_as{cuda::std::integer_sequence<unsigned, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3>{}},
+      cudax::coop::lane_synchronizer{}};
+    test_repeated_dispatch(group, parent);
+  }
+};
+
+struct RepeatedBlockKernel
+{
+  template <class Config, cuda::std::size_t... Is>
+  __device__ void test(const Config& config, cuda::std::index_sequence<Is...>) const
+  {
+    const cudax::coop::this_block parent{config};
+    const cudax::coop::virtual_group group{
+      cuda::gpu_thread, parent, cudax::coop::group_as{cuda::std::integer_sequence<unsigned, (1 + Is % 2)...>{}}};
+    test_repeated_dispatch(group, parent);
+  }
+
+  template <class Config>
+  __device__ void operator()(const Config& config) const
+  {
+    // Forty-eight groups exercise membership in more than one 32-bit word.
+    test(config, cuda::std::make_index_sequence<48>{});
+  }
+};
+
+struct EmptyRepeatedKernel
+{
+  template <class Config, cuda::std::size_t... Is>
+  __device__ void test(const Config& config, cuda::std::index_sequence<Is...>) const
+  {
+    const cudax::coop::this_warp parent{config};
+    const cudax::coop::generic_group group{
+      cuda::gpu_thread,
+      parent,
+      cudax::coop::group_as{cuda::std::integer_sequence<unsigned, (Is % 2)...>{}},
+      cudax::coop::lane_synchronizer{}};
+    test_repeated_dispatch(group, parent);
+  }
+
+  template <class Config>
+  __device__ void operator()(const Config& config) const
+  {
+    // Empty entries retain their group ranks and callable specializations.
+    test(config, cuda::std::make_index_sequence<64>{});
+  }
+};
+
+C2H_TEST("Static unit count dispatch for repeated sizes", "[with_static_unit_count]")
+{
+  const cuda::stream stream{cuda::devices[0]};
+  cuda::launch(stream, cuda::make_config(cuda::grid_dims<2>(), cuda::block_dims<32>()), RepeatedWarpKernel{});
+  cuda::launch(stream, cuda::make_config(cuda::grid_dims<2>(), cuda::block_dims<72>()), RepeatedBlockKernel{});
+  cuda::launch(stream, cuda::make_config(cuda::grid_dims<2>(), cuda::block_dims<32>()), EmptyRepeatedKernel{});
+  stream.sync();
+}
+
 C2H_TEST("Static unit count dispatch for coalesced groups and callable forwarding", "[with_static_unit_count]")
 {
   const cuda::stream stream{cuda::devices[0]};
