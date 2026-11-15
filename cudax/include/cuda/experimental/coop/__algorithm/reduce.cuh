@@ -24,12 +24,11 @@
 #include <cub/block/block_reduce.cuh>
 #include <cub/detail/uninitialized.cuh>
 #include <cub/thread/thread_reduce.cuh>
+#include <cub/warp/specializations/warp_redux.cuh>
 #include <cub/warp/warp_reduce.cuh>
 
 #include <cuda/__cmath/ceil_div.h>
-#include <cuda/__cmath/pow2.h>
 #include <cuda/__functional/operator_properties.h>
-#include <cuda/__ptx/instructions/get_sreg.h>
 #include <cuda/__warp/warp_shuffle.h>
 #include <cuda/hierarchy>
 #include <cuda/std/__bit/countr.h>
@@ -40,6 +39,7 @@
 #include <cuda/std/__type_traits/integral_constant.h>
 #include <cuda/std/__type_traits/is_same.h>
 #include <cuda/std/array>
+#include <cuda/std/cstdint>
 #include <cuda/std/optional>
 
 #include <cuda/experimental/__utility/result_policy.cuh>
@@ -333,17 +333,45 @@ _CCCL_REQUIRES(::cuda::std::is_same_v<thread_level, typename _Group::unit_type>
   using _MappingResult         = typename _Group::__mapping_result_type;
   const auto& __mapping_result = __group.__mapping_result();
 
-  const auto __lane_mask = __mapping_result.lane_mask();
-  const auto __lane      = ::cuda::ptx::get_sreg_laneid();
-  auto __result          = ::cub::ThreadReduce(__thread_data, __red_fn);
+  const auto __lane_mask  = __mapping_result.lane_mask();
+  const auto __unit_count = __mapping_result.unit_count();
+  auto __result           = ::cub::ThreadReduce(__thread_data, __red_fn);
 
-  _CCCL_PRAGMA_UNROLL_FULL()
-  for (unsigned __stride = 1; __stride < ::cuda::next_power_of_two(__mapping_result.unit_count()); __stride *= 2)
+  if (__unit_count > 1)
   {
-    const auto __other = ::cuda::experimental::coop::shuffle_down(__group, __result, __stride);
-    if (__other.has_value())
+    using _AccumT                      = decltype(__result);
+    constexpr auto __static_unit_count = _MappingResult::static_unit_count();
+    // Small static groups already use short shuffle sequences. Runtime groups need
+    // enough members to amortize the cost of reducing independent member masks.
+    if constexpr (sizeof(_AccumT) == sizeof(::cuda::std::uint32_t)
+                  && ::cub::detail::is_warp_redux_op_supported_sm80<_RedFn, _AccumT>
+                  && (__static_unit_count == ::cuda::std::dynamic_extent || __static_unit_count >= 12))
     {
-      __result = __red_fn(__result, *__other);
+      NV_IF_TARGET(
+        NV_PROVIDES_SM_80, ({
+          if (__unit_count >= 8)
+          {
+            const auto __aggregate = ::cub::detail::warp_redux_sm80(__result, __lane_mask.value(), __red_fn);
+            if constexpr (_Broadcasted)
+            {
+              return __aggregate;
+            }
+            else
+            {
+              return (__mapping_result.unit_rank() == 0) ? ::cuda::std::optional{__aggregate} : ::cuda::std::nullopt;
+            }
+          }
+        }))
+    }
+
+    _CCCL_PRAGMA_UNROLL_FULL()
+    for (unsigned __stride = 1; __stride < __unit_count; __stride *= 2)
+    {
+      const auto __other = ::cuda::experimental::coop::shuffle_down(__group, __result, __stride);
+      if (__other.has_value())
+      {
+        __result = __red_fn(__result, *__other);
+      }
     }
   }
 

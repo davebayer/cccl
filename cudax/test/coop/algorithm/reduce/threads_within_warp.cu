@@ -285,3 +285,157 @@ C2H_TEST(
     verify_results(c2h::host_vector<value_t>(nthreads_in_group, reference_result), c2h::host_vector<value_t>(d_out));
   }
 }
+
+struct SparseReduceKernel
+{
+  template <class Config, class T, class RedOp>
+  __device__ void operator()(
+    Config config,
+    const T* input,
+    T* root_output,
+    T* broadcast_output,
+    int* root_flags,
+    unsigned predicate_mask,
+    RedOp red_op)
+  {
+    const unsigned lane = cuda::gpu_thread.rank(cuda::warp);
+    const cudax::coop::this_warp parent{config};
+    const cudax::coop::generic_group group{
+      cuda::gpu_thread,
+      parent,
+      cudax::coop::binary_partition{[&](const auto&) {
+        return ((predicate_mask >> lane) & 1u) != 0;
+      }},
+      cudax::coop::lane_synchronizer{}};
+
+    T values[4];
+    for (unsigned item = 0; item < 4; ++item)
+    {
+      values[item] = input[lane * 4 + item];
+    }
+
+    const auto root_result = cudax::coop::reduce(group, values, red_op);
+    root_flags[lane]       = root_result.has_value();
+    root_output[lane]      = root_result.value_or(T{});
+    broadcast_output[lane] = cudax::coop::reduce(cudax::broadcasted, group, values, red_op);
+  }
+};
+
+template <class T, class RedOp>
+void check_sparse_reductions(const c2h::host_vector<T>& input, RedOp red_op)
+{
+  using AccumT                             = decltype(red_op(T{}, T{}));
+  const c2h::device_vector<T> device_input = input;
+  c2h::device_vector<T> root_output(warp_size);
+  c2h::device_vector<T> broadcast_output(warp_size);
+  c2h::device_vector<int> root_flags(warp_size);
+  const cuda::stream stream{cuda::devices[0]};
+  const auto config = cuda::make_config(cuda::grid_dims<1>(), cuda::block_dims<warp_size>());
+
+  // Include empty predicate sides, isolated lanes, uneven groups, and both sides
+  // of the runtime size threshold without excluding any parent threads.
+  for (const unsigned mask : {0u, ~0u, 1u, 0x0fu, 0xffu, 0xfffu, 0x55555555u, 0x84218421u, 0x7fffffffu})
+  {
+    CAPTURE(mask);
+    c2h::host_vector<T> expected_root(warp_size, T{});
+    c2h::host_vector<T> expected_broadcast(warp_size);
+    c2h::host_vector<int> expected_flags(warp_size);
+    for (unsigned lane = 0; lane < warp_size; ++lane)
+    {
+      bool first    = true;
+      unsigned root = warp_size;
+      AccumT expected{};
+      for (unsigned other = 0; other < warp_size; ++other)
+      {
+        if (((mask >> other) & 1u) == ((mask >> lane) & 1u))
+        {
+          if (first)
+          {
+            root = other;
+          }
+          for (unsigned item = 0; item < 4; ++item)
+          {
+            const auto value = input[other * 4 + item];
+            expected         = first ? static_cast<AccumT>(value) : red_op(expected, value);
+            first            = false;
+          }
+        }
+      }
+      expected_broadcast[lane] = static_cast<T>(expected);
+      expected_flags[lane]     = lane == root;
+      if (lane == root)
+      {
+        expected_root[lane] = static_cast<T>(expected);
+      }
+    }
+
+    cuda::launch(
+      stream,
+      config,
+      SparseReduceKernel{},
+      thrust::raw_pointer_cast(device_input.data()),
+      thrust::raw_pointer_cast(root_output.data()),
+      thrust::raw_pointer_cast(broadcast_output.data()),
+      thrust::raw_pointer_cast(root_flags.data()),
+      mask,
+      red_op);
+    stream.sync();
+    REQUIRE(c2h::host_vector<int>(root_flags) == expected_flags);
+    REQUIRE(c2h::host_vector<T>(root_output) == expected_root);
+    REQUIRE(c2h::host_vector<T>(broadcast_output) == expected_broadcast);
+  }
+}
+
+using sparse_reduce_types =
+  c2h::type_list<cuda::std::int8_t,
+                 cuda::std::uint16_t,
+                 cuda::std::int32_t,
+                 cuda::std::uint32_t,
+                 cuda::std::int64_t,
+                 cuda::std::uint64_t,
+                 float,
+                 double>;
+
+C2H_TEST("reduce/threads_within_warp Sparse groups", "[reduce][threads_within_warp]", sparse_reduce_types)
+{
+  using T = c2h::get<0, TestType>;
+  c2h::host_vector<T> input(4 * warp_size);
+  for (unsigned lane = 0; lane < warp_size; ++lane)
+  {
+    for (unsigned item = 0; item < 4; ++item)
+    {
+      if constexpr (cuda::std::is_integral_v<T> && sizeof(T) == 8)
+      {
+        input[lane * 4 + item] = (T{1} << 40) + lane + item;
+      }
+      else
+      {
+        // Small integral values also give exact floating-point reference sums.
+        input[lane * 4 + item] = static_cast<T>(static_cast<int>((lane + item) % 7) - 3);
+      }
+    }
+  }
+  check_sparse_reductions(input, cuda::std::plus<>{});
+}
+
+struct ComposeAffine
+{
+  __host__ __device__ unsigned operator()(unsigned left, unsigned right) const
+  {
+    const unsigned a = left & 255u;
+    const unsigned b = (left >> 8) & 255u;
+    const unsigned c = right & 255u;
+    const unsigned d = (right >> 8) & 255u;
+    return ((a * c) & 255u) | (((a * d + b) & 255u) << 8);
+  }
+};
+
+C2H_TEST("reduce/threads_within_warp Noncommutative operation", "[reduce][threads_within_warp]")
+{
+  c2h::host_vector<unsigned> input(4 * warp_size);
+  for (unsigned index = 0; index < input.size(); ++index)
+  {
+    input[index] = (1u + index % 3) | ((index % 17) << 8);
+  }
+  check_sparse_reductions(input, ComposeAffine{});
+}
