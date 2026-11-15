@@ -25,6 +25,7 @@
 #include <cuda/__ptx/instructions/get_sreg.h>
 #include <cuda/__warp/warp_shuffle.h>
 #include <cuda/hierarchy>
+#include <cuda/std/__bit/countr.h>
 #include <cuda/std/__concepts/concept_macros.h>
 #include <cuda/std/__type_traits/is_same.h>
 
@@ -64,7 +65,14 @@ _CCCL_REQUIRES(group<_Group> _CCCL_AND ::cuda::std::is_same_v<typename _Group::u
   }
   else
   {
-    __src_lane = ::cuda::bit_fns(__lane_mask.value(), static_cast<int>(__src_unit_rank));
+    if (_CCCL_IS_CONSTANT_P(__src_unit_rank) && __src_unit_rank == 0)
+    {
+      __src_lane = ::cuda::std::countr_zero(__lane_mask.value());
+    }
+    else
+    {
+      __src_lane = ::cuda::bit_fns(__lane_mask.value(), static_cast<int>(__src_unit_rank));
+    }
   }
   return ::cuda::device::warp_shuffle_idx(__value, static_cast<int>(__src_lane), __lane_mask.value());
 }

@@ -97,6 +97,16 @@ struct CustomBinaryPartition
   }
 };
 
+template <unsigned Mask, class T, class Config>
+__device__ void test_coalesced_group(const Config& config)
+{
+  const auto lane = cuda::gpu_thread.rank_as<unsigned>(cuda::warp);
+  if (Mask & (1u << lane))
+  {
+    test_group<T>(cudax::coop::coalesced_group{config});
+  }
+}
+
 template <class T, class Config>
 __device__ void test_type(const Config& config)
 {
@@ -109,6 +119,14 @@ __device__ void test_type(const Config& config)
     cudax::coop::generic_group{cuda::gpu_thread, warp, cudax::coop::group_by{1}, cudax::coop::lane_synchronizer{}});
   test_group<T>(cudax::coop::generic_group{
     cuda::gpu_thread, warp, cudax::coop::binary_partition{CustomBinaryPartition{}}, cudax::coop::lane_synchronizer{}});
+
+  test_coalesced_group<0x00000001u, T>(config);
+  test_coalesced_group<0x80000000u, T>(config);
+  test_coalesced_group<0x80000001u, T>(config);
+  test_coalesced_group<0x84218421u, T>(config);
+  test_coalesced_group<0x55555555u, T>(config);
+  test_coalesced_group<0xfffffffeu, T>(config);
+  test_coalesced_group<0xffffffffu, T>(config);
 
   // Test non-exhaustive groups.
   if (auto g = cudax::coop::make_group<cudax::coop::generic_group>(
