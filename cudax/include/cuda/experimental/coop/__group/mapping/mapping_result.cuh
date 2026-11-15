@@ -24,6 +24,7 @@
 #include <cuda/__bit/bit_fns.h>
 #include <cuda/__ptx/instructions/get_sreg.h>
 #include <cuda/__warp/lane_mask.h>
+#include <cuda/std/__algorithm/min.h>
 #include <cuda/std/__bit/popcount.h>
 #include <cuda/std/__cstddef/types.h>
 #include <cuda/std/__fwd/span.h>
@@ -333,18 +334,11 @@ template <bool _IsAlwaysContiguous>
 {
   if constexpr (_IsAlwaysContiguous)
   {
-    auto __lane_mask  = __prev_lane_mask;
-    const auto __lane = ::cuda::ptx::get_sreg_laneid();
-
-    if (__lane > __rank)
-    {
-      __lane_mask &= ::cuda::device::lane_mask::all() << (__lane - __rank);
-    }
-    if (__lane + (__n - __rank) < 32)
-    {
-      __lane_mask &= ::cuda::device::lane_mask::all() >> (32 - __lane - (__n - __rank));
-    }
-    return __lane_mask;
+    const auto __lane   = ::cuda::ptx::get_sreg_laneid();
+    const auto __before = ::cuda::std::min(__rank, __lane);
+    const auto __after  = ::cuda::std::min(__n - __rank - 1, 31u - __lane);
+    return __prev_lane_mask & (::cuda::device::lane_mask::all() << (__lane - __before))
+         & (::cuda::device::lane_mask::all() >> (31u - __lane - __after));
   }
   else
   {
