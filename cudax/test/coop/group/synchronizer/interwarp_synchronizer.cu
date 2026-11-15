@@ -303,6 +303,74 @@ struct TestKernel
   }
 };
 
+template <class Group>
+__device__ void test_single_warp_group(const Group& group)
+{
+  __shared__ unsigned values[128];
+  const auto thread = cuda::gpu_thread.rank_as<unsigned>(cuda::block);
+  const auto lane   = cuda::gpu_thread.rank_as<unsigned>(cuda::warp);
+  const auto peer   = thread - lane + (lane + 1) % 32;
+
+  for (unsigned iteration = 0; iteration < 4; ++iteration)
+  {
+    values[thread] = thread + iteration;
+    group.sync();
+    CHECK(values[peer] == peer + iteration);
+    group.sync_aligned();
+
+    values[thread] = thread ^ iteration;
+    group.wait(group.arrive());
+    CHECK(values[peer] == (peer ^ iteration));
+    group.wait_aligned(group.arrive_aligned());
+
+    // Warp synchronization must also support different call sites on SM70+.
+    NV_IF_TARGET(NV_PROVIDES_SM_70, ({
+                   if (lane % 2 == 0)
+                   {
+                     values[thread] = thread;
+                     group.sync();
+                   }
+                   else
+                   {
+                     values[thread] = ~thread;
+                     group.sync();
+                   }
+                   CHECK(values[peer] == (peer % 2 == 0 ? peer : ~peer));
+                   group.sync();
+                 }))
+  }
+}
+
+struct SingleWarpKernel
+{
+  template <class Config>
+  __device__ void operator()(const Config& config) const
+  {
+    const cudax::coop::this_block parent{config};
+    const unsigned ids[]{1, 2, 3, 4};
+    {
+      const cudax::coop::generic_group group{
+        cuda::warp, parent, cudax::coop::group_by{cuda::std::cw<1>}, cudax::coop::interwarp_synchronizer{ids}};
+      test_single_warp_group(group);
+    }
+    parent.sync();
+
+    // The runtime-count path keeps its named barrier behavior.
+    {
+      const cudax::coop::generic_group group{
+        cuda::warp, parent, cudax::coop::group_by{1u}, cudax::coop::interwarp_synchronizer{ids}};
+      test_single_warp_group(group);
+    }
+  }
+};
+
+C2H_TEST("Single-warp interwarp synchronizer", "[group]")
+{
+  const cuda::stream stream{cuda::devices[0]};
+  cuda::launch(stream, cuda::make_config(cuda::grid_dims<2>(), cuda::block_dims<128>()), SingleWarpKernel{});
+  stream.sync();
+}
+
 C2H_TEST("Barrier synchronizer", "[group]")
 {
   const auto device = cuda::devices[0];

@@ -40,6 +40,8 @@
 #include <cuda/experimental/coop/__group/synchronizer/arrival_token.cuh>
 #include <cuda/experimental/coop/__group/traits.cuh>
 
+#include <nv/target>
+
 #include <cuda/std/__cccl/prologue.h>
 
 #if !defined(_CCCL_DOXYGEN_INVOKED)
@@ -67,15 +69,24 @@ public:
   template <class _Hierarchy>
   _CCCL_DEVICE_API void do_sync(const _Hierarchy&) const
   {
-    ::__barrier_sync_count(__barrier_id_, ::cuda::std::uint32_t{_ThreadCount});
+    if constexpr (_ThreadCount == 32)
+    {
+      NV_IF_ELSE_TARGET(NV_PROVIDES_SM_70,
+                        (::__syncwarp(~0u);),
+                        (::__barrier_sync_count(__barrier_id_, ::cuda::std::uint32_t{_ThreadCount});))
+    }
+    else
+    {
+      ::__barrier_sync_count(__barrier_id_, ::cuda::std::uint32_t{_ThreadCount});
+    }
   }
 
   template <class _Hierarchy>
-  _CCCL_DEVICE_API void do_sync_aligned(const _Hierarchy&) const
+  _CCCL_DEVICE_API void do_sync_aligned(const _Hierarchy& __hier) const
   {
     // The .aligned version of the barrier instruction requires whole CTA to execute the same instruction, which is not
     // usable with groups. That means that we need to always use the unaligned version.
-    ::__barrier_sync_count(__barrier_id_, ::cuda::std::uint32_t{_ThreadCount});
+    do_sync(__hier);
   }
 
   template <class _Hierarchy>
