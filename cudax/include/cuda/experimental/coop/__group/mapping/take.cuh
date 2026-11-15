@@ -114,10 +114,10 @@ public:
     const auto __unit_count  = static_cast<::cuda::std::uint32_t>(_StaticUnitCount);
     const auto __unit_rank   = __prev_unit_rank;
     const auto __lane_mask =
-      (::cuda::std::is_same_v<_Unit, thread_level>)
-        ? ::cuda::experimental::coop::__make_lane_mask_for_n<_PrevMappingResult::is_always_contiguous()>(
-            __prev_mapping_result.lane_mask(), __unit_count, __unit_rank)
-        : __prev_mapping_result.lane_mask();
+      (_Exhaustive || __curr_is_always_exhaustive || !::cuda::std::is_same_v<_Unit, thread_level>)
+        ? __prev_mapping_result.lane_mask()
+        : ::cuda::experimental::coop::__make_lane_mask_for_n<_PrevMappingResult::is_always_contiguous()>(
+            __prev_mapping_result.lane_mask(), __unit_count, __unit_rank);
     return _MappingResult{__group_count, __group_rank, __unit_count, __unit_rank, __lane_mask};
   }
 
@@ -189,10 +189,10 @@ public:
     const auto __unit_count  = __unit_count_;
     const auto __unit_rank   = __prev_unit_rank;
     const auto __lane_mask =
-      (::cuda::std::is_same_v<_Unit, thread_level>)
-        ? ::cuda::experimental::coop::__make_lane_mask_for_n<_PrevMappingResult::is_always_contiguous()>(
-            __prev_mapping_result.lane_mask(), __unit_count, __unit_rank)
-        : __prev_mapping_result.lane_mask();
+      (_Exhaustive || !::cuda::std::is_same_v<_Unit, thread_level>)
+        ? __prev_mapping_result.lane_mask()
+        : ::cuda::experimental::coop::__make_lane_mask_for_n<_PrevMappingResult::is_always_contiguous()>(
+            __prev_mapping_result.lane_mask(), __unit_count, __unit_rank);
     return _MappingResult{__group_count, __group_rank, __unit_count, __unit_rank, __lane_mask};
   }
 
