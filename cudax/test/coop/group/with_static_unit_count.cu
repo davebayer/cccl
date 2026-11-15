@@ -133,6 +133,9 @@ struct UniformKernel
       // Changing to thread units must preserve any available static count.
       const cudax::coop::group_view threads{cuda::gpu_thread, group};
       test_uniform(threads);
+
+      // Finish every barrier wait before the group root destroys the barrier.
+      parent.sync();
     }
 
     // Wait for both groups to destroy their barriers before reusing the storage.
@@ -143,6 +146,9 @@ struct UniformKernel
       const cudax::coop::generic_group group{
         cuda::warp, parent, cudax::coop::group_by{2}, cudax::coop::barrier_synchronizer{barriers}};
       test_uniform(group);
+
+      // Finish every barrier wait before the group root destroys the barrier.
+      parent.sync();
     }
   }
 };
