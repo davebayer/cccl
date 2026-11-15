@@ -26,6 +26,7 @@
 #include <cuda/__ptx/instructions/get_sreg.h>
 #include <cuda/__warp/warp_shuffle.h>
 #include <cuda/hierarchy>
+#include <cuda/std/__bit/countl.h>
 #include <cuda/std/__concepts/concept_macros.h>
 #include <cuda/std/__type_traits/is_same.h>
 #include <cuda/std/optional>
@@ -73,6 +74,12 @@ __shuffle_up_impl(const _Group& __group, const _Tp& __value, unsigned __offset)
     {
       __src_lane               = __lane;
       __sparse_offset_is_valid = true;
+    }
+    else if (_CCCL_IS_CONSTANT_P(__offset) && __offset == 1)
+    {
+      const auto __previous    = __lane_mask.value() & ::cuda::ptx::get_sreg_lanemask_lt();
+      __sparse_offset_is_valid = __previous != 0;
+      __src_lane               = (__sparse_offset_is_valid) ? 31u - ::cuda::std::countl_zero(__previous) : __lane;
     }
     else
     {
