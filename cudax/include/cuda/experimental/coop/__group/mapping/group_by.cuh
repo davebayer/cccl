@@ -67,6 +67,18 @@ __group_by_fix_group_count_rank(const _Unit&, const _ParentGroup& __parent, cons
 
   if constexpr (is_same_v<_Unit, thread_level> && is_same_v<typename _ParentGroup::level_type, warp_level>)
   {
+    if constexpr (_MappingResult::is_always_exhaustive() && _MappingResult::static_unit_count() == 1)
+    {
+      // Every parent thread is the leader of its own singleton group.
+      const auto __parent_mask = __parent.__mapping_result().lane_mask();
+      return _MappingResult{
+        static_cast<uint32_t>(::cuda::std::popcount(__parent_mask.value())),
+        static_cast<uint32_t>(::cuda::std::popcount((__parent_mask & ::cuda::device::lane_mask::all_less()).value())),
+        1,
+        0,
+        ::cuda::device::lane_mask::this_lane()};
+    }
+
     // Excluded threads must also participate in the parent-wide ballot.
     const auto __group_leaders = ::__ballot_sync(__parent.__mapping_result().lane_mask().value(),
                                                  __mapping_result.is_valid() && __mapping_result.unit_rank() == 0);

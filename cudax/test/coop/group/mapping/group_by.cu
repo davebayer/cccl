@@ -11,6 +11,7 @@
 #include <cuda/devices>
 #include <cuda/hierarchy>
 #include <cuda/launch>
+#include <cuda/std/bit>
 #include <cuda/std/cstddef>
 #include <cuda/std/cstdint>
 #include <cuda/std/span>
@@ -25,6 +26,82 @@
 
 namespace
 {
+template <bool Exhaustive, class Parent, class Prev>
+__device__ void check_singleton_composition(const Parent& parent, const Prev& prev, unsigned mask)
+{
+  const cudax::coop::group_by mapping{cuda::std::cw<1>};
+  const auto result = [&] {
+    if constexpr (Exhaustive)
+    {
+      return mapping.map(cuda::gpu_thread, parent, prev);
+    }
+    else
+    {
+      return mapping.map(cudax::coop::non_exhaustive, cuda::gpu_thread, parent, prev);
+    }
+  }();
+  static_assert(decltype(result)::static_unit_count() == 1);
+  static_assert(decltype(result)::is_always_exhaustive() == Exhaustive);
+
+  const auto lane     = cuda::gpu_thread.rank_as<unsigned>(cuda::warp);
+  const bool is_valid = (mask & (1u << lane)) != 0;
+  CHECK(result.is_valid() == is_valid);
+  if (is_valid)
+  {
+    CHECK(result.group_count() == cuda::std::popcount(mask));
+    CHECK(result.group_rank() == cuda::std::popcount(mask & ((1u << lane) - 1)));
+    CHECK(result.unit_count() == 1);
+    CHECK(result.unit_rank() == 0);
+    CHECK(result.lane_mask() == cuda::device::lane_mask{1u << lane});
+  }
+}
+
+template <class Config>
+__device__ void test_singleton_composition(const Config& config)
+{
+  const cudax::coop::this_warp parent{config};
+  const ThreadsInWarpMappingResult prev;
+  const auto tiled = cudax::coop::group_by{4u}.map(cuda::gpu_thread, parent, prev);
+  check_singleton_composition<true>(parent, tiled, ~0u);
+
+  // Empty logical groups do not add singleton leaders.
+  const unsigned counts[]{1, 0, 7, 24};
+  const auto nonuniform = cudax::coop::group_as{counts}.map(cuda::gpu_thread, parent, prev);
+  check_singleton_composition<true>(parent, nonuniform, ~0u);
+
+  const auto partial = cudax::coop::group_by{3u}.map(cudax::coop::non_exhaustive, cuda::gpu_thread, parent, prev);
+  check_singleton_composition<false>(parent, partial, 0x3fffffffu);
+}
+
+template <unsigned Mask, class Config>
+__device__ void test_sparse_singleton_composition(const Config& config)
+{
+  constexpr auto count = static_cast<unsigned>(cuda::std::popcount(Mask));
+  const auto lane      = cuda::gpu_thread.rank_as<unsigned>(cuda::warp);
+  if (Mask & (1u << lane))
+  {
+    const cudax::coop::coalesced_group parent{config};
+    const auto& prev = parent.__mapping_result();
+    const auto tiled = cudax::coop::group_by{count > 1 ? 2u : 1u}.map(cuda::gpu_thread, parent, prev);
+    check_singleton_composition<true>(parent, tiled, Mask);
+
+    const auto partial = cudax::coop::group_by{3u}.map(cudax::coop::non_exhaustive, cuda::gpu_thread, parent, prev);
+    unsigned mask      = 0;
+    unsigned rank      = 0;
+    for (unsigned i = 0; i < 32; ++i)
+    {
+      if (Mask & (1u << i))
+      {
+        if (rank++ < count / 3 * 3)
+        {
+          mask |= 1u << i;
+        }
+      }
+    }
+    check_singleton_composition<false>(parent, partial, mask);
+  }
+}
+
 template <cuda::std::size_t N, class Config>
 __device__ void test_group_by(Config config)
 {
@@ -284,6 +361,12 @@ struct TestKernel
   template <class Config>
   __device__ void operator()(const Config& config)
   {
+    test_singleton_composition(config);
+    test_sparse_singleton_composition<0x80000000u>(config);
+    test_sparse_singleton_composition<0x80000001u>(config);
+    test_sparse_singleton_composition<0x84218421u>(config);
+    test_sparse_singleton_composition<0x55555555u>(config);
+
     test_group_by<1>(config);
     test_group_by<2>(config);
     test_group_by<4>(config);
