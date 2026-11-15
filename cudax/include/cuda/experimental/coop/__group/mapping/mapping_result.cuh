@@ -349,6 +349,10 @@ template <bool _IsAlwaysContiguous>
   else
   {
     auto __lane_mask = ::cuda::device::lane_mask::this_lane();
+    if (_CCCL_IS_CONSTANT_P(__n) && __n == 1)
+    {
+      return __lane_mask;
+    }
 
     const auto __less_mask = __prev_lane_mask & ::cuda::device::lane_mask::all_less();
     const auto __nless     = ::cuda::std::popcount(__less_mask.value());
