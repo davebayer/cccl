@@ -52,12 +52,12 @@ __shuffle_down_impl(const _Group& __group, const _Tp& __value, unsigned __offset
   using _MappingResult         = typename _Group::__mapping_result_type;
   const auto& __mapping_result = __group.__mapping_result();
 
-  const auto __lane_mask       = __mapping_result.lane_mask();
-  const auto __offset_is_valid = (__offset < __mapping_result.unit_count() - __mapping_result.unit_rank());
+  const auto __lane_mask = __mapping_result.lane_mask();
 
   if constexpr (_Group::is_always_contiguous())
   {
-    const auto __real_offset = (__offset_is_valid) ? __offset : 0u;
+    const auto __offset_is_valid = (__offset < __mapping_result.unit_count() - __mapping_result.unit_rank());
+    const auto __real_offset     = (__offset_is_valid) ? __offset : 0u;
     const auto __result =
       ::cuda::device::warp_shuffle_down(__value, static_cast<int>(__real_offset), __lane_mask.value());
     return (__offset_is_valid) ? ::cuda::std::optional{__result.data} : ::cuda::std::nullopt;
@@ -65,10 +65,20 @@ __shuffle_down_impl(const _Group& __group, const _Tp& __value, unsigned __offset
   else
   {
     const auto __lane = ::cuda::ptx::get_sreg_laneid();
-    const auto __src_lane =
-      (__offset_is_valid)
-        ? ::cuda::bit_fns(__lane_mask.value(), static_cast<int>(__mapping_result.unit_rank() + __offset))
-        : __lane;
+    unsigned __src_lane{};
+    bool __offset_is_valid{};
+    if (_CCCL_IS_CONSTANT_P(__offset) && __offset == 0)
+    {
+      __src_lane        = __lane;
+      __offset_is_valid = true;
+    }
+    else
+    {
+      __offset_is_valid = (__offset < __mapping_result.unit_count() - __mapping_result.unit_rank());
+      __src_lane = (__offset_is_valid)
+                   ? ::cuda::bit_fns(__lane_mask.value(), static_cast<int>(__mapping_result.unit_rank() + __offset))
+                   : __lane;
+    }
     const auto __result = ::cuda::device::warp_shuffle_idx(__value, static_cast<int>(__src_lane), __lane_mask.value());
     return (__offset_is_valid) ? ::cuda::std::optional{__result.data} : ::cuda::std::nullopt;
   }
