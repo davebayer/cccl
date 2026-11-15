@@ -193,6 +193,10 @@ __device__ void test_interwarp_synchronizer(Config config)
     }
   }
 
+  // The next range assigns overlapping barrier IDs to different warp groups.
+  // Finish every group before reusing those resources.
+  cudax::coop::this_block{config}.sync();
+
   // Test infinite input range.
   {
     const auto barrier_ids = cuda::std::views::iota(1);
@@ -293,6 +297,8 @@ struct TestKernel
   __device__ void operator()(const Config& config)
   {
     test_interwarp_synchronizer<false>(config);
+    // The next case reassigns the same IDs to a different set of warp groups.
+    cudax::coop::this_block{config}.sync();
     test_interwarp_synchronizer<true>(config);
   }
 };
