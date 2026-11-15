@@ -360,7 +360,8 @@ __device__ void test_static_group_as(Config config, Input input, cuda::std::inde
     return true;
   }());
 
-  static_assert(!Result::has_uniform_static_unit_count());
+  using ExpectedResult = cudax::coop::__mapping_result<cudax::coop::__static_unit_counts<Counts...>, Exhaustive, true>;
+  static_assert(cuda::std::is_same_v<Result, const ExpectedResult>);
   static_assert(Result::is_always_exhaustive() == Exhaustive);
   static_assert(Result::is_always_contiguous());
 
@@ -390,6 +391,12 @@ __device__ void test_static_composition(Config config)
   static_assert(Repeated::static_unit_count(3) == 12);
 
   CHECK(repeated.group_rank() == 2 * halves.group_rank() + (halves.unit_rank() >= 4));
+
+  const auto uniform =
+    cudax::coop::group_as{cuda::std::index_sequence<4, 4, 4, 4>{}}.map(cuda::gpu_thread, parent, halves);
+  using Uniform = cudax::coop::__mapping_result<cudax::coop::__static_unit_counts<4, 4, 4, 4, 4, 4, 4, 4>, true, true>;
+  static_assert(cuda::std::is_same_v<decltype(uniform), const Uniform>);
+  CHECK(uniform.group_rank() == cuda::gpu_thread.rank(parent) / 4);
 
   // A following mapping can consume the per-group static counts.
   const auto quarters = cudax::coop::group_by{cuda::std::cw<4>}.map(cuda::gpu_thread, parent, repeated);
@@ -445,12 +452,30 @@ __device__ void test_static_previous_mappings(Config config)
   static_assert(decltype(result)::static_group_count() == 2);
   CHECK(result.is_valid() == (cuda::gpu_thread.rank(parent) < 16));
 
+  // A fixed pair of equal sizes keeps only eight units, even when more full groups fit.
+  const auto uniform_partial = cudax::coop::group_as{cuda::std::index_sequence<4, 4>{}}.map(
+    cudax::coop::non_exhaustive, cuda::gpu_thread, parent, partial);
+  using UniformPartial = cudax::coop::__mapping_result<cudax::coop::__static_unit_counts<4, 4>, false, true>;
+  static_assert(cuda::std::is_same_v<decltype(uniform_partial), const UniformPartial>);
+  const unsigned partial_counts[]{4, 4};
+  check_mapping_result(partial_counts, uniform_partial, partial);
+
   // Dynamic previous group counts retain the existing runtime representation.
   const auto dynamic_prev   = cudax::coop::group_by{16}.map(cuda::gpu_thread, parent, prev);
   const auto dynamic_result = split.map(cuda::gpu_thread, parent, dynamic_prev);
   static_assert(decltype(dynamic_result)::static_group_count() == cuda::std::dynamic_extent);
   CHECK(dynamic_result.group_count() == 4);
   CHECK(dynamic_result.unit_count() == (dynamic_prev.unit_rank() < 4 ? 4 : 12));
+
+  const auto dynamic_uniform =
+    cudax::coop::group_as{cuda::std::index_sequence<4, 4, 4, 4>{}}.map(cuda::gpu_thread, parent, dynamic_prev);
+  using DynamicUniform = cudax::coop::__mapping_result<
+    cudax::coop::__uniform_static_unit_count<cuda::std::dynamic_extent, cuda::std::dynamic_extent>,
+    true,
+    true>;
+  static_assert(cuda::std::is_same_v<decltype(dynamic_uniform), const DynamicUniform>);
+  CHECK(dynamic_uniform.group_count() == 8);
+  CHECK(dynamic_uniform.group_rank() == cuda::gpu_thread.rank(parent) / 4);
 }
 
 template <bool Exhaustive, class Config>
@@ -498,6 +523,9 @@ __device__ void test_compile_time_ranges(Config config)
   test_static_group_as<true>(config, cuda::std::integer_sequence<unsigned short, 4, 12, 16>{}, FullPartition{});
   test_static_group_as<true>(config, FullPartition{}, FullPartition{});
   test_static_group_as<false>(config, cuda::std::integer_sequence<unsigned, 4, 6, 8>{}, PartialPartition{});
+  test_static_group_as<true>(config, cuda::std::index_sequence<8, 8, 8, 8>{}, cuda::std::index_sequence<8, 8, 8, 8>{});
+  test_static_group_as<false>(config, cuda::std::index_sequence<3, 3, 3>{}, cuda::std::index_sequence<3, 3, 3>{});
+  test_static_group_as<false>(config, cuda::std::index_sequence<0, 0>{}, cuda::std::index_sequence<0, 0>{});
 
 #if _CCCL_STD_VER >= 2020
   // Class-valued cw inputs include both arrays and a forward-only range.

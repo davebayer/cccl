@@ -239,7 +239,50 @@ class group_as<::cuda::std::index_sequence<_Counts...>>
     static_assert(__compatible, "group_as counts are incompatible with the previous static unit counts");
 
     constexpr ::cuda::std::uint32_t __counts[]{static_cast<::cuda::std::uint32_t>(_Counts)...};
-    const auto __result = ::cuda::experimental::coop::__group_as_map<_Exhaustive>(__unit, __prev, __counts);
+    const auto __result = [&] {
+      constexpr auto __n = static_cast<::cuda::std::uint32_t>(__sum / sizeof...(_Counts));
+      if constexpr (__n > 0 && ((_Counts == __n) && ...))
+      {
+        using _Result = decltype(::cuda::experimental::coop::__group_as_map<_Exhaustive>(__unit, __prev, __counts));
+        if constexpr (!_PrevMappingResult::is_always_exhaustive())
+        {
+          if (!__prev.is_valid())
+          {
+            return _Result::__invalid();
+          }
+        }
+
+        const auto __prev_unit_rank = __prev.unit_rank();
+        if constexpr (_Exhaustive)
+        {
+          _CCCL_ASSERT(__prev.unit_count() == __sum,
+                       "group_as mapping would produce units without a group during exhaustive mapping");
+        }
+        else
+        {
+          _CCCL_ASSERT(__prev.unit_count() >= __sum, "group_as mapping requires more units than are available");
+          if (__prev_unit_rank >= __sum)
+          {
+            return _Result::__invalid();
+          }
+        }
+
+        constexpr auto __curr_ngroups = static_cast<::cuda::std::uint32_t>(sizeof...(_Counts));
+        const auto __group_rank =
+          __prev.group_rank() * __curr_ngroups + (__curr_ngroups == 1 ? 0u : __prev_unit_rank / __n);
+        const auto __rank = (__curr_ngroups == 1) ? __prev_unit_rank : __prev_unit_rank % __n;
+        const auto __lane_mask =
+          (::cuda::std::is_same_v<_Unit, thread_level>)
+            ? ::cuda::experimental::coop::__make_lane_mask_for_n<_PrevMappingResult::is_always_contiguous()>(
+                __prev.lane_mask(), __n, __rank)
+            : __prev.lane_mask();
+        return _Result{__prev.group_count() * __curr_ngroups, __group_rank, __n, __rank, __lane_mask};
+      }
+      else
+      {
+        return ::cuda::experimental::coop::__group_as_map<_Exhaustive>(__unit, __prev, __counts);
+      }
+    }();
 
     if constexpr (_PrevMappingResult::static_group_count() != ::cuda::std::dynamic_extent)
     {
