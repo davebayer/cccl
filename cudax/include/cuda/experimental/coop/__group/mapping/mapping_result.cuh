@@ -255,7 +255,8 @@ struct __mapping_result<__static_unit_counts<_StaticUnitCounts...>, _IsAlwaysExh
 
   [[nodiscard]] _CCCL_DEVICE_API static constexpr bool has_uniform_static_unit_count()
   {
-    return ((static_unit_count(0) == _StaticUnitCounts) && ...);
+    constexpr ::cuda::std::size_t __counts[]{_StaticUnitCounts...};
+    return ((__counts[0] == _StaticUnitCounts) && ...);
   }
 
   [[nodiscard]] _CCCL_DEVICE_API static constexpr ::cuda::std::size_t static_unit_count()
@@ -274,7 +275,14 @@ struct __mapping_result<__static_unit_counts<_StaticUnitCounts...>, _IsAlwaysExh
   {
     _CCCL_ASSERT(__i < _StaticGroupCount, "__i out of range");
     constexpr ::cuda::std::size_t __counts[]{_StaticUnitCounts...};
-    return __counts[__i];
+    if constexpr (has_uniform_static_unit_count())
+    {
+      return __counts[0];
+    }
+    else
+    {
+      return __counts[__i];
+    }
   }
 
   [[nodiscard]] _CCCL_DEVICE_API ::cuda::std::uint32_t unit_count() const

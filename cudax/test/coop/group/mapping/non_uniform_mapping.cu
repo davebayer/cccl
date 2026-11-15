@@ -77,6 +77,12 @@ __device__ void test_result_storage()
 
   CHECK(uniform.unit_count() == 8);
 
+  const auto lane  = cuda::gpu_thread.rank_as<unsigned>(cuda::warp);
+  const auto group = lane / 8;
+  const Uniform per_lane{group, lane % 8, cuda::device::lane_mask{0xffu << (group * 8)}};
+  CHECK(Uniform::static_unit_count(group) == 8);
+  CHECK(per_lane.unit_count() == 8);
+
   using Single = cudax::coop::__mapping_result<cudax::coop::__static_unit_counts<32>, Exhaustive, Contiguous>;
 
   static_assert(cudax::coop::__group_mapping_result<Single>);
