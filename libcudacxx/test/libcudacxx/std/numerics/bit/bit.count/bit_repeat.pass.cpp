@@ -17,6 +17,7 @@
 #include <cuda/std/cstdint>
 #include <cuda/std/limits>
 #include <cuda/std/type_traits>
+#include <cuda/std/utility>
 
 #include "test_macros.h"
 
@@ -40,6 +41,17 @@ TEST_FUNC constexpr void test_bit_repeat(T value, int width)
     DoNotOptimize(width);
   }
   assert(cuda::std::bit_repeat(value, width) == expected_bit_repeat(value, width));
+}
+
+template <class T, int... Widths>
+TEST_FUNC constexpr void test_constant_widths(T value, cuda::std::integer_sequence<int, Widths...>)
+{
+  if (!cuda::std::__cccl_default_is_constant_evaluated())
+  {
+    DoNotOptimize(value);
+  }
+  ((assert(cuda::std::bit_repeat(value, Widths + 1) == expected_bit_repeat(value, Widths + 1))), ...);
+  assert(cuda::std::bit_repeat(value, cuda::std::numeric_limits<int>::max()) == value);
 }
 
 template <class T>
@@ -74,6 +86,7 @@ TEST_FUNC constexpr void test()
     }
 
     test_bit_repeat(value, cuda::std::numeric_limits<int>::max());
+    test_constant_widths(value, cuda::std::make_integer_sequence<int, digits + 1>{});
   }
 }
 

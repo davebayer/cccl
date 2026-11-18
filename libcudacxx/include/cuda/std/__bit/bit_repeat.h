@@ -94,6 +94,30 @@ _CCCL_REQUIRES(__cccl_is_unsigned_integer_v<_Tp>)
     _CCCL_ASSERT(__n > 0, "__n must be greater than 0");
   }
 
+  if (_CCCL_IS_CONSTANT_P(__n))
+  {
+    if (__n >= __num_bits_v<_Tp>)
+    {
+      return __v;
+    }
+    if (__n == 1)
+    {
+      return __v & 0x1 ? static_cast<_Tp>(~_Tp{0}) : _Tp{0};
+    }
+    if constexpr (sizeof(_Tp) <= sizeof(uint64_t))
+    {
+      if (__n < __num_bits_v<_Tp> / 2)
+      {
+        // The masked value occupies disjoint fields when multiplied by the repeated one-bit pattern.
+        // Promote small types to avoid signed overflow from integral promotions.
+        using _Up            = conditional_t<sizeof(_Tp) < sizeof(uint32_t), uint32_t, _Tp>;
+        const auto __pattern = ::cuda::std::__bit_repeat_impl_generic(_Up{1}, __n);
+        return static_cast<_Tp>((_Up{__v} & ::cuda::bitmask<_Up>(0, __n)) * __pattern);
+      }
+    }
+    return ::cuda::std::__bit_repeat_impl_generic(__v, __n);
+  }
+
   _CCCL_IF_NOT_CONSTEVAL_DEFAULT
   {
     NV_IF_TARGET(NV_IS_DEVICE, ({ return ::cuda::std::__bit_repeat_impl_device(__v, __n); }))
