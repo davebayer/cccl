@@ -12,7 +12,6 @@
 #include <cuda/hierarchy>
 #include <cuda/launch>
 #include <cuda/std/array>
-#include <cuda/std/span>
 #include <cuda/std/type_traits>
 #include <cuda/std/utility>
 #include <cuda/stream>
@@ -20,6 +19,27 @@
 #include <cuda/experimental/coop/group>
 
 #include "group_testing.cuh"
+
+// This callable cannot be copied and can only be invoked as an rvalue.
+struct ForwardedCallable
+{
+  unsigned& calls;
+
+  __device__ explicit ForwardedCallable(unsigned& count)
+      : calls{count}
+  {}
+
+  ForwardedCallable(const ForwardedCallable&) = delete;
+
+  template <class Group>
+  __device__ unsigned& operator()(Group group) &&
+  {
+    CHECK(cuda::gpu_thread.count(group) > 0);
+    ++calls;
+
+    return calls;
+  }
+};
 
 template <class Group, class View>
 __device__ void check_mapping(const Group& group, const View& view)
@@ -51,21 +71,33 @@ __device__ void check_mapping(const Group& group, const View& view)
   CHECK(Unit{}.rank(view) == Unit{}.rank(group));
 }
 
-template <class Group>
-__device__ void test_uniform(const Group& group)
+template <class Group, class Policy>
+__device__ void test_uniform(const Group& group, Policy policy)
 {
   using Original = typename Group::__mapping_result_type;
   using Unit     = typename Group::unit_type;
   static_assert(Original::has_uniform_static_unit_count());
 
-  // Uniform counts, including dynamic_extent, need no per-group specialization.
+  // Unit count specialization preserves uniform counts, including dynamic_extent.
   unsigned calls   = 0;
-  const auto count = group.with_static_unit_count([&](auto view) {
+  const auto count = group.dispatch(policy, [&](auto view) {
     ++calls;
 
     constexpr auto unit         = Unit{};
     constexpr auto static_count = unit.static_count(view);
     static_assert(static_count == Original::static_unit_count());
+
+    using Mapping = typename decltype(view)::__mapping_result_type;
+    if constexpr (cuda::std::is_same_v<Policy, cuda::std::remove_cv_t<decltype(cudax::coop::by_group_rank)>>
+                  && Original::static_group_count() != cuda::std::dynamic_extent)
+    {
+      static_assert(Mapping::static_group_rank() < Original::static_group_count());
+      CHECK(Mapping::static_group_rank() == group.__mapping_result().group_rank());
+    }
+    else
+    {
+      static_assert(Mapping::static_group_rank() == Original::static_group_rank());
+    }
 
     check_mapping(group, view);
 
@@ -78,6 +110,13 @@ __device__ void test_uniform(const Group& group)
   // Dispatch invokes the callable exactly once and returns its result.
   CHECK(calls == 1);
   CHECK(count == Unit{}.count(group));
+}
+
+template <class Group>
+__device__ void test_uniform(const Group& group)
+{
+  test_uniform(group, cudax::coop::by_group_rank);
+  test_uniform(group, cudax::coop::by_unit_count);
 }
 
 template <class Config, class Level>
@@ -123,6 +162,15 @@ struct UniformKernel
       test_uniform(group);
     }
 
+    {
+      // A statically known number of groups allows rank specialization even when their sizes are dynamic.
+      const cuda::std::array counts{2, 2};
+      const cudax::coop::virtual_group group{cuda::warp, parent, cudax::coop::group_as{counts}};
+      static_assert(group.static_count(cudax::coop::parent_group) == 2);
+      static_assert(cuda::warp.static_count(group) == cuda::std::dynamic_extent);
+      test_uniform(group);
+    }
+
     // Generic groups own a barrier for each of the two groups of warps.
     auto& barriers = get_barriers<2>(cuda::warp);
 
@@ -148,7 +196,7 @@ struct UniformKernel
   }
 };
 
-C2H_TEST("Static unit count dispatch for uniform groups", "[with_static_unit_count]")
+C2H_TEST("Dispatch for uniform groups", "[dispatch]")
 {
   const auto device = cuda::devices[0];
   const cuda::stream stream{device};
@@ -175,8 +223,8 @@ C2H_TEST("Static unit count dispatch for uniform groups", "[with_static_unit_cou
   stream.sync();
 }
 
-template <class Group, class Parent>
-__device__ void test_nonuniform(const Group& group, const Parent& parent, unsigned units_per_warp)
+template <class Group, class Parent, class Policy>
+__device__ void test_nonuniform(const Group& group, const Parent& parent, unsigned units_per_warp, Policy policy)
 {
   using Original = typename Group::__mapping_result_type;
   using Unit     = typename Group::unit_type;
@@ -195,21 +243,23 @@ __device__ void test_nonuniform(const Group& group, const Parent& parent, unsign
     static_assert(count == Original::static_unit_count(0) || count == Original::static_unit_count(1));
     CHECK(count == expected);
 
-    // The selected rank is part of the result type, even when two groups share a count.
     using Mapping = typename decltype(view)::__mapping_result_type;
     static_assert(cudax::coop::__group_mapping_result<Mapping>);
 
-    constexpr auto group_rank = view.static_rank(cudax::coop::parent_group);
-    static_assert(count == Original::static_unit_count(group_rank));
-    static_assert(
-      cuda::std::is_same_v<
-        Mapping,
-        cudax::coop::__mapping_result<cudax::coop::__per_group_count<Original::static_group_count(), group_rank, count>,
-                                      Original::is_always_exhaustive(),
-                                      Original::is_always_contiguous()>>);
-    CHECK(group_rank == group.__mapping_result().group_rank());
-    CHECK(view.rank(parent) == group_rank);
-    CHECK(view.template rank_as<unsigned>(parent) == group_rank);
+    if constexpr (cuda::std::is_same_v<Policy, cuda::std::remove_cv_t<decltype(cudax::coop::by_group_rank)>>)
+    {
+      constexpr auto group_rank = view.static_rank(cudax::coop::parent_group);
+      static_assert(count == Original::static_unit_count(group_rank));
+      CHECK(group_rank == group.rank(parent));
+      CHECK(view.rank(parent) == group_rank);
+      CHECK(view.template rank_as<unsigned>(parent) == group_rank);
+    }
+    else
+    {
+      static_assert(view.static_rank(cudax::coop::parent_group) == cuda::std::dynamic_extent);
+      CHECK(view.rank(parent) == group.rank(parent));
+      CHECK(view.template rank_as<unsigned>(parent) == group.rank(parent));
+    }
 
     check_mapping(group, view);
 
@@ -225,9 +275,21 @@ __device__ void test_nonuniform(const Group& group, const Parent& parent, unsign
     CHECK(thread_count == expected * 32 / units_per_warp);
     CHECK(cuda::gpu_thread.rank(threads) == cuda::gpu_thread.rank(group));
 
-    // Dispatching an already specialized view must keep the selected count.
-    view.with_static_unit_count([&](auto again) {
+    // Repeated specialization and changing the specialization key preserve the view's values.
+    view.dispatch(cudax::coop::by_unit_count, [&](auto again) {
+      static_assert(cuda::std::is_same_v<decltype(view), decltype(again)>);
       static_assert(Unit{}.static_count(again) == count);
+      static_assert(again.static_rank(cudax::coop::parent_group) == view.static_rank(cudax::coop::parent_group));
+      check_mapping(group, again);
+    });
+    view.dispatch(cudax::coop::by_group_rank, [&](auto again) {
+      if constexpr (cuda::std::is_same_v<Policy, cuda::std::remove_cv_t<decltype(cudax::coop::by_group_rank)>>)
+      {
+        static_assert(cuda::std::is_same_v<decltype(view), decltype(again)>);
+      }
+      static_assert(Unit{}.static_count(again) == count);
+      static_assert(again.static_rank(cudax::coop::parent_group) < Original::static_group_count());
+      CHECK(again.static_rank(cudax::coop::parent_group) == group.rank(parent));
       check_mapping(group, again);
     });
 
@@ -235,9 +297,54 @@ __device__ void test_nonuniform(const Group& group, const Parent& parent, unsign
   };
 
   // An lvalue callable and its reference return must pass through without copying.
-  static_assert(cuda::std::is_same_v<decltype(group.with_static_unit_count(callback)), unsigned&>);
-  CHECK(&group.with_static_unit_count(callback) == &calls);
+  static_assert(cuda::std::is_same_v<decltype(group.dispatch(policy, callback)), unsigned&>);
+  CHECK(&group.dispatch(policy, callback) == &calls);
   CHECK(calls == 1);
+
+  ForwardedCallable forwarded{calls};
+  static_assert(cuda::std::is_same_v<decltype(group.dispatch(policy, cuda::std::move(forwarded))), unsigned&>);
+  CHECK(&group.dispatch(policy, cuda::std::move(forwarded)) == &calls);
+  CHECK(calls == 2);
+}
+
+template <class Group, class Parent>
+__device__ void test_nonuniform(const Group& group, const Parent& parent, unsigned units_per_warp)
+{
+  test_nonuniform(group, parent, units_per_warp, cudax::coop::by_group_rank);
+  test_nonuniform(group, parent, units_per_warp, cudax::coop::by_unit_count);
+}
+
+template <class View>
+__device__ const void* view_type_id()
+{
+  __shared__ int identity;
+  return &identity;
+}
+
+template <class Group, class Parent, class Policy>
+__device__ void test_dispatch_types(const Group& group, const Parent& parent, Policy policy)
+{
+  __shared__ const void* identities[3];
+
+  group.dispatch(policy, [&](auto view) {
+    if (cuda::gpu_thread.rank(view) == 0)
+    {
+      identities[view.rank(parent)] = view_type_id<decltype(view)>();
+    }
+  });
+
+  parent.sync();
+  if constexpr (cuda::std::is_same_v<Policy, cuda::std::remove_cv_t<decltype(cudax::coop::by_group_rank)>>)
+  {
+    CHECK(identities[0] != identities[2]);
+  }
+  else
+  {
+    CHECK(identities[0] == identities[2]);
+  }
+  CHECK(identities[0] != identities[1]);
+  CHECK(identities[1] != identities[2]);
+  parent.sync();
 }
 
 // Split four warps into groups of one, two, and one warp, exercising all dispatch
@@ -251,7 +358,9 @@ __device__ void test_nonuniform_groups(Config config, Counts counts)
   // Check nonuniform mappings while retaining the parent block synchronizer.
   const cudax::coop::virtual_group virtual_group{cuda::warp, parent, mapping};
   test_nonuniform(virtual_group, parent, 1);
-  virtual_group.with_static_unit_count([&](auto view) {
+  test_dispatch_types(virtual_group, parent, cudax::coop::by_group_rank);
+  test_dispatch_types(virtual_group, parent, cudax::coop::by_unit_count);
+  virtual_group.dispatch(cudax::coop::by_group_rank, [&](auto view) {
     constexpr auto rank = view.static_rank(cudax::coop::parent_group);
     static_assert(rank < 3);
     CHECK(view.rank(parent) == rank);
@@ -274,7 +383,7 @@ __device__ void test_nonuniform_groups(Config config, Counts counts)
   test_nonuniform(group_threads, parent, 32);
 
   // Super-group queries and synchronization must survive specialization too.
-  group.with_static_unit_count([&](auto view) {
+  group.dispatch(cudax::coop::by_group_rank, [&](auto view) {
     CHECK(view.count(parent) == group.count(parent));
 
     constexpr auto rank = view.static_rank(cudax::coop::parent_group);
@@ -305,33 +414,169 @@ struct NonuniformKernel
   }
 };
 
-C2H_TEST("Static unit count dispatch for nonuniform groups", "[with_static_unit_count]")
+C2H_TEST("Dispatch for nonuniform groups", "[dispatch]")
 {
   const cuda::stream stream{cuda::devices[0]};
   cuda::launch(stream, cuda::make_config(cuda::grid_dims<2>(), cuda::block_dims<128>()), NonuniformKernel{});
   stream.sync();
 }
 
-// This callable cannot be copied and can only be invoked as an rvalue.
-struct ForwardedCallable
+struct DistinctCountsKernel
 {
-  unsigned& calls;
-
-  __device__ explicit ForwardedCallable(unsigned& count)
-      : calls{count}
-  {}
-
-  ForwardedCallable(const ForwardedCallable&) = delete;
-
-  template <class Group>
-  __device__ unsigned& operator()(Group group) &&
+  template <class Config>
+  __device__ void operator()(Config config) const
   {
-    CHECK(cuda::gpu_thread.count(group) > 0);
-    ++calls;
+    const cudax::coop::this_block parent{config};
+    const cudax::coop::virtual_group group{
+      cuda::warp, parent, cudax::coop::group_as{cuda::std::integer_sequence<int, 3, 1, 2, 1>{}}};
+    constexpr unsigned counts[]{3, 1, 2, 1};
+    const auto rank = group.rank(parent);
+    unsigned calls  = 0;
 
-    return calls;
+    // Unordered, repeated sizes exercise all branches of dispatch over three distinct counts.
+    const auto selected_count = group.dispatch(cudax::coop::by_unit_count, [&](auto view) {
+      ++calls;
+      constexpr auto count = cuda::warp.static_count(view);
+      static_assert(count == 1 || count == 2 || count == 3);
+      static_assert(view.static_rank(cudax::coop::parent_group) == cuda::std::dynamic_extent);
+      CHECK(count == counts[rank]);
+      CHECK(view.rank(parent) == rank);
+      CHECK(view.count(parent) == 4);
+      check_mapping(group, view);
+
+      view.dispatch(cudax::coop::by_unit_count, [&](auto again) {
+        static_assert(cuda::std::is_same_v<decltype(view), decltype(again)>);
+        static_assert(cuda::warp.static_count(again) == count);
+        CHECK(again.rank(parent) == rank);
+      });
+
+      return static_cast<unsigned>(count);
+    });
+
+    CHECK(calls == 1);
+    CHECK(selected_count == counts[rank]);
   }
 };
+
+C2H_TEST("Dispatch by three distinct unit counts", "[dispatch]")
+{
+  const cuda::stream stream{cuda::devices[0]};
+  cuda::launch(stream, cuda::make_config(cuda::grid_dims<2>(), cuda::block_dims<224>()), DistinctCountsKernel{});
+  stream.sync();
+}
+
+struct MoveOnlyDispatchResult
+{
+  unsigned value;
+
+  __device__ explicit MoveOnlyDispatchResult(unsigned result)
+      : value{result}
+  {}
+
+  MoveOnlyDispatchResult(const MoveOnlyDispatchResult&) = delete;
+
+  __device__ MoveOnlyDispatchResult(MoveOnlyDispatchResult&& other)
+      : value{other.value}
+  {}
+};
+
+template <class Group, class Policy>
+__device__ void test_dispatch_results(const Group& group, Policy policy)
+{
+  using Unit = typename Group::unit_type;
+
+  // Arithmetic results from different leaves retain the conditional operator's common type.
+  unsigned calls        = 0;
+  const auto arithmetic = [&](auto view) {
+    ++calls;
+    constexpr auto count = Unit{}.static_count(view);
+    if constexpr (count % 2 == 0)
+    {
+      return static_cast<int>(count);
+    }
+    else
+    {
+      return static_cast<double>(count) + 0.5;
+    }
+  };
+  static_assert(cuda::std::is_same_v<decltype(group.dispatch(policy, arithmetic)), double>);
+  const auto count = Unit{}.count(group);
+  CHECK(group.dispatch(policy, arithmetic) == static_cast<double>(count) + (count % 2 == 0 ? 0.0 : 0.5));
+  CHECK(calls == 1);
+
+  const auto move_only = [&](auto view) {
+    ++calls;
+    return MoveOnlyDispatchResult{Unit{}.count(view)};
+  };
+  static_assert(cuda::std::is_same_v<decltype(group.dispatch(policy, move_only)), MoveOnlyDispatchResult>);
+  const auto result = group.dispatch(policy, move_only);
+  CHECK(result.value == count);
+  CHECK(calls == 2);
+}
+
+struct ZeroCountsKernel
+{
+  template <class Config>
+  __device__ void operator()(Config config) const
+  {
+    const cudax::coop::this_block parent{config};
+    const cudax::coop::virtual_group group{
+      cuda::warp, parent, cudax::coop::group_as{cuda::std::integer_sequence<int, 0, 3, 0, 1>{}}};
+    const auto rank = group.rank(parent);
+    CHECK(rank == 1 || rank == 3);
+    CHECK(group.count(parent) == 4);
+
+    unsigned calls = 0;
+    group.dispatch(cudax::coop::by_unit_count, [&](auto view) {
+      ++calls;
+      constexpr auto count = cuda::warp.static_count(view);
+      static_assert(count == 0 || count == 1 || count == 3);
+      CHECK(count > 0);
+      CHECK(count == (rank == 1 ? 3 : 1));
+      CHECK(view.rank(parent) == rank);
+      check_mapping(group, view);
+    });
+    CHECK(calls == 1);
+
+    test_dispatch_results(group, cudax::coop::by_group_rank);
+    test_dispatch_results(group, cudax::coop::by_unit_count);
+  }
+};
+
+struct ManyDistinctCountsKernel
+{
+  template <class Config>
+  __device__ void operator()(Config config) const
+  {
+    const cudax::coop::this_block parent{config};
+    const cudax::coop::virtual_group group{
+      cuda::gpu_thread, parent, cudax::coop::group_as{cuda::std::integer_sequence<int, 8, 7, 6, 5, 4, 3, 2, 1>{}}};
+    const auto rank = group.rank(parent);
+
+    unsigned calls = 0;
+    group.dispatch(cudax::coop::by_unit_count, [&](auto view) {
+      ++calls;
+      constexpr auto count = cuda::gpu_thread.static_count(view);
+      static_assert(count >= 1 && count <= 8);
+      CHECK(count == 8 - rank);
+      CHECK(view.rank(parent) == rank);
+      CHECK(view.count(parent) == 8);
+      check_mapping(group, view);
+    });
+    CHECK(calls == 1);
+
+    test_dispatch_results(group, cudax::coop::by_group_rank);
+    test_dispatch_results(group, cudax::coop::by_unit_count);
+  }
+};
+
+C2H_TEST("Dispatch preserves empty groups and result types", "[dispatch]")
+{
+  const cuda::stream stream{cuda::devices[0]};
+  cuda::launch(stream, cuda::make_config(cuda::grid_dims<2>(), cuda::block_dims<128>()), ZeroCountsKernel{});
+  cuda::launch(stream, cuda::make_config(cuda::grid_dims<2>(), cuda::block_dims<36>()), ManyDistinctCountsKernel{});
+  stream.sync();
+}
 
 struct CoalescedKernel
 {
@@ -353,16 +598,23 @@ struct CoalescedKernel
       // Forward an rvalue callable and preserve the identity of its reference result.
       unsigned calls = 0;
       ForwardedCallable callable{calls};
-      static_assert(cuda::std::is_same_v<decltype(group.with_static_unit_count(cuda::std::move(callable))), unsigned&>);
+      static_assert(
+        cuda::std::is_same_v<decltype(group.dispatch(cudax::coop::by_group_rank, cuda::std::move(callable))), unsigned&>);
 
-      unsigned& result = group.with_static_unit_count(cuda::std::move(callable));
+      unsigned& result = group.dispatch(cudax::coop::by_group_rank, cuda::std::move(callable));
       CHECK(&result == &calls);
       CHECK(calls == 1);
+
+      static_assert(
+        cuda::std::is_same_v<decltype(group.dispatch(cudax::coop::by_unit_count, cuda::std::move(callable))), unsigned&>);
+      unsigned& count_result = group.dispatch(cudax::coop::by_unit_count, cuda::std::move(callable));
+      CHECK(&count_result == &calls);
+      CHECK(calls == 2);
     }
   }
 };
 
-C2H_TEST("Static unit count dispatch for coalesced groups and callable forwarding", "[with_static_unit_count]")
+C2H_TEST("Dispatch for coalesced groups and callable forwarding", "[dispatch]")
 {
   const cuda::stream stream{cuda::devices[0]};
   cuda::launch(stream, cuda::make_config(cuda::grid_dims<1>(), cuda::block_dims<32>()), CoalescedKernel{});

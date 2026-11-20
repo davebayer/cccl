@@ -338,7 +338,7 @@ struct __mapping_result<__static_unit_counts<_StaticUnitCounts...>, _IsAlwaysExh
   }
 };
 
-// This mapping result is only ever used in group.with_static_unit_count(...) where it's constructed from the group's
+// This mapping result is only ever used in group.dispatch(by_group_rank, ...) where it's constructed from the group's
 // mapping result. That means that the mapping result is always valid. We still keep the is_always_exhaustive() property
 // from the original mapping result.
 template <::cuda::std::size_t _StaticGroupCount,
@@ -352,8 +352,8 @@ struct __mapping_result<__per_group_count<_StaticGroupCount, _StaticGroupRank, _
 {
   static_assert(_StaticGroupCount != ::cuda::std::dynamic_extent, "group count must be statically known");
   static_assert(_StaticGroupRank < _StaticGroupCount, "group rank out of range");
-  static_assert(_StaticUnitCount != ::cuda::std::dynamic_extent, "unit count must be statically known");
 
+  ::cuda::std::uint32_t __unit_count_;
   ::cuda::std::uint32_t __unit_rank_;
   ::cuda::device::lane_mask __lane_mask_;
 
@@ -395,7 +395,14 @@ struct __mapping_result<__per_group_count<_StaticGroupCount, _StaticGroupRank, _
 
   [[nodiscard]] _CCCL_DEVICE_API constexpr ::cuda::std::uint32_t unit_count() const
   {
-    return static_cast<::cuda::std::uint32_t>(_StaticUnitCount);
+    if constexpr (_StaticUnitCount != ::cuda::std::dynamic_extent)
+    {
+      return static_cast<::cuda::std::uint32_t>(_StaticUnitCount);
+    }
+    else
+    {
+      return __unit_count_;
+    }
   }
 
   [[nodiscard]] _CCCL_DEVICE_API ::cuda::std::uint32_t unit_rank() const
