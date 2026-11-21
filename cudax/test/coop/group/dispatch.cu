@@ -12,6 +12,7 @@
 #include <cuda/hierarchy>
 #include <cuda/launch>
 #include <cuda/std/array>
+#include <cuda/std/cstddef>
 #include <cuda/std/type_traits>
 #include <cuda/std/utility>
 #include <cuda/stream>
@@ -575,6 +576,100 @@ C2H_TEST("Dispatch preserves empty groups and result types", "[dispatch]")
   const cuda::stream stream{cuda::devices[0]};
   cuda::launch(stream, cuda::make_config(cuda::grid_dims<2>(), cuda::block_dims<128>()), ZeroCountsKernel{});
   cuda::launch(stream, cuda::make_config(cuda::grid_dims<2>(), cuda::block_dims<36>()), ManyDistinctCountsKernel{});
+  stream.sync();
+}
+
+// Dispatches a block of threads grouped by the given unit counts and checks that every group reaches the
+// specialization for its own unit count.
+template <class Config, unsigned... Counts>
+__device__ void test_unit_count_layout(Config config, cuda::std::integer_sequence<unsigned, Counts...> layout)
+{
+  const cudax::coop::this_block parent{config};
+  const cudax::coop::virtual_group group{cuda::gpu_thread, parent, cudax::coop::group_as{layout}};
+  constexpr unsigned counts[]{Counts...};
+  const auto rank = group.rank(parent);
+  __shared__ const void* identities[sizeof...(Counts)];
+  unsigned calls = 0;
+
+  const auto selected_count = group.dispatch(cudax::coop::by_unit_count, [&](auto view) {
+    ++calls;
+    constexpr auto count = cuda::gpu_thread.static_count(view);
+    static_assert(((count == Counts) || ...));
+    static_assert(view.static_rank(cudax::coop::parent_group) == cuda::std::dynamic_extent);
+    CHECK(count == counts[rank]);
+    CHECK(view.rank(parent) == rank);
+    CHECK(view.count(parent) == sizeof...(Counts));
+    check_mapping(group, view);
+
+    if (cuda::gpu_thread.rank(view) == 0)
+    {
+      identities[rank] = view_type_id<decltype(view)>();
+    }
+    return static_cast<unsigned>(count);
+  });
+
+  CHECK(calls == 1);
+  CHECK(selected_count == counts[rank]);
+
+  // Groups share a specialization exactly if their unit counts are equal.
+  parent.sync();
+  CHECK((identities[rank] == identities[0]) == (counts[rank] == counts[0]));
+}
+
+template <class Layout>
+struct UnitCountLayoutKernel
+{
+  template <class Config>
+  __device__ void operator()(Config config) const
+  {
+    test_unit_count_layout(config, Layout{});
+  }
+};
+
+template <unsigned... Counts>
+void launch_unit_count_layout(const cuda::stream& stream, cuda::std::integer_sequence<unsigned, Counts...> layout)
+{
+  cuda::launch(stream,
+               cuda::make_config(cuda::grid_dims<2>(), cuda::block_dims<(Counts + ...)>()),
+               UnitCountLayoutKernel<decltype(layout)>{});
+}
+
+// A layout of GroupCount groups whose unit counts cycle through Pattern.
+template <cuda::std::size_t GroupCount, unsigned... Pattern>
+struct CyclicLayout
+{
+  static constexpr unsigned pattern[]{Pattern...};
+
+  template <cuda::std::size_t... Ranks>
+  static auto make(cuda::std::index_sequence<Ranks...>)
+    -> cuda::std::integer_sequence<unsigned, pattern[Ranks % sizeof...(Pattern)]...>;
+
+  using type = decltype(make(cuda::std::make_index_sequence<GroupCount>{}));
+};
+
+template <cuda::std::size_t GroupCount, unsigned... Pattern>
+using cyclic_layout = typename CyclicLayout<GroupCount, Pattern...>::type;
+
+C2H_TEST("Dispatch by unit count selects the specialization from the group rank", "[dispatch]")
+{
+  const cuda::stream stream{cuda::devices[0]};
+
+  // Groups with equal unit counts that are adjacent are found by comparing the group rank with their first rank.
+  launch_unit_count_layout(stream, cuda::std::integer_sequence<unsigned, 2, 2, 2, 1, 1, 3>{});
+
+  // Otherwise, the specialization of each group is looked up in 32-bit words. The pattern lengths don't divide the
+  // number of groups per word, so that reading the wrong word selects wrong specializations.
+
+  // Two unit counts take one bit per group: 32 groups exactly fill one word, 35 groups need a second one.
+  launch_unit_count_layout(stream, cyclic_layout<32, 2, 1, 1>{});
+  launch_unit_count_layout(stream, cyclic_layout<35, 2, 1, 1>{});
+
+  // Three unit counts take two bits per group: 19 groups need two words.
+  launch_unit_count_layout(stream, cyclic_layout<19, 3, 1, 2, 1, 2>{});
+
+  // Five unit counts take four bits per group: 11 groups need two words.
+  launch_unit_count_layout(stream, cyclic_layout<11, 1, 2, 3, 4, 5, 1, 3>{});
+
   stream.sync();
 }
 
