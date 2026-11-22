@@ -46,11 +46,20 @@ struct _CCCL_TYPE_VISIBILITY_DEFAULT basic_format_string
     if constexpr (sizeof...(_Args) > 0)
     {
       constexpr __fmt_arg_t __types[] = {::cuda::std::__fmt_determine_arg_t<_FmtContext, remove_cvref_t<_Args>>()...};
-      constexpr _FmtArgHandle __handles[] = {
-        ::cuda::std::__fmt_make_validation_format_arg_handle<_FmtContext, remove_cvref_t<_Args>>()...};
+      // Built-in formatters accept an empty spec. A custom formatter must still get to parse it.
+      if constexpr (__types[0] != __fmt_arg_t::__none && __types[0] != __fmt_arg_t::__handle)
+      {
+        if (::cuda::std::__fmt_is_default_field(__str_))
+        {
+          return;
+        }
+      }
+
+      constexpr typename _FmtContext::__parse_function __parsers[] = {
+        ::cuda::std::__fmt_select_validation_parser<_FmtContext, remove_cvref_t<_Args>>()...};
 
       (void) ::cuda::std::__fmt_vformat_to(basic_format_parse_context<_CharT>{__str_, sizeof...(_Args)},
-                                           _FmtContext{__types, __handles, sizeof...(_Args)});
+                                           _FmtContext{__types, __parsers, sizeof...(_Args)});
     }
     else
     {
@@ -71,8 +80,7 @@ struct _CCCL_TYPE_VISIBILITY_DEFAULT basic_format_string
 private:
   basic_string_view<_CharT> __str_;
 
-  using _FmtContext   = __fmt_validation_format_context<_CharT>;
-  using _FmtArgHandle = __fmt_validation_format_arg_handle<_CharT>;
+  using _FmtContext _CCCL_NODEBUG = __fmt_validation_format_context<_CharT>;
 };
 
 _CCCL_END_NAMESPACE_CUDA_STD

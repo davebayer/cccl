@@ -21,8 +21,10 @@
 #endif // no system header
 
 #include <cuda/std/__concepts/concept_macros.h>
+#include <cuda/std/__cstddef/types.h>
 #include <cuda/std/__format/buffer.h>
 #include <cuda/std/__format/format_arg.h>
+#include <cuda/std/__format/format_arg_store.h>
 #include <cuda/std/__format/format_args.h>
 #include <cuda/std/__format/format_context.h>
 #include <cuda/std/__format/format_error.h>
@@ -33,7 +35,11 @@
 #include <cuda/std/__fwd/format.h>
 #include <cuda/std/__iterator/concepts.h>
 #include <cuda/std/__iterator/readable_traits.h>
+#include <cuda/std/__type_traits/conditional.h>
+#include <cuda/std/__type_traits/integral_constant.h>
 #include <cuda/std/__type_traits/is_same.h>
+#include <cuda/std/__type_traits/is_void.h>
+#include <cuda/std/__type_traits/remove_const.h>
 #include <cuda/std/__utility/monostate.h>
 #include <cuda/std/__utility/move.h>
 #include <cuda/std/string_view>
@@ -42,7 +48,23 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
-template <class _CharT, class _ParseCtx, class _FormatCtx>
+template <class _CharT>
+[[nodiscard]] _CCCL_HOST_DEVICE_API constexpr bool __fmt_is_default_field(basic_string_view<_CharT> __fmt)
+{
+  return __fmt.size() == 2 && __fmt[0] == _CharT{'{'} && __fmt[1] == _CharT{'}'};
+}
+
+// Share the code for explicit format specifications across typed and erased device calls.
+template <class _Tp, class _ParseCtx, class _FormatCtx>
+_CCCL_HOST_DEVICE_API _CCCL_NOINLINE_DEVICE void
+__fmt_format_with_spec(_Tp __arg, _ParseCtx& __parse_ctx, _FormatCtx& __format_ctx)
+{
+  formatter<_Tp, typename _FormatCtx::char_type> __formatter;
+  __parse_ctx.advance_to(__formatter.parse(__parse_ctx));
+  __format_ctx.advance_to(__formatter.format(__arg, __format_ctx));
+}
+
+template <class _ParseCtx, class _FormatCtx>
 struct __fmt_replacement_field_visitor
 {
   _ParseCtx& __parse_ctx_;
@@ -50,7 +72,7 @@ struct __fmt_replacement_field_visitor
   bool __parse_;
 
   template <class _Tp>
-  _CCCL_HOST_DEVICE_API constexpr void operator()([[maybe_unused]] _Tp __arg)
+  _CCCL_HOST_DEVICE_API constexpr void operator()([[maybe_unused]] _Tp __arg) const
   {
     if constexpr (is_same_v<_Tp, monostate>)
     {
@@ -60,19 +82,19 @@ struct __fmt_replacement_field_visitor
     {
       __arg.format(__parse_ctx_, __format_ctx_);
     }
+    else if (__parse_)
+    {
+      ::cuda::std::__fmt_format_with_spec(__arg, __parse_ctx_, __format_ctx_);
+    }
     else
     {
-      formatter<_Tp, _CharT> __formatter;
-      if (__parse_)
-      {
-        __parse_ctx_.advance_to(__formatter.parse(__parse_ctx_));
-      }
+      const formatter<_Tp, typename _FormatCtx::char_type> __formatter{};
       __format_ctx_.advance_to(__formatter.format(__arg, __format_ctx_));
     }
   }
 };
 
-template <class _It, class _ParseCtx, class _Ctx>
+template <class _KnownType, class _It, class _ParseCtx, class _Ctx>
 [[nodiscard]] _CCCL_HOST_DEVICE_API constexpr _It
 __fmt_handle_replacement_field(_It __begin, _It __end, _ParseCtx& __parse_ctx, _Ctx& __ctx)
 {
@@ -101,24 +123,21 @@ __fmt_handle_replacement_field(_It __begin, _It __end, _ParseCtx& __parse_ctx, _
 
   if constexpr (is_same_v<_Ctx, __fmt_validation_format_context<_CharT>>)
   {
-    const __fmt_arg_t __type = __ctx.arg(__r.__value);
-    if (__type == __fmt_arg_t::__none)
-    {
-      ::cuda::std::__throw_format_error("The argument index value is too large for the number of arguments supplied");
-    }
-    else if (__type == __fmt_arg_t::__handle)
-    {
-      __ctx.__handle(__r.__value).__parse(__parse_ctx);
-    }
-    else if (__parse)
-    {
-      ::cuda::std::__fmt_validate_visit_format_arg(__parse_ctx, __ctx, __type);
-    }
+    __ctx.__validate_arg(__r.__value, __parse_ctx, __parse);
   }
   else
   {
-    ::cuda::std::visit_format_arg(
-      __fmt_replacement_field_visitor<_CharT, _ParseCtx, _Ctx>{__parse_ctx, __ctx, __parse}, __ctx.arg(__r.__value));
+    auto __arg = __ctx.arg(__r.__value);
+    if constexpr (!is_void_v<_KnownType>)
+    {
+      if (!__arg)
+      {
+        ::cuda::std::__throw_format_error("The argument index value is too large for the number of arguments supplied");
+      }
+      // All valid indices in this store select the same union member.
+      __arg.__type_ = _KnownType::value;
+    }
+    ::cuda::std::visit_format_arg(__fmt_replacement_field_visitor<_ParseCtx, _Ctx>{__parse_ctx, __ctx, __parse}, __arg);
   }
 
   __begin = __parse_ctx.begin();
@@ -135,7 +154,7 @@ _CCCL_DIAG_SUPPRESS_NVHPC(inline_gnu_noinline_conflict)
 
 // We mark this function as noinline during device compilation because ptxas takes a lot of time and resources to inline
 // and optimize the formatting function. We expect the function to be mostly used for debugging anyway.
-template <class _ParseCtx, class _Ctx>
+template <class _KnownType = void, class _ParseCtx, class _Ctx>
 [[nodiscard]] _CCCL_HOST_DEVICE_API _CCCL_NOINLINE_DEVICE constexpr typename _Ctx::iterator
 __fmt_vformat_to(_ParseCtx&& __parse_ctx, _Ctx&& __ctx)
 {
@@ -159,7 +178,7 @@ __fmt_vformat_to(_ParseCtx&& __parse_ctx, _Ctx&& __ctx)
         if (*__begin != _CharT{'{'})
         {
           __ctx.advance_to(::cuda::std::move(__out_it));
-          __begin  = ::cuda::std::__fmt_handle_replacement_field(__begin, __end, __parse_ctx, __ctx);
+          __begin  = ::cuda::std::__fmt_handle_replacement_field<_KnownType>(__begin, __end, __parse_ctx, __ctx);
           __out_it = __ctx.out();
 
           // The output is written and __begin points to the next character. So
@@ -186,21 +205,54 @@ __fmt_vformat_to(_ParseCtx&& __parse_ctx, _Ctx&& __ctx)
 
 _CCCL_DIAG_POP
 
-template <class _OutIt, class _CharT, class _FormatOutIt>
-[[nodiscard]] _CCCL_HOST_DEVICE_API _OutIt __vformat_to_impl(
-  _OutIt __out_it, basic_string_view<_CharT> __fmt, basic_format_args<basic_format_context<_FormatOutIt, _CharT>> __args)
+template <class _OutIt, class _CharT, class _Context>
+[[nodiscard]] _CCCL_HOST_DEVICE_API _OutIt
+__fmt_write_format_args(_OutIt __out_it, basic_string_view<_CharT> __fmt, basic_format_args<_Context> __args)
 {
-  if constexpr (is_same_v<_OutIt, _FormatOutIt>)
+  return ::cuda::std::__fmt_vformat_to(basic_format_parse_context{__fmt, __args.__size()},
+                                       ::cuda::std::__fmt_make_format_context(::cuda::std::move(__out_it), __args));
+}
+
+template <class _OutIt, class _CharT, class _Context, class... _Args>
+[[nodiscard]] _CCCL_HOST_DEVICE_API _OutIt __fmt_write_format_args(
+  _OutIt __out_it, basic_string_view<_CharT> __fmt, const __format_arg_store<_Context, _Args...>& __store)
+{
+  using _ParseCtx = basic_format_parse_context<_CharT>;
+  _ParseCtx __parse_ctx{__fmt, sizeof...(_Args)};
+  auto __ctx = ::cuda::std::__fmt_make_format_context(::cuda::std::move(__out_it), basic_format_args{__store});
+  constexpr __fmt_arg_t __types[] = {
+    ::cuda::std::__fmt_determine_arg_t<_Context, remove_const_t<_Args>>()..., __fmt_arg_t::__none};
+
+  if constexpr (__types[0] != __fmt_arg_t::__none && __types[0] != __fmt_arg_t::__handle)
   {
-    return ::cuda::std::__fmt_vformat_to(basic_format_parse_context{__fmt, __args.__size()},
-                                         ::cuda::std::__fmt_make_format_context(::cuda::std::move(__out_it), __args));
+    if (::cuda::std::__fmt_is_default_field(__fmt))
+    {
+      ::cuda::std::visit_format_arg(__fmt_replacement_field_visitor<_ParseCtx, _Context>{__parse_ctx, __ctx, false},
+                                    basic_format_arg<_Context>{__types[0], __ctx.arg(0).__value_});
+      return __ctx.out();
+    }
+  }
+
+  // A homogeneous pack needs only one alternative of visit_format_arg. Heterogeneous packs share the erased scanner,
+  // keeping the number of device implementations bounded as new combinations of argument types appear.
+  constexpr bool __homogeneous =
+    ((::cuda::std::__fmt_determine_arg_t<_Context, remove_const_t<_Args>>() == __types[0]) && ...);
+  using _KnownType = conditional_t<__homogeneous, integral_constant<__fmt_arg_t, __types[0]>, void>;
+  return ::cuda::std::__fmt_vformat_to<_KnownType>(::cuda::std::move(__parse_ctx), ::cuda::std::move(__ctx));
+}
+
+template <class _OutIt, class _CharT, class _FmtArgs>
+[[nodiscard]] _CCCL_HOST_DEVICE_API _OutIt
+__vformat_to_impl(_OutIt __out_it, basic_string_view<_CharT> __fmt, const _FmtArgs& __args)
+{
+  if constexpr (is_same_v<_OutIt, __back_insert_iterator<__fmt_output_buffer<_CharT>>>)
+  {
+    return ::cuda::std::__fmt_write_format_args(::cuda::std::move(__out_it), __fmt, __args);
   }
   else
   {
     __fmt_buffer_select_t<_OutIt, _CharT> __buffer{::cuda::std::move(__out_it)};
-    (void) ::cuda::std::__fmt_vformat_to(
-      basic_format_parse_context{__fmt, __args.__size()},
-      ::cuda::std::__fmt_make_format_context(__buffer.__make_output_iterator(), __args));
+    (void) ::cuda::std::__fmt_write_format_args(__buffer.__make_output_iterator(), __fmt, __args);
     return ::cuda::std::move(__buffer).__out_it();
   }
 }

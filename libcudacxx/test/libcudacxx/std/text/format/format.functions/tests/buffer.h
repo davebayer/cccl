@@ -112,17 +112,17 @@ TEST_HOST_DEVICE_FUNC void test_buffer_copy()
                SV("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
                   "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")));
 
-  //   assert(check(
-  //     SV("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-  //        "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-  //        "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-  //        "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-  //        "X"),
-  //     SV("{}X"),
-  //     SV("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-  //        "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-  //        "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-  //        "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")));
+  assert(check(
+    SV("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+       "X"),
+    SV("{}X"),
+    SV("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef")));
 
   //   assert(check(
   //     SV("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
@@ -326,14 +326,14 @@ TEST_HOST_DEVICE_FUNC void test_buffer_fill()
                SV("{:|<128}X"),
                SV("")));
 
-  //   assert(check(
-  //     SV("||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
-  //        "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
-  //        "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
-  //        "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
-  //        "X"),
-  //     SV("{:|<256}X"),
-  //     SV("")));
+  assert(check(
+    SV("||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
+       "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
+       "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
+       "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
+       "X"),
+    SV("{:|<256}X"),
+    SV("")));
 
   //   assert(check(
   //     SV("||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
@@ -485,7 +485,7 @@ TEST_HOST_DEVICE_FUNC void test_buffer_optimizations()
   // check(cuda::std::basic_string_view<CharT>{fill + str}, SV("{:*>{}}"), str, minimum + str.size());
 }
 
-TEST_HOST_DEVICE_FUNC void test()
+TEST_HOST_DEVICE_FUNC inline void test()
 {
   test_buffer_copy<char>();
   test_buffer_fill<char>();
@@ -497,6 +497,8 @@ TEST_HOST_DEVICE_FUNC void test()
 #endif // _CCCL_HAS_WCHAR_T()
 }
 
+// Each checker includes this file in a separate test executable.
+// NOLINTNEXTLINE(misc-definitions-in-headers)
 int main(int, char**)
 {
   test();

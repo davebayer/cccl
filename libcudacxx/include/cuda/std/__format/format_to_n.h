@@ -24,8 +24,7 @@
 #include <cuda/std/__cstddef/types.h>
 #include <cuda/std/__format/buffer.h>
 #include <cuda/std/__format/format_args.h>
-#include <cuda/std/__format/format_context.h>
-#include <cuda/std/__format/format_parse_context.h>
+#include <cuda/std/__format/format_string.h> // IWYU pragma: keep
 #include <cuda/std/__format/vformat_to.h>
 #include <cuda/std/__fwd/format.h>
 #include <cuda/std/__iterator/concepts.h>
@@ -68,19 +67,19 @@ public:
 
   [[nodiscard]] _CCCL_HOST_DEVICE_API constexpr format_to_n_result<_OutIt> __result() &&
   {
-    return {static_cast<_Base&&>(*this).__out_it(),
-            static_cast<iter_difference_t<_OutIt>>(__max_output_size_.__code_units_written())};
+    return {
+      static_cast<_Base&&>(*this).__out_it(),
+      static_cast<iter_difference_t<_OutIt>>(__max_output_size_.__code_units_written()),
+    };
   }
 };
 
-template <class _Context, class _OutIt, class _CharT>
+template <class _FmtArgs, class _OutIt, class _CharT>
 [[nodiscard]] _CCCL_HOST_DEVICE_API format_to_n_result<_OutIt> __format_to_n_impl(
-  _OutIt __out_it, iter_difference_t<_OutIt> __n, basic_string_view<_CharT> __fmt, basic_format_args<_Context> __args)
+  _OutIt __out_it, iter_difference_t<_OutIt> __n, basic_string_view<_CharT> __fmt, const _FmtArgs& __args)
 {
   __fmt_format_to_n_buffer<_OutIt, _CharT> __buffer{::cuda::std::move(__out_it), __n};
-  (void) ::cuda::std::__fmt_vformat_to(
-    basic_format_parse_context{__fmt, __args.__size()},
-    ::cuda::std::__fmt_make_format_context(__buffer.__make_output_iterator(), __args));
+  (void) ::cuda::std::__fmt_write_format_args(__buffer.__make_output_iterator(), __fmt, __args);
   return ::cuda::std::move(__buffer).__result();
 }
 
@@ -89,7 +88,7 @@ _CCCL_REQUIRES(output_iterator<_OutIt, const char&>)
 /*discard*/ _CCCL_HOST_DEVICE_API format_to_n_result<_OutIt>
 format_to_n(_OutIt __out_it, iter_difference_t<_OutIt> __n, format_string<_Args...> __fmt, _Args&&... __args)
 {
-  return ::cuda::std::__format_to_n_impl<format_context>(
+  return ::cuda::std::__format_to_n_impl(
     ::cuda::std::move(__out_it), __n, __fmt.get(), ::cuda::std::make_format_args(__args...));
 }
 
@@ -99,7 +98,7 @@ _CCCL_REQUIRES(output_iterator<_OutIt, const wchar_t&>)
 /*discard*/ _CCCL_HOST_DEVICE_API format_to_n_result<_OutIt>
 format_to_n(_OutIt __out_it, iter_difference_t<_OutIt> __n, wformat_string<_Args...> __fmt, _Args&&... __args)
 {
-  return ::cuda::std::__format_to_n_impl<wformat_context>(
+  return ::cuda::std::__format_to_n_impl(
     ::cuda::std::move(__out_it), __n, __fmt.get(), ::cuda::std::make_wformat_args(__args...));
 }
 #endif // _CCCL_HAS_WCHAR_T()

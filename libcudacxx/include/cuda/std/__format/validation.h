@@ -32,57 +32,17 @@
 
 _CCCL_BEGIN_NAMESPACE_CUDA_STD
 
-//! @brief Helper class parse and handle argument.
-//!
-//! When parsing a handle which is not enabled the code is ill-formed.
-//! This helper uses the parser of the appropriate formatter for the stored type.
-template <class _CharT>
-struct __fmt_validation_format_arg_handle
-{
-  void (*__parse_)(basic_format_parse_context<_CharT>&);
-
-  template <class _Tp>
-  _CCCL_HOST_DEVICE_API static constexpr void __formatter_invoker(basic_format_parse_context<_CharT>& __parse_ctx)
-  {
-    formatter<_Tp, _CharT> __f;
-    __parse_ctx.advance_to(__f.parse(__parse_ctx));
-  }
-
-  _CCCL_HOST_DEVICE_API static constexpr void __formatter_invoker_invalid(basic_format_parse_context<_CharT>&)
-  {
-    ::cuda::std::__throw_format_error("Not a handle");
-  }
-
-  template <class _ParseCtx>
-  _CCCL_HOST_DEVICE_API constexpr void __parse(_ParseCtx& __parse_ctx) const
-  {
-    __parse_(__parse_ctx);
-  }
-};
-
-template <class _Context, class _Tp>
-[[nodiscard]] _CCCL_HOST_DEVICE_API constexpr __fmt_validation_format_arg_handle<typename _Context::char_type>
-__fmt_make_validation_format_arg_handle()
-{
-  using _CharT = typename _Context::char_type;
-  if constexpr (::cuda::std::__fmt_determine_arg_t<_Context, _Tp>() == __fmt_arg_t::__handle)
-  {
-    return {__fmt_validation_format_arg_handle<_CharT>::template __formatter_invoker<_Tp>};
-  }
-  else
-  {
-    return {__fmt_validation_format_arg_handle<_CharT>::__formatter_invoker_invalid};
-  }
-}
-
 //! @brief Dummy format_context only providing the parts used during compile-time validation of the basic_format_string.
 template <class _CharT>
 class __fmt_validation_format_context
 {
-  using _FmtArgHandle = __fmt_validation_format_arg_handle<_CharT>;
+public:
+  using __parse_function
+    _CCCL_NODEBUG = void (*)(basic_format_parse_context<_CharT>&, const __fmt_validation_format_context&);
 
+private:
   const __fmt_arg_t* __args_;
-  const _FmtArgHandle* __handles_;
+  const __parse_function* __parsers_;
   size_t __size_;
 
 public:
@@ -107,9 +67,9 @@ public:
   };
 
   _CCCL_HOST_DEVICE_API constexpr explicit __fmt_validation_format_context(
-    const __fmt_arg_t* __args, const _FmtArgHandle* __handles, size_t __size)
+    const __fmt_arg_t* __args, const __parse_function* __parsers, size_t __size)
       : __args_{__args}
-      , __handles_{__handles}
+      , __parsers_{__parsers}
       , __size_{__size}
   {}
 
@@ -122,13 +82,18 @@ public:
     return __args_[__id];
   }
 
-  [[nodiscard]] _CCCL_HOST_DEVICE_API constexpr const _FmtArgHandle& __handle(size_t __id) const
+  _CCCL_HOST_DEVICE_API constexpr void
+  __validate_arg(size_t __id, basic_format_parse_context<_CharT>& __parse_ctx, bool __parse) const
   {
-    if (__id >= __size_)
+    const __fmt_arg_t __type = arg(__id);
+    if (__type == __fmt_arg_t::__none)
     {
       ::cuda::std::__throw_format_error("The argument index value is too large for the number of arguments supplied");
     }
-    return __handles_[__id];
+    if (__parse || __type == __fmt_arg_t::__handle)
+    {
+      __parsers_[__id](__parse_ctx, *this);
+    }
   }
 
   [[nodiscard]] _CCCL_HOST_DEVICE_API constexpr iterator out()
@@ -148,7 +113,7 @@ public:
 // _HasPrecision does the formatter have a precision?
 template <class _CharT, class _Tp, bool _HasPrecision = false>
 _CCCL_HOST_DEVICE_API constexpr void __fmt_validate_format_arg(
-  basic_format_parse_context<_CharT>& __parse_ctx, __fmt_validation_format_context<_CharT>& __ctx)
+  basic_format_parse_context<_CharT>& __parse_ctx, const __fmt_validation_format_context<_CharT>& __ctx)
 {
   // LWG3720 originally allowed "signed or unsigned integer types", however
   // the final version explicitly changed it to "*standard* signed or unsigned
@@ -191,46 +156,55 @@ _CCCL_HOST_DEVICE_API constexpr void __fmt_validate_format_arg(
   }
 }
 
-template <class _CharT>
-_CCCL_HOST_DEVICE_API constexpr void __fmt_validate_visit_format_arg(
-  basic_format_parse_context<_CharT>& __parse_ctx, __fmt_validation_format_context<_CharT>& __ctx, __fmt_arg_t __type)
+template <class _CharT, class _Tp>
+_CCCL_HOST_DEVICE_API constexpr void
+__fmt_validate_handle(basic_format_parse_context<_CharT>& __parse_ctx, const __fmt_validation_format_context<_CharT>&)
 {
-  switch (__type)
+  formatter<_Tp, _CharT> __formatter;
+  __parse_ctx.advance_to(__formatter.parse(__parse_ctx));
+}
+
+// Select the parser when the argument types are known. Several stored types use the same format specification.
+template <class _Context, class _Tp>
+[[nodiscard]] _CCCL_HOST_DEVICE_API constexpr typename _Context::__parse_function
+__fmt_select_validation_parser() noexcept
+{
+  using _CharT          = typename _Context::char_type;
+  constexpr auto __type = ::cuda::std::__fmt_determine_arg_t<_Context, _Tp>();
+  if constexpr (__type == __fmt_arg_t::__none)
   {
-    case __fmt_arg_t::__none:
-      ::cuda::std::__throw_format_error("Invalid argument");
-    case __fmt_arg_t::__boolean:
-      return ::cuda::std::__fmt_validate_format_arg<_CharT, bool>(__parse_ctx, __ctx);
-    case __fmt_arg_t::__char_type:
-      return ::cuda::std::__fmt_validate_format_arg<_CharT, _CharT>(__parse_ctx, __ctx);
-    case __fmt_arg_t::__int:
-      return ::cuda::std::__fmt_validate_format_arg<_CharT, int>(__parse_ctx, __ctx);
-    case __fmt_arg_t::__long_long:
-      return ::cuda::std::__fmt_validate_format_arg<_CharT, long long>(__parse_ctx, __ctx);
-    case __fmt_arg_t::__unsigned:
-      return ::cuda::std::__fmt_validate_format_arg<_CharT, unsigned>(__parse_ctx, __ctx);
-    case __fmt_arg_t::__unsigned_long_long:
-      return ::cuda::std::__fmt_validate_format_arg<_CharT, unsigned long long>(__parse_ctx, __ctx);
-    case __fmt_arg_t::__float:
-      return ::cuda::std::__fmt_validate_format_arg<_CharT, float, true>(__parse_ctx, __ctx);
-    case __fmt_arg_t::__double:
-      return ::cuda::std::__fmt_validate_format_arg<_CharT, double, true>(__parse_ctx, __ctx);
-    case __fmt_arg_t::__long_double:
-#if _CCCL_HAS_LONG_DOUBLE()
-      return ::cuda::std::__fmt_validate_format_arg<_CharT, long double, true>(__parse_ctx, __ctx);
-#else // ^^^ _CCCL_HAS_LONG_DOUBLE() ^^^ / vvv _CCCL_HAS_LONG_DOUBLE() vvv
-      ::cuda::std::__throw_format_error("long double is disabled");
-#endif // ^^^ _CCCL_HAS_LONG_DOUBLE() ^^^
-    case __fmt_arg_t::__const_char_type_ptr:
-      return ::cuda::std::__fmt_validate_format_arg<_CharT, const _CharT*, true>(__parse_ctx, __ctx);
-    case __fmt_arg_t::__string_view:
-      return ::cuda::std::__fmt_validate_format_arg<_CharT, basic_string_view<_CharT>, true>(__parse_ctx, __ctx);
-    case __fmt_arg_t::__ptr:
-      return ::cuda::std::__fmt_validate_format_arg<_CharT, const void*>(__parse_ctx, __ctx);
-    case __fmt_arg_t::__handle:
-      ::cuda::std::__throw_format_error("Handle should use __fmt_validation_format_arg_handle");
-    default:
-      _CCCL_UNREACHABLE();
+    return nullptr;
+  }
+  else if constexpr (__type == __fmt_arg_t::__handle)
+  {
+    return ::cuda::std::__fmt_validate_handle<_CharT, _Tp>;
+  }
+  else if constexpr (__type == __fmt_arg_t::__boolean)
+  {
+    return ::cuda::std::__fmt_validate_format_arg<_CharT, bool>;
+  }
+  else if constexpr (__type == __fmt_arg_t::__char_type)
+  {
+    return ::cuda::std::__fmt_validate_format_arg<_CharT, _CharT>;
+  }
+  else if constexpr (__type == __fmt_arg_t::__ptr)
+  {
+    return ::cuda::std::__fmt_validate_format_arg<_CharT, const void*>;
+  }
+  else if constexpr (__type == __fmt_arg_t::__const_char_type_ptr || __type == __fmt_arg_t::__string_view)
+  {
+    return ::cuda::std::__fmt_validate_format_arg<_CharT, basic_string_view<_CharT>, true>;
+  }
+  else if constexpr (__type == __fmt_arg_t::__float || __type == __fmt_arg_t::__double
+                     || __type == __fmt_arg_t::__long_double)
+  {
+    return ::cuda::std::__fmt_validate_format_arg<_CharT, float, true>;
+  }
+  else
+  {
+    static_assert(__type == __fmt_arg_t::__int || __type == __fmt_arg_t::__unsigned
+                  || __type == __fmt_arg_t::__long_long || __type == __fmt_arg_t::__unsigned_long_long);
+    return ::cuda::std::__fmt_validate_format_arg<_CharT, int>;
   }
 }
 

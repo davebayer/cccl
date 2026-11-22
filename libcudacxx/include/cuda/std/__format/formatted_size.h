@@ -23,10 +23,8 @@
 #include <cuda/std/__cstddef/types.h>
 #include <cuda/std/__format/buffer.h>
 #include <cuda/std/__format/format_args.h>
-#include <cuda/std/__format/format_context.h>
-#include <cuda/std/__format/format_parse_context.h>
 #include <cuda/std/__format/format_string.h> // IWYU pragma: keep
-#include <cuda/std/__fwd/format.h>
+#include <cuda/std/__format/vformat_to.h>
 #include <cuda/std/__utility/move.h>
 #include <cuda/std/string_view>
 
@@ -70,26 +68,24 @@ public:
 };
 
 template <class _CharT, class _FmtArgs>
-[[nodiscard]] _CCCL_HOST_DEVICE_API size_t __formatted_size_impl(basic_string_view<_CharT> __fmt, _FmtArgs __args)
+[[nodiscard]] _CCCL_HOST_DEVICE_API size_t __formatted_size_impl(basic_string_view<_CharT> __fmt, const _FmtArgs& __args)
 {
   __fmt_formatted_size_buffer<_CharT> __buffer;
-  (void) ::cuda::std::__fmt_vformat_to(
-    basic_format_parse_context{__fmt, __args.__size()},
-    ::cuda::std::__fmt_make_format_context(__buffer.__make_output_iterator(), __args));
+  (void) ::cuda::std::__fmt_write_format_args(__buffer.__make_output_iterator(), __fmt, __args);
   return ::cuda::std::move(__buffer).__result();
 }
 
 template <class... _Args>
 [[nodiscard]] _CCCL_HOST_DEVICE_API size_t formatted_size(format_string<_Args...> __fmt, _Args&&... __args)
 {
-  return ::cuda::std::__formatted_size_impl(__fmt.get(), basic_format_args{::cuda::std::make_format_args(__args...)});
+  return ::cuda::std::__formatted_size_impl(__fmt.get(), ::cuda::std::make_format_args(__args...));
 }
 
 #if _CCCL_HAS_WCHAR_T()
 template <class... _Args>
 [[nodiscard]] _CCCL_HOST_DEVICE_API size_t formatted_size(wformat_string<_Args...> __fmt, _Args&&... __args)
 {
-  return ::cuda::std::__formatted_size_impl(__fmt.get(), basic_format_args{::cuda::std::make_wformat_args(__args...)});
+  return ::cuda::std::__formatted_size_impl(__fmt.get(), ::cuda::std::make_wformat_args(__args...));
 }
 #endif // _CCCL_HAS_WCHAR_T()
 

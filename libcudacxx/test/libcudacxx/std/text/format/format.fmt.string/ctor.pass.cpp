@@ -29,6 +29,9 @@ __host__ __device__ void test_constructor()
 {
   [[maybe_unused]] constexpr auto fmt1 = cuda::std::basic_format_string<CharT>{TEST_STRLIT(CharT, "foo")};
   [[maybe_unused]] constexpr auto fmt2 = cuda::std::basic_format_string<CharT, int>{TEST_STRLIT(CharT, "{0:{0}}")};
+
+  using mixed_format = cuda::std::basic_format_string<CharT, unsigned, const CharT*, double>;
+  [[maybe_unused]] constexpr mixed_format fmt3{TEST_STRLIT(CharT, "{2:f} {1:.{0}s} {0:x}")};
 }
 
 __host__ __device__ void test()
