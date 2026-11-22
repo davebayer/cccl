@@ -57,8 +57,8 @@ __fmt_format_char(_Tp __value, _OutIt __out_it, __fmt_parsed_spec<_CharT> __spec
       ::cuda::std::__throw_format_error("Integral value outside the range of the char type");
     }
   }
-  const auto __c = static_cast<_CharT>(__value);
-  return ::cuda::std::__fmt_write(&__c, &__c + 1, ::cuda::std::move(__out_it), __specs);
+  const _CharT __buffer[] = {static_cast<_CharT>(__value)};
+  return ::cuda::std::__fmt_write(__buffer, __buffer + 1, ::cuda::std::move(__out_it), __specs);
 }
 
 //! Helper to determine the buffer size to output an unsigned integer in Base @em x.

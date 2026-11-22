@@ -288,6 +288,9 @@ public:
       __first += __chunk;
       __n -= __chunk;
     } while (__n);
+
+    // A fixed-size buffer may end on a chunk boundary. Keep room for the next push_back.
+    __prepare_write(0);
   }
 
   /// A std::transform wrapper.
@@ -319,6 +322,9 @@ public:
       __first += __chunk;
       __n -= __chunk;
     } while (__n);
+
+    // A fixed-size buffer may end on a chunk boundary. Keep room for the next push_back.
+    __prepare_write(0);
   }
 
   /// A \c fill_n wrapper.
@@ -341,6 +347,9 @@ public:
       __size_ += __chunk;
       __n -= __chunk;
     } while (__n);
+
+    // A fixed-size buffer may end on a chunk boundary. Keep room for the next push_back.
+    __prepare_write(0);
   }
 
   [[nodiscard]] _CCCL_HOST_DEVICE_API constexpr size_t __capacity() const noexcept
