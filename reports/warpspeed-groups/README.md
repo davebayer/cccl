@@ -13,6 +13,19 @@ We compared the original implementation at `4db67c68d9`, the groups implementati
 
 Compared with the groups build immediately before this change, the twelve reductions ranged from 1.77% to 3.71%. At 33,554,432 elements we timed single scans. Aligned u32 was 1.10% faster than the original, and the other five paired median changes were 0.00%. We also sampled aligned scans at 16,384, 262,144 and 4,194,304 elements. All six paired medians improved, with three intervals including zero. [Per-layout times and confidence intervals](scan-short-timings.csv) · [Raw NVBench output and SASS](/tmp/scan-short-latency-bt7qcr5f)
 
+### Applying the same change to the original scan
+
+The original squad-based scan at `4db67c68d9` also checked stage ownership once per phase. Interchanging just those two loops in `clusterInitSync` removes 41 static instructions before the first block barrier in each original kernel (u32 166 → 125, u64 168 → 127). Both still use 88 registers per thread and have zero spills. The instruction sequences after startup match after normalizing register names, branch labels and padding. [Isolated patch against the original](/tmp/original-warpspeed-stages-uegbqd5o/original-scan-barrier-init.patch)
+
+We timed both implementations with both loop orders in one experiment, balancing the four executables' positions and predecessors in each set of four rounds. The table shows the original implementation's paired median latency reductions across the three layouts. All twelve 95% bootstrap intervals favored the interchange over twelve rounds of 192-call graphs.
+
+| Elements | Original u32 latency reduction | Original u64 latency reduction |
+| ---: | ---: | ---: |
+| 65,536 | 3.42–3.45% | 2.80–3.20% |
+| 1,048,576 | 2.40–2.57% | 1.87–1.95% |
+
+With both implementations optimized, the original was still quicker at 65,536 elements. The groups version took 0.34–0.36% longer for u32 across the three layouts, with all three intervals above zero. Its u64 medians were 1.03–1.06% higher, with all intervals spanning zero. At 1,048,576 elements all six paired median differences between optimized implementations were within 0.26%. At 33,554,432 elements, all six within-original intervals included zero over eight rounds of single-scan measurements. [Four-way comparison with confidence intervals](original-interchange-timings.csv) · [Raw timings, disassembly and benchmark scripts](/tmp/warpspeed-original-interchange-bench-6WVuPtWG)
+
 ## Scan register usage before the startup change
 
 The original WarpSpeed kernel used 88 registers per thread for 32-bit and 64-bit integer exclusive sum on SM120a. The groups version used 91 before this fix. In the reduction role, `nvdisasm --print-life-ranges` puts the peak at the last shared-memory loads of the thread's tile fragment. At that point the groups version had 84 general-purpose registers simultaneously live for both types, up from 82. It kept the group-relative rank and shared-memory addresses live alongside the input values.
