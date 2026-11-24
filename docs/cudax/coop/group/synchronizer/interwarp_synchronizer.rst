@@ -38,6 +38,23 @@
   interwarp_synchronizer(Range&&)
     -> interwarp_synchronizer<cuda::std::ranges::views::all_t<Range>>;
 
+  template <cuda::std::size_t... Ids>
+  class interwarp_synchronizer<cuda::std::index_sequence<Ids...>>
+  {
+  public:
+    template <typename Range>
+      requires /* static ID sequence of Range equals Ids... */
+    __device__ explicit constexpr interwarp_synchronizer(const Range&) noexcept;
+
+    template <typename Unit, typename ParentGroup, typename MappingResult>
+    [[nodiscard]] __device__
+    auto make_instance(const Unit&, const ParentGroup&, const MappingResult&) const;
+  };
+
+  template <typename Range>
+  interwarp_synchronizer(const Range&)
+    -> interwarp_synchronizer</* static ID sequence of Range */>;
+
   } // namespace cuda::experimental::coop
 
 Overview
@@ -46,6 +63,10 @@ Overview
 ``cuda::experimental::coop::interwarp_synchronizer`` is a synchronizer that uses one of the 16 built-in warp barriers to synchronize the group. The type is constructible from a range of barrier IDs, which are sequentially assigned to each of the created groups during the synchronizer instance creation. It can only be used with groups that group warps within the block level.
 
 Users should always rely on template argument deduction and never set the template arguments themselves. All of the barrier IDs must be less than ``16`` and can't be repeated multiple times.
+
+A ``cuda::std::integer_sequence`` supplies the IDs at compile time. In C++20, ``cuda::std::cw<ids>`` can also wrap a sized, forward, constexpr range of IDs.
+Supply at least one ID per group. The ID at index ``N`` belongs to group rank ``N``. When the rank is statically known, including inside a ``by_group_rank`` dispatch with a static group count,
+the synchronizer encodes that ID in its instance type. This allows the barrier instruction to use an immediate ID.
 
 .. warning:: The barrier ID ``0`` is also used by the ``__syncthreads()`` operation. It is recommended to avoid this barrier ID and start from barrier ID ``1`` instead.
 
@@ -56,6 +77,7 @@ Examples
 
   #include <cuda/std/array>
   #include <cuda/std/ranges>
+  #include <cuda/std/utility>
 
   #include <cuda/experimental/coop/group>
 
@@ -69,4 +91,7 @@ Examples
 
     // Interwarp synchronizer from an infinite iota range.
     const cudax::coop::interwarp_synchronizer s2{cuda::std::ranges::views::iota(1)};
+
+    // Compile-time IDs for groups of ranks 0 and 1.
+    const cudax::coop::interwarp_synchronizer s3{cuda::std::index_sequence<1, 2>{}};
   }

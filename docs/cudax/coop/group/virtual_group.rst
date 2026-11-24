@@ -7,7 +7,8 @@
 
   namespace cuda::experimental::coop {
 
-  template <typename Unit, typename ParentGroup, typename MappingResult>
+  template <typename Unit, typename ParentGroup, typename MappingResult,
+            typename SynchronizerInstance = /*synchronizer-instance-of*/<ParentGroup>>
   class virtual_group : public /*group-interface-for*/<virtual_group>
   {
   public:
@@ -34,8 +35,9 @@
     requires /*unit-same-as-or-below*/<Unit, typename ParentGroup::unit_level>
   virtual_group(const Unit&, const ParentGroup&, Mapping&&)
     -> virtual_group<Unit,
-                      ParentGroup,
-                      /*mapping-result-of*/<Unit, ParentGroup, Mapping>>;
+                     /*viewed-group-of*/<ParentGroup>,
+                     /*mapping-result-of*/<Unit, ParentGroup, Mapping>,
+                     /*synchronizer-instance-of*/<ParentGroup>>;
 
   } // namespace cuda::experimental::coop
 
@@ -47,6 +49,8 @@ Overview
 Because of this limitation, a virtual group doesn't support optional participation in the group. If the input mapping outputs a unit without a valid mapping result, the behaviour is undefined.
 
 The parent group and its synchronization resources must outlive all uses of the virtual group.
+If the parent is a rank-specific view, its virtual subgroups share the synchronizer instance selected
+for that parent rank.
 
 The type can be constructed by specifying what is being grouped (``unit``) within what (``parent_group``) and how (``mapping``). The type is not copyable, movable, or assignable. The user should always use deduction guides to deduce the template parameters.
 

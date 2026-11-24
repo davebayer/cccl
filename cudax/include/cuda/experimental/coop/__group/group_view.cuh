@@ -24,8 +24,11 @@
 #include <cuda/hierarchy>
 #include <cuda/std/__concepts/concept_macros.h>
 #include <cuda/std/__cstddef/types.h>
+#include <cuda/std/__fwd/span.h>
 #include <cuda/std/__type_traits/is_integer.h>
 #include <cuda/std/__type_traits/is_same.h>
+#include <cuda/std/__type_traits/remove_cv.h>
+#include <cuda/std/__type_traits/void_t.h>
 #include <cuda/std/__utility/declval.h>
 #include <cuda/std/__utility/forward.h>
 #include <cuda/std/__utility/integer_sequence.h>
@@ -121,6 +124,49 @@ template <class _Unit, class _Group>
 using __group_view_mapping_result_t _CCCL_NODEBUG =
   decltype(::cuda::experimental::coop::__do_group_view_mapping(_Unit{}, ::cuda::std::declval<_Group>()));
 
+template <class _MappingResult, class _Source>
+using __rank_synchronizer_t _CCCL_NODEBUG =
+  decltype(::cuda::std::declval<const typename _Source::__synchronizer_instance_type&>()
+             .template specialize<_MappingResult::static_group_rank()>());
+
+template <class _Group, class = void>
+inline constexpr bool __can_specialize_group_synchronizer_v = true;
+template <class _Group>
+inline constexpr bool
+  __can_specialize_group_synchronizer_v<_Group, ::cuda::std::void_t<decltype(_Group::__can_specialize_synchronizer)>> =
+    _Group::__can_specialize_synchronizer;
+
+template <class _MappingResult,
+          class _Source,
+          bool  = _MappingResult::static_group_rank() != ::cuda::std::dynamic_extent
+               && __can_specialize_group_synchronizer_v<_Source>,
+          class = void>
+struct __group_view_synchronizer
+{
+  using type _CCCL_NODEBUG = typename _Source::__synchronizer_instance_type;
+
+  [[nodiscard]] _CCCL_DEVICE_API static type __get(const _Source& __source)
+  {
+    return __source.__synchronizer_instance();
+  }
+};
+
+template <class _MappingResult, class _Source>
+struct __group_view_synchronizer<_MappingResult,
+                                 _Source,
+                                 true,
+                                 ::cuda::std::void_t<__rank_synchronizer_t<_MappingResult, _Source>>>
+{
+  using type _CCCL_NODEBUG = ::cuda::std::remove_cv_t<__rank_synchronizer_t<_MappingResult, _Source>>;
+  static_assert(::cuda::std::is_same_v<typename _Source::arrival_token, typename type::arrival_token>,
+                "specialized synchronizers must preserve the arrival token type");
+
+  [[nodiscard]] _CCCL_DEVICE_API static type __get(const _Source& __source)
+  {
+    return __source.__synchronizer_instance().template specialize<_MappingResult::static_group_rank()>();
+  }
+};
+
 template <class _Unit, class _Group, class _MappingResult>
 class group_view
 {
@@ -131,7 +177,7 @@ class group_view
   static_assert(__unit_same_as_or_below_v<_Unit, typename _Group::unit_level>,
                 "unit_level must be same as or below the _Group's unit_level");
 
-  using _SynchronizerInstance _CCCL_NODEBUG = typename _Group::__synchronizer_instance_type;
+  using _SynchronizerInstance _CCCL_NODEBUG = typename __group_view_synchronizer<_MappingResult, _Group>::type;
   static_assert(__group_mapping_result<_MappingResult>);
 
   typename _Group::hierarchy_type __hier_;
@@ -145,6 +191,10 @@ public:
   using __mapping_result_type _CCCL_NODEBUG        = _MappingResult;
   using __synchronizer_instance_type _CCCL_NODEBUG = _SynchronizerInstance;
   using arrival_token                              = typename _Group::arrival_token;
+
+  // A view with a known rank already holds the instance selected for that rank.
+  static constexpr bool __can_specialize_synchronizer =
+    __can_specialize_group_synchronizer_v<_Group> && _MappingResult::static_group_rank() == ::cuda::std::dynamic_extent;
 
   group_view() = delete;
 
@@ -161,13 +211,13 @@ public:
   _CCCL_DEVICE_API group_view(const _Group& __group _CCCL_LIFETIMEBOUND)
       : __hier_{__group.hierarchy()}
       , __mapping_result_{::cuda::experimental::coop::__do_group_view_mapping(_Unit{}, __group)}
-      , __synchronizer_instance_{__group.__synchronizer_instance()}
+      , __synchronizer_instance_{__group_view_synchronizer<_MappingResult, _Group>::__get(__group)}
   {}
 
   _CCCL_DEVICE_API explicit group_view(const _Unit& __unit, const _Group& __group _CCCL_LIFETIMEBOUND)
       : __hier_{__group.hierarchy()}
       , __mapping_result_{::cuda::experimental::coop::__do_group_view_mapping(__unit, __group)}
-      , __synchronizer_instance_{__group.__synchronizer_instance()}
+      , __synchronizer_instance_{__group_view_synchronizer<_MappingResult, _Group>::__get(__group)}
   {}
 
   _CCCL_TEMPLATE(class _OtherUnit, class _OtherMappingResult)
@@ -186,7 +236,7 @@ public:
     const __private_tag&, const _Group& __group _CCCL_LIFETIMEBOUND, const _MappingResult& __mapping_result)
       : __hier_{__group.hierarchy()}
       , __mapping_result_{__mapping_result}
-      , __synchronizer_instance_{__group.__synchronizer_instance()}
+      , __synchronizer_instance_{__group_view_synchronizer<_MappingResult, _Group>::__get(__group)}
   {}
 
   // Internal constructor for dispatch views with a specialized mapping result.
@@ -197,7 +247,8 @@ public:
                                        const _MappingResult& __mapping_result)
       : __hier_{__group.hierarchy()}
       , __mapping_result_{__mapping_result}
-      , __synchronizer_instance_{__group.__synchronizer_instance()}
+      , __synchronizer_instance_{
+          __group_view_synchronizer<_MappingResult, group_view<_OtherUnit, _Group, _OtherMappingResult>>::__get(__group)}
   {}
 
   template <class _Fn>

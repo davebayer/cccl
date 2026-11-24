@@ -37,6 +37,20 @@ Where:
 
 Every synchronizer instance must be trivially copyable and destructible. The object can be copied multiple times, but it is guaranteed to be destroyed only once by calling the ``.deinit(...)`` method with the same parameters it was constructed with by the synchronizer object.
 
+Rank-specific synchronizer instances
+-----------------------------------
+
+An instance can optionally provide a const member function template ``specialize<N>()``, where ``N`` is
+the rank of the group for which the instance was created. When a view knows this rank at compile time,
+for example inside a ``dispatch(by_group_rank, fn)`` callback, it uses ``instance.template specialize<N>()``
+if that expression is available. Otherwise the view copies the existing instance.
+
+The function returns a trivially copyable and trivially destructible instance by value. It must refer to
+the same synchronization resource, support the same synchronization operations, and have the same
+``arrival_token`` type. For example, the original group can call ``arrive()`` and the view can wait on
+that token. The owning group calls ``deinit`` once on the original instance. Copies, changes of view
+unit, and virtual subgroups preserve the selected synchronization resource.
+
 Group Synchronizer Instantiation Process
 ----------------------------------------
 

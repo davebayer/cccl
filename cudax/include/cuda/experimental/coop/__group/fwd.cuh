@@ -66,7 +66,10 @@ class this_grid;
 template <class _Unit, class _ParentGroup, class _MappingResult, class _SynchronizerInstance>
 class generic_group;
 
-template <class _Unit, class _ParentGroup, class _MappingResult>
+template <class _Unit,
+          class _ParentGroup,
+          class _MappingResult,
+          class _SynchronizerInstance = typename _ParentGroup::__synchronizer_instance_type>
 class virtual_group;
 
 template <class _Hierarchy>

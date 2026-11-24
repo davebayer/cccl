@@ -115,7 +115,7 @@ template <class... _Args>
 using __group_mapping_result_t _CCCL_NODEBUG =
   decltype(::cuda::experimental::coop::__do_group_mapping(::cuda::std::declval<_Args>()...));
 
-template <class _Unit, class _ParentGroup, class _MappingResult>
+template <class _Unit, class _ParentGroup, class _MappingResult, class _SynchronizerInstance>
 class virtual_group
 {
   static_assert(__is_hierarchy_level_v<_Unit>);
@@ -125,9 +125,8 @@ class virtual_group
   static_assert(__unit_same_as_or_below_v<_Unit, typename _ParentGroup::unit_level>,
                 "unit_level must be same as or below _ParentGroup's unit_level");
 
-  using _Hierarchy _CCCL_NODEBUG            = typename _ParentGroup::hierarchy_type;
-  using _ParentMappingResult _CCCL_NODEBUG  = typename _ParentGroup::__mapping_result_type;
-  using _SynchronizerInstance _CCCL_NODEBUG = typename _ParentGroup::__synchronizer_instance_type;
+  using _Hierarchy _CCCL_NODEBUG           = typename _ParentGroup::hierarchy_type;
+  using _ParentMappingResult _CCCL_NODEBUG = typename _ParentGroup::__mapping_result_type;
   static_assert(__group_mapping_result<_MappingResult>);
 
   _Hierarchy __hier_;
@@ -142,8 +141,13 @@ public:
   using __synchronizer_instance_type _CCCL_NODEBUG = _SynchronizerInstance;
   using arrival_token                              = typename _ParentGroup::arrival_token;
 
+  // A virtual group's local rank has no bearing on its parent's synchronization resource.
+  static constexpr bool __can_specialize_synchronizer = false;
+
   _CCCL_TEMPLATE(class _Mapping)
-  _CCCL_REQUIRES(::cuda::std::is_same_v<_MappingResult, __group_mapping_result_t<_Unit, _ParentGroup, _Mapping>>)
+  _CCCL_REQUIRES(
+    ::cuda::std::is_same_v<_MappingResult, __group_mapping_result_t<_Unit, _ParentGroup, _Mapping>>
+      _CCCL_AND ::cuda::std::is_same_v<_SynchronizerInstance, typename _ParentGroup::__synchronizer_instance_type>)
   _CCCL_DEVICE_API explicit virtual_group(
     const _Unit& __unit, const _ParentGroup& __parent _CCCL_LIFETIMEBOUND, _Mapping&& __mapping)
       : __hier_{__parent.hierarchy()}
@@ -154,10 +158,13 @@ public:
     _CCCL_ASSERT(__mapping_result_.is_valid(), "virtual_group requires all units to be part of the group");
   }
 
-  _CCCL_TEMPLATE(class _ParentUnit, class _ParentMappingResult, class _Mapping)
-  _CCCL_REQUIRES(::cuda::std::is_same_v<
-                 _MappingResult,
-                 __group_mapping_result_t<_Unit, group_view<_ParentUnit, _ParentGroup, _ParentMappingResult>, _Mapping>>)
+  _CCCL_TEMPLATE(class _ParentUnit,
+                 class _ParentMappingResult,
+                 class _Mapping,
+                 class _ParentView = group_view<_ParentUnit, _ParentGroup, _ParentMappingResult>)
+  _CCCL_REQUIRES(
+    ::cuda::std::is_same_v<_MappingResult, __group_mapping_result_t<_Unit, _ParentView, _Mapping>>
+      _CCCL_AND ::cuda::std::is_same_v<_SynchronizerInstance, typename _ParentView::__synchronizer_instance_type>)
   _CCCL_DEVICE_API explicit virtual_group(const _Unit& __unit,
                                           const group_view<_ParentUnit, _ParentGroup, _ParentMappingResult>& __parent,
                                           _Mapping&& __mapping)
@@ -315,12 +322,12 @@ _CCCL_TEMPLATE(class _Unit,
                class _ParentGroup,
                class _ParentMappingResult,
                class _Mapping,
-               class _MappingResult =
-                 __group_mapping_result_t<_Unit, group_view<_ParentUnit, _ParentGroup, _ParentMappingResult>, _Mapping>)
+               class _ParentView    = group_view<_ParentUnit, _ParentGroup, _ParentMappingResult>,
+               class _MappingResult = __group_mapping_result_t<_Unit, _ParentView, _Mapping>)
 _CCCL_REQUIRES(__is_hierarchy_level_v<_Unit> _CCCL_AND __unit_same_as_or_below_v<_Unit, _ParentUnit>)
 _CCCL_DEDUCTION_GUIDE_ATTRIBUTES
 virtual_group(const _Unit&, const group_view<_ParentUnit, _ParentGroup, _ParentMappingResult>&, _Mapping&&)
-  -> virtual_group<_Unit, _ParentGroup, _MappingResult>;
+  -> virtual_group<_Unit, _ParentGroup, _MappingResult, typename _ParentView::__synchronizer_instance_type>;
 } // namespace cuda::experimental::coop
 
 #endif // !_CCCL_DOXYGEN_INVOKED
