@@ -15,7 +15,6 @@
 #include <cub/detail/iket_support.cuh>
 #include <cub/detail/warpspeed/allocators/smem_allocator.cuh>
 #include <cub/detail/warpspeed/constant_assert.cuh>
-#include <cub/detail/warpspeed/squad/squad_desc.cuh>
 #include <cub/detail/warpspeed/sync_handler.cuh>
 
 #include <cuda/__ptx/instructions/fence.h>
@@ -66,45 +65,14 @@ struct SmemResourceRaw
     }
   }
 
-  template <int NumSquads>
   _CCCL_HOST_DEVICE_API constexpr void
-  addPhase(SyncHandler& syncHandler, ::cuda::std::uint64_t* ptrBarrier, const SquadDesc (&squads)[NumSquads])
+  addPhase(SyncHandler& syncHandler, SmemAllocator& smemAllocator, int numOwningThreads)
   {
-    const int numOwningThreads = _CUB::detail::warpspeed::squadCountThreads(squads);
-
-    const int curPhase = mNumPhases;
-    mNumPhases++;
-
-    syncHandler.registerPhase(mResourceHandle, numOwningThreads, ptrBarrier);
-    mPtrBar[curPhase] = ptrBarrier;
-  }
-
-  template <int NumSquads>
-  _CCCL_HOST_DEVICE_API constexpr void
-  addPhase(SyncHandler& syncHandler, SmemAllocator& smemAllocator, const SquadDesc (&squads)[NumSquads])
-  {
-    void* ptrBar_raw = smemAllocator.alloc(mStageCount * sizeof(::cuda::std::uint64_t), alignof(::cuda::std::uint64_t));
-    // we don't need the pointer during constant evaluation (and casting is not allowed)
-    ::cuda::std::uint64_t* ptrBar = nullptr;
-    if (!::cuda::std::is_constant_evaluated())
-    {
-      ptrBar = static_cast<::cuda::std::uint64_t*>(ptrBar_raw);
-    }
-    addPhase(syncHandler, ptrBar, squads);
-  }
-
-  _CCCL_HOST_DEVICE_API void
-  addPhase(SyncHandler& syncHandler, ::cuda::std::uint64_t* ptrBarrier, const SquadDesc& squad)
-  {
-    const SquadDesc squads[] = {squad};
-    addPhase(syncHandler, ptrBarrier, squads);
-  }
-
-  _CCCL_HOST_DEVICE_API constexpr void
-  addPhase(SyncHandler& syncHandler, SmemAllocator& smemAllocator, const SquadDesc& squad)
-  {
-    const SquadDesc squads[] = {squad};
-    addPhase(syncHandler, smemAllocator, squads);
+    void* storage = smemAllocator.alloc(mStageCount * sizeof(::cuda::std::uint64_t), alignof(::cuda::std::uint64_t));
+    // Constant evaluation only computes the shared-memory footprint.
+    auto* barrier = ::cuda::std::is_constant_evaluated() ? nullptr : static_cast<::cuda::std::uint64_t*>(storage);
+    syncHandler.registerPhase(mResourceHandle, numOwningThreads, barrier);
+    mPtrBar[mNumPhases++] = barrier;
   }
 
   _CCCL_DEVICE_API void incrementStage()

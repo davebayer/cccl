@@ -101,23 +101,27 @@ exclude = [".venv", "build", ".cache", ".pytest_cache", "**/__pycache__"]
 
 [tool.scikit-build.sdist.force-include]
 "../../cub/cub" = "_cccl/cub/cub"
+"../../cudax/include/cuda" = "_cccl/cudax/include/cuda"
 "../../thrust/thrust" = "_cccl/thrust/thrust"
 "../../libcudacxx/include/cuda" = "_cccl/libcudacxx/include/cuda"
 "../../libcudacxx/include/nv" = "_cccl/libcudacxx/include/nv"
 "../../lib/cmake/cccl" = "_cccl/lib/cmake/cccl"
 "../../lib/cmake/cub" = "_cccl/lib/cmake/cub"
+"../../lib/cmake/cudax" = "_cccl/lib/cmake/cudax"
 "../../lib/cmake/libcudacxx" = "_cccl/lib/cmake/libcudacxx"
 "../../lib/cmake/thrust" = "_cccl/lib/cmake/thrust"
 "../../cmake/CCCLInstallRules.cmake" = "_cccl/cmake/CCCLInstallRules.cmake"
 "../../cmake/install" = "_cccl/cmake/install"
 "../../LICENSE" = "_cccl/LICENSE"
 "../../cub/LICENSE.TXT" = "_cccl/cub/LICENSE.TXT"
+"../../cudax/LICENSE.TXT" = "_cccl/cudax/LICENSE.TXT"
 "../../libcudacxx/LICENSE.TXT" = "_cccl/libcudacxx/LICENSE.TXT"
 "../../thrust/LICENSE" = "_cccl/thrust/LICENSE"
 
 [tool.scikit-build.wheel.force-include]
 "_cccl/LICENSE" = "${SKBUILD_METADATA_DIR}/licenses/LICENSE"
 "_cccl/cub/LICENSE.TXT" = "${SKBUILD_METADATA_DIR}/licenses/cub/LICENSE.TXT"
+"_cccl/cudax/LICENSE.TXT" = "${SKBUILD_METADATA_DIR}/licenses/cudax/LICENSE.TXT"
 "_cccl/libcudacxx/LICENSE.TXT" = "${SKBUILD_METADATA_DIR}/licenses/libcudacxx/LICENSE.TXT"
 "_cccl/thrust/LICENSE" = "${SKBUILD_METADATA_DIR}/licenses/thrust/LICENSE"
 

@@ -14,7 +14,6 @@
 
 #include <cub/detail/iket_support.cuh>
 #include <cub/detail/warpspeed/resource/smem_ref.cuh>
-#include <cub/detail/warpspeed/squad/squad.cuh>
 
 #include <cuda/__memory/align_down.h>
 #include <cuda/__memory/align_up.h>
@@ -22,11 +21,14 @@
 #include <cuda/__ptx/instructions/cp_async_bulk.h>
 #include <cuda/__ptx/instructions/cp_async_bulk_commit_group.h>
 #include <cuda/__ptx/instructions/cp_async_bulk_wait_group.h>
-#include <cuda/__ptx/instructions/elect_sync.h>
 #include <cuda/__ptx/instructions/fence.h>
+#include <cuda/hierarchy>
 #include <cuda/std/__cstddef/byte.h>
 #include <cuda/std/__type_traits/conditional.h>
 #include <cuda/std/cstdint>
+
+#include <cuda/experimental/coop/__algorithm/invoke_one.cuh>
+#include <cuda/experimental/coop/__group/this_group.cuh>
 
 #include <nv/target>
 
@@ -110,8 +112,8 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE CpAsyncOobInfo<Tp> prepareCpAsyncOob(Tp* ptrG
   };
 }
 
-template <typename ResourceTp, typename Tp>
-_CCCL_DEVICE_API void squadLoadBulk(Squad squad, SmemRef<ResourceTp>& refDestSmem, CpAsyncOobInfo<Tp> cpAsyncOobInfo)
+template <class Group, typename ResourceTp, typename Tp>
+_CCCL_DEVICE_API void load_bulk(const Group& group, SmemRef<ResourceTp>& refDestSmem, CpAsyncOobInfo<Tp> cpAsyncOobInfo)
 {
   _CCCL_IKET_RANGE_PUSH(LoadBulk);
   ::cuda::std::byte* ptrSmem = refDestSmem.data().inout;
@@ -121,8 +123,7 @@ _CCCL_DEVICE_API void squadLoadBulk(Squad squad, SmemRef<ResourceTp>& refDestSme
   if constexpr (alignof(Tp) >= 16)
   {
     // for alignments larger than 16, we can just bulk copy, even just a single element
-    if (squad.isLeaderThread())
-    {
+    const auto bytes = ::cuda::experimental::coop::invoke_one(group, [&] {
       ::cuda::ptx::cp_async_bulk(
         ::cuda::std::conditional_t<__cccl_ptx_isa >= 860, ::cuda::ptx::space_shared_t, ::cuda::ptx::space_cluster_t>{},
         ::cuda::ptx::space_global,
@@ -130,15 +131,15 @@ _CCCL_DEVICE_API void squadLoadBulk(Squad squad, SmemRef<ResourceTp>& refDestSme
         cpAsyncOobInfo.ptrGmem,
         cpAsyncOobInfo.origCopySizeBytes,
         ptrBar);
-    }
-    refDestSmem.squadIncreaseTxCount(squad, cpAsyncOobInfo.underCopySizeBytes);
+      return cpAsyncOobInfo.underCopySizeBytes;
+    });
+    refDestSmem.increase_tx_count(static_cast<int>(bytes.value_or(0)));
   }
   else
   {
     // for alignments smaller than 16, we can overcopy but need to declare the ignored bytes left and right
 #  if __cccl_ptx_isa >= 920
-    if (squad.isLeaderThread())
-    {
+    const auto bytes = ::cuda::experimental::coop::invoke_one(group, [&] {
       ::cuda::ptx::cp_async_bulk_ignore_oob(
         ::cuda::ptx::space_shared,
         ::cuda::ptx::space_global,
@@ -148,20 +149,22 @@ _CCCL_DEVICE_API void squadLoadBulk(Squad squad, SmemRef<ResourceTp>& refDestSme
         /* ignore left */ cpAsyncOobInfo.smemStartSkipBytes,
         /* ignore right */ cpAsyncOobInfo.ptrGmemEndAlignUp - cpAsyncOobInfo.ptrGmemEnd,
         ptrBar);
-    }
-    refDestSmem.squadIncreaseTxCount(squad, cpAsyncOobInfo.overCopySizeBytes);
+      return cpAsyncOobInfo.overCopySizeBytes;
+    });
+    refDestSmem.increase_tx_count(static_cast<int>(bytes.value_or(0)));
 #  else // __cccl_ptx_isa >= 920
     // if we don't have cp_async_bulk_ignore_oob, we have to undercopy and copy head and tail elements manually
 
+    const int rank = ::cuda::gpu_thread.rank_as<int>(group);
     // handle small copies first. If we have less than 16 bytes we may not straddle a 16B boundary
     if (cpAsyncOobInfo.origCopySizeBytes < 16)
     {
       const auto elemCount = cpAsyncOobInfo.origCopySizeBytes / sizeof(Tp);
-      _CCCL_ASSERT(elemCount <= squad.threadCount(), "");
-      if (squad.threadRank() < elemCount)
+      _CCCL_ASSERT(elemCount <= ::cuda::gpu_thread.count_as<int>(group), "");
+      if (rank < elemCount)
       {
-        reinterpret_cast<Tp*>(ptrSmem + cpAsyncOobInfo.smemStartSkipBytes)[squad.threadRank()] =
-          reinterpret_cast<const Tp*>(cpAsyncOobInfo.ptrGmem)[squad.threadRank()];
+        reinterpret_cast<Tp*>(ptrSmem + cpAsyncOobInfo.smemStartSkipBytes)[rank] =
+          reinterpret_cast<const Tp*>(cpAsyncOobInfo.ptrGmem)[rank];
       }
       _CCCL_IKET_RANGE_POP();
       return; // no bulk copy has been performed so we don't need to update the tx count of any barrier
@@ -178,8 +181,7 @@ _CCCL_DEVICE_API void squadLoadBulk(Squad squad, SmemRef<ResourceTp>& refDestSme
     }
 
     // TODO(bgruber): we could skip the middle if underCopySizeBytes is zero
-    if (squad.isLeaderThread())
-    {
+    const auto bytes = ::cuda::experimental::coop::invoke_one(group, [&] {
       ::cuda::ptx::cp_async_bulk(
         ::cuda::std::conditional_t<__cccl_ptx_isa >= 860, ::cuda::ptx::space_shared_t, ::cuda::ptx::space_cluster_t>{},
         ::cuda::ptx::space_global,
@@ -187,43 +189,44 @@ _CCCL_DEVICE_API void squadLoadBulk(Squad squad, SmemRef<ResourceTp>& refDestSme
         cpAsyncOobInfo.ptrGmemStartAlignUp,
         cpAsyncOobInfo.underCopySizeBytes,
         ptrBar);
-    }
-    refDestSmem.squadIncreaseTxCount(squad, cpAsyncOobInfo.underCopySizeBytes);
+      return cpAsyncOobInfo.underCopySizeBytes;
+    });
+    refDestSmem.increase_tx_count(static_cast<int>(bytes.value_or(0)));
 
     // we cannot use Tp to load the head and tail elements, because sizeof(Tp) may be larger than alignof(Tp)
     using load_word_t = ::cuda::std::__make_nbit_uint_t<alignof(Tp) * CHAR_BIT>;
 
     const int head_elements = (cpAsyncOobInfo.ptrGmemStartAlignUp - cpAsyncOobInfo.ptrGmem) / sizeof(load_word_t);
     const int tail_elements = (cpAsyncOobInfo.ptrGmemEnd - cpAsyncOobInfo.ptrGmemEndAlignDown) / sizeof(load_word_t);
-    _CCCL_ASSERT(head_elements <= squad.threadCount(), "");
-    _CCCL_ASSERT(tail_elements <= squad.threadCount(), "");
+    _CCCL_ASSERT(head_elements <= ::cuda::gpu_thread.count_as<int>(group), "");
+    _CCCL_ASSERT(tail_elements <= ::cuda::gpu_thread.count_as<int>(group), "");
     load_word_t head_value;
     load_word_t tail_value;
-    if (squad.threadRank() < head_elements)
+    if (rank < head_elements)
     {
-      head_value = reinterpret_cast<const load_word_t*>(cpAsyncOobInfo.ptrGmem)[squad.threadRank()];
+      head_value = reinterpret_cast<const load_word_t*>(cpAsyncOobInfo.ptrGmem)[rank];
     }
-    if (squad.threadRank() < tail_elements)
+    if (rank < tail_elements)
     {
-      tail_value = reinterpret_cast<const load_word_t*>(cpAsyncOobInfo.ptrGmemEndAlignDown)[squad.threadRank()];
+      tail_value = reinterpret_cast<const load_word_t*>(cpAsyncOobInfo.ptrGmemEndAlignDown)[rank];
     }
 
-    if (squad.threadRank() < head_elements)
+    if (rank < head_elements)
     {
-      reinterpret_cast<load_word_t*>(ptrSmem + cpAsyncOobInfo.smemStartSkipBytes)[squad.threadRank()] = head_value;
+      reinterpret_cast<load_word_t*>(ptrSmem + cpAsyncOobInfo.smemStartSkipBytes)[rank] = head_value;
     }
-    if (squad.threadRank() < tail_elements)
+    if (rank < tail_elements)
     {
-      reinterpret_cast<load_word_t*>(ptrSmemMiddle + cpAsyncOobInfo.underCopySizeBytes)[squad.threadRank()] =
-        tail_value;
+      reinterpret_cast<load_word_t*>(ptrSmemMiddle + cpAsyncOobInfo.underCopySizeBytes)[rank] = tail_value;
     }
 #  endif // __cccl_ptx_isa >= 920
   }
   _CCCL_IKET_RANGE_POP();
 }
 
-_CCCL_DEVICE_API _CCCL_FORCEINLINE void squadStoreMasked16B(
-  Squad squad,
+template <class Warp>
+_CCCL_DEVICE_API _CCCL_FORCEINLINE void store_masked_16b(
+  const Warp& warp,
   ::cuda::std::byte* dstGmem,
   const ::cuda::std::byte* srcSmem,
   ::cuda::std::uint16_t byteMask,
@@ -232,12 +235,14 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void squadStoreMasked16B(
 {
   NV_IF_ELSE_TARGET(
     NV_PROVIDES_SM_100,
-    (if (::cuda::ptx::elect_sync(~0)) {
-      ::cuda::ptx::cp_async_bulk_cp_mask(
-        ::cuda::ptx::space_global, ::cuda::ptx::space_shared, dstGmem, srcSmem, /*size*/ 16, byteMask);
-    }),
+    (::cuda::experimental::coop::invoke_one(
+       warp,
+       [&] {
+         ::cuda::ptx::cp_async_bulk_cp_mask(
+           ::cuda::ptx::space_global, ::cuda::ptx::space_shared, dstGmem, srcSmem, /*size*/ 16, byteMask);
+       });),
     ({
-      const int rank = squad.threadRank();
+      const int rank = ::cuda::gpu_thread.rank_as<int>(warp);
       if (firstByte <= rank && rank < lastByte)
       {
         dstGmem[rank] = srcSmem[rank];
@@ -245,9 +250,9 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void squadStoreMasked16B(
     }));
 }
 
-template <typename OutputT>
+template <class Group, typename OutputT>
 _CCCL_DEVICE_API void
-squadStoreBulkSync(Squad squad, CpAsyncOobInfo<OutputT> cpAsyncOobInfo, const ::cuda::std::byte* srcSmem)
+store_bulk_sync(const Group& group, CpAsyncOobInfo<OutputT> cpAsyncOobInfo, const ::cuda::std::byte* srcSmem)
 {
   // This function performs either 1 copy, or three copies, depending on the
   // size and alignment of the output tile in global memory.
@@ -260,8 +265,9 @@ squadStoreBulkSync(Squad squad, CpAsyncOobInfo<OutputT> cpAsyncOobInfo, const ::
   // - One copy for the first up to 15 bytes at the start of the region.
   // - One copy that starts at a 16-byte aligned address and ends at the latest 16-byte aligned address.
   // - One copy that cleans up the last up to 15 bytes.
-  if (squad.isLeaderWarp())
+  if (::cuda::warp.is_root_rank(group))
   {
+    const ::cuda::experimental::coop::this_warp<typename Group::hierarchy_type> warp{group.hierarchy()};
     _CCCL_IKET_RANGE_PUSH(StoreBulk);
 
     // Acquire shared memory in async proxy
@@ -303,9 +309,8 @@ squadStoreBulkSync(Squad squad, CpAsyncOobInfo<OutputT> cpAsyncOobInfo, const ::
       // Copy the middle part. Starting at byte 0 or 16 in shared memory. This
       // is the large copy. We perform this one first, so that the compiler can
       // (hopefully) hide all the arithmetic behind this instruction.
-      if (::cuda::ptx::elect_sync(~0))
-      {
-        // need to work around another optimizer bug, see: https://github.com/NVIDIA/cccl/issues/8644
+      ::cuda::experimental::coop::invoke_one(warp, [&] {
+      // need to work around another optimizer bug, see: https://github.com/NVIDIA/cccl/issues/8644
 #  if _CCCL_CUDA_COMPILER(NVCC, <, 13, 3)
         asm volatile("" : "+l"(cpAsyncOobInfo.ptrGmemStartAlignUp));
 #  endif // _CCCL_CUDA_COMPILER(NVCC, <, 13, 3)
@@ -315,7 +320,7 @@ squadStoreBulkSync(Squad squad, CpAsyncOobInfo<OutputT> cpAsyncOobInfo, const ::
           cpAsyncOobInfo.ptrGmemStartAlignUp,
           ptrSmemMiddle,
           cpAsyncOobInfo.underCopySizeBytes);
-      }
+      });
       if (doStartCopy)
       {
         // need to work around yet another optimizer bug, see: https://github.com/NVIDIA/cccl/issues/8838
@@ -324,8 +329,8 @@ squadStoreBulkSync(Squad squad, CpAsyncOobInfo<OutputT> cpAsyncOobInfo, const ::
         asm volatile("" : "+l"(srcSmem));
 #  endif // _CCCL_CUDA_COMPILER(NVCC, <, 13, 3)
         // Copy a subset of the first 16 bytes
-        _CUB::detail::warpspeed::squadStoreMasked16B(
-          squad,
+        _CUB::detail::warpspeed::store_masked_16b(
+          warp,
           cpAsyncOobInfo.ptrGmemStartAlignDown,
           srcSmem,
           byteMaskStart,
@@ -341,8 +346,8 @@ squadStoreBulkSync(Squad squad, CpAsyncOobInfo<OutputT> cpAsyncOobInfo, const ::
 #  endif // _CCCL_CUDA_COMPILER(NVHPC)
 
         // Copy a subset of the last 16 bytes
-        _CUB::detail::warpspeed::squadStoreMasked16B(
-          squad,
+        _CUB::detail::warpspeed::store_masked_16b(
+          warp,
           cpAsyncOobInfo.ptrGmemEndAlignDown,
           ptrSmemMiddle + cpAsyncOobInfo.underCopySizeBytes,
           byteMaskEnd,
@@ -353,8 +358,8 @@ squadStoreBulkSync(Squad squad, CpAsyncOobInfo<OutputT> cpAsyncOobInfo, const ::
     else
     {
       // Copy a subset of the first 16 bytes
-      _CUB::detail::warpspeed::squadStoreMasked16B(
-        squad,
+      _CUB::detail::warpspeed::store_masked_16b(
+        warp,
         cpAsyncOobInfo.ptrGmemStartAlignDown,
         srcSmem,
         byteMaskSmall,
@@ -371,38 +376,38 @@ squadStoreBulkSync(Squad squad, CpAsyncOobInfo<OutputT> cpAsyncOobInfo, const ::
 
 #endif // __cccl_ptx_isa >= 860
 
-template <typename InputT, typename AccumT, int ElemPerThread>
-_CCCL_DEVICE_API void squadLoadSmem(Squad squad, AccumT (&outReg)[ElemPerThread], const InputT* smemBuf)
+template <class Group, typename InputT, typename AccumT, int ElemPerThread>
+_CCCL_DEVICE_API void load_smem(const Group& group, AccumT (&outReg)[ElemPerThread], const InputT* smemBuf)
 {
   _CCCL_IKET_RANGE_PUSH(LoadSmem);
   for (int i = 0; i < ElemPerThread; ++i)
   {
-    const int elem_idx = (squad.threadRank() * ElemPerThread) + i;
+    const int elem_idx = (::cuda::gpu_thread.rank_as<int>(group) * ElemPerThread) + i;
     outReg[i]          = smemBuf[elem_idx];
   }
   _CCCL_IKET_RANGE_POP();
 }
 
-template <typename OutputT, typename AccumT, int ElemPerThread>
-_CCCL_DEVICE_API void squadStoreSmem(Squad squad, OutputT* smemBuf, const AccumT (&inReg)[ElemPerThread])
+template <class Group, typename OutputT, typename AccumT, int ElemPerThread>
+_CCCL_DEVICE_API void store_smem(const Group& group, OutputT* smemBuf, const AccumT (&inReg)[ElemPerThread])
 {
   _CCCL_IKET_RANGE_PUSH(StoreSmem);
   for (int i = 0; i < ElemPerThread; ++i)
   {
-    const int elem_idx = (squad.threadRank() * ElemPerThread) + i;
+    const int elem_idx = (::cuda::gpu_thread.rank_as<int>(group) * ElemPerThread) + i;
     smemBuf[elem_idx]  = inReg[i];
   }
   _CCCL_IKET_RANGE_POP();
 }
 
-template <typename OutputT, typename AccumT, int ElemPerThread>
-_CCCL_DEVICE_API void
-squadStoreSmemPartial(Squad squad, OutputT* smemBuf, const AccumT (&inReg)[ElemPerThread], int beginIndex, int endIndex)
+template <class Group, typename OutputT, typename AccumT, int ElemPerThread>
+_CCCL_DEVICE_API void store_smem_partial(
+  const Group& group, OutputT* smemBuf, const AccumT (&inReg)[ElemPerThread], int beginIndex, int endIndex)
 {
   _CCCL_IKET_RANGE_PUSH(StoreSmem);
   for (int i = 0; i < ElemPerThread; ++i)
   {
-    const int elem_idx = (squad.threadRank() * ElemPerThread) + i;
+    const int elem_idx = (::cuda::gpu_thread.rank_as<int>(group) * ElemPerThread) + i;
     if (beginIndex <= elem_idx && elem_idx < endIndex)
     {
       smemBuf[elem_idx - beginIndex] = inReg[i];

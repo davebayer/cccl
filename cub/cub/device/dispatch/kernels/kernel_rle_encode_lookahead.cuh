@@ -14,9 +14,7 @@
 #endif // no system header
 
 #if __cccl_ptx_isa >= 920
-#  include <cub/detail/warpspeed/special_registers.cuh>
-#  include <cub/detail/warpspeed/squad/squad.cuh>
-#  include <cub/detail/warpspeed/squad/squad_desc.cuh>
+#  include <cub/detail/warpspeed/dispatch_groups.cuh>
 #  include <cub/device/dispatch/tuning/tuning_rle_encode.cuh>
 #  include <cub/util_arch.cuh>
 #  include <cub/util_device.cuh>
@@ -25,6 +23,7 @@
 
 #  include <cuda/__cmath/ceil_div.h>
 #  include <cuda/__memory/ptr_rebind.h>
+#  include <cuda/hierarchy>
 #  include <cuda/ptx>
 #  include <cuda/std/__algorithm/max.h>
 #  include <cuda/std/__algorithm/min.h>
@@ -35,7 +34,14 @@
 #  include <cuda/std/__cstddef/types.h>
 #  include <cuda/std/__limits/numeric_limits.h>
 #  include <cuda/std/__type_traits/is_same.h>
+#  include <cuda/std/__utility/integer_sequence.h>
 #  include <cuda/std/cstdint>
+
+#  include <cuda/experimental/coop/__algorithm/any_of.cuh>
+#  include <cuda/experimental/coop/__algorithm/shuffle.cuh>
+#  include <cuda/experimental/coop/__algorithm/shuffle_down.cuh>
+#  include <cuda/experimental/coop/__group/group_view.cuh>
+#  include <cuda/experimental/coop/__group/this_group.cuh>
 
 #  include <nv/target>
 #  if !_CCCL_HAS_NV_ATOMIC_BUILTINS()
@@ -50,7 +56,8 @@ namespace detail::rle::encode
 // the kernel (and everything it needs) only exists from PTX ISA 9.2 (CUDA 13.2): the load warp requires the
 // cp.async.bulk .ignore_oob qualifier. Below that, the dispatch layer compiles the lookahead path out entirely.
 #if __cccl_ptx_isa >= 920
-namespace ptx = ::cuda::ptx;
+namespace ptx  = ::cuda::ptx;
+namespace coop = ::cuda::experimental::coop;
 
 _CCCL_HOST_DEVICE_API constexpr int num_total_threads(const RleLookaheadPolicy& policy)
 {
@@ -240,8 +247,9 @@ scan_warp_tile_run_counts(const int* slot_warp_run_counts, int lane_id)
   return {lane_run_count, lane_scan};
 }
 
-template <int TileSize, int SlotPad, class KeyT>
+template <int TileSize, int SlotPad, class KeyT, class Warp>
 _CCCL_DEVICE_API _CCCL_FORCEINLINE void load_tile_keys(
+  const Warp& warp,
   KeyT* slot,
   const KeyT* d_keys,
   int tile_id,
@@ -281,12 +289,13 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void load_tile_keys(
         full_bar);
     }
   }
-  __syncwarp();
+  warp.sync();
 }
 
 // CLC is fast, so folding it into LOAD won't cost performance, and it saves us 32 threads
-_CCCL_DEVICE_API _CCCL_FORCEINLINE int
-clc_next_tile_id(uint4& clc_resp, ::cuda::std::uint64_t& clc_bar, int pipeline_gen, int num_tiles, int lane_id)
+template <class Warp>
+_CCCL_DEVICE_API _CCCL_FORCEINLINE int clc_next_tile_id(
+  const Warp& warp, uint4& clc_resp, ::cuda::std::uint64_t& clc_bar, int pipeline_gen, int num_tiles, int lane_id)
 {
   int next = num_tiles; // if no more work was cancellable
   if (lane_id == 0)
@@ -306,7 +315,7 @@ clc_next_tile_id(uint4& clc_resp, ::cuda::std::uint64_t& clc_bar, int pipeline_g
       ptx::clusterlaunchcontrol_try_cancel(&clc_resp, &clc_bar);
     }
   }
-  return __shfl_sync(full_mask, next, 0);
+  return coop::shuffle(warp, next, 0);
 }
 
 // calculate head_flags: each iter is 32 consecutive elements (lane L owns loc = warp_tile_offset + iter*32 + L)
@@ -430,7 +439,9 @@ struct head_flag_decode_t
   int lane_runs_before_word;
   int lane_first_head_from_word;
 
-  _CCCL_DEVICE_API _CCCL_FORCEINLINE head_flag_decode_t(const unsigned* slot_head_flags, int warp_tile_id, int lane_id)
+  template <class Warp>
+  _CCCL_DEVICE_API _CCCL_FORCEINLINE
+  head_flag_decode_t(const Warp& warp, const unsigned* slot_head_flags, int warp_tile_id, int lane_id)
   {
     lane_head_flag_word           = slot_head_flags[warp_tile_id * detail::warp_threads + lane_id];
     const int lane_word_run_count = __popc(lane_head_flag_word);
@@ -445,14 +456,14 @@ struct head_flag_decode_t
     _CCCL_PRAGMA_UNROLL_FULL()
     for (int offset = 1; offset < 32; offset <<= 1)
     {
-      const int shuffled_first_head = __shfl_down_sync(full_mask, lane_first_head_from_word, offset);
-      lane_first_head_from_word =
-        (::cuda::std::min) (lane_first_head_from_word, (lane_id + offset < 32) ? shuffled_first_head : 0x7fffffff);
+      const auto shuffled       = coop::shuffle_down(warp, lane_first_head_from_word, static_cast<unsigned>(offset));
+      lane_first_head_from_word = (::cuda::std::min) (lane_first_head_from_word, shuffled.value_or(0x7fffffff));
     }
     // now, lane i holds the next head in [i, 32). we precalculate this in parallel
   }
 
-  _CCCL_DEVICE_API _CCCL_FORCEINLINE run_span_t decode_run(int run_idx) const
+  template <class Warp>
+  _CCCL_DEVICE_API _CCCL_FORCEINLINE run_span_t decode_run(const Warp& warp, int run_idx) const
   {
     // first question: which head_flag word contains my run's (run_idx) head?
     // lane_runs_before_word's row i = number of heads in words [0, i)
@@ -465,7 +476,7 @@ struct head_flag_decode_t
       // propose candidate
       const int candidate_word_idx = flag_word_idx + step;
       // read the i'th row
-      const int candidate_runs_before = __shfl_sync(full_mask, lane_runs_before_word, candidate_word_idx);
+      const int candidate_runs_before = coop::shuffle(warp, lane_runs_before_word, candidate_word_idx);
       if (candidate_word_idx < ItemsPerThread && candidate_runs_before <= run_idx)
       {
         flag_word_idx = candidate_word_idx;
@@ -474,11 +485,11 @@ struct head_flag_decode_t
     // the lane now knows the index of the word containing its head
     // we need to convert it to the element position
     // where is my head in the word?
-    const int run_rank_in_word = run_idx - __shfl_sync(full_mask, lane_runs_before_word, flag_word_idx);
+    const int run_rank_in_word = run_idx - coop::shuffle(warp, lane_runs_before_word, flag_word_idx);
     // get the actual word
-    const unsigned flag_word = __shfl_sync(full_mask, lane_head_flag_word, flag_word_idx);
+    const unsigned flag_word = coop::shuffle(warp, lane_head_flag_word, flag_word_idx);
     // where's the first head in any word after mine?
-    const int first_head_after_word = __shfl_sync(full_mask, lane_first_head_from_word, (flag_word_idx + 1) & 31);
+    const int first_head_after_word = coop::shuffle(warp, lane_first_head_from_word, (flag_word_idx + 1) & 31);
     // how many heads my word has?
     const int flag_word_run_count = __popc(flag_word);
     // position of my head inside the word
@@ -494,8 +505,9 @@ struct head_flag_decode_t
   }
 };
 
-template <int WindowSizeCap, class PolicySelector, class OffT>
+template <int WindowSizeCap, class PolicySelector, class OffT, class Warp>
 _CCCL_DEVICE_API _CCCL_FORCEINLINE void poll_fold_windows(
+  const Warp& warp,
   tile_partial_state_t* tile_partial_states,
   int tile_id,
   int& first_unseen_tile_id,
@@ -534,7 +546,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void poll_fold_windows(
           }
         }
       }
-    } while (__any_sync(full_mask, !ready));
+    } while (coop::any_of(::cuda::experimental::broadcasted, warp, !ready));
 
     constexpr int tile_size = _CUB::detail::current_policy<PolicySelector>().lookahead.tile_size();
     int lane_run_count = 0, lane_last_packed = -1;
@@ -575,8 +587,9 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void poll_fold_windows(
   }
 }
 
-template <class PolicySelector, class OffT>
+template <class PolicySelector, class OffT, class Warp>
 _CCCL_DEVICE_API _CCCL_FORCEINLINE void poll_and_fold(
+  const Warp& warp,
   tile_partial_state_t* tile_partial_states,
   int tile_id,
   int& first_unseen_tile_id,
@@ -599,6 +612,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void poll_and_fold(
     _CUB::detail::rle::encode::poll_fold_windows<
       detail::warp_threads * _CUB::detail::current_policy<PolicySelector>().lookahead.dense_poll_items_per_thread,
       PolicySelector>(
+      warp,
       tile_partial_states,
       tile_id,
       first_unseen_tile_id,
@@ -613,6 +627,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void poll_and_fold(
     _CUB::detail::rle::encode::poll_fold_windows<
       detail::warp_threads * _CUB::detail::current_policy<PolicySelector>().lookahead.poll_items_per_thread,
       PolicySelector>(
+      warp,
       tile_partial_states,
       tile_id,
       first_unseen_tile_id,
@@ -740,16 +755,19 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
       <= RleLookaheadPolicy::static_smem_budget,
     "static shared memory exceeds the budget assumed by the floor launch guarantee");
 
-  const int tid     = threadIdx.x;
-  const int lane_id = tid & 31;
-  const int bid     = blockIdx.x;
+  const coop::this_block block{::cuda::hierarchy{
+    ::cuda::grid_dims(gridDim.x), ::cuda::block_dims<_CUB::detail::rle::encode::num_total_threads(policy)>()}};
+  const coop::this_warp physical_warp{block.hierarchy()};
+  const coop::group_view warp{::cuda::gpu_thread, physical_warp};
+  const int lane_id = ::cuda::gpu_thread.rank_as<int>(warp);
+  const int bid     = block.template rank_as<int>(::cuda::grid);
   const unsigned base_skip =
     (int{alignof(KeyT)} < detail::bulk_copy_min_align)
       ? (static_cast<unsigned>(::cuda::std::bit_cast<::cuda::std::uintptr_t>(d_keys))
          & unsigned{detail::bulk_copy_min_align - 1})
       : 0u;
   const int skip_elems = static_cast<int>(base_skip / sizeof(KeyT));
-  if (tid == 0)
+  if (::cuda::gpu_thread.is_root_rank(block))
   {
     for (int slot_id = 0; slot_id < max_key_ring_stages; ++slot_id)
     {
@@ -773,19 +791,24 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
   // the TMA operations access shared memory through the async proxy. these are separate visibility domains,
   // so the init writes are not automatically visible to TMA.
   ptx::fence_proxy_async(ptx::space_shared);
-  __syncthreads();
+  block.sync_aligned();
 
-  constexpr warpspeed::SquadDesc squadLoad{0, 1};
-  constexpr warpspeed::SquadDesc squadCompute{1, compute_warps};
-  constexpr warpspeed::SquadDesc squadPoll{2, 1};
-  constexpr warpspeed::SquadDesc squadStore{3, store_warps};
-  constexpr warpspeed::SquadDesc squadBookkeeper{4, 1};
-  constexpr warpspeed::SquadDesc squads[] = {squadLoad, squadCompute, squadPoll, squadStore, squadBookkeeper};
-
-  _CUB::detail::warpspeed::squadDispatch(
-    _CUB::detail::warpspeed::getSpecialRegisters(), squads, [&](warpspeed::Squad squad) _CCCL_FORCEINLINE_LAMBDA {
-      // if you are load
-      if (squad == squadLoad)
+  constexpr unsigned load_warps = 1;
+  constexpr unsigned poll_warps = 1;
+  enum class role
+  {
+    load,
+    compute,
+    poll,
+    store,
+    bookkeeper
+  };
+  _CUB::detail::warpspeed::dispatch_groups(
+    block,
+    ::cuda::std::index_sequence<load_warps, compute_warps, poll_warps, store_warps, 1>{},
+    [&](auto group) _CCCL_FORCEINLINE_LAMBDA {
+      constexpr auto group_role = static_cast<role>(decltype(group)::static_rank(coop::parent_group));
+      if constexpr (group_role == role::load)
       {
         // CLC tile assignment: gen0 tile = this CTA's launch id (blockIdx.x)
         int tile_id = bid;
@@ -814,7 +837,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
             {
               ptx::mbarrier_arrive(&full[slot_id]);
             }
-            __syncwarp();
+            warp.sync();
             break;
           }
           // over-fetch one 16B chunk to the left, so that we get last tiles last key
@@ -823,6 +846,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
           const int tile_len    = static_cast<int>(
             (::cuda::std::min) (static_cast<OffT>(tile_size), num_items - static_cast<OffT>(tile_id) * tile_size));
           _CUB::detail::rle::encode::load_tile_keys<tile_size, slot_pad>(
+            warp,
             tile_buf + static_cast<size_t>(slot_id) * slot_stride,
             d_keys,
             tile_id,
@@ -834,13 +858,15 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
             lane_id,
             keys_staged);
           // consume the prefetched cancel, this is ok since it should be fast to get next cancelled id
-          tile_id = _CUB::detail::rle::encode::clc_next_tile_id(clc_resp, clc_bar, pipeline_gen, num_tiles, lane_id);
+          tile_id =
+            _CUB::detail::rle::encode::clc_next_tile_id(warp, clc_resp, clc_bar, pipeline_gen, num_tiles, lane_id);
         }
       }
-      // if you are compute
-      else if (squad == squadCompute)
+      else if constexpr (group_role == role::compute)
       {
-        const int compute_warp_id  = squad.warpRank();
+        // Assign each warp tile by physical CTA warp rank modulo the role's size. Rotating the compute and
+        // store groups this way preserves the tuned assignment to warp schedulers for short RLE inputs.
+        const int compute_warp_id  = (::cuda::warp.rank_as<unsigned>(group) + load_warps) % compute_warps;
         const int warp_tile_offset = compute_warp_id * warp_tile_size;
         ring_cursor_t key_ring;
         ring_cursor_t pos_ring;
@@ -891,8 +917,8 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
             // measured alternative: letting lanes first_chunk/last_chunk store the heads directly (skipping both
             // shuffles) regresses ~1%: the conditional stores plus the extra __syncwarp needed before the computed
             // arrive cost more than the two shuffles
-            const unsigned first_chunk_mask = __shfl_sync(full_mask, my_flags, first_chunk);
-            const unsigned last_chunk_mask  = __shfl_sync(full_mask, my_flags, last_chunk);
+            const unsigned first_chunk_mask = coop::shuffle(warp, my_flags, first_chunk);
+            const unsigned last_chunk_mask  = coop::shuffle(warp, my_flags, last_chunk);
             _CCCL_ASSERT((first_chunk_mask != 0u) && (last_chunk_mask != 0u), "nonempty chunk with an empty mask");
             warp_first_head = warp_tile_offset + first_chunk * 32 + (__ffs(first_chunk_mask) - 1);
             warp_last_head  = warp_tile_offset + last_chunk * 32 + 31 - ::cuda::std::countl_zero(last_chunk_mask);
@@ -936,15 +962,14 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
             _CUB::detail::rle::encode::stage_head_positions<items_per_thread>(
               my_flags, pos_dst, warp_tile_offset, lane_id);
           } // stage flags
-          __syncwarp();
+          warp.sync();
           if (lane_id == 0)
           {
             ptx::mbarrier_arrive(&staged_warp_tile[slot_id][compute_warp_id]); // this warp-tile's positions ready
           }
         }
       }
-      // if you are poll
-      else if (squad == squadPoll)
+      else if constexpr (group_role == role::poll)
       {
         // running prefix state: everything folded so far, i.e. tiles [0, first_unseen_tile_id)
         int first_unseen_tile_id          = 0;
@@ -969,6 +994,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
           // fold every predecessor tile's published state into this tile's exclusive prefix
           OffT curr_prefix_run_count, curr_prefix_open_length;
           _CUB::detail::rle::encode::poll_and_fold<PolicySelector>(
+            warp,
             tile_partial_states,
             tile_id,
             first_unseen_tile_id,
@@ -978,7 +1004,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
             poll_dense_mode,
             curr_prefix_run_count,
             curr_prefix_open_length);
-          __syncwarp();
+          warp.sync();
 
           // hand the prefix to the STORE warps and the bookkeeper
           if (lane_id == 0)
@@ -990,10 +1016,10 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
           }
         }
       }
-      // if you are store
-      else if (squad == squadStore)
+      else if constexpr (group_role == role::store)
       {
-        const int store_warp_idx = squad.warpRank();
+        constexpr unsigned first_store_warp = load_warps + compute_warps + poll_warps;
+        const int store_warp_idx            = (::cuda::warp.rank_as<unsigned>(group) + first_store_warp) % store_warps;
         ring_cursor_t key_ring;
         ring_cursor_t pos_ring;
         for (int pipeline_gen = 0;;
@@ -1019,7 +1045,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
           const position_t* run_positions = pos_buf + static_cast<size_t>(pos_ring.slot) * tile_size;
           const int warp_tile_id          = store_warp_idx;
           const int warp_tile_run_count   = warp_run_counts[slot_id][warp_tile_id];
-          const int runs_before_warp_tile = __shfl_sync(full_mask, lane_runs_before_warp_tile, warp_tile_id);
+          const int runs_before_warp_tile = coop::shuffle(warp, lane_runs_before_warp_tile, warp_tile_id);
           // if the compute warp decided to skip staging for this warp tile, the positions were never staged:
           // decode them from the head flags and buffer intermediate results in register
           // At run_count == 0 COMPUTE stages nothing but we fall through to the staged drain; safe only
@@ -1034,7 +1060,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
             const int warp_tile_offset = warp_tile_id * warp_tile_size;
             const int num_rounds       = ::cuda::ceil_div(warp_tile_run_count, detail::warp_threads);
             _CCCL_ASSERT(num_rounds <= decode_items_per_thread, "register buffer must cover all decoding rounds");
-            const head_flag_decode_t<items_per_thread> dec(head_flag_buf[slot_id], warp_tile_id, lane_id);
+            const head_flag_decode_t<items_per_thread> dec(warp, head_flag_buf[slot_id], warp_tile_id, lane_id);
             const KeyT* tile_keys = tile_buf + static_cast<size_t>(slot_id) * slot_stride + slot_pad;
             _CCCL_PRAGMA_UNROLL_FULL()
             for (int it = 0; it < decode_items_per_thread; ++it)
@@ -1044,7 +1070,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
                 break;
               }
               const int run_idx    = it * detail::warp_threads + lane_id;
-              const run_span_t run = dec.decode_run(run_idx);
+              const run_span_t run = dec.decode_run(warp, run_idx);
               // the run's key is its LAST element (the one before the next run's head). The clamp keeps the
               // gather in bounds when next_head_pos is garbage (the warp tile's last run); that run's key and
               // count are both dead here and written by the bookkeeper instead.
@@ -1053,7 +1079,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
               buf_run_length[it] = run.next_head_pos - run.head_pos_in_warp_tile;
             }
 
-            __syncwarp();
+            warp.sync();
             if (lane_id == 0)
             {
               if (pos_ring_stages < key_ring_stages)
@@ -1082,7 +1108,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
                 d_counts[global_run_idx] = buf_run_length[it];
               }
             }
-            __syncwarp();
+            warp.sync();
             if (lane_id == 0)
             {
               ptx::mbarrier_arrive(&empty[slot_id]);
@@ -1162,7 +1188,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
             }
             // ^^^ regressed case ^^^
           }
-          __syncwarp();
+          warp.sync();
           if (lane_id == 0)
           {
             if (pos_ring_stages < key_ring_stages)
@@ -1174,9 +1200,9 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
           }
         }
       }
-      // if you are the bookkeeper
       else
       {
+        static_assert(group_role == role::bookkeeper);
         ring_cursor_t key_ring;
         for (int pipeline_gen = 0;; ++pipeline_gen, key_ring.advance(key_ring_stages))
         {
@@ -1198,7 +1224,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
           const auto [lane_warp_tile_run_count, lane_runs_before_warp_tile] =
             _CUB::detail::rle::encode::scan_warp_tile_run_counts<compute_warps>(warp_run_counts[slot_id], lane_id);
           const int tile_total_runs =
-            __shfl_sync(full_mask, lane_runs_before_warp_tile + lane_warp_tile_run_count, compute_warps - 1);
+            coop::shuffle(warp, lane_runs_before_warp_tile + lane_warp_tile_run_count, compute_warps - 1);
           const unsigned nonempty_warp_tiles_mask = __ballot_sync(full_mask, lane_warp_tile_run_count > 0);
           // every count this warp closes gets its key written too: a run's key is its LAST element,
           // which lives in the closing tile's keys (position -1 reads the over-fetched boundary element)
@@ -1233,7 +1259,7 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
             }
             // else: this run is open in this tile, now this became a job for the next tile (see below)
           }
-          __syncwarp();
+          warp.sync();
           // now we need to finish last tile's open run
           if (lane_id == 0)
           {
@@ -1267,7 +1293,8 @@ _CCCL_DEVICE_API _CCCL_FORCEINLINE void device_rle_encode_lookahead_body(
 template <class PolicySelector, class StateT>
 _CCCL_KERNEL_ATTRIBUTES void DeviceRleEncodeLookaheadInitKernel(StateT* states, ::cuda::std::int64_t n_states)
 {
-  const ::cuda::std::int64_t i = (::cuda::std::int64_t) blockIdx.x * blockDim.x + threadIdx.x;
+  const coop::this_grid grid{::cuda::hierarchy{::cuda::grid_dims(gridDim.x), ::cuda::block_dims(blockDim.x)}};
+  const auto i = ::cuda::gpu_thread.rank_as<::cuda::std::int64_t>(grid);
   if (i < n_states)
   {
     states[i] = StateT{};

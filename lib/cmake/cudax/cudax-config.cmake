@@ -20,19 +20,6 @@ if (${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY)
 endif()
 
 set(cudax_cmake_dir "${CMAKE_CURRENT_LIST_DIR}")
-set(cudax_prefix_dir "${cudax_cmake_dir}/../../..")
-find_path(
-  cudax_include_dir
-  "cuda/experimental/version.cuh"
-  REQUIRED
-  NO_CACHE
-  NO_CMAKE_FIND_ROOT_PATH # Don't allow CMake to re-root the search
-  NO_DEFAULT_PATH # Only search explicit paths below:
-  HINTS
-    "${cudax_prefix_dir}/cudax/include" # Source
-    "${cudax_prefix_dir}/include" # Install
-)
-
 if (NOT TARGET cudax::libcudacxx)
   if (NOT TARGET libcudacxx::libcudacxx)
     # First do a non-required search for any co-packaged versions.
@@ -53,6 +40,19 @@ if (NOT TARGET cudax::libcudacxx)
   target_link_libraries(_cudax_libcudacxx INTERFACE libcudacxx::libcudacxx)
 endif()
 
+find_path(
+  cudax_include_dir
+  "cuda/experimental/version.cuh"
+  REQUIRED
+  NO_CACHE
+  NO_CMAKE_FIND_ROOT_PATH # Don't allow CMake to re-root the search
+  NO_DEFAULT_PATH
+  HINTS
+    "${cudax_cmake_dir}/../../../cudax/include" # Source
+    "${_libcudacxx_INCLUDE_DIR}" # Co-installed with libcu++
+    "${cudax_cmake_dir}/../../../include" # Conventional install prefix
+)
+
 # Allow non-imported targets to be used. This treats cudax headers as non-system includes,
 # exposing warnings in them. Used when building cudax tests.
 if (cudax_NO_IMPORTED_TARGETS)
@@ -62,6 +62,8 @@ if (cudax_NO_IMPORTED_TARGETS)
   set(cudax_target_name _cudax_cudax)
 else()
   add_library(cudax::cudax INTERFACE IMPORTED GLOBAL)
+  # Prefer this checkout's CCCL headers over those implicitly included by nvcc.
+  set_property(TARGET cudax::cudax PROPERTY IMPORTED_NO_SYSTEM TRUE)
   set(cudax_target_name cudax::cudax)
 endif()
 

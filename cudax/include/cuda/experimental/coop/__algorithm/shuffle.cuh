@@ -52,14 +52,19 @@ _CCCL_REQUIRES(group<_Group> _CCCL_AND ::cuda::std::is_same_v<typename _Group::u
   _CCCL_ASSERT(__src_unit_rank < __mapping_result.unit_count(),
                "invalid __src_unit_rank - must be less than the number of units within the group");
 
-  const auto __lane_mask   = __mapping_result.lane_mask();
-  const auto __lane_offset = static_cast<int>(__src_unit_rank) - static_cast<int>(__mapping_result.unit_rank());
+  const auto __lane_mask = __mapping_result.lane_mask();
 
   unsigned __src_lane{};
-  if constexpr (_Group::is_always_contiguous())
+  if constexpr (_Group::is_always_contiguous()
+                && _Group::__mapping_result_type::static_unit_count() == ::cuda::device::__warp_threads)
   {
-    const auto __lane = ::cuda::ptx::get_sreg_laneid();
-    __src_lane        = static_cast<unsigned>(__lane + __lane_offset);
+    __src_lane = __src_unit_rank;
+  }
+  else if constexpr (_Group::is_always_contiguous())
+  {
+    const auto __lane        = ::cuda::ptx::get_sreg_laneid();
+    const auto __lane_offset = static_cast<int>(__src_unit_rank) - static_cast<int>(__mapping_result.unit_rank());
+    __src_lane               = static_cast<unsigned>(__lane + __lane_offset);
   }
   else
   {

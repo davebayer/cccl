@@ -8,43 +8,45 @@
 #include "cub_test_macros.h"
 
 #if __cccl_ptx_isa >= 800
-#  include <cub/detail/warpspeed/special_registers.cuh>
 #  include <cub/detail/warpspeed/sync_handler.cuh>
 
+#  include <cuda/hierarchy>
 #  include <cuda/ptxs/mbarrier_arrive.h>
 #  include <cuda/ptxs/mbarrier_pending_count.h>
 #  include <cuda/std/cstdint>
 #  include <cuda/std/iterator>
 
+#  include <cuda/experimental/coop/group>
+
 #  include <nv/target>
 
 #  include <c2h/vector.h>
 
+namespace
+{
 constexpr int block_threads = 32;
 
-template <int BlockThreads>
-__device__ void check_phase_barriers(int* matches)
+[[maybe_unused]] __device__ void check_phase_barriers(int* matches)
 {
-  using Barrier          = cuda::std::uint64_t;
+  using barrier_t        = cuda::std::uint64_t;
   constexpr int a_stages = 19;
   constexpr int b_stages = 7;
-
-  struct Barriers
+  __shared__ struct
   {
-    Barrier first_a[a_stages];
-    Barrier guard;
-    Barrier second_a[a_stages];
-    Barrier b[b_stages];
-  };
-
-  __shared__ Barriers storage;
+    barrier_t first_a[a_stages];
+    barrier_t guard;
+    barrier_t second_a[a_stages];
+    barrier_t b[b_stages];
+  } storage;
 
   const int lane = static_cast<int>(threadIdx.x);
   if (lane == 0)
   {
     storage.guard = 0;
   }
-  __syncthreads();
+  const cuda::experimental::coop::this_block block{
+    cuda::hierarchy{cuda::grid_dims<1>(), cuda::block_dims<block_threads>()}};
+  block.sync_aligned();
 
   cub::detail::warpspeed::SyncHandler handler;
   const int a     = handler.registerResource(a_stages);
@@ -55,7 +57,7 @@ __device__ void check_phase_barriers(int* matches)
   handler.registerPhase(b, 5, storage.b);
   handler.registerPhase(empty, 7, &storage.guard);
   handler.registerPhase(a, 9, storage.second_a);
-  handler.clusterInitSync<BlockThreads>(cub::detail::warpspeed::getSpecialRegisters());
+  handler.init(block);
 
   // One non-completing arrival exposes the original count without waiting for any other threads.
   const auto has_count = [&](auto& barriers, unsigned expected) {
@@ -72,8 +74,9 @@ __device__ void check_phase_barriers(int* matches)
 
 __global__ void check_phase_barriers_kernel(int* matches)
 {
-  NV_IF_TARGET(NV_PROVIDES_SM_90, (check_phase_barriers<block_threads>(matches);))
+  NV_IF_TARGET(NV_PROVIDES_SM_90, (check_phase_barriers(matches);))
 }
+} // namespace
 #endif // __cccl_ptx_isa >= 800
 
 CUB_TEST("WarpSpeed initializes each registered phase barrier with its own arrival count",

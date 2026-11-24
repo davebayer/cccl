@@ -33,11 +33,10 @@
     },
     {
       "name": "install",
-      "displayName": "Installation / Packaging (only stable libraries)",
+      "displayName": "Installation / Packaging (stable libraries and their dependencies)",
       "inherits": "base",
       "cacheVariables": {
         "CCCL_ENABLE_CUDA_SMOKE_TESTS": false,
-        "cudax_ENABLE_INSTALL_RULES": false,
         "CCCL_SKIP_BUILD_CHECKS": true
       }
     },

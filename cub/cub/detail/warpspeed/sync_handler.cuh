@@ -13,10 +13,11 @@
 #endif // no system header
 
 #include <cub/detail/warpspeed/constant_assert.cuh>
-#include <cub/detail/warpspeed/special_registers.cuh>
 
+#include <cuda/__ptx/instructions/fence.h>
 #include <cuda/__ptx/instructions/mbarrier_init.h>
 #include <cuda/__ptx/ptx_helper_functions.h>
+#include <cuda/hierarchy>
 #include <cuda/std/__type_traits/is_constant_evaluated.h>
 #include <cuda/std/cstdint>
 
@@ -26,11 +27,6 @@ CUB_NAMESPACE_BEGIN
 
 namespace detail::warpspeed
 {
-// SkipSync is a tag type that is used to indicate that a SyncHandler.blockInit
-// should forgo syncing.
-struct SkipSync
-{};
-
 struct SyncHandler
 {
   // reducing these values to the actually used number of resources and phases does not improve performance
@@ -115,15 +111,16 @@ struct SyncHandler
     mNumPhases[resourceHandle]++;
   }
 
-  // clusterInitSync can only be called on device.
-  template <int NumThreads>
-  _CCCL_DEVICE_API void clusterInitSync(SpecialRegisters sr, SkipSync)
+  template <class Block>
+  _CCCL_DEVICE_API void init(const Block& block)
   {
     _WS_CONSTANT_ASSERT(!mHasInitialized, "Cannot initialize SyncHandler twice.");
     mHasInitialized = true;
 
+    const int thread_rank  = ::cuda::gpu_thread.rank_as<int>(block);
+    const int thread_count = ::cuda::gpu_thread.count_as<int>(block);
     // Neighboring lanes initialize neighboring logical barriers, including those in different phases.
-    for (int index = static_cast<int>(sr.threadIdxX); index < mBarrierCount; index += NumThreads)
+    for (int index = thread_rank; index < mBarrierCount; index += thread_count)
     {
       // The last phase starting at or before index owns this barrier.
       phase_barriers phase = mPhases[0];
@@ -138,16 +135,9 @@ struct SyncHandler
       auto* barrier = ::cuda::ptx::__from_ptr_smem<::cuda::std::uint64_t>(phase.smem_base + barrier_byte_offset(index));
       ::cuda::ptx::mbarrier_init(barrier, phase.owning_threads);
     }
-  }
-
-  template <int NumThreads>
-  _CCCL_DEVICE_API void clusterInitSync(SpecialRegisters sr)
-  {
-    NV_IF_TARGET(NV_PROVIDES_SM_90, ({
-                   clusterInitSync<NumThreads>(sr, SkipSync{});
-                   __cluster_barrier_arrive_relaxed();
-                   __cluster_barrier_wait();
-                 }))
+    // Publish the CTA-local phase barriers before any role starts using them from the async proxy.
+    ::cuda::ptx::fence_proxy_async(::cuda::ptx::space_shared);
+    block.sync_aligned();
   }
 };
 } // namespace detail::warpspeed

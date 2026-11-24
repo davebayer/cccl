@@ -17,7 +17,6 @@
 #include <cub/detail/strong_load.cuh>
 #include <cub/detail/strong_store.cuh>
 #include <cub/detail/uninitialized.cuh>
-#include <cub/detail/warpspeed/special_registers.cuh>
 #include <cub/thread/thread_load.cuh>
 #include <cub/thread/thread_store.cuh>
 #include <cub/warp/specializations/warp_redux.cuh> // IWYU pragma: keep
@@ -28,6 +27,7 @@
 #include <cuda/__memory/is_aligned.h>
 #include <cuda/__ptx/instructions/get_sreg.h>
 #include <cuda/__type_traits/is_trivially_copyable.h>
+#include <cuda/hierarchy>
 #include <cuda/std/__algorithm/min.h>
 #include <cuda/std/__atomic/order.h>
 #include <cuda/std/__atomic/scopes.h>
@@ -190,9 +190,9 @@ _CCCL_DEVICE_API void warpLoadLookahead(
 // calculate the value of aggrExclusiveCta from the preceding states.
 //
 // The function must be called from a single warp. All passed arguments must be warp-uniform.
-template <int NumTileStatesPerThread, typename AccumT, typename ScanOpT>
+template <int NumTileStatesPerThread, class Warp, typename AccumT, typename ScanOpT>
 [[nodiscard]] _CCCL_DEVICE_API _CCCL_FORCEINLINE AccumT warpIncrementalLookahead(
-  SpecialRegisters specialRegisters,
+  const Warp& warp,
   tile_state_t<AccumT>* ptrTileStates,
   const int idxTilePrev,
   const AccumT aggrExclusiveCtaPrev,
@@ -200,7 +200,7 @@ template <int NumTileStatesPerThread, typename AccumT, typename ScanOpT>
   ScanOpT& scan_op,
   const int num_tiles)
 {
-  const int laneIdx                                       = static_cast<int>(specialRegisters.laneIdx);
+  const int laneIdx                                       = ::cuda::gpu_thread.rank_as<int>(warp);
   [[maybe_unused]] const ::cuda::std::uint32_t lanemaskEq = ::cuda::ptx::get_sreg_lanemask_eq();
 
   int idxTileCur             = idxTilePrev;
@@ -276,9 +276,9 @@ template <int NumTileStatesPerThread, typename AccumT, typename ScanOpT>
 // from there directly. Because every reduction begins at the same fixed tiles, no matter which tiles happened to finish
 // first, the order in which values are summed is always the same and the result is identical on every run.
 // idxTilePrev/aggrExclusiveCtaPrev are updated by reference to the last multiple of 32.
-template <int NumTileStatesPerThread, typename AccumT, typename ScanOpT>
+template <int NumTileStatesPerThread, class Warp, typename AccumT, typename ScanOpT>
 [[nodiscard]] _CCCL_DEVICE_API _CCCL_FORCEINLINE AccumT warpIncrementalLookaheadStable(
-  SpecialRegisters specialRegisters,
+  const Warp& warp,
   tile_state_t<AccumT>* ptrTileStates,
   int& idxTilePrev,
   AccumT& aggrExclusiveCtaPrev,
@@ -286,7 +286,7 @@ template <int NumTileStatesPerThread, typename AccumT, typename ScanOpT>
   ScanOpT& scan_op,
   const int num_tiles)
 {
-  const int laneIdx                      = static_cast<int>(specialRegisters.laneIdx);
+  const int laneIdx                      = ::cuda::gpu_thread.rank_as<int>(warp);
   const ::cuda::std::uint32_t lanemaskEq = ::cuda::ptx::get_sreg_lanemask_eq();
 
   int idxTileCur             = idxTilePrev;

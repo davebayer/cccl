@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2023, NVIDIA CORPORATION. All rights reserved.
 // SPDX-License-Identifier: BSD-3
 
+#include <iterator>
 #include <string>
 
 #include <cuda.h>
@@ -290,13 +291,18 @@ CUB_TEST_CASE("Test nvrtc", "[test][nvrtc]", CUB_SMALL)
   const std::string arch = std::string("-arch=sm_") + std::to_string(ptx_version / 10);
   const std::string std  = std::string("-std=c++") + std::to_string(_CCCL_STD_VER - 2000);
 
-  constexpr int num_includes = 6;
   // NOLINTNEXTLINE(misc-const-correctness)
-  const char* includes[num_includes] = {
-    NVRTC_CUB_PATH, NVRTC_THRUST_PATH, NVRTC_LIBCUDACXX_PATH, NVRTC_CTK_PATH, arch.c_str(), std.c_str()};
+  const char* includes[] = {
+    NVRTC_CUB_PATH,
+    NVRTC_CUDAX_PATH,
+    NVRTC_THRUST_PATH,
+    NVRTC_LIBCUDACXX_PATH,
+    NVRTC_CTK_PATH,
+    arch.c_str(),
+    std.c_str()};
 
   std::size_t log_size{};
-  const nvrtcResult compile_result = nvrtcCompileProgram(prog, num_includes, includes);
+  const nvrtcResult compile_result = nvrtcCompileProgram(prog, static_cast<int>(std::size(includes)), includes);
 
   REQUIRE(NVRTC_SUCCESS == nvrtcGetProgramLogSize(prog, &log_size));
 

@@ -74,11 +74,11 @@ public:
   __dummy_arrival_token& operator=(const __dummy_arrival_token&) = delete;
 
 #  ifdef CCCL_ENABLE_DEVICE_ASSERTIONS
-  _CCCL_DEVICE_API constexpr __dummy_arrival_token(__dummy_arrival_token&& __other)
+  _CCCL_DEVICE_API constexpr __dummy_arrival_token(__dummy_arrival_token&& __other) noexcept
       : __value_{::cuda::std::exchange(__other.__value_, ::cuda::std::uint32_t{__invalid_value})}
   {}
 
-  _CCCL_DEVICE_API constexpr __dummy_arrival_token& operator=(__dummy_arrival_token&& __other)
+  _CCCL_DEVICE_API constexpr __dummy_arrival_token& operator=(__dummy_arrival_token&& __other) noexcept
   {
     __value_ = ::cuda::std::exchange(__other.__value_, ::cuda::std::uint32_t{__invalid_value});
     return *this;

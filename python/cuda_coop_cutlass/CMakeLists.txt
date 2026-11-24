@@ -55,7 +55,7 @@ if (CUDA_COOP_CUTLASS_INSTALL_HEADER_BUNDLE)
   set(libcudacxx_ENABLE_INSTALL_RULES ON)
   set(CUB_ENABLE_INSTALL_RULES ON)
   set(Thrust_ENABLE_INSTALL_RULES ON)
-  set(cudax_ENABLE_INSTALL_RULES OFF)
+  set(cudax_ENABLE_INSTALL_RULES ON)
   set(
     CMAKE_INSTALL_INCLUDEDIR
     "cuda/coop/cutlass/_headers/include"
@@ -92,6 +92,9 @@ if (CUDA_COOP_CUTLASS_INSTALL_HEADER_BUNDLE)
     set(
       _cuda_coop_cutlass_bundle_input_pathspecs
       ":(glob)cub/cub/**/*.cuh"
+      ":(glob)cudax/include/cuda/**/*.cuh"
+      "cudax/include/cuda/experimental/coop/group"
+      "cudax/include/cuda/experimental/coop/algorithm"
       ":(glob)thrust/thrust/**/*.h"
       ":(glob)thrust/thrust/**/*.inl"
       ":(glob)libcudacxx/include/cuda/**"
@@ -100,11 +103,13 @@ if (CUDA_COOP_CUTLASS_INSTALL_HEADER_BUNDLE)
       ":(exclude,glob)libcudacxx/include/nv/**/CMakeLists.txt"
       ":(glob)lib/cmake/cccl/**"
       ":(glob)lib/cmake/cub/**"
+      ":(glob)lib/cmake/cudax/**"
       ":(glob)lib/cmake/libcudacxx/**"
       ":(glob)lib/cmake/thrust/**"
       "cmake/CCCLInstallRules.cmake"
       "cmake/install/cccl.cmake"
       "cmake/install/cub.cmake"
+      "cmake/install/cudax.cmake"
       "cmake/install/libcudacxx.cmake"
       "cmake/install/thrust.cmake"
       "python/cuda_coop_cutlass/CMakeLists.txt"

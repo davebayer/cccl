@@ -9,6 +9,7 @@
 #include <thrust/fill.h>
 #include <thrust/sequence.h>
 
+#include <cuda/__execution/tune.h>
 #include <cuda/iterator>
 #include <cuda/std/bit>
 
@@ -148,8 +149,8 @@ c2h::host_vector<KeyT> generate_segmented_keys(std::int64_t num_items, int max_s
   return keys;
 }
 
-template <class KeyT, class OffsetT>
-void test_segmented_encode(std::int64_t num_items, int max_seg, int elem_offset, unsigned seed)
+template <class KeyT, class OffsetT, class Encode = run_length_encode_t>
+void test_segmented_encode(std::int64_t num_items, int max_seg, int elem_offset, unsigned seed, Encode encode = {})
 {
   CAPTURE(c2h::type_name<KeyT>(), c2h::type_name<OffsetT>(), num_items, max_seg, elem_offset, seed);
 
@@ -182,12 +183,11 @@ void test_segmented_encode(std::int64_t num_items, int max_seg, int elem_offset,
   c2h::device_vector<int> d_counts(ref_counts.size(), 0);
   c2h::device_vector<OffsetT> d_num_runs(1, OffsetT{-1});
 
-  run_length_encode(
-    thrust::raw_pointer_cast(d_keys_alloc.data()) + elem_offset,
-    thrust::raw_pointer_cast(d_unique.data()),
-    thrust::raw_pointer_cast(d_counts.data()),
-    thrust::raw_pointer_cast(d_num_runs.data()),
-    static_cast<OffsetT>(num_items));
+  encode(thrust::raw_pointer_cast(d_keys_alloc.data()) + elem_offset,
+         thrust::raw_pointer_cast(d_unique.data()),
+         thrust::raw_pointer_cast(d_counts.data()),
+         thrust::raw_pointer_cast(d_num_runs.data()),
+         static_cast<OffsetT>(num_items));
 
   REQUIRE(d_num_runs.front() == ref_num_runs);
   REQUIRE(c2h::host_vector<KeyT>(d_unique) == ref_unique);
@@ -533,6 +533,51 @@ catch (...)
 {
   c2h::skip_if_allocation_failure();
 }
+
+#if TEST_LAUNCH == 0 && __cccl_ptx_isa >= 920
+
+template <int ItemsPerThread>
+struct force_lookahead_rle
+{
+  _CCCL_HOST_DEVICE_API constexpr auto operator()(cuda::compute_capability cc, cub::RleEncodePolicy policy) const
+    -> cub::RleEncodePolicy
+  {
+    if (cc >= cuda::compute_capability{10, 0})
+    {
+      // The smaller tile fits both rings in shared memory. The larger tile forces the unstaged store path.
+      constexpr int key_stages = ItemsPerThread == 8 ? 3 : 5;
+      policy.algorithm         = cub::RleAlgorithm::lookahead;
+      policy.lookahead         = {ItemsPerThread, 8, key_stages, (key_stages + 1) / 2, 5, 3, 128, 32};
+    }
+    return policy;
+  }
+};
+
+using lookahead_items = c2h::type_list<cuda::std::integral_constant<int, 8>, cuda::std::integral_constant<int, 32>>;
+
+CUB_TEST("DeviceRunLengthEncode::Encode lookahead groups handle dense and sparse runs",
+         "[device][run_length_encode][lookahead]",
+         CUB_SMALL,
+         lookahead_items)
+{
+  cuda::compute_capability cc;
+  REQUIRE(cudaSuccess == cub::detail::ptx_compute_cap(cc));
+  if (cc < cuda::compute_capability{10, 0})
+  {
+    SKIP("The lookahead kernel requires an SM100 or newer compilation target.");
+  }
+
+  constexpr int items_per_thread = c2h::get<0, TestType>::value;
+  constexpr int tile_size        = 32 * 8 * items_per_thread;
+  const int max_run_length       = GENERATE_COPY(1, 255, tile_size + 1);
+  const auto encode              = [](auto... args) {
+    REQUIRE(
+      cudaSuccess
+      == cub::DeviceRunLengthEncode::Encode(args..., cuda::execution::tune(force_lookahead_rle<items_per_thread>{})));
+  };
+  test_segmented_encode<std::uint64_t, int>(13 * tile_size + 7, -max_run_length, 1, 42, encode);
+}
+#endif // TEST_LAUNCH == 0 && __cccl_ptx_isa >= 920
 
 CUB_TEST("DeviceRunLengthEncode::Encode is exact over a segment-length grid",
          "[device][run_length_encode]",

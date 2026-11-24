@@ -60,7 +60,8 @@ template <::cuda::std::size_t... _Counts>
 struct __group_as_search
 {
   // Each search node uses two of these compile-time offsets to size its left subtree.
-  static constexpr auto __offsets = [] {
+  [[nodiscard]] _CCCL_API static constexpr auto __make_offsets() noexcept
+  {
     ::cuda::std::array<::cuda::std::uint32_t, sizeof...(_Counts) + 1> __result{};
     constexpr ::cuda::std::uint32_t __sizes[]{static_cast<::cuda::std::uint32_t>(_Counts)...};
     for (::cuda::std::size_t __i = 0; __i < sizeof...(_Counts); ++__i)
@@ -68,7 +69,9 @@ struct __group_as_search
       __result[__i + 1] = __result[__i] + __sizes[__i];
     }
     return __result;
-  }();
+  }
+
+  static constexpr auto __offsets = __make_offsets();
 
   template <::cuda::std::size_t _First, ::cuda::std::size_t _Last>
   [[nodiscard]] _CCCL_DEVICE_API static constexpr __group_as_location __find(::cuda::std::uint32_t __unit) noexcept

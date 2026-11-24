@@ -14,7 +14,6 @@
 
 #include <cub/detail/iket_support.cuh>
 #include <cub/detail/warpspeed/resource/smem_resource_raw.cuh>
-#include <cub/detail/warpspeed/squad/squad.cuh>
 
 #include <cuda/std/cstdint>
 
@@ -80,11 +79,9 @@ struct SmemRef
     return mSmemResourceRaw.ptrCurBarrierRelease(mCurPhase);
   }
 
-  _CCCL_DEVICE_API void squadIncreaseTxCount(const Squad& squad, int txCount)
+  _CCCL_DEVICE_API void increase_tx_count(int txCount)
   {
     mTxCountIsSet = true;
-    // Only leader thread increments txCount
-    txCount = squad.isLeaderThread() ? txCount : 0;
     mTxCount += txCount;
   }
 

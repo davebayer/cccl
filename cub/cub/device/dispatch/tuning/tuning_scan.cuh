@@ -24,10 +24,10 @@
 #include <cub/detail/numeric_traits.cuh>
 #include <cub/detail/warpspeed/allocators/smem_allocator.cuh>
 #include <cub/detail/warpspeed/resource/smem_resource_raw.cuh>
-#include <cub/detail/warpspeed/squad/squad_desc.cuh>
 #include <cub/detail/warpspeed/sync_handler.cuh>
 #include <cub/device/dispatch/tuning/common.cuh>
 #include <cub/thread/thread_load.cuh>
+#include <cub/util_arch.cuh>
 #include <cub/util_device.cuh>
 
 #include <thrust/type_traits/is_contiguous_iterator.h>
@@ -165,8 +165,8 @@ struct ScanLookaheadPolicy
   // Therefore, a value of 0 just takes the number of stages.
 
   // We do not need too many stages for lookahead since the lookahead warp is the bottleneck. As soon as it produces a
-  // new value, it will be consumed by the scan squad, releasing the stage. So just always use 2 stages.
-  int lookahead_stages = 2; //!< Number of pipeline stages for the lookahead squad
+  // new value, it will be consumed by the scan group, releasing the stage. So just always use 2 stages.
+  int lookahead_stages = 2; //!< Number of pipeline stages for the lookahead warp
 
   //! Deprecated [Since CCCL 3.6]
   CCCL_DEPRECATED_BECAUSE("block_idx_stages no longer has any effect and will be removed in CCCL 4.0") //
@@ -798,29 +798,10 @@ _CCCL_HOST_DEVICE_API constexpr auto make_mem_scaled_lookback_scan_policy(
     ScanLookaheadPolicy{}};
 }
 
-_CCCL_HOST_DEVICE_API constexpr warpspeed::SquadDesc squad_reduce(const ScanLookaheadPolicy& policy)
+// The load/schedule, lookahead and store groups each occupy one warp.
+[[nodiscard]] _CCCL_HOST_DEVICE_API constexpr int num_total_threads(const ScanLookaheadPolicy& policy)
 {
-  return warpspeed::SquadDesc{0, policy.reduce_and_scan_warps};
-}
-
-_CCCL_HOST_DEVICE_API constexpr warpspeed::SquadDesc squad_scan(const ScanLookaheadPolicy& policy)
-{
-  return warpspeed::SquadDesc{1, policy.reduce_and_scan_warps};
-}
-
-_CCCL_HOST_DEVICE_API constexpr warpspeed::SquadDesc squad_load_and_next_idx(const ScanLookaheadPolicy&)
-{
-  return warpspeed::SquadDesc{2, 1}; // no point in being more than 1 warp
-}
-
-_CCCL_HOST_DEVICE_API constexpr warpspeed::SquadDesc squad_lookahead(const ScanLookaheadPolicy&)
-{
-  return warpspeed::SquadDesc{3, 1}; // must have 1 warp
-}
-
-_CCCL_HOST_DEVICE_API constexpr warpspeed::SquadDesc squad_store(const ScanLookaheadPolicy&)
-{
-  return warpspeed::SquadDesc{4, 1}; // issues the bulk store, so 1 warp is enough
+  return ((2 * policy.reduce_and_scan_warps) + 3) * warp_threads;
 }
 
 // TODO(bgruber): put this somewhere else
@@ -867,27 +848,19 @@ _CCCL_HOST_DEVICE_API constexpr void setup_scan_resources(
   SmemSumExclusiveCtaT& smemSumExclusiveCta,
   SmemSumThreadAndWarpT& smemSumThreadAndWarp)
 {
-  const warpspeed::SquadDesc scanSquads[] = {
-    _CUB::detail::scan::squad_reduce(policy),
-    _CUB::detail::scan::squad_scan(policy),
-    _CUB::detail::scan::squad_load_and_next_idx(policy),
-    _CUB::detail::scan::squad_lookahead(policy),
-    _CUB::detail::scan::squad_store(policy),
-  };
+  const int compute_threads = policy.reduce_and_scan_warps * warp_threads;
+  smemInOut.addPhase(syncHandler, smemAllocator, warp_threads); // loader
+  smemInOut.addPhase(syncHandler, smemAllocator, 2 * compute_threads); // reduce and scan
+  smemInOut.addPhase(syncHandler, smemAllocator, warp_threads); // store
 
-  smemInOut.addPhase(syncHandler, smemAllocator, _CUB::detail::scan::squad_load_and_next_idx(policy));
-  smemInOut.addPhase(
-    syncHandler, smemAllocator, {_CUB::detail::scan::squad_reduce(policy), _CUB::detail::scan::squad_scan(policy)});
-  smemInOut.addPhase(syncHandler, smemAllocator, _CUB::detail::scan::squad_store(policy));
+  smemNextBlockIdx.addPhase(syncHandler, smemAllocator, warp_threads); // scheduler
+  smemNextBlockIdx.addPhase(syncHandler, smemAllocator, _CUB::detail::scan::num_total_threads(policy));
 
-  smemNextBlockIdx.addPhase(syncHandler, smemAllocator, _CUB::detail::scan::squad_load_and_next_idx(policy));
-  smemNextBlockIdx.addPhase(syncHandler, smemAllocator, scanSquads);
+  smemSumExclusiveCta.addPhase(syncHandler, smemAllocator, warp_threads); // lookahead
+  smemSumExclusiveCta.addPhase(syncHandler, smemAllocator, compute_threads); // scan
 
-  smemSumExclusiveCta.addPhase(syncHandler, smemAllocator, _CUB::detail::scan::squad_lookahead(policy));
-  smemSumExclusiveCta.addPhase(syncHandler, smemAllocator, _CUB::detail::scan::squad_scan(policy));
-
-  smemSumThreadAndWarp.addPhase(syncHandler, smemAllocator, _CUB::detail::scan::squad_reduce(policy));
-  smemSumThreadAndWarp.addPhase(syncHandler, smemAllocator, _CUB::detail::scan::squad_scan(policy));
+  smemSumThreadAndWarp.addPhase(syncHandler, smemAllocator, compute_threads); // reduce
+  smemSumThreadAndWarp.addPhase(syncHandler, smemAllocator, compute_threads); // scan
 }
 
 _CCCL_HOST_DEVICE_API constexpr auto smem_for_stages(
@@ -906,8 +879,7 @@ _CCCL_HOST_DEVICE_API constexpr auto smem_for_stages(
   const int inout_bytes = (policy.tile_size() * input_size) + 16;
   // Match sizeof(InOutT): round up to the alignment so each stage matches SmemResource<InOutT>.
   const int inout_stride    = (inout_bytes + align_inout - 1) & ~(align_inout - 1);
-  const auto reduce_squad   = _CUB::detail::scan::squad_reduce(policy);
-  const int sum_thread_warp = (reduce_squad.threadCount() + reduce_squad.warpCount()) * accum_size;
+  const int sum_thread_warp = policy.reduce_and_scan_warps * (warp_threads + 1) * accum_size;
 
   const int num_sum_exclusive_cta_stages =
     policy.lookahead_stages > 0
@@ -1085,14 +1057,14 @@ struct policy_selector
               return ScanLookaheadPolicy{4, 88 - 1, 3};
             }
             // wrps_4.lbi_3.ipt_80 ()  1.019078  0.999708  1.017346  1.052592
-            // retuned for the store-squad scan kernel:
+            // retuned for the store-group scan kernel:
             // wrps_4.lbi_7.ipt_64.lbs_-2 ()  1.011009  0.994440  1.010186  1.061934 (score relative to the tuning
             // above)
             return ScanLookaheadPolicy{4, 64 - 1, 7, -2};
           case 8:
             if (input_type == type_t::int64)
             {
-              // retuned for the scan squad kernel (mean score 1.059, min 1.047, max 1.080 relative to the tuning
+              // retuned for the scan group kernel (mean score 1.059, min 1.047, max 1.080 relative to the tuning
               // below): wrps_4.lbi_5.ipt_32.lbs_2. This regresses double and complex<float>, so only use it for int64.
               return ScanLookaheadPolicy{4, 32 - 1, 5, 2};
             }

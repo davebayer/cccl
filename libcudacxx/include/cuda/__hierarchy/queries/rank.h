@@ -198,8 +198,19 @@ template <>
 struct __rank_query<block_level, grid_level>
 {
   template <class _Tp, class _Hierarchy>
-  [[nodiscard]] _CCCL_DEVICE_API static _Tp __call(const _Hierarchy&) noexcept
+  [[nodiscard]] _CCCL_DEVICE_API static _Tp __call(const _Hierarchy& __hier) noexcept
   {
+    if constexpr (_Hierarchy::template has_level<grid_level>() && __has_bottom_unit_or_level_v<block_level, _Hierarchy>)
+    {
+      using _GridExts =
+        decltype(__extents_query<block_level, grid_level>::template __call<::cuda::std::size_t>(__hier));
+      // A one-dimensional grid only needs the x coordinate, even when its length is dynamic.
+      if constexpr ((_GridExts::rank() < 2 || _GridExts::static_extent(1) == 1)
+                    && (_GridExts::rank() < 3 || _GridExts::static_extent(2) == 1))
+      {
+        return static_cast<_Tp>(blockIdx.x);
+      }
+    }
     return __rank_query_native<block_level, grid_level>::template __call<_Tp>();
   }
 };

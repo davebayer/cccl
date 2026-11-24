@@ -265,20 +265,21 @@ class interwarp_synchronizer<::cuda::std::index_sequence<_Ids...>>
 {
   using _BarrierIds _CCCL_NODEBUG = ::cuda::std::index_sequence<_Ids...>;
 
-  static_assert(
-    [] {
-      bool __used[16]{};
-      for (const auto __id : ::cuda::std::array<::cuda::std::size_t, sizeof...(_Ids)>{_Ids...})
+  [[nodiscard]] _CCCL_API static constexpr bool __valid_ids() noexcept
+  {
+    bool __used[16]{};
+    for (const auto __id : ::cuda::std::array<::cuda::std::size_t, sizeof...(_Ids)>{_Ids...})
+    {
+      if (__id >= 16 || __used[__id])
       {
-        if (__id >= 16 || __used[__id])
-        {
-          return false;
-        }
-        __used[__id] = true;
+        return false;
       }
-      return true;
-    }(),
-    "interwarp barrier IDs must be distinct and in the range [0, 16)");
+      __used[__id] = true;
+    }
+    return true;
+  }
+
+  static_assert(__valid_ids(), "interwarp barrier IDs must be distinct and in the range [0, 16)");
 
 public:
   _CCCL_TEMPLATE(class _Range)

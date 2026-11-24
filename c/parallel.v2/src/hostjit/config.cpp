@@ -27,7 +27,7 @@ void append_macro_definition(
   }
   else
   {
-    args.push_back("-D" + macro_name + "=" + macro_value);
+    args.emplace_back("-D").append(macro_name).append("=").append(macro_value);
   }
 }
 
@@ -42,6 +42,7 @@ void append_cccl_include_paths(std::vector<std::string>& args, const CompilerCon
 #ifdef CCCL_SOURCE_DIR
   append_system_include_path(args, std::string(CCCL_SOURCE_DIR) + "/libcudacxx/include");
   append_system_include_path(args, std::string(CCCL_SOURCE_DIR) + "/cub");
+  append_system_include_path(args, std::string(CCCL_SOURCE_DIR) + "/cudax/include");
   append_system_include_path(args, std::string(CCCL_SOURCE_DIR) + "/thrust");
 #endif
 }
@@ -101,7 +102,7 @@ void CompilerConfig::appendCommandLineArguments(std::vector<std::string>& args) 
   }
   for (const auto& clang_arg : extra_clang_args)
   {
-    args.push_back("-XClang");
+    args.emplace_back("-XClang");
     args.push_back(clang_arg);
   }
   if (!device_pch_path.empty())
@@ -116,19 +117,19 @@ void CompilerConfig::appendCommandLineArguments(std::vector<std::string>& args) 
   args.push_back("-O" + std::to_string(optimization_level));
   if (debug)
   {
-    args.push_back("--debug");
+    args.emplace_back("--debug");
   }
   if (verbose)
   {
-    args.push_back("--verbose");
+    args.emplace_back("--verbose");
   }
   if (trace_includes)
   {
-    args.push_back("--trace-includes");
+    args.emplace_back("--trace-includes");
   }
   if (keep_artifacts)
   {
-    args.push_back("--keep-artifacts");
+    args.emplace_back("--keep-artifacts");
   }
   if (!entry_point_name.empty())
   {
@@ -159,8 +160,8 @@ CompilerConfig detectDefaultConfig()
   // Set up library paths if CUDA toolkit was found
   if (!config.cuda_toolkit_path.empty())
   {
-    std::filesystem::path lib64_path = std::filesystem::path(config.cuda_toolkit_path) / "lib64";
-    std::filesystem::path lib_path   = std::filesystem::path(config.cuda_toolkit_path) / "lib";
+    const std::filesystem::path lib64_path = std::filesystem::path(config.cuda_toolkit_path) / "lib64";
+    const std::filesystem::path lib_path   = std::filesystem::path(config.cuda_toolkit_path) / "lib";
 
     if (std::filesystem::exists(lib64_path))
     {
@@ -185,7 +186,7 @@ CompilerConfig detectDefaultConfig()
       if (cuDeviceGetAttribute(&major, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, device) == CUDA_SUCCESS
           && cuDeviceGetAttribute(&minor, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, device) == CUDA_SUCCESS)
       {
-        int detected_sm = major * 10 + minor;
+        const int detected_sm = (major * 10) + minor;
         if (detected_sm >= 75)
         {
           config.sm_version = detected_sm;
@@ -252,7 +253,7 @@ bool validateConfig(const CompilerConfig& config, std::string* error_message)
     return false;
   }
 
-  std::filesystem::path cuda_h = std::filesystem::path(config.cuda_toolkit_path) / "include" / "cuda.h";
+  const std::filesystem::path cuda_h = std::filesystem::path(config.cuda_toolkit_path) / "include" / "cuda.h";
   if (!std::filesystem::exists(cuda_h))
   {
     if (error_message)

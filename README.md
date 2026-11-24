@@ -134,7 +134,7 @@ For complete information on compatibility between CCCL and the CUDA Toolkit, see
 Everything in CCCL is header-only, so cloning and including it in a simple project is as easy as the following:
 ```bash
 git clone https://github.com/NVIDIA/cccl.git
-nvcc -Icccl/thrust -Icccl/libcudacxx/include -Icccl/cub main.cu -o main
+nvcc -Icccl/thrust -Icccl/libcudacxx/include -Icccl/cub -Icccl/cudax/include main.cu -o main
 ```
 > **Note**
 > Use `-I` and not `-isystem` to avoid collisions with the CCCL headers implicitly included by `nvcc` from the CUDA Toolkit. All CCCL headers use `#pragma system_header` to ensure warnings will still be silenced as if using `-isystem`, see https://github.com/NVIDIA/cccl/issues/527 for more information.

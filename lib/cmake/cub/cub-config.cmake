@@ -101,6 +101,19 @@ if (NOT TARGET CUB::libcudacxx)
   target_link_libraries(_CUB_libcudacxx INTERFACE libcudacxx::libcudacxx)
 endif()
 
+if (NOT TARGET cudax::cudax)
+  find_package(
+    cudax
+    ${CUB_VERSION}
+    EXACT
+    CONFIG
+    REQUIRED
+    ${quiet_flag}
+    NO_DEFAULT_PATH
+    HINTS "${CMAKE_CURRENT_LIST_DIR}/../cudax/"
+  )
+endif()
+
 #
 # Setup targets
 #
@@ -111,6 +124,7 @@ target_link_libraries(
   INTERFACE #
     CUB::libcudacxx
     CUB::Thrust
+    cudax::cudax
 )
 
 function(_cub_test_flag_option flag)

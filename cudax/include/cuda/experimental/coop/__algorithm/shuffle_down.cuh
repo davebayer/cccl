@@ -53,7 +53,17 @@ __shuffle_down_impl(const _Group& __group, const _Tp& __value, unsigned __offset
   const auto __lane_mask       = __mapping_result.lane_mask();
   const auto __offset_is_valid = (__offset < __mapping_result.unit_count() - __mapping_result.unit_rank());
 
-  if constexpr (_Group::is_always_contiguous())
+  if constexpr (_Group::is_always_contiguous()
+                && _Group::__mapping_result_type::static_unit_count() == ::cuda::device::__warp_threads)
+  {
+    // Hardware reports when the source lane is outside this warp.
+    const auto __result = ::cuda::device::warp_shuffle_down(
+      __value, static_cast<int>(__offset % ::cuda::device::__warp_threads), __lane_mask.value());
+    return __offset < ::cuda::device::__warp_threads && __result.pred
+           ? ::cuda::std::optional{__result.data}
+           : ::cuda::std::nullopt;
+  }
+  else if constexpr (_Group::is_always_contiguous())
   {
     const auto __real_offset = __offset_is_valid ? __offset : 0u;
     const auto __result =
