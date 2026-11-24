@@ -1,5 +1,23 @@
 # WarpSpeed experimental groups on RTX PRO 6000
 
+## Scan with one barrier initialized per lane
+
+The reference for this experiment is the original squad-based scan at `4db67c68d9` with its stage and phase loops interchanged. The groups scan now records the first logical barrier, shared-memory address and arrival count of each phase during registration. Neighboring block threads initialize neighboring logical barriers. With three pipeline stages and two lookahead stages, a warp initializes all 25 barriers in one pass. Each phase retains its own storage and arrival count. On SM120a this reduced the groups kernel's instructions before the block synchronization from 117 to 98 for u32 and from 119 to 100 for u64. Both use 88 registers per thread with zero spills.
+
+We compared the improved original, the previous groups scan, and two versions of the new initialization on the RTX PRO 6000 with NVCC 13.5, GCC 14, C++17 and `sm_120a`. Each set of four rounds balanced executable order and predecessors. The first two sizes used 12 rounds of 192 consecutive public `DeviceScan::ExclusiveSum` calls per graph replay. The largest size used eight rounds of single scans. The table shows paired changes in median execution time across aligned, one-element-shifted output and in-place layouts. Negative values mean faster scans.
+
+| Elements | u32 vs. improved original | u64 vs. improved original |
+| ---: | ---: | ---: |
+| 65,536 | −3.73% to −3.12% | −1.31% to −1.00% |
+| 1,048,576 | −2.80% to −2.79% | −1.64% to −1.44% |
+| 33,554,432 | 0.00% | −0.07% to +0.05% |
+
+Ten of the twelve short and medium 95% paired bootstrap intervals were entirely below zero. The exceptions were shifted and in-place u64 at 65,536 elements. All six large-input intervals included zero. The compiled SM120a scan kernels in the final source match the timed executables instruction for instruction. [Per-layout timings and intervals](scan-barrier-timings.csv) · [Raw NVBench results and scripts](/tmp/warpspeed-fair-KYglskna)
+
+We also ported the same lane-based initialization to the original squads to isolate the remaining groups overhead. Across twelve additional aligned rounds, groups differed from those squads by −0.13% for u32 and +1.59% for u64 at 65,536 elements, and by −0.26% and 0.00% respectively at 1,048,576. The short u64 difference had a 95% interval of +1.06% to +2.07%. Caching the warp rank and dispatching directly on the physical warp each left a short u64 gap. [Matched-initializer timings and intervals](/tmp/warpspeed-fair-KYglskna/matched-aligned.csv)
+
+An early version of the phase lookup increased register use and spilled in SM90 deterministic scans. Using 32-bit shared addresses and selecting a phase by index when the phase count stays dynamic restored the previous register counts. The final SM90 FP32 and FP64 deterministic kernels used 92 and 91 registers, had zero spills, and used 16 fewer bytes of stack each. Across eight public exclusive-sum types on SM100a and SM120a, register counts, stack and spills matched the previous groups build. SM90 and SM100a were checked by compilation.
+
 ## Short scan latency
 
 WarpSpeed initializes one shared-memory barrier per resource, stage and phase. All phases of a resource have the same stage count. Having each thread initialize every phase of its assigned stage removes repeated loop and reconvergence instructions at block startup. For u32 and u64 the number of SM120a instructions before the first block barrier fell from 158 to 117 and from 160 to 119, respectively. Both kernels still use 88 registers per thread with zero spills.
