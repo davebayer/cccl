@@ -23,12 +23,12 @@
 
 #if _CCCL_HAS_CTK()
 
-#  include <cuda/__cmath/ceil_div.h>
 #  include <cuda/__fwd/hierarchy.h>
 #  include <cuda/__hierarchy/hierarchy_query_result.h>
 #  include <cuda/__hierarchy/queries/extents.h>
 #  include <cuda/__hierarchy/traits.h>
 #  include <cuda/std/__cstddef/types.h>
+#  include <cuda/std/cstdint>
 
 #  if _CCCL_CUDA_COMPILATION()
 #    include <cuda/__ptx/instructions/get_sreg.h> // IWYU pragma: keep
@@ -140,27 +140,44 @@ struct __index_query_native<cluster_level, grid_level>
 
 // hierarchy queries
 
+template <class _Unit, class _Level>
+struct __index_query_direct
+{
+  template <class _Tp, class _Hierarchy>
+  [[nodiscard]] _CCCL_DEVICE_API static hierarchy_query_result<_Tp> __call(const _Hierarchy& __hier) noexcept
+  {
+    auto __idx = __index_query_native<_Unit, _Level>::template __call<_Tp>();
+    // In a grid described in blocks, each singleton grid axis also contains just one cluster.
+    constexpr bool __has_unit =
+      __has_bottom_unit_or_level_v<_Unit, _Hierarchy>
+      || (::cuda::std::is_same_v<_Unit, cluster_level> && __has_bottom_unit_or_level_v<block_level, _Hierarchy>);
+    if constexpr (__has_unit && _Hierarchy::template has_level<_Level>())
+    {
+      using _Exts = decltype(__extents_query<_Unit, _Level>::template __call<::cuda::std::size_t>(__hier));
+      for (::cuda::std::size_t __i = 0; __i < 3; ++__i)
+      {
+        if (__i >= _Exts::rank() || _Exts::static_extent(__i) == 1)
+        {
+          __idx[__i] = 0;
+        }
+      }
+    }
+    return __idx;
+  }
+};
+
 template <class _Tp, class _Unit, class _NextLevel, class _Level, class _Hierarchy>
 [[nodiscard]] _CCCL_DEVICE_API hierarchy_query_result<_Tp> __index_query_generic(const _Hierarchy& __hier) noexcept
 {
   if constexpr (::cuda::std::is_same_v<_Level, _NextLevel>)
   {
-    using _CurrExts = decltype(__extents_query<_Unit, _NextLevel>::template __call<_Tp>(__hier));
-    auto __curr_idx = __index_query_native<_Unit, _NextLevel>::template __call<_Tp>();
-    for (::cuda::std::size_t __i = 0; __i < 3; ++__i)
-    {
-      if (__i >= _CurrExts::rank() || _CurrExts::static_extent(__i) == 1)
-      {
-        __curr_idx[__i] = 0;
-      }
-    }
-    return __curr_idx;
+    return __index_query_direct<_Unit, _NextLevel>::template __call<_Tp>(__hier);
   }
   else
   {
     const auto __curr_exts = __extents_query<_Unit, _NextLevel>::template __call<_Tp>(__hier);
     const auto __next_idx  = __index_query<_NextLevel, _Level>::template __call<_Tp>(__hier);
-    const auto __curr_idx  = __index_query_native<_Unit, _NextLevel>::template __call<_Tp>();
+    const auto __curr_idx  = __index_query<_Unit, _NextLevel>::template __call<_Tp>(__hier);
 
     hierarchy_query_result<_Tp> __ret{};
     for (::cuda::std::size_t __i = 0; __i < 3; ++__i)
@@ -215,8 +232,9 @@ struct __index_query<warp_level, _Level>
   template <class _Tp, class _Hierarchy>
   [[nodiscard]] _CCCL_DEVICE_API static hierarchy_query_result<_Tp> __call(const _Hierarchy& __hier) noexcept
   {
-    const auto __block_exts = __extents_query<thread_level, block_level>::template __call<unsigned>(__hier);
-    const auto __thread_idx = __index_query<thread_level, block_level>::template __call<unsigned>(__hier);
+    const auto __block_exts =
+      __extents_query<thread_level, block_level>::template __call<::cuda::std::uint32_t>(__hier);
+    const auto __thread_idx = __index_query<thread_level, block_level>::template __call<::cuda::std::uint32_t>(__hier);
     const auto __thread_rank =
       (((__thread_idx.z * __block_exts.extent(1)) + __thread_idx.y) * __block_exts.extent(0)) + __thread_idx.x;
     const auto __warp_rank = __thread_rank / 32;
@@ -227,8 +245,9 @@ struct __index_query<warp_level, _Level>
     }
     else
     {
+      // The hierarchy describes the running block, so adding 31 cannot overflow.
       const auto __thread_count = __block_exts.extent(0) * __block_exts.extent(1) * __block_exts.extent(2);
-      const auto __warp_count   = ::cuda::ceil_div(__thread_count, 32);
+      const auto __warp_count   = (__thread_count + 31u) / 32u;
       const auto __next_idx     = __index_query<block_level, _Level>::template __call<_Tp>(__hier);
       return {static_cast<_Tp>((__next_idx.x * __warp_count) + __warp_rank), __next_idx.y, __next_idx.z};
     }
@@ -241,19 +260,14 @@ struct __index_query<block_level, cluster_level>
   template <class _Tp, class _Hierarchy>
   [[nodiscard]] _CCCL_DEVICE_API static hierarchy_query_result<_Tp> __call(const _Hierarchy&) noexcept
   {
+    // CUDA may group these blocks into a larger preferred cluster at launch.
     return __index_query_native<block_level, cluster_level>::template __call<_Tp>();
   }
 };
 
 template <>
-struct __index_query<block_level, grid_level>
-{
-  template <class _Tp, class _Hierarchy>
-  [[nodiscard]] _CCCL_DEVICE_API static hierarchy_query_result<_Tp> __call(const _Hierarchy&) noexcept
-  {
-    return __index_query_native<block_level, grid_level>::template __call<_Tp>();
-  }
-};
+struct __index_query<block_level, grid_level> : __index_query_direct<block_level, grid_level>
+{};
 
 template <>
 struct __index_query<cluster_level, grid_level>
@@ -261,7 +275,11 @@ struct __index_query<cluster_level, grid_level>
   template <class _Tp, class _Hierarchy>
   [[nodiscard]] _CCCL_DEVICE_API static hierarchy_query_result<_Tp> __call(const _Hierarchy& __hier) noexcept
   {
-    return __index_query_native<cluster_level, grid_level>::template __call<_Tp>();
+    // A singleton grid axis also contains just one cluster if CUDA selects a larger preferred cluster.
+    // On architectures without clusters each block is its own cluster.
+    NV_IF_ELSE_TARGET(NV_PROVIDES_SM_90,
+                      (return __index_query_direct<cluster_level, grid_level>::template __call<_Tp>(__hier);),
+                      (return __index_query_direct<block_level, grid_level>::template __call<_Tp>(__hier);))
   }
 };
 

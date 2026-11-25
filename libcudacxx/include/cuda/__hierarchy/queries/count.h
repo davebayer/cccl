@@ -26,8 +26,10 @@
 #  include <cuda/__fwd/hierarchy.h>
 #  include <cuda/std/__cstddef/types.h>
 #  include <cuda/std/__fwd/span.h>
+#  include <cuda/std/__type_traits/conditional.h>
 #  include <cuda/std/__type_traits/is_same.h>
 #  include <cuda/std/__utility/declval.h>
+#  include <cuda/std/cstdint>
 
 #  include <cuda/std/__cccl/prologue.h>
 
@@ -52,14 +54,35 @@ struct __count_query_native
   template <class _Tp>
   [[nodiscard]] _CCCL_DEVICE_API static _Tp __call() noexcept
   {
-    const auto __exts = __extents_query_native<_Unit, _Level>::template __call<_Tp>();
-
-    _Tp __ret = 1;
-    for (::cuda::std::size_t __i = 0; __i < __exts.rank(); ++__i)
+    if constexpr (::cuda::std::is_same_v<typename _Unit::__next_native_level, block_level>
+                  && (::cuda::std::is_same_v<_Level, cluster_level> || ::cuda::std::is_same_v<_Level, grid_level>) )
     {
-      __ret *= __exts.extent(__i);
+      // Threads and warps per block or cluster fit in 32 bits. Only a grid-wide product may need more.
+      using _BlockCount =
+        ::cuda::std::conditional_t<::cuda::std::is_same_v<_Level, grid_level>, _Tp, ::cuda::std::uint32_t>;
+      const auto __per_block = __count_query_native<_Unit, block_level>::template __call<::cuda::std::uint32_t>();
+      const auto __blocks    = __count_query_native<block_level, _Level>::template __call<_BlockCount>();
+      return static_cast<_Tp>(__blocks * __per_block);
     }
-    return __ret;
+    else
+    {
+      const auto __exts = __extents_query_native<_Unit, _Level>::template __call<::cuda::std::uint32_t>();
+      if constexpr (::cuda::std::is_same_v<_Level, grid_level> && sizeof(_Tp) > sizeof(::cuda::std::uint32_t))
+      {
+        // Grid dimensions are at most (2^31 - 1, 65535, 65535) blocks or clusters.
+        const ::cuda::std::uint32_t __yz = __exts.extent(1) * __exts.extent(2);
+        return static_cast<_Tp>(static_cast<::cuda::std::uint64_t>(__exts.extent(0)) * __yz);
+      }
+      else
+      {
+        ::cuda::std::uint32_t __count = __exts.extent(0);
+        for (::cuda::std::size_t __i = 1; __i < __exts.rank(); ++__i)
+        {
+          __count *= __exts.extent(__i);
+        }
+        return static_cast<_Tp>(__count);
+      }
+    }
   }
 };
 
@@ -69,19 +92,9 @@ struct __count_query_native<block_level, cluster_level>
   template <class _Tp>
   [[nodiscard]] _CCCL_DEVICE_API static _Tp __call() noexcept
   {
-    unsigned __count = 1; // NOLINT(misc-const-correctness)
+    ::cuda::std::uint32_t __count = 1; // NOLINT(misc-const-correctness)
     NV_IF_TARGET(NV_PROVIDES_SM_90, (__count = ::__clusterSizeInBlocks();))
     return static_cast<_Tp>(__count);
-  }
-};
-
-template <>
-struct __count_query_native<block_level, grid_level>
-{
-  template <class _Tp>
-  [[nodiscard]] _CCCL_DEVICE_API static _Tp __call() noexcept
-  {
-    return static_cast<_Tp>(static_cast<_Tp>(gridDim.x) * gridDim.y * gridDim.z);
   }
 };
 

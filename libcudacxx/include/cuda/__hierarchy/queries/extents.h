@@ -29,9 +29,12 @@
 #  include <cuda/std/__algorithm/max.h>
 #  include <cuda/std/__cstddef/types.h>
 #  include <cuda/std/__mdspan/extents.h>
+#  include <cuda/std/__type_traits/common_type.h>
 #  include <cuda/std/__type_traits/is_same.h>
+#  include <cuda/std/__type_traits/make_unsigned.h>
 #  include <cuda/std/__utility/integer_sequence.h>
 #  include <cuda/std/array>
+#  include <cuda/std/cstdint>
 
 #  include <cuda/std/__cccl/prologue.h>
 
@@ -198,7 +201,8 @@ struct __extents_query_native<warp_level, block_level>
   [[nodiscard]] _CCCL_DEVICE_API static ::cuda::std::dims<1, _Tp> __call() noexcept
   {
     const auto __thread_count = blockDim.x * blockDim.y * blockDim.z;
-    return ::cuda::std::dims<1, _Tp>{static_cast<_Tp>(::cuda::ceil_div(__thread_count, 32))};
+    // A running block has at most 1024 threads, so adding 31 cannot overflow.
+    return ::cuda::std::dims<1, _Tp>{static_cast<_Tp>((__thread_count + 31u) / 32u)};
   }
 };
 
@@ -270,7 +274,9 @@ struct __extents_query<warp_level, _Level>
   template <class _Tp, class _Hierarchy>
   [[nodiscard]] _CCCL_API static constexpr auto __call(const _Hierarchy& __hier) noexcept
   {
-    auto __block_exts = __extents_query<thread_level, block_level>::template __call<_Tp>(__hier);
+    // A thread extent can exceed the requested result type even when the number of warps fits.
+    using _Count      = ::cuda::std::common_type_t<::cuda::std::uint32_t, ::cuda::std::make_unsigned_t<_Tp>>;
+    auto __block_exts = __extents_query<thread_level, block_level>::template __call<_Count>(__hier);
     using _BlockExts  = decltype(__block_exts);
 
     if constexpr (_BlockExts::rank_dynamic() == 0)
@@ -296,14 +302,14 @@ struct __extents_query<warp_level, _Level>
       const auto __thread_count = __block_exts.extent(0) * __block_exts.extent(1) * __block_exts.extent(2);
       _CCCL_ASSERT(__thread_count >= 32, "_Hierarchy doesn't contain enough threads to fill a single warp");
 
-      const auto __warp_count = static_cast<_Tp>(::cuda::ceil_div(__thread_count, 32));
-      ::cuda::std::dims<1, _Tp> __curr_exts{__warp_count};
       if constexpr (::cuda::std::is_same_v<_Level, block_level>)
       {
-        return __curr_exts;
+        return ::cuda::std::dims<1, _Tp>{static_cast<_Tp>(1 + ((__thread_count - 1) / 32))};
       }
       else
       {
+        // ceil_div also handles overflow and composes efficiently with the enclosing extents.
+        const ::cuda::std::dims<1, _Tp> __curr_exts{static_cast<_Tp>(::cuda::ceil_div(__thread_count, 32))};
         const auto __next_exts = __extents_query<block_level, _Level>::template __call<_Tp>(__hier);
         return ::cuda::__hierarchy_extents_mul(__curr_exts, __next_exts);
       }
@@ -336,7 +342,7 @@ struct __extents_query<cluster_level, grid_level>
   template <class _Tp, class _Hierarchy>
   [[nodiscard]] _CCCL_API static constexpr auto __call(const _Hierarchy& __hier) noexcept
   {
-    if constexpr (_Hierarchy::template has_level<cluster_level>())
+    if constexpr (__has_bottom_unit_or_level_v<cluster_level, _Hierarchy>)
     {
       return ::cuda::__extents_query_generic<_Tp, cluster_level, grid_level>(__hier);
     }
