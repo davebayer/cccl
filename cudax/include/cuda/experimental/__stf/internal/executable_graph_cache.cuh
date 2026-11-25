@@ -48,7 +48,7 @@ namespace reserved
 {
 // This tries to instantiate the graph by updating an existing executable graph
 // the returned value indicates whether the update was successful or not
-inline bool try_updating_executable_graph(cudaGraphExec_t exec_graph, cudaGraph_t graph)
+_CCCL_HOST_API inline bool try_updating_executable_graph(cudaGraphExec_t exec_graph, cudaGraph_t graph)
 {
   cudaGraphExecUpdateResultInfo resultInfo;
   const cudaError_t res = cudaGraphExecUpdate(exec_graph, graph, &resultInfo);
@@ -59,13 +59,13 @@ inline bool try_updating_executable_graph(cudaGraphExec_t exec_graph, cudaGraph_
     // unrelated call. Reading cudaGetLastError() INSTEAD of the return value
     // would have the converse bug: an earlier unrelated failure would make a
     // successful update look failed.
-    cudaGetLastError();
+    (void) cudaGetLastError();
   }
   return res == cudaSuccess;
 }
 
 // Instantiate a CUDA graph
-inline ::std::shared_ptr<cudaGraphExec_t> graph_instantiate(cudaGraph_t g)
+_CCCL_HOST_API inline ::std::shared_ptr<cudaGraphExec_t> graph_instantiate(cudaGraph_t g)
 {
   // The handle stays null if instantiation throws below: the deleter must not destroy it in that
   // case, or the report would mask the real error. A deleter cannot throw: a failing destroy leaks
@@ -99,7 +99,7 @@ public:
   size_t nnodes          = 0;
   size_t nedges          = 0;
 
-  executable_graph_cache_stat& operator+=(const executable_graph_cache_stat& other)
+  _CCCL_HOST_API executable_graph_cache_stat& operator+=(const executable_graph_cache_stat& other)
   {
     instantiate_cnt += other.instantiate_cnt;
     update_cnt += other.update_cnt;
@@ -112,16 +112,14 @@ public:
 class executable_graph_cache
 {
 public:
-  executable_graph_cache()
+  _CCCL_HOST_API executable_graph_cache()
   {
-    cache_size_limit = 512 * 1024 * 1024;
-
     // Maximum size of the executable graph cache (in MB) per device
     // Cache is disabled if the size is 0
     const char* str = getenv("CUDASTF_GRAPH_CACHE_SIZE_MB");
     if (str)
     {
-      cache_size_limit = atol(str) * 1024 * 1024;
+      cache_size_limit = static_cast<size_t>(::std::strtol(str, nullptr, 10)) * 1024 * 1024;
     }
 
     const int ndevices = cuda_try<cudaGetDeviceCount>();
@@ -137,16 +135,15 @@ public:
   // One entry of the cache
   struct entry
   {
-    entry(executable_graph_cache* cache, ::std::shared_ptr<cudaGraphExec_t> exec_g_, size_t footprint)
+    _CCCL_HOST_API entry(executable_graph_cache* cache, ::std::shared_ptr<cudaGraphExec_t> exec_g_, size_t footprint)
         : cache(cache)
         , exec_g(mv(exec_g_))
+        , last_use(cache->index)
         , footprint(footprint)
-    {
-      last_use = cache->index;
-    }
+    {}
 
     // Update the last_use field to mark that this entry was used recently
-    void lru_refresh()
+    _CCCL_HOST_API void lru_refresh()
     {
       last_use = cache->index++;
     }
@@ -160,7 +157,7 @@ public:
   // TODO we should not have to redefine this one again
   struct hash_pair
   {
-    size_t operator()(const std::pair<size_t, size_t>& p) const
+    _CCCL_HOST_API size_t operator()(const std::pair<size_t, size_t>& p) const
     {
       auto h1 = ::std::hash<size_t>{}(p.first); // Hash the first element
       auto h2 = ::std::hash<size_t>{}(p.second); // Hash the second element
@@ -174,9 +171,10 @@ public:
   // Check if there is a matching entry (and update it if necessary)
   // the returned bool indicate is this is a cache hit (true = cache hit, false = cache miss)
   // The graph g is only used during this call (for update or instantiate); it is never stored.
-  ::cuda::std::pair<::std::shared_ptr<cudaGraphExec_t>, bool> query(size_t nnodes, size_t nedges, cudaGraph_t g)
+  _CCCL_HOST_API ::cuda::std::pair<::std::shared_ptr<cudaGraphExec_t>, bool>
+  query(size_t nnodes, size_t nedges, cudaGraph_t g)
   {
-    int dev_id = cuda_try<cudaGetDevice>();
+    const int dev_id = cuda_try<cudaGetDevice>();
     _CCCL_ASSERT(dev_id < int(cached_graphs.size()), "invalid device id value");
 
     auto range = cached_graphs[dev_id].equal_range({nnodes, nedges});
@@ -198,7 +196,7 @@ public:
 
     // Rough footprint estimate of the graph based on the number of nodes (this
     // is really an approximation)
-    size_t footprint = nnodes * 10240;
+    const size_t footprint = nnodes * 10240;
     if (total_cache_footprint[dev_id] + footprint > cache_size_limit)
     {
       reclaim(dev_id, total_cache_footprint[dev_id] + footprint - cache_size_limit);
@@ -217,7 +215,7 @@ public:
   }
 
 private:
-  void reclaim(int dev_id, size_t to_reclaim)
+  _CCCL_HOST_API void reclaim(int dev_id, size_t to_reclaim)
   {
     size_t reclaimed = 0;
 
@@ -246,7 +244,7 @@ private:
     // Reclaim least recently used entries
     while (!lru_queue.empty() && reclaimed < to_reclaim)
     {
-      key_type key = lru_queue.top();
+      const key_type key = lru_queue.top();
       lru_queue.pop();
 
       // Find the entry before erasing
@@ -270,6 +268,6 @@ private:
   // An estimated footprint (per device)
   ::std::vector<size_t> total_cache_footprint;
 
-  size_t cache_size_limit;
+  size_t cache_size_limit = 512 * 1024 * 1024;
 };
 } // namespace cuda::experimental::stf

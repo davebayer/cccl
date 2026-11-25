@@ -46,24 +46,21 @@ struct green_context
   CUgreenCtx __green_ctx  = nullptr;
   CUcontext __transformed = nullptr;
 
-  explicit green_context(device_ref __device)
+  _CCCL_HOST_API explicit green_context(device_ref __device)
       : __dev_id(__device.get())
-  {
-    // TODO get CUdevice from device
-    auto __dev_handle = ::cuda::__driver::__deviceGet(__dev_id);
-    __green_ctx       = ::cuda::__driver::__greenCtxCreate(__dev_handle);
-    __transformed     = ::cuda::__driver::__ctxFromGreenCtx(__green_ctx);
-  }
+      , __green_ctx(::cuda::__driver::__greenCtxCreate(::cuda::__driver::__deviceGet(__dev_id)))
+      , __transformed(::cuda::__driver::__ctxFromGreenCtx(__green_ctx))
+  {}
 
   green_context(const green_context&)            = delete;
   green_context& operator=(const green_context&) = delete;
 
   // TODO this probably should be the runtime equivalent once available
-  [[nodiscard]] static green_context from_native_handle(CUgreenCtx __gctx)
+  [[nodiscard]] _CCCL_HOST_API static green_context from_native_handle(CUgreenCtx __gctx)
   {
     CUcontext __transformed = ::cuda::__driver::__ctxFromGreenCtx(__gctx);
     ::cuda::__driver::__ctxPush(__transformed);
-    CUdevice __device = ::cuda::__driver::__ctxGetDevice();
+    const CUdevice __device = ::cuda::__driver::__ctxGetDevice();
     ::cuda::__driver::__ctxPop();
     return green_context(::cuda::__driver::__cudevice_to_ordinal(__device), __gctx, __transformed);
   }
@@ -75,14 +72,14 @@ struct green_context
   }
 #  endif // _CCCL_CTK_AT_LEAST(13, 0)
 
-  [[nodiscard]] CUgreenCtx release() noexcept
+  [[nodiscard]] _CCCL_HOST_API CUgreenCtx release() noexcept
   {
     __transformed = nullptr;
     __dev_id      = -1;
     return ::cuda::std::exchange(__green_ctx, nullptr);
   }
 
-  ~green_context()
+  _CCCL_HOST_API ~green_context()
   {
     if (__green_ctx)
     {
@@ -92,7 +89,7 @@ struct green_context
   }
 
 private:
-  explicit green_context(int __id, CUgreenCtx __gctx, CUcontext __ctx)
+  _CCCL_HOST_API explicit green_context(int __id, CUgreenCtx __gctx, CUcontext __ctx)
       : __dev_id(__id)
       , __green_ctx(__gctx)
       , __transformed(__ctx)

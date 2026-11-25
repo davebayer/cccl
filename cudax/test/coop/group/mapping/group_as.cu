@@ -172,7 +172,7 @@ __device__ void check_mapping_result(const Range& counts, const Result& result, 
 {
   if (!prev.is_valid())
   {
-    CHECK(!result.is_valid());
+    REQUIRE_DEVICE(!result.is_valid());
     return;
   }
 
@@ -180,7 +180,7 @@ __device__ void check_mapping_result(const Range& counts, const Result& result, 
   const auto total_units = cuda::std::accumulate(cuda::std::ranges::begin(counts), cuda::std::ranges::end(counts), 0u);
   const bool is_valid    = rank < total_units;
 
-  CHECK(result.is_valid() == is_valid);
+  REQUIRE_DEVICE(result.is_valid() == is_valid);
 
   // Excluded threads cannot query group ranks, sizes, or lane masks.
   if (!is_valid)
@@ -202,13 +202,13 @@ __device__ void check_mapping_result(const Range& counts, const Result& result, 
     {
       const auto lane_mask = (unit_count < 32) ? ((1u << unit_count) - 1) << (first_lane + group_start) : ~0u;
 
-      CHECK(result.group_count() == prev.group_count() * group_count);
-      CHECK(result.group_rank() == prev.group_rank() * group_count + group_rank);
+      REQUIRE_DEVICE(result.group_count() == prev.group_count() * group_count);
+      REQUIRE_DEVICE(result.group_rank() == prev.group_rank() * group_count + group_rank);
 
-      CHECK(result.unit_count() == unit_count);
-      CHECK(result.unit_rank() == rank - group_start);
+      REQUIRE_DEVICE(result.unit_count() == unit_count);
+      REQUIRE_DEVICE(result.unit_rank() == rank - group_start);
 
-      CHECK(result.lane_mask() == cuda::device::lane_mask{lane_mask});
+      REQUIRE_DEVICE(result.lane_mask() == cuda::device::lane_mask{lane_mask});
 
       return;
     }
@@ -389,12 +389,12 @@ __device__ void test_static_composition(Config config)
   static_assert(Repeated::static_unit_count(2) == 4);
   static_assert(Repeated::static_unit_count(3) == 12);
 
-  CHECK(repeated.group_rank() == 2 * halves.group_rank() + (halves.unit_rank() >= 4));
+  REQUIRE_DEVICE(repeated.group_rank() == 2 * halves.group_rank() + (halves.unit_rank() >= 4));
 
   // A following mapping can consume the per-group static counts.
   const auto quarters = cudax::coop::group_by{cuda::std::cw<4>}.map(cuda::gpu_thread, parent, repeated);
   static_assert(decltype(quarters)::static_group_count() == 8);
-  CHECK(quarters.group_rank() == cuda::gpu_thread.rank(parent) / 4);
+  REQUIRE_DEVICE(quarters.group_rank() == cuda::gpu_thread.rank(parent) / 4);
 }
 
 template <class Config>
@@ -408,21 +408,21 @@ __device__ void test_static_group_as_special_cases(Config config)
     cudax::coop::group_as{cuda::std::integer_sequence<short, 16, 16>{}}.map(cuda::gpu_thread, parent, prev);
   static_assert(decltype(uniform_groups)::has_uniform_static_unit_count());
   static_assert(decltype(uniform_groups)::static_unit_count() == 16);
-  CHECK(uniform_groups.unit_rank() == cuda::gpu_thread.rank(parent) % 16);
+  REQUIRE_DEVICE(uniform_groups.unit_rank() == cuda::gpu_thread.rank(parent) % 16);
 
   // A single subgroup retains all lanes in the parent warp.
   const auto single_group =
     cudax::coop::group_as{cuda::std::integer_sequence<unsigned long, 32>{}}.map(cuda::gpu_thread, parent, prev);
   static_assert(decltype(single_group)::static_group_count() == 1);
   static_assert(decltype(single_group)::static_unit_count() == 32);
-  CHECK(single_group.lane_mask() == prev.lane_mask());
+  REQUIRE_DEVICE(single_group.lane_mask() == prev.lane_mask());
 
   // Empty subgroups retain their ranks; every thread belongs to the middle subgroup.
   const auto empty_subgroups =
     cudax::coop::group_as{cuda::std::integer_sequence<int, 0, 32, 0>{}}.map(cuda::gpu_thread, parent, prev);
   static_assert(decltype(empty_subgroups)::static_group_count() == 3);
   static_assert(decltype(empty_subgroups)::static_unit_count(0) == 0);
-  CHECK(empty_subgroups.group_rank() == 1);
+  REQUIRE_DEVICE(empty_subgroups.group_rank() == 1);
 }
 
 template <class Config>
@@ -443,14 +443,14 @@ __device__ void test_static_previous_mappings(Config config)
   const cudax::coop::group_as split{cuda::std::integer_sequence<int, 4, 12>{}};
   const auto result = split.map(cudax::coop::non_exhaustive, cuda::gpu_thread, parent, partial);
   static_assert(decltype(result)::static_group_count() == 2);
-  CHECK(result.is_valid() == (cuda::gpu_thread.rank(parent) < 16));
+  REQUIRE_DEVICE(result.is_valid() == (cuda::gpu_thread.rank(parent) < 16));
 
   // Dynamic previous group counts retain the existing runtime representation.
   const auto dynamic_prev   = cudax::coop::group_by{16}.map(cuda::gpu_thread, parent, prev);
   const auto dynamic_result = split.map(cuda::gpu_thread, parent, dynamic_prev);
   static_assert(decltype(dynamic_result)::static_group_count() == cuda::std::dynamic_extent);
-  CHECK(dynamic_result.group_count() == 4);
-  CHECK(dynamic_result.unit_count() == (dynamic_prev.unit_rank() < 4 ? 4 : 12));
+  REQUIRE_DEVICE(dynamic_result.group_count() == 4);
+  REQUIRE_DEVICE(dynamic_result.unit_count() == (dynamic_prev.unit_rank() < 4 ? 4 : 12));
 }
 
 template <bool Exhaustive, class Config>

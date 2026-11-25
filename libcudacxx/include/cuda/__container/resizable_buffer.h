@@ -171,6 +171,8 @@ public:
     return *this;
   }
 
+  // The allocation already validated the element count and alignment for this capacity.
+  // NOLINTNEXTLINE(bugprone-exception-escape)
   _CCCL_HOST_API ~__resizable_buffer() noexcept
   {
     __base_t::__set_size_unsynchronized(__capacity_);

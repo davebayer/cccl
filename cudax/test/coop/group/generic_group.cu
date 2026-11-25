@@ -127,21 +127,21 @@ test_queries(const cudax::coop::generic_group<cuda::thread_level, ParentGroup, M
   const auto count_ref = group.__mapping_result().unit_count();
   const auto rank_ref  = cuda::gpu_thread.rank(Bound{}, group.hierarchy()) % count_ref;
 
-  REQUIRE(cuda::gpu_thread.count(group) == count_ref);
-  REQUIRE(cuda::gpu_thread.rank(group) == rank_ref);
-  REQUIRE(cuda::gpu_thread.is_root_rank(group) == (rank_ref == 0));
+  REQUIRE_DEVICE(cuda::gpu_thread.count(group) == count_ref);
+  REQUIRE_DEVICE(cuda::gpu_thread.rank(group) == rank_ref);
+  REQUIRE_DEVICE(cuda::gpu_thread.is_root_rank(group) == (rank_ref == 0));
 
   const auto static_group_count_ref = group.__mapping_result().static_group_count();
   const auto group_count_ref        = group.__mapping_result().group_count();
   const auto group_rank_ref         = group.__mapping_result().group_rank();
 
   static_assert(cuda::std::is_same_v<decltype(group.static_rank(parent_group)), cuda::std::size_t>);
-  REQUIRE(group_view.static_rank(parent_group) == MappingResult::static_group_rank());
-  REQUIRE(group.static_rank(parent_group) == MappingResult::static_group_rank());
+  REQUIRE_DEVICE(group_view.static_rank(parent_group) == MappingResult::static_group_rank());
+  REQUIRE_DEVICE(group.static_rank(parent_group) == MappingResult::static_group_rank());
 
-  REQUIRE(group.static_count(parent_group) == static_group_count_ref);
-  REQUIRE(group.count(parent_group) == group_count_ref);
-  REQUIRE(group.rank(parent_group) == group_rank_ref);
+  REQUIRE_DEVICE(group.static_count(parent_group) == static_group_count_ref);
+  REQUIRE_DEVICE(group.count(parent_group) == group_count_ref);
+  REQUIRE_DEVICE(group.rank(parent_group) == group_rank_ref);
 }
 
 template <cuda::std::size_t N, class Unit, class Level, class Config>

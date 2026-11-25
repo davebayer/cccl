@@ -125,21 +125,21 @@ __device__ void test_this_queries(const cudax::coop::this_thread<Hierarchy>& gro
   const cudax::coop::group_view group_view{group};
   static_assert(cuda::gpu_thread.static_count(group_view) == 1);
 
-  REQUIRE(cuda::gpu_thread.count(group) == 1);
-  REQUIRE(group.count(cuda::gpu_thread) == 1);
-  REQUIRE(group.count(cuda::warp) == cuda::gpu_thread.count(cuda::warp));
-  REQUIRE(group.count(cuda::block) == cuda::gpu_thread.count(cuda::block));
-  REQUIRE(group.count(cuda::cluster) == cuda::gpu_thread.count(cuda::cluster));
-  REQUIRE(group.count(cuda::grid) == cuda::gpu_thread.count(cuda::grid));
+  REQUIRE_DEVICE(cuda::gpu_thread.count(group) == 1);
+  REQUIRE_DEVICE(group.count(cuda::gpu_thread) == 1);
+  REQUIRE_DEVICE(group.count(cuda::warp) == cuda::gpu_thread.count(cuda::warp));
+  REQUIRE_DEVICE(group.count(cuda::block) == cuda::gpu_thread.count(cuda::block));
+  REQUIRE_DEVICE(group.count(cuda::cluster) == cuda::gpu_thread.count(cuda::cluster));
+  REQUIRE_DEVICE(group.count(cuda::grid) == cuda::gpu_thread.count(cuda::grid));
 
-  REQUIRE(cuda::gpu_thread.rank(group) == 0);
-  REQUIRE(group.rank(cuda::gpu_thread) == 0);
-  REQUIRE(group.rank(cuda::warp) == cuda::gpu_thread.rank(cuda::warp));
-  REQUIRE(group.rank(cuda::block) == cuda::gpu_thread.rank(cuda::block));
-  REQUIRE(group.rank(cuda::cluster) == cuda::gpu_thread.rank(cuda::cluster));
-  REQUIRE(group.rank(cuda::grid) == cuda::gpu_thread.rank(cuda::grid));
+  REQUIRE_DEVICE(cuda::gpu_thread.rank(group) == 0);
+  REQUIRE_DEVICE(group.rank(cuda::gpu_thread) == 0);
+  REQUIRE_DEVICE(group.rank(cuda::warp) == cuda::gpu_thread.rank(cuda::warp));
+  REQUIRE_DEVICE(group.rank(cuda::block) == cuda::gpu_thread.rank(cuda::block));
+  REQUIRE_DEVICE(group.rank(cuda::cluster) == cuda::gpu_thread.rank(cuda::cluster));
+  REQUIRE_DEVICE(group.rank(cuda::grid) == cuda::gpu_thread.rank(cuda::grid));
 
-  REQUIRE(cuda::gpu_thread.is_root_rank(group));
+  REQUIRE_DEVICE(cuda::gpu_thread.is_root_rank(group));
 }
 
 template <class Hierarchy>
@@ -150,22 +150,22 @@ __device__ void test_this_queries(const cudax::coop::this_warp<Hierarchy>& group
   static_assert(cuda::gpu_thread.static_count(group_view) == cuda::gpu_thread.static_count(cuda::warp, group_view));
   static_assert(cuda::warp.static_count(group_view) == 1);
 
-  REQUIRE(cuda::gpu_thread.count(group) == cuda::gpu_thread.count(cuda::warp));
-  REQUIRE(cuda::warp.count(group) == 1);
-  REQUIRE(group.count(cuda::warp) == 1);
-  REQUIRE(group.count(cuda::block) == cuda::warp.count(cuda::block));
-  REQUIRE(group.count(cuda::cluster) == cuda::warp.count(cuda::cluster));
-  REQUIRE(group.count(cuda::grid) == cuda::warp.count(cuda::grid));
+  REQUIRE_DEVICE(cuda::gpu_thread.count(group) == cuda::gpu_thread.count(cuda::warp));
+  REQUIRE_DEVICE(cuda::warp.count(group) == 1);
+  REQUIRE_DEVICE(group.count(cuda::warp) == 1);
+  REQUIRE_DEVICE(group.count(cuda::block) == cuda::warp.count(cuda::block));
+  REQUIRE_DEVICE(group.count(cuda::cluster) == cuda::warp.count(cuda::cluster));
+  REQUIRE_DEVICE(group.count(cuda::grid) == cuda::warp.count(cuda::grid));
 
-  REQUIRE(cuda::gpu_thread.rank(group) == cuda::gpu_thread.rank(cuda::warp));
-  REQUIRE(cuda::warp.rank(group) == 0);
-  REQUIRE(group.rank(cuda::warp) == 0);
-  REQUIRE(group.rank(cuda::block) == cuda::warp.rank(cuda::block));
-  REQUIRE(group.rank(cuda::cluster) == cuda::warp.rank(cuda::cluster));
-  REQUIRE(group.rank(cuda::grid) == cuda::warp.rank(cuda::grid));
+  REQUIRE_DEVICE(cuda::gpu_thread.rank(group) == cuda::gpu_thread.rank(cuda::warp));
+  REQUIRE_DEVICE(cuda::warp.rank(group) == 0);
+  REQUIRE_DEVICE(group.rank(cuda::warp) == 0);
+  REQUIRE_DEVICE(group.rank(cuda::block) == cuda::warp.rank(cuda::block));
+  REQUIRE_DEVICE(group.rank(cuda::cluster) == cuda::warp.rank(cuda::cluster));
+  REQUIRE_DEVICE(group.rank(cuda::grid) == cuda::warp.rank(cuda::grid));
 
-  REQUIRE(cuda::gpu_thread.is_root_rank(group) == (cuda::gpu_thread.rank(cuda::warp) == 0));
-  REQUIRE(cuda::warp.is_root_rank(group));
+  REQUIRE_DEVICE(cuda::gpu_thread.is_root_rank(group) == (cuda::gpu_thread.rank(cuda::warp) == 0));
+  REQUIRE_DEVICE(cuda::warp.is_root_rank(group));
 }
 
 template <class Hierarchy>
@@ -177,23 +177,23 @@ __device__ void test_this_queries(const cudax::coop::this_block<Hierarchy>& grou
   static_assert(cuda::warp.static_count(group_view) == cuda::warp.static_count(cuda::block, group_view));
   static_assert(cuda::block.static_count(group_view) == 1);
 
-  REQUIRE(cuda::gpu_thread.count(group) == cuda::gpu_thread.count(cuda::block));
-  REQUIRE(cuda::warp.count(group) == cuda::warp.count(cuda::block));
-  REQUIRE(cuda::block.count(group) == 1);
-  REQUIRE(group.count(cuda::block) == 1);
-  REQUIRE(group.count(cuda::cluster) == cuda::block.count(cuda::cluster));
-  REQUIRE(group.count(cuda::grid) == cuda::block.count(cuda::grid));
+  REQUIRE_DEVICE(cuda::gpu_thread.count(group) == cuda::gpu_thread.count(cuda::block));
+  REQUIRE_DEVICE(cuda::warp.count(group) == cuda::warp.count(cuda::block));
+  REQUIRE_DEVICE(cuda::block.count(group) == 1);
+  REQUIRE_DEVICE(group.count(cuda::block) == 1);
+  REQUIRE_DEVICE(group.count(cuda::cluster) == cuda::block.count(cuda::cluster));
+  REQUIRE_DEVICE(group.count(cuda::grid) == cuda::block.count(cuda::grid));
 
-  REQUIRE(cuda::gpu_thread.rank(group) == cuda::gpu_thread.rank(cuda::block));
-  REQUIRE(cuda::warp.rank(group) == cuda::warp.rank(cuda::block));
-  REQUIRE(cuda::block.rank(group) == 0);
-  REQUIRE(group.rank(cuda::block) == 0);
-  REQUIRE(group.rank(cuda::cluster) == cuda::block.rank(cuda::cluster));
-  REQUIRE(group.rank(cuda::grid) == cuda::block.rank(cuda::grid));
+  REQUIRE_DEVICE(cuda::gpu_thread.rank(group) == cuda::gpu_thread.rank(cuda::block));
+  REQUIRE_DEVICE(cuda::warp.rank(group) == cuda::warp.rank(cuda::block));
+  REQUIRE_DEVICE(cuda::block.rank(group) == 0);
+  REQUIRE_DEVICE(group.rank(cuda::block) == 0);
+  REQUIRE_DEVICE(group.rank(cuda::cluster) == cuda::block.rank(cuda::cluster));
+  REQUIRE_DEVICE(group.rank(cuda::grid) == cuda::block.rank(cuda::grid));
 
-  REQUIRE(cuda::gpu_thread.is_root_rank(group) == (cuda::gpu_thread.rank(cuda::block) == 0));
-  REQUIRE(cuda::warp.is_root_rank(group) == (cuda::warp.rank(cuda::block) == 0));
-  REQUIRE(cuda::block.is_root_rank(group));
+  REQUIRE_DEVICE(cuda::gpu_thread.is_root_rank(group) == (cuda::gpu_thread.rank(cuda::block) == 0));
+  REQUIRE_DEVICE(cuda::warp.is_root_rank(group) == (cuda::warp.rank(cuda::block) == 0));
+  REQUIRE_DEVICE(cuda::block.is_root_rank(group));
 }
 
 template <class Hierarchy>
@@ -206,24 +206,24 @@ __device__ void test_this_queries(const cudax::coop::this_cluster<Hierarchy>& gr
   static_assert(cuda::block.static_count(group_view) == cuda::block.static_count(cuda::cluster, group_view));
   static_assert(cuda::cluster.static_count(group_view) == 1);
 
-  REQUIRE(cuda::gpu_thread.count(group) == cuda::gpu_thread.count(cuda::cluster));
-  REQUIRE(cuda::warp.count(group) == cuda::warp.count(cuda::cluster));
-  REQUIRE(cuda::block.count(group) == cuda::block.count(cuda::cluster));
-  REQUIRE(cuda::cluster.count(group) == 1);
-  REQUIRE(group.count(cuda::cluster) == 1);
-  REQUIRE(group.count(cuda::grid) == cuda::cluster.count(cuda::grid));
+  REQUIRE_DEVICE(cuda::gpu_thread.count(group) == cuda::gpu_thread.count(cuda::cluster));
+  REQUIRE_DEVICE(cuda::warp.count(group) == cuda::warp.count(cuda::cluster));
+  REQUIRE_DEVICE(cuda::block.count(group) == cuda::block.count(cuda::cluster));
+  REQUIRE_DEVICE(cuda::cluster.count(group) == 1);
+  REQUIRE_DEVICE(group.count(cuda::cluster) == 1);
+  REQUIRE_DEVICE(group.count(cuda::grid) == cuda::cluster.count(cuda::grid));
 
-  REQUIRE(cuda::gpu_thread.rank(group) == cuda::gpu_thread.rank(cuda::cluster));
-  REQUIRE(cuda::warp.rank(group) == cuda::warp.rank(cuda::cluster));
-  REQUIRE(cuda::block.rank(group) == cuda::block.rank(cuda::cluster));
-  REQUIRE(cuda::cluster.rank(group) == 0);
-  REQUIRE(group.rank(cuda::cluster) == 0);
-  REQUIRE(group.rank(cuda::grid) == cuda::cluster.rank(cuda::grid));
+  REQUIRE_DEVICE(cuda::gpu_thread.rank(group) == cuda::gpu_thread.rank(cuda::cluster));
+  REQUIRE_DEVICE(cuda::warp.rank(group) == cuda::warp.rank(cuda::cluster));
+  REQUIRE_DEVICE(cuda::block.rank(group) == cuda::block.rank(cuda::cluster));
+  REQUIRE_DEVICE(cuda::cluster.rank(group) == 0);
+  REQUIRE_DEVICE(group.rank(cuda::cluster) == 0);
+  REQUIRE_DEVICE(group.rank(cuda::grid) == cuda::cluster.rank(cuda::grid));
 
-  REQUIRE(cuda::gpu_thread.is_root_rank(group) == (cuda::gpu_thread.rank(cuda::cluster) == 0));
-  REQUIRE(cuda::warp.is_root_rank(group) == (cuda::warp.rank(cuda::cluster) == 0));
-  REQUIRE(cuda::block.is_root_rank(group) == (cuda::block.rank(cuda::cluster) == 0));
-  REQUIRE(cuda::cluster.is_root_rank(group));
+  REQUIRE_DEVICE(cuda::gpu_thread.is_root_rank(group) == (cuda::gpu_thread.rank(cuda::cluster) == 0));
+  REQUIRE_DEVICE(cuda::warp.is_root_rank(group) == (cuda::warp.rank(cuda::cluster) == 0));
+  REQUIRE_DEVICE(cuda::block.is_root_rank(group) == (cuda::block.rank(cuda::cluster) == 0));
+  REQUIRE_DEVICE(cuda::cluster.is_root_rank(group));
 }
 
 template <class Hierarchy>
@@ -237,25 +237,25 @@ __device__ void test_this_queries(const cudax::coop::this_grid<Hierarchy>& group
   static_assert(cuda::cluster.static_count(group_view) == cuda::cluster.static_count(cuda::grid, group_view));
   static_assert(cuda::grid.static_count(group_view) == 1);
 
-  REQUIRE(cuda::gpu_thread.count(group) == cuda::gpu_thread.count(cuda::grid));
-  REQUIRE(cuda::warp.count(group) == cuda::warp.count(cuda::grid));
-  REQUIRE(cuda::block.count(group) == cuda::block.count(cuda::grid));
-  REQUIRE(cuda::cluster.count(group) == cuda::cluster.count(cuda::grid));
-  REQUIRE(cuda::grid.count(group) == 1);
-  REQUIRE(group.count(cuda::grid) == 1);
+  REQUIRE_DEVICE(cuda::gpu_thread.count(group) == cuda::gpu_thread.count(cuda::grid));
+  REQUIRE_DEVICE(cuda::warp.count(group) == cuda::warp.count(cuda::grid));
+  REQUIRE_DEVICE(cuda::block.count(group) == cuda::block.count(cuda::grid));
+  REQUIRE_DEVICE(cuda::cluster.count(group) == cuda::cluster.count(cuda::grid));
+  REQUIRE_DEVICE(cuda::grid.count(group) == 1);
+  REQUIRE_DEVICE(group.count(cuda::grid) == 1);
 
-  REQUIRE(cuda::gpu_thread.rank(group) == cuda::gpu_thread.rank(cuda::grid));
-  REQUIRE(cuda::warp.rank(group) == cuda::warp.rank(cuda::grid));
-  REQUIRE(cuda::block.rank(group) == cuda::block.rank(cuda::grid));
-  REQUIRE(cuda::cluster.rank(group) == cuda::cluster.rank(cuda::grid));
-  REQUIRE(cuda::grid.rank(group) == 0);
-  REQUIRE(group.rank(cuda::grid) == 0);
+  REQUIRE_DEVICE(cuda::gpu_thread.rank(group) == cuda::gpu_thread.rank(cuda::grid));
+  REQUIRE_DEVICE(cuda::warp.rank(group) == cuda::warp.rank(cuda::grid));
+  REQUIRE_DEVICE(cuda::block.rank(group) == cuda::block.rank(cuda::grid));
+  REQUIRE_DEVICE(cuda::cluster.rank(group) == cuda::cluster.rank(cuda::grid));
+  REQUIRE_DEVICE(cuda::grid.rank(group) == 0);
+  REQUIRE_DEVICE(group.rank(cuda::grid) == 0);
 
-  REQUIRE(cuda::gpu_thread.is_root_rank(group) == (cuda::gpu_thread.rank(cuda::grid) == 0));
-  REQUIRE(cuda::warp.is_root_rank(group) == (cuda::warp.rank(cuda::grid) == 0));
-  REQUIRE(cuda::block.is_root_rank(group) == (cuda::block.rank(cuda::grid) == 0));
-  REQUIRE(cuda::cluster.is_root_rank(group) == (cuda::cluster.rank(cuda::grid) == 0));
-  REQUIRE(cuda::grid.is_root_rank(group));
+  REQUIRE_DEVICE(cuda::gpu_thread.is_root_rank(group) == (cuda::gpu_thread.rank(cuda::grid) == 0));
+  REQUIRE_DEVICE(cuda::warp.is_root_rank(group) == (cuda::warp.rank(cuda::grid) == 0));
+  REQUIRE_DEVICE(cuda::block.is_root_rank(group) == (cuda::block.rank(cuda::grid) == 0));
+  REQUIRE_DEVICE(cuda::cluster.is_root_rank(group) == (cuda::cluster.rank(cuda::grid) == 0));
+  REQUIRE_DEVICE(cuda::grid.is_root_rank(group));
 }
 
 template <template <class> class GroupTempl, class Level, class Config>

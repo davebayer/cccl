@@ -40,6 +40,8 @@ struct __tagged_ptr<_Tp*>
 
   [[nodiscard]] _CCCL_HOST_DEVICE_API auto __get() const noexcept -> _Tp*
   {
+    // Recover the original pointer after clearing its tag bit.
+    // NOLINTNEXTLINE(performance-no-int-to-ptr)
     return reinterpret_cast<_Tp*>(__ptr_ & ~uintptr_t(1));
   }
 

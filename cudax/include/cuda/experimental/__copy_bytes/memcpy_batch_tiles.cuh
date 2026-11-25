@@ -45,7 +45,7 @@ template <typename _ExtentT, typename _StrideT, typename _Tp, ::cuda::std::size_
 struct __tile_iterator_linearized
 {
   const __raw_tensor<_ExtentT, _StrideT, _Tp, _MaxRank> __tensor_;
-  ::cuda::std::array<_ExtentT, _MaxRank> __extent_products_;
+  ::cuda::std::array<_ExtentT, _MaxRank> __extent_products_{};
   const _ExtentT __contiguous_size_;
 
   //! @brief Constructs the iterator from a raw tensor and contiguous tile size.
@@ -55,7 +55,6 @@ struct __tile_iterator_linearized
   _CCCL_HOST_API explicit __tile_iterator_linearized(const __raw_tensor<_ExtentT, _StrideT, _Tp, _MaxRank>& __tensor,
                                                      _ExtentT __contiguous_size) noexcept
       : __tensor_{__tensor}
-      , __extent_products_{}
       , __contiguous_size_{__contiguous_size}
   {
     // Precomputes exclusive prefix products of extents so that each `operator()` call decomposes a flat index into
@@ -80,7 +79,7 @@ struct __tile_iterator_linearized
     const auto& __strides = __tensor_.__strides;
     if (__tensor_.__rank == 1)
     {
-      return __tensor_.__data + __index * __strides[0];
+      return __tensor_.__data + (__index * __strides[0]);
     }
     const auto __extent0 = static_cast<__uextent_t>(__extents[0]);
     _StrideT __offset    = (__index % __extent0) * __strides[0]; // __extent_products_[0] == 1
@@ -103,25 +102,22 @@ struct __tile_iterator_linearized
 //! @param[in] __dst_ptr   Destination pointer (used to query device ordinal for H2D)
 //! @return Populated `CUmemcpyAttributes` struct
 [[nodiscard]] _CCCL_HOST_API inline ::CUmemcpyAttributes
-__get_memcpy_attributes(__copy_direction __direction, const void* __src_ptr, const void* __dst_ptr) noexcept
+__get_memcpy_attributes(__copy_direction __direction, const void* __src_ptr, const void* __dst_ptr)
 {
-  if (__direction == __copy_direction::__host_to_device)
-  {
-    const int __device_ordinal =
-      ::cuda::__driver::__pointerGetAttribute<::CU_POINTER_ATTRIBUTE_DEVICE_ORDINAL>(__dst_ptr);
-    return ::CUmemcpyAttributes{
-      ::CU_MEMCPY_SRC_ACCESS_ORDER_ANY,
-      ::CUmemLocation{::CU_MEM_LOCATION_TYPE_HOST, 0},
-      ::CUmemLocation{::CU_MEM_LOCATION_TYPE_DEVICE, __device_ordinal},
-      0};
-  }
-  const int __device_ordinal =
-    ::cuda::__driver::__pointerGetAttribute<::CU_POINTER_ATTRIBUTE_DEVICE_ORDINAL>(__src_ptr);
-  return ::CUmemcpyAttributes{
-    ::CU_MEMCPY_SRC_ACCESS_ORDER_ANY,
-    ::CUmemLocation{::CU_MEM_LOCATION_TYPE_DEVICE, __device_ordinal},
-    ::CUmemLocation{::CU_MEM_LOCATION_TYPE_HOST, 0},
-    0};
+  ::CUmemLocation __host_location{};
+  __host_location.type = ::CU_MEM_LOCATION_TYPE_HOST;
+
+  ::CUmemLocation __device_location{};
+  __device_location.type = ::CU_MEM_LOCATION_TYPE_DEVICE;
+  __device_location.id   = ::cuda::__driver::__pointerGetAttribute<::CU_POINTER_ATTRIBUTE_DEVICE_ORDINAL>(
+    (__direction == __copy_direction::__host_to_device) ? __dst_ptr : __src_ptr);
+
+  ::CUmemcpyAttributes __ret{};
+  __ret.srcAccessOrder = ::CU_MEMCPY_SRC_ACCESS_ORDER_ANY;
+  __ret.srcLocHint     = (__direction == __copy_direction::__host_to_device) ? __host_location : __device_location;
+  __ret.dstLocHint     = (__direction == __copy_direction::__host_to_device) ? __device_location : __host_location;
+  __ret.flags          = 0;
+  return __ret;
 }
 
 #  endif // _CCCL_CTK_AT_LEAST(13, 0)

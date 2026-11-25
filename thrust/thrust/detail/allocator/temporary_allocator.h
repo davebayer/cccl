@@ -104,14 +104,14 @@ public:
       })
       _CCCL_ASSERT(false, "Exception thrown in thrust::detail::temporary_allocator::deallocate");
 #if _CCCL_CUDA_COMPILATION()
-      NV_IF_TARGET(NV_IS_HOST, cudaGetLastError();)
+      NV_IF_TARGET(NV_IS_HOST, static_cast<void>(cudaGetLastError());)
 #endif // _CCCL_CUDA_COMPILATION()
     }
     _CCCL_CATCH_ALL
     {
       _CCCL_ASSERT(false, "Exception thrown in thrust::detail::temporary_allocator::deallocate");
 #if _CCCL_CUDA_COMPILATION()
-      NV_IF_TARGET(NV_IS_HOST, cudaGetLastError();)
+      NV_IF_TARGET(NV_IS_HOST, static_cast<void>(cudaGetLastError());)
 #endif // _CCCL_CUDA_COMPILATION()
     }
   }

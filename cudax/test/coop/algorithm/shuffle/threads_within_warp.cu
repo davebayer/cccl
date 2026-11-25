@@ -40,41 +40,41 @@ __device__ void test_group(const Group& group)
   const auto my_value = make_instance_for<T>(my_rank);
 
   // Test identity.
-  REQUIRE(cudax::coop::shuffle(group, my_value, my_rank) == my_value);
+  REQUIRE_DEVICE(cudax::coop::shuffle(group, my_value, my_rank) == my_value);
 
   // Test broadcast from root rank.
-  REQUIRE(cudax::coop::shuffle(group, my_value, 0) == make_instance_for<T>(0));
+  REQUIRE_DEVICE(cudax::coop::shuffle(group, my_value, 0) == make_instance_for<T>(0));
 
   // Test broadcast from last rank.
   {
     const auto other_rank = cuda::gpu_thread.count_as<unsigned>(group) - 1;
-    REQUIRE(cudax::coop::shuffle(group, my_value, other_rank) == make_instance_for<T>(other_rank));
+    REQUIRE_DEVICE(cudax::coop::shuffle(group, my_value, other_rank) == make_instance_for<T>(other_rank));
   }
 
   // Test my_rank + 1.
   {
     const auto other_rank = (my_rank + 1) % cuda::gpu_thread.count_as<unsigned>(group);
-    REQUIRE(cudax::coop::shuffle(group, my_value, other_rank) == make_instance_for<T>(other_rank));
+    REQUIRE_DEVICE(cudax::coop::shuffle(group, my_value, other_rank) == make_instance_for<T>(other_rank));
   }
 
   // Test my_rank + 6.
   {
     const auto other_rank = (my_rank + 6) % cuda::gpu_thread.count_as<unsigned>(group);
-    REQUIRE(cudax::coop::shuffle(group, my_value, other_rank) == make_instance_for<T>(other_rank));
+    REQUIRE_DEVICE(cudax::coop::shuffle(group, my_value, other_rank) == make_instance_for<T>(other_rank));
   }
 
   // Test my_rank +- 1 based on whether my_rank is even or not.
   {
     const auto other_rank =
       ((my_rank % 2 == 0) ? my_rank + 1 : my_rank - 1) % cuda::gpu_thread.count_as<unsigned>(group);
-    REQUIRE(cudax::coop::shuffle(group, my_value, other_rank) == make_instance_for<T>(other_rank));
+    REQUIRE_DEVICE(cudax::coop::shuffle(group, my_value, other_rank) == make_instance_for<T>(other_rank));
   }
 
   // Test my_rank +- 3 based on whether my_rank is even or not.
   {
     const auto other_rank =
       ((my_rank % 2 == 0) ? my_rank + 3 : my_rank - 3) % cuda::gpu_thread.count_as<unsigned>(group);
-    REQUIRE(cudax::coop::shuffle(group, my_value, other_rank) == make_instance_for<T>(other_rank));
+    REQUIRE_DEVICE(cudax::coop::shuffle(group, my_value, other_rank) == make_instance_for<T>(other_rank));
   }
 }
 

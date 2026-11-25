@@ -102,6 +102,7 @@ struct __non_trivial_if
 template <class _Unique>
 struct __non_trivial_if<true, _Unique>
 {
+  // NOLINTNEXTLINE(modernize-use-equals-default): this constructor must stay non-trivial.
   _CCCL_API constexpr __non_trivial_if() noexcept {}
 };
 
@@ -122,14 +123,14 @@ public:
   using propagate_on_container_move_assignment = true_type;
   using is_always_equal                        = true_type;
 
-  _CCCL_CONSTEXPR_CXX20 allocator() noexcept = default;
+  _CCCL_HIDE_FROM_ABI _CCCL_CONSTEXPR_CXX20 allocator() noexcept = default;
 
   template <class _Up>
   _CCCL_API inline _CCCL_CONSTEXPR_CXX20 allocator(const allocator<_Up>&) noexcept
   {}
 
   _CCCL_EXEC_CHECK_DISABLE
-  [[nodiscard]] _CCCL_API inline _CCCL_CONSTEXPR_CXX20_ALLOCATION _Tp* allocate(size_t __n)
+  [[nodiscard]] _CCCL_API _CCCL_CONSTEXPR_CXX20_ALLOCATION _Tp* allocate(size_t __n)
   {
     if (__n > allocator_traits<allocator>::max_size(*this))
     {
@@ -188,7 +189,7 @@ public:
     return ::cuda::std::addressof(__x);
   }
 
-  [[nodiscard]] CCCL_DEPRECATED _CCCL_API inline _Tp* allocate(size_t __n, const void*)
+  [[nodiscard]] CCCL_DEPRECATED _CCCL_API _Tp* allocate(size_t __n, const void*)
   {
     return allocate(__n);
   }
@@ -224,26 +225,24 @@ public:
   using propagate_on_container_move_assignment = true_type;
   using is_always_equal                        = true_type;
 
-  _CCCL_CONSTEXPR_CXX20 allocator() noexcept = default;
+  _CCCL_HIDE_FROM_ABI _CCCL_CONSTEXPR_CXX20 allocator() noexcept = default;
 
   template <class _Up>
   _CCCL_API inline _CCCL_CONSTEXPR_CXX20 allocator(const allocator<_Up>&) noexcept
   {}
 
-  [[nodiscard]] _CCCL_API inline _CCCL_CONSTEXPR_CXX20 const _Tp* allocate(size_t __n)
+  [[nodiscard]] _CCCL_API _CCCL_CONSTEXPR_CXX20 const _Tp* allocate(size_t __n)
   {
     if (__n > allocator_traits<allocator>::max_size(*this))
     {
       _CCCL_THROW(::std::bad_array_new_length);
     }
+
     _CCCL_IF_CONSTEVAL
     {
       return static_cast<const _Tp*>(::operator new(__n * sizeof(_Tp)));
     }
-    else
-    {
-      return static_cast<const _Tp*>(::cuda::std::__cccl_allocate(__n * sizeof(_Tp), alignof(_Tp)));
-    }
+    return static_cast<const _Tp*>(::cuda::std::__cccl_allocate(__n * sizeof(_Tp), alignof(_Tp)));
   }
 
   [[nodiscard]] _CCCL_API constexpr allocation_result<const _Tp*> allocate_at_least(size_t __n)
@@ -253,13 +252,15 @@ public:
 
   _CCCL_API inline _CCCL_CONSTEXPR_CXX20 void deallocate(const _Tp* __p, size_t __n) noexcept
   {
+    // The underlying allocation is mutable even when the allocated element type is const.
+    auto* __storage = const_cast<_Tp*>(__p); // NOLINT(cppcoreguidelines-pro-type-const-cast)
     _CCCL_IF_CONSTEVAL
     {
-      ::operator delete(const_cast<_Tp*>(__p));
+      ::operator delete(__storage);
     }
     else
     {
-      ::cuda::std::__cccl_deallocate((void*) const_cast<_Tp*>(__p), __n * sizeof(_Tp), alignof(_Tp));
+      ::cuda::std::__cccl_deallocate(__storage, __n * sizeof(_Tp), alignof(_Tp));
     }
   }
 
@@ -281,7 +282,7 @@ public:
     return ::cuda::std::addressof(__x);
   }
 
-  [[nodiscard]] CCCL_DEPRECATED _CCCL_API inline const _Tp* allocate(size_t __n, const void*)
+  [[nodiscard]] CCCL_DEPRECATED _CCCL_API const _Tp* allocate(size_t __n, const void*)
   {
     return allocate(__n);
   }

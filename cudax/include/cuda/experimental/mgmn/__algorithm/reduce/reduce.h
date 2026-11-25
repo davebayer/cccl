@@ -75,7 +75,7 @@ template <class _Buffer, class _Comm, class _Env, class _InputIt, class _SizeT, 
   const _BinaryOp& __op,
   const _Tp& __ident)
 {
-  ::cuda::stream_ref __stream = ::cuda::get_stream(__env);
+  const ::cuda::stream_ref __stream = ::cuda::get_stream(__env);
   auto __resource = ::cuda::experimental::mgmn::__detail::__resource_from_env(__env, __stream.__logical_device());
 
   // Allocate enough storage so that we can use the buffer directly in an in-place comm all

@@ -74,17 +74,17 @@ __device__ void test_group_by(Config config)
 
       static_assert(Result::static_group_count() == 32 / N);
       static_assert(Result::static_group_rank() == (32 / N == 1 ? 0 : cuda::std::dynamic_extent));
-      CHECK(result.group_count() == cuda::gpu_thread.count(cuda::warp) / N);
-      CHECK(result.group_rank() == cuda::gpu_thread.rank(cuda::warp) / N);
+      REQUIRE_DEVICE(result.group_count() == cuda::gpu_thread.count(cuda::warp) / N);
+      REQUIRE_DEVICE(result.group_rank() == cuda::gpu_thread.rank(cuda::warp) / N);
 
       static_assert(Result::static_unit_count() == N);
-      CHECK(result.unit_count() == N);
-      CHECK(result.unit_rank() == cuda::gpu_thread.rank(cuda::warp) % N);
+      REQUIRE_DEVICE(result.unit_count() == N);
+      REQUIRE_DEVICE(result.unit_rank() == cuda::gpu_thread.rank(cuda::warp) % N);
 
       const auto lane_mask_ref = ((N < 32) ? ((1u << N) - 1) : ~0u) << ((cuda::gpu_thread.rank(cuda::warp) / N) * N);
-      CHECK(result.lane_mask() == cuda::device::lane_mask{lane_mask_ref});
+      REQUIRE_DEVICE(result.lane_mask() == cuda::device::lane_mask{lane_mask_ref});
 
-      CHECK(result.is_valid());
+      REQUIRE_DEVICE(result.is_valid());
       static_assert(Result::is_always_exhaustive());
       static_assert(Result::is_always_contiguous());
     }
@@ -130,17 +130,17 @@ __device__ void test_group_by(Config config)
 
       static_assert(Result::static_group_count() == cuda::std::dynamic_extent);
       static_assert(Result::static_group_rank() == cuda::std::dynamic_extent);
-      CHECK(result.group_count() == cuda::gpu_thread.count(cuda::warp) / N);
-      CHECK(result.group_rank() == cuda::gpu_thread.rank(cuda::warp) / N);
+      REQUIRE_DEVICE(result.group_count() == cuda::gpu_thread.count(cuda::warp) / N);
+      REQUIRE_DEVICE(result.group_rank() == cuda::gpu_thread.rank(cuda::warp) / N);
 
       static_assert(Result::static_unit_count() == cuda::std::dynamic_extent);
-      CHECK(result.unit_count() == N);
-      CHECK(result.unit_rank() == cuda::gpu_thread.rank(cuda::warp) % N);
+      REQUIRE_DEVICE(result.unit_count() == N);
+      REQUIRE_DEVICE(result.unit_rank() == cuda::gpu_thread.rank(cuda::warp) % N);
 
       const auto lane_mask_ref = ((N < 32) ? ((1u << N) - 1) : ~0u) << ((cuda::gpu_thread.rank(cuda::warp) / N) * N);
-      CHECK(result.lane_mask() == cuda::device::lane_mask{lane_mask_ref});
+      REQUIRE_DEVICE(result.lane_mask() == cuda::device::lane_mask{lane_mask_ref});
 
-      CHECK(result.is_valid());
+      REQUIRE_DEVICE(result.is_valid());
       static_assert(Result::is_always_exhaustive());
       static_assert(Result::is_always_contiguous());
     }
@@ -201,18 +201,18 @@ __device__ void test_group_by_non_exhaustive(Config config)
       static_assert(Result::is_always_contiguous());
 
       const auto is_valid_ref = cuda::gpu_thread.rank(cuda::warp) < (cuda::gpu_thread.count(cuda::warp) / N) * N;
-      CHECK(result.is_valid() == is_valid_ref);
+      REQUIRE_DEVICE(result.is_valid() == is_valid_ref);
 
       if (is_valid_ref)
       {
-        CHECK(result.group_count() == cuda::gpu_thread.count(cuda::warp) / N);
-        CHECK(result.group_rank() == cuda::gpu_thread.rank(cuda::warp) / N);
+        REQUIRE_DEVICE(result.group_count() == cuda::gpu_thread.count(cuda::warp) / N);
+        REQUIRE_DEVICE(result.group_rank() == cuda::gpu_thread.rank(cuda::warp) / N);
 
-        CHECK(result.unit_count() == N);
-        CHECK(result.unit_rank() == cuda::gpu_thread.rank(cuda::warp) % N);
+        REQUIRE_DEVICE(result.unit_count() == N);
+        REQUIRE_DEVICE(result.unit_rank() == cuda::gpu_thread.rank(cuda::warp) % N);
 
         const auto lane_mask_ref = ((N < 32) ? ((1u << N) - 1) : ~0u) << ((cuda::gpu_thread.rank(cuda::warp) / N) * N);
-        CHECK(result.lane_mask() == cuda::device::lane_mask{lane_mask_ref});
+        REQUIRE_DEVICE(result.lane_mask() == cuda::device::lane_mask{lane_mask_ref});
       }
     }
   }
@@ -262,18 +262,18 @@ __device__ void test_group_by_non_exhaustive(Config config)
       static_assert(Result::is_always_contiguous());
 
       const auto is_valid_ref = cuda::gpu_thread.rank(cuda::warp) < (cuda::gpu_thread.count(cuda::warp) / N) * N;
-      CHECK(result.is_valid() == is_valid_ref);
+      REQUIRE_DEVICE(result.is_valid() == is_valid_ref);
 
       if (is_valid_ref)
       {
-        CHECK(result.group_count() == cuda::gpu_thread.count(cuda::warp) / N);
-        CHECK(result.group_rank() == cuda::gpu_thread.rank(cuda::warp) / N);
+        REQUIRE_DEVICE(result.group_count() == cuda::gpu_thread.count(cuda::warp) / N);
+        REQUIRE_DEVICE(result.group_rank() == cuda::gpu_thread.rank(cuda::warp) / N);
 
-        CHECK(result.unit_count() == N);
-        CHECK(result.unit_rank() == cuda::gpu_thread.rank(cuda::warp) % N);
+        REQUIRE_DEVICE(result.unit_count() == N);
+        REQUIRE_DEVICE(result.unit_rank() == cuda::gpu_thread.rank(cuda::warp) % N);
 
         const auto lane_mask_ref = ((N < 32) ? ((1u << N) - 1) : ~0u) << ((cuda::gpu_thread.rank(cuda::warp) / N) * N);
-        CHECK(result.lane_mask() == cuda::device::lane_mask{lane_mask_ref});
+        REQUIRE_DEVICE(result.lane_mask() == cuda::device::lane_mask{lane_mask_ref});
       }
     }
   }

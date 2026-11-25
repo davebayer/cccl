@@ -55,7 +55,7 @@ class exec_place;
  * Returns `false` for `nullptr` (the legacy default stream is never
  * capturing).
  */
-[[nodiscard]] inline bool is_stream_capturing(cudaStream_t stream)
+[[nodiscard]] _CCCL_HOST_API inline bool is_stream_capturing(cudaStream_t stream)
 {
   return cuda_try<cudaStreamIsCapturing>(stream) != cudaStreamCaptureStatusNone;
 }
@@ -85,7 +85,7 @@ class exec_place;
  * transient events in the wrong device's context on multi-GPU systems
  * (`cudaErrorInvalidResourceHandle` at event-record time).
  */
-inline int get_device_from_stream(cudaStream_t stream)
+_CCCL_HOST_API inline int get_device_from_stream(cudaStream_t stream)
 {
   if (stream == nullptr)
   {
@@ -111,7 +111,7 @@ inline constexpr unsigned long long k_no_stream_id = static_cast<unsigned long l
  * k_no_stream_id; callers that cache syncs treat unknown ids as
  * ``never skip cudaStreamWaitEvent`` (see async_resources_handle).
  */
-inline unsigned long long get_stream_id(cudaStream_t stream)
+_CCCL_HOST_API inline unsigned long long get_stream_id(cudaStream_t stream)
 {
   if (stream == nullptr)
   {
@@ -126,7 +126,7 @@ inline unsigned long long get_stream_id(cudaStream_t stream)
   {
     return k_no_stream_id;
   }
-  unsigned long long id = cuda_try<cuStreamGetId>(reinterpret_cast<CUstream>(stream));
+  const unsigned long long id = cuda_try<cuStreamGetId>(reinterpret_cast<CUstream>(stream));
   _CCCL_ASSERT(id != k_no_stream_id, "Internal error: cuStreamGetId returned k_no_stream_id");
   return id;
 }
@@ -146,19 +146,18 @@ inline unsigned long long get_stream_id(cudaStream_t stream)
  */
 struct augmented_stream
 {
-  augmented_stream() = default;
+  _CCCL_HIDE_FROM_ABI augmented_stream() = default;
 
-  augmented_stream(cudaStream_t stream, unsigned long long id, int dev_id = -1)
+  _CCCL_HOST_API augmented_stream(cudaStream_t stream, unsigned long long id, int dev_id = -1)
       : stream(stream)
       , id(id)
       , dev_id(dev_id)
   {}
 
   /** Construct from stream only; id is from cuStreamGetId, dev_id is -1 (filled lazily when needed). */
-  explicit augmented_stream(cudaStream_t stream)
+  _CCCL_HOST_API explicit augmented_stream(cudaStream_t stream)
       : stream(stream)
       , id(get_stream_id(stream))
-      , dev_id(-1)
   {}
 
   cudaStream_t stream   = nullptr;
@@ -180,12 +179,12 @@ class stream_pool
 {
   struct impl
   {
-    explicit impl(size_t n)
+    _CCCL_HOST_API explicit impl(size_t n)
         : payload(n, augmented_stream(nullptr, k_no_stream_id, -1))
     {}
 
     // Construct from an augmented stream, this is used to create a stream pool with a single stream.
-    explicit impl(augmented_stream ds)
+    _CCCL_HOST_API explicit impl(augmented_stream ds)
         : payload(1, mv(ds))
         , externally_owned(true)
     {}
@@ -202,7 +201,7 @@ class stream_pool
     // down at the end of an STF context without blocking on a caller stream
     // synchronize, as long as the outbound event chain has already been
     // recorded back onto the user stream.
-    ~impl() noexcept
+    _CCCL_HOST_API ~impl() noexcept
     {
       if (externally_owned)
       {
@@ -233,21 +232,21 @@ class stream_pool
   ::std::shared_ptr<impl> pimpl;
 
 public:
-  stream_pool() = default;
+  _CCCL_HIDE_FROM_ABI stream_pool() = default;
 
-  explicit stream_pool(size_t n)
+  _CCCL_HOST_API explicit stream_pool(size_t n)
       : pimpl(::std::make_shared<impl>(n))
   {}
 
   // Construct from an augmented stream, this is used to create a stream pool with a single stream.
-  explicit stream_pool(augmented_stream ds)
+  _CCCL_HOST_API explicit stream_pool(augmented_stream ds)
       : pimpl(::std::make_shared<impl>(mv(ds)))
   {}
 
-  stream_pool(const stream_pool&)            = default;
-  stream_pool(stream_pool&&)                 = default;
-  stream_pool& operator=(const stream_pool&) = default;
-  stream_pool& operator=(stream_pool&&)      = default;
+  _CCCL_HIDE_FROM_ABI stream_pool(const stream_pool&)            = default;
+  _CCCL_HIDE_FROM_ABI stream_pool(stream_pool&&)                 = default;
+  _CCCL_HIDE_FROM_ABI stream_pool& operator=(const stream_pool&) = default;
+  _CCCL_HIDE_FROM_ABI stream_pool& operator=(stream_pool&&)      = default;
 
   /**
    * @brief Get the next stream in the pool; when a slot is empty, activate the place (RAII guard) and call
@@ -256,11 +255,11 @@ public:
   augmented_stream next(const exec_place& place);
 
   using iterator = ::std::vector<augmented_stream>::iterator;
-  iterator begin()
+  _CCCL_HOST_API iterator begin()
   {
     return pimpl->payload.begin();
   }
-  iterator end()
+  _CCCL_HOST_API iterator end()
   {
     return pimpl->payload.end();
   }
@@ -271,23 +270,23 @@ public:
    * CUDA streams are initialized lazily, so this gives the number of slots
    * available in the pool, not the number of streams initialized.
    */
-  size_t size() const
+  _CCCL_HOST_API size_t size() const
   {
-    ::std::scoped_lock locker(pimpl->mtx);
+    const ::std::scoped_lock locker(pimpl->mtx);
     return pimpl->payload.size();
   }
 
-  explicit operator bool() const
+  _CCCL_HOST_API explicit operator bool() const
   {
     return pimpl != nullptr;
   }
 
-  bool operator==(const stream_pool& other) const
+  _CCCL_HOST_API bool operator==(const stream_pool& other) const
   {
     return pimpl == other.pimpl;
   }
 
-  bool operator<(const stream_pool& other) const
+  _CCCL_HOST_API bool operator<(const stream_pool& other) const
   {
     return pimpl < other.pimpl;
   }

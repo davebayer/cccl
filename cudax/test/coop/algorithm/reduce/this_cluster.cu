@@ -66,7 +66,7 @@ struct ReduceKernel
     {
       const auto result = cudax::coop::reduce(cluster, thread_data, red_op);
 
-      REQUIRE(result.has_value() == cuda::gpu_thread.is_root_rank(cluster));
+      REQUIRE_DEVICE(result.has_value() == cuda::gpu_thread.is_root_rank(cluster));
       if (cuda::gpu_thread.is_root_rank(cluster))
       {
         *d_out = result.value();
@@ -86,7 +86,7 @@ struct RepeatedReduceKernel
     {
       int thread_data[1] = {repeat + 1};
       const auto result  = cudax::coop::reduce(cluster, thread_data, cuda::std::plus<>{});
-      REQUIRE(result.has_value() == cuda::gpu_thread.is_root_rank(cluster));
+      REQUIRE_DEVICE(result.has_value() == cuda::gpu_thread.is_root_rank(cluster));
       if (result.has_value())
       {
         d_out[repeat] = *result;

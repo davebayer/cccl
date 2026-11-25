@@ -164,8 +164,10 @@ _CCCL_HOST_API void __copy_bytes_impl(
     const auto __num_tiles  = __tensor_size / __tile_size;
     const auto __copy_bytes = __tile_size * sizeof(_TpIn);
     _CCCL_ASSERT(__tensor_size % __tile_size == 0, "cudax::copy_bytes: tensor size must be divisible by tile size");
-    __tile_iterator_linearized<__extent_t, __stride_t, _TpIn, __max_rank> __src_tiles_iterator(__src_iter, __tile_size);
-    __tile_iterator_linearized<__extent_t, __stride_t, _TpOut, __max_rank> __dst_tiles_iterator(__dst_iter, __tile_size);
+    const __tile_iterator_linearized<__extent_t, __stride_t, _TpIn, __max_rank> __src_tiles_iterator(
+      __src_iter, __tile_size);
+    const __tile_iterator_linearized<__extent_t, __stride_t, _TpOut, __max_rank> __dst_tiles_iterator(
+      __dst_iter, __tile_size);
 
     cudax::__memcpy_batch_tiles(
       __src_tiles_iterator,

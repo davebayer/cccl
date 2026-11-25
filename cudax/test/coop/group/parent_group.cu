@@ -37,16 +37,16 @@ __device__ void test_queries(const Group& group, const Parent& parent)
   // Runtime queries match queries using the actual parent object.
   static_assert(cuda::std::is_same_v<decltype(group.count(parent_group)), decltype(group.count(parent))>);
   static_assert(cuda::std::is_same_v<decltype(group.rank(parent_group)), decltype(group.rank(parent))>);
-  REQUIRE(group.count(parent_group) == group.count(parent));
-  REQUIRE(group.rank(parent_group) == group.rank(parent));
+  REQUIRE_DEVICE(group.count(parent_group) == group.count(parent));
+  REQUIRE_DEVICE(group.rank(parent_group) == group.rank(parent));
 
   // Explicit result types work for both unsigned and signed integers.
   const auto count = group.template count_as<cuda::std::uint64_t>(parent_group);
   const auto rank  = group.template rank_as<int>(parent_group);
   static_assert(cuda::std::is_same_v<decltype(count), const cuda::std::uint64_t>);
   static_assert(cuda::std::is_same_v<decltype(rank), const int>);
-  REQUIRE(count == group.template count_as<cuda::std::uint64_t>(parent));
-  REQUIRE(rank == group.template rank_as<int>(parent));
+  REQUIRE_DEVICE(count == group.template count_as<cuda::std::uint64_t>(parent));
+  REQUIRE_DEVICE(rank == group.template rank_as<int>(parent));
 }
 
 template <class Group, class Parent>

@@ -128,15 +128,15 @@ __device__ void check_partition(const Result& result, unsigned group_count, unsi
 {
   const auto valid = result.is_valid();
   const auto rank  = valid ? result.group_rank() : 0u;
-  REQUIRE(valid == (mask != 0));
+  REQUIRE_DEVICE(valid == (mask != 0));
   if (valid)
   {
-    REQUIRE(result.group_count() == group_count);
-    REQUIRE(result.lane_mask() == cuda::device::lane_mask{mask});
-    REQUIRE(result.unit_count() == static_cast<unsigned>(cuda::std::popcount(mask)));
-    REQUIRE(result.unit_rank()
-            == static_cast<unsigned>(cuda::std::popcount(mask & cuda::device::lane_mask::all_less().value())));
-    REQUIRE(rank < group_count);
+    REQUIRE_DEVICE(result.group_count() == group_count);
+    REQUIRE_DEVICE(result.lane_mask() == cuda::device::lane_mask{mask});
+    REQUIRE_DEVICE(result.unit_count() == static_cast<unsigned>(cuda::std::popcount(mask)));
+    REQUIRE_DEVICE(result.unit_rank()
+                   == static_cast<unsigned>(cuda::std::popcount(mask & cuda::device::lane_mask::all_less().value())));
+    REQUIRE_DEVICE(rank < group_count);
   }
   for (int other_lane = 0; other_lane < 32; ++other_lane)
   {
@@ -145,7 +145,7 @@ __device__ void check_partition(const Result& result, unsigned group_count, unsi
     if (valid && other_mask != 0)
     {
       // Every group has one distinct rank; the assignment order is unspecified.
-      REQUIRE((rank == other_rank) == (mask == other_mask));
+      REQUIRE_DEVICE((rank == other_rank) == (mask == other_mask));
     }
   }
 }
@@ -197,7 +197,7 @@ check_labeled_partition(Config config, Mapping& mapping, LabelFn label_fn, const
     using PreviousResult = cuda::std::remove_cv_t<decltype(prev_mapping_result)>;
     const auto invalid_result =
       mapping.map(non_exhaustive..., cuda::gpu_thread, parent_group, PreviousResult::__invalid());
-    REQUIRE(!invalid_result.is_valid());
+    REQUIRE_DEVICE(!invalid_result.is_valid());
   }
 }
 
@@ -254,15 +254,15 @@ __device__ void test_callable_qualification(Config config, const NonExhaustive&.
 
   unsigned calls = 0;
   test_label_callable<false, Count>(config, MutableLabelFn{&calls}, pairs, pairs, non_exhaustive...);
-  REQUIRE(calls == expected_calls);
+  REQUIRE_DEVICE(calls == expected_calls);
 
   calls = 0;
   test_label_callable<true, Count>(config, OverloadedLabelFn{{&calls}}, pairs, triples, non_exhaustive...);
-  REQUIRE(calls == 2 * expected_calls);
+  REQUIRE_DEVICE(calls == 2 * expected_calls);
 
   calls = 0;
   test_label_callable<true, Count>(config, ConstOnlyLabelFn{&calls}, pairs, pairs, non_exhaustive...);
-  REQUIRE(calls == 2 * expected_calls);
+  REQUIRE_DEVICE(calls == 2 * expected_calls);
 }
 
 template <class Label, unsigned Modulus, class Config, class... NonExhaustive>

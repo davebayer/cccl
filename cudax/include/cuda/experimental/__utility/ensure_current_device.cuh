@@ -52,13 +52,13 @@ struct [[maybe_unused]] __ensure_current_device : ::cuda::__ensure_current_conte
   //! @param new_device The device to switch to
   //!
   //! @throws cuda_error if the device switch fails
-  explicit __ensure_current_device(logical_device __new_device)
+  _CCCL_HOST_API explicit __ensure_current_device(logical_device __new_device)
       : __ensure_current_context(__new_device.context())
   {}
 
   _CCCL_TEMPLATE(typename _GraphInserter)
   _CCCL_REQUIRES(graph_inserter<_GraphInserter>)
-  explicit __ensure_current_device(const _GraphInserter& __inserter)
+  _CCCL_HOST_API explicit __ensure_current_device(const _GraphInserter& __inserter)
       : __ensure_current_device(__inserter.get_device())
   {}
 };

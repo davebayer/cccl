@@ -41,7 +41,7 @@ __device__ void test_group(const Group& group)
   const auto my_value = make_instance_for<T>(my_rank);
 
   // Test identity.
-  REQUIRE(cudax::coop::shuffle_up(group, my_value, 0) == my_value);
+  REQUIRE_DEVICE(cudax::coop::shuffle_up(group, my_value, 0) == my_value);
 
   // Test getting value from the previous rank.
   {
@@ -50,7 +50,7 @@ __device__ void test_group(const Group& group)
     const auto ref        = (other_rank < cuda::gpu_thread.count(group))
                             ? cuda::std::optional{make_instance_for<T>(other_rank)}
                             : cuda::std::nullopt;
-    REQUIRE(cudax::coop::shuffle_up(group, my_value, offset) == ref);
+    REQUIRE_DEVICE(cudax::coop::shuffle_up(group, my_value, offset) == ref);
   }
 
   // Test getting value from the this + 2 rank.
@@ -60,24 +60,24 @@ __device__ void test_group(const Group& group)
     const auto ref        = (other_rank < cuda::gpu_thread.count(group))
                             ? cuda::std::optional{make_instance_for<T>(other_rank)}
                             : cuda::std::nullopt;
-    REQUIRE(cudax::coop::shuffle_up(group, my_value, offset) == ref);
+    REQUIRE_DEVICE(cudax::coop::shuffle_up(group, my_value, offset) == ref);
   }
 
   // Test getting value from the first rank.
   {
     const auto other_rank = 0;
     const auto offset     = cuda::gpu_thread.rank(group) - other_rank;
-    REQUIRE(cudax::coop::shuffle_up(group, my_value, offset) == make_instance_for<T>(other_rank));
+    REQUIRE_DEVICE(cudax::coop::shuffle_up(group, my_value, offset) == make_instance_for<T>(other_rank));
   }
 
   // Test getting value from the first rank - 1.
   {
     const auto offset = cuda::gpu_thread.rank(group) + 1;
-    REQUIRE(cudax::coop::shuffle_up(group, my_value, offset) == cuda::std::nullopt);
+    REQUIRE_DEVICE(cudax::coop::shuffle_up(group, my_value, offset) == cuda::std::nullopt);
   }
 
   // Test getting value from out of range offset.
-  REQUIRE(cudax::coop::shuffle_up(group, my_value, ~0u) == cuda::std::nullopt);
+  REQUIRE_DEVICE(cudax::coop::shuffle_up(group, my_value, ~0u) == cuda::std::nullopt);
 }
 
 struct CustomBinaryPartition

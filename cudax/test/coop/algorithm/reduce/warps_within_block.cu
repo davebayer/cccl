@@ -90,7 +90,7 @@ struct ReduceKernel
     {
       const auto result = cudax::coop::reduce(*group, thread_data, red_op);
 
-      REQUIRE(result.has_value() == cuda::gpu_thread.is_root_rank(*group));
+      REQUIRE_DEVICE(result.has_value() == cuda::gpu_thread.is_root_rank(*group));
       if (cuda::gpu_thread.is_root_rank(*group))
       {
         *d_out = result.value();
@@ -106,7 +106,7 @@ __device__ void run_multi_group_reductions(const Group& group, const Block& bloc
   constexpr int stride  = Broadcasted ? multi_group_size : multi_group_count;
 
   // Contiguous mappings preserve physical warp order through nesting and views.
-  REQUIRE(cuda::warp.rank_as<int>(group) == (thread_rank / warp_size) % nwarps_in_group);
+  REQUIRE_DEVICE(cuda::warp.rank_as<int>(group) == (thread_rank / warp_size) % nwarps_in_group);
 
   for (int repeat = 0; repeat < multi_group_repeats; ++repeat)
   {
@@ -119,7 +119,7 @@ __device__ void run_multi_group_reductions(const Group& group, const Block& bloc
     else
     {
       const auto result = cudax::coop::reduce(group, thread_data, cuda::std::plus<>{});
-      REQUIRE(result.has_value() == cuda::gpu_thread.is_root_rank(group));
+      REQUIRE_DEVICE(result.has_value() == cuda::gpu_thread.is_root_rank(group));
       if (result.has_value())
       {
         d_out[(repeat * stride) + group_rank] = *result;

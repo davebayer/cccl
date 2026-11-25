@@ -64,12 +64,11 @@ namespace cuda::experimental
 template <class _Tp, class... _Properties>
 class uninitialized_buffer
 {
-private:
   static_assert(::cuda::mr::__contains_execution_space_property<_Properties...>,
                 "The properties of cuda::experimental::uninitialized_buffer must contain at least one execution space "
                 "property!");
 
-  using __resource = ::cuda::mr::any_synchronous_resource<_Properties...>;
+  using __resource _CCCL_NODEBUG = ::cuda::mr::any_synchronous_resource<_Properties...>;
 
   __resource __mr_;
   size_t __count_ = 0;
@@ -89,7 +88,7 @@ private:
   [[nodiscard]] _CCCL_HIDE_FROM_ABI static constexpr size_t __get_allocation_size(const size_t __count) noexcept
   {
     constexpr size_t __alignment = alignof(_Tp);
-    return (__count * sizeof(_Tp) + (__alignment - 1)) & ~(__alignment - 1);
+    return ((__count * sizeof(_Tp)) + (__alignment - 1)) & ~(__alignment - 1);
   }
 
   //! @brief Determines the properly aligned start of the buffer given the alignment and size of  `T`

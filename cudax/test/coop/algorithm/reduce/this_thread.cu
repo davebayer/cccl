@@ -62,7 +62,7 @@ struct ReduceKernel
     {
       const auto result = cudax::coop::reduce(thread, thread_data, red_op);
 
-      REQUIRE(result.has_value());
+      REQUIRE_DEVICE(result.has_value());
       *d_out = result.value();
     }
   }

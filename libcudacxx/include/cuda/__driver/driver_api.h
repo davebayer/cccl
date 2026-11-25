@@ -382,7 +382,7 @@ _CCCL_HOST_API inline void __memcpyAsyncWithAttributes(
 _CCCL_HOST_API inline void __memcpyBatchAsync(
   void** __dsts,
   const void** __srcs,
-  const ::cuda::std::size_t* __sizes,
+  ::cuda::std::size_t* __sizes,
   ::cuda::std::size_t __count,
   ::CUmemcpyAttributes* __attributes,
   ::cuda::std::size_t* __attribute_indices,
@@ -396,7 +396,7 @@ _CCCL_HOST_API inline void __memcpyBatchAsync(
     "Failed to perform a memcpy with attributes",
     reinterpret_cast<::CUdeviceptr*>(__dsts),
     reinterpret_cast<::CUdeviceptr*>(__srcs),
-    const_cast<::cuda::std::size_t*>(__sizes),
+    __sizes,
     __count,
     __attributes,
     __attribute_indices,

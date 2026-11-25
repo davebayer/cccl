@@ -240,7 +240,7 @@ static_assert(::cuda::std::to_underlying(__ncclMin) == ::ncclMin);
 static_assert(::cuda::std::to_underlying(__ncclAvg) == ::ncclAvg);
 #endif // _CCCL_HAS_NCCL
 
-using __ncclComm_t = ::ncclComm*;
+using __ncclComm_t _CCCL_NODEBUG = ::ncclComm*;
 
 inline constexpr __ncclComm_t __NCCL_COMM_NULL = static_cast<__ncclComm_t>(nullptr);
 
@@ -391,16 +391,30 @@ _CCCL_CONCEPT __has_nccl_redop_of = _CCCL_REQUIRES_EXPR((_Op), )(
 
 [[nodiscard]] _CCCL_HOST_API inline const char* __ncclGetLastErrorNoThrow(__ncclComm_t __comm) noexcept
 {
-  static auto* const __fn = _CCCL_LOAD_NCCL_SYMBOL(ncclGetLastError, const char* (*) (__ncclComm_t));
+  _CCCL_TRY
+  {
+    static auto* const __fn = _CCCL_LOAD_NCCL_SYMBOL(ncclGetLastError, const char* (*) (__ncclComm_t));
 
-  return __fn(__comm);
+    return __fn(__comm);
+  }
+  _CCCL_CATCH_ALL
+  {
+    return "NCCL error information unavailable";
+  }
 }
 
 [[nodiscard]] _CCCL_HOST_API inline const char* __ncclGetErrorStringNoThrow(__ncclResult_t __result) noexcept
 {
-  static auto* const __fn = _CCCL_LOAD_NCCL_SYMBOL(ncclGetErrorString, const char* (*) (__ncclResult_t));
+  _CCCL_TRY
+  {
+    static auto* const __fn = _CCCL_LOAD_NCCL_SYMBOL(ncclGetErrorString, const char* (*) (__ncclResult_t));
 
-  return __fn(__result);
+    return __fn(__result);
+  }
+  _CCCL_CATCH_ALL
+  {
+    return "NCCL error information unavailable";
+  }
 }
 
 // ==========================================================================================
@@ -462,9 +476,16 @@ class nccl_error final
 
 [[nodiscard]] _CCCL_HOST_API inline __ncclResult_t __ncclCommDestroyNoThrow(__ncclComm_t __comm) noexcept
 {
-  static auto* const __fn = _CCCL_LOAD_NCCL_SYMBOL(ncclCommDestroy, __ncclResult_t (*)(__ncclComm_t));
+  _CCCL_TRY
+  {
+    static auto* const __fn = _CCCL_LOAD_NCCL_SYMBOL(ncclCommDestroy, __ncclResult_t (*)(__ncclComm_t));
 
-  return __fn(__comm);
+    return __fn(__comm);
+  }
+  _CCCL_CATCH_ALL
+  {
+    return __ncclSystemError;
+  }
 }
 
 _CCCL_HOST_API inline void __ncclCommDestroy(__ncclComm_t __comm)
@@ -531,9 +552,16 @@ _CCCL_HOST_API inline void __ncclGroupStart()
 
 [[nodiscard]] _CCCL_HOST_API inline __ncclResult_t __ncclGroupEndNoThrow() noexcept
 {
-  static auto* const __fn = _CCCL_LOAD_NCCL_SYMBOL(ncclGroupEnd, __ncclResult_t (*)());
+  _CCCL_TRY
+  {
+    static auto* const __fn = _CCCL_LOAD_NCCL_SYMBOL(ncclGroupEnd, __ncclResult_t (*)());
 
-  return __fn();
+    return __fn();
+  }
+  _CCCL_CATCH_ALL
+  {
+    return __ncclSystemError;
+  }
 }
 
 _CCCL_HOST_API inline void __ncclGroupEnd()

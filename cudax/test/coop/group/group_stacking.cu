@@ -26,10 +26,10 @@ __device__ void test_group_membership(const Group& group, cuda::std::uint32_t co
   static_assert(cudax::coop::group<Group>);
   static_assert(cuda::std::is_same_v<cuda::thread_level, typename Group::unit_level>);
 
-  REQUIRE(cuda::gpu_thread.count(group) == count);
-  REQUIRE(cuda::gpu_thread.rank(group) == rank);
-  REQUIRE(group.__mapping_result().unit_count() == count);
-  REQUIRE(group.__mapping_result().unit_rank() == rank);
+  REQUIRE_DEVICE(cuda::gpu_thread.count(group) == count);
+  REQUIRE_DEVICE(cuda::gpu_thread.rank(group) == rank);
+  REQUIRE_DEVICE(group.__mapping_result().unit_count() == count);
+  REQUIRE_DEVICE(group.__mapping_result().unit_rank() == rank);
 }
 
 struct TestKernel1
@@ -43,24 +43,24 @@ struct TestKernel1
     const cudax::coop::generic_group group1{
       cuda::gpu_thread, parent_group, cudax::coop::group_by{cuda::std::cw<16>}, cudax::coop::lane_synchronizer{}};
     test_group_membership(group1, 16, rank % 16);
-    REQUIRE(group1.count(parent_group) == 2);
-    REQUIRE(group1.rank(parent_group) == rank / 16);
+    REQUIRE_DEVICE(group1.count(parent_group) == 2);
+    REQUIRE_DEVICE(group1.rank(parent_group) == rank / 16);
     group1.sync();
     group1.sync_aligned();
 
     const cudax::coop::generic_group group2{
       cuda::gpu_thread, group1, cudax::coop::group_as{cuda::std::array{8, 8}}, cudax::coop::lane_synchronizer{}};
     test_group_membership(group2, 8, rank % 8);
-    REQUIRE(group2.count(group1) == 2);
-    REQUIRE(group2.rank(group1) == (rank % 16) / 8);
+    REQUIRE_DEVICE(group2.count(group1) == 2);
+    REQUIRE_DEVICE(group2.rank(group1) == (rank % 16) / 8);
     group2.sync();
     group2.sync_aligned();
 
     const cudax::coop::generic_group group3{
       cuda::gpu_thread, group2, cudax::coop::group_by{4}, cudax::coop::lane_synchronizer{}};
     test_group_membership(group3, 4, rank % 4);
-    REQUIRE(group3.count(group2) == 2);
-    REQUIRE(group3.rank(group2) == (rank % 8) / 4);
+    REQUIRE_DEVICE(group3.count(group2) == 2);
+    REQUIRE_DEVICE(group3.rank(group2) == (rank % 8) / 4);
     group3.sync();
     group3.sync_aligned();
 
@@ -71,8 +71,8 @@ struct TestKernel1
       cudax::coop::group_as{unit_counts} | cudax::coop::group_by{4},
       cudax::coop::lane_synchronizer{}};
     test_group_membership(group4, 4, rank % 4);
-    REQUIRE(group4.count(parent_group) == 8);
-    REQUIRE(group4.rank(parent_group) == rank / 4);
+    REQUIRE_DEVICE(group4.count(parent_group) == 8);
+    REQUIRE_DEVICE(group4.rank(parent_group) == rank / 4);
     group4.sync();
     group4.sync_aligned();
 
@@ -83,12 +83,12 @@ struct TestKernel1
       parent_group,
       cudax::coop::group_as{partial_unit_counts} | cudax::coop::group_by{4},
       cudax::coop::lane_synchronizer{});
-    REQUIRE(group5.has_value() == (rank < 28));
+    REQUIRE_DEVICE(group5.has_value() == (rank < 28));
     if (group5)
     {
       test_group_membership(*group5, 4, rank % 4);
-      REQUIRE(group5->count(parent_group) == 7);
-      REQUIRE(group5->rank(parent_group) == rank / 4);
+      REQUIRE_DEVICE(group5->count(parent_group) == 7);
+      REQUIRE_DEVICE(group5->rank(parent_group) == rank / 4);
       group5->sync();
       group5->sync_aligned();
     }
@@ -111,26 +111,26 @@ struct TestKernel2
       cudax::coop::group_by{cuda::std::cw<32>},
       cudax::coop::barrier_synchronizer{barriers}};
     test_group_membership(group1, 32, rank % 32);
-    REQUIRE(group1.count(parent_group) == 4);
-    REQUIRE(group1.rank(parent_group) == rank / 32);
+    REQUIRE_DEVICE(group1.count(parent_group) == 4);
+    REQUIRE_DEVICE(group1.rank(parent_group) == rank / 32);
 
     const cudax::coop::generic_group group2{
       cuda::gpu_thread, group1, cudax::coop::group_as{cuda::std::array{16, 16}}, cudax::coop::lane_synchronizer{}};
     test_group_membership(group2, 16, rank % 16);
-    REQUIRE(group2.count(group1) == 2);
-    REQUIRE(group2.rank(group1) == (rank % 32) / 16);
+    REQUIRE_DEVICE(group2.count(group1) == 2);
+    REQUIRE_DEVICE(group2.rank(group1) == (rank % 32) / 16);
 
     const cudax::coop::generic_group group3{
       cuda::gpu_thread, group2, cudax::coop::group_by{cuda::std::cw<8>}, cudax::coop::level_synchronizer{}};
     test_group_membership(group3, 8, rank % 8);
-    REQUIRE(group3.count(group2) == 2);
-    REQUIRE(group3.rank(group2) == (rank % 16) / 8);
+    REQUIRE_DEVICE(group3.count(group2) == 2);
+    REQUIRE_DEVICE(group3.rank(group2) == (rank % 16) / 8);
 
     const cudax::coop::generic_group group4{
       cuda::gpu_thread, group3, cudax::coop::identity_mapping{}, cudax::coop::lane_synchronizer{}};
     test_group_membership(group4, 8, rank % 8);
-    REQUIRE(group4.count(group3) == 1);
-    REQUIRE(group4.rank(group3) == 0);
+    REQUIRE_DEVICE(group4.count(group3) == 1);
+    REQUIRE_DEVICE(group4.rank(group3) == 0);
 
     group1.sync();
     group2.sync();
@@ -151,10 +151,10 @@ struct TestKernel3
 
     const cudax::coop::generic_group group1{
       cuda::warp, parent_group, cudax::coop::group_by{cuda::std::cw<16>}, cudax::coop::barrier_synchronizer{barriers1}};
-    REQUIRE(cuda::warp.count(group1) == 16);
-    REQUIRE(cuda::warp.rank(group1) == rank % 16);
-    REQUIRE(group1.count(parent_group) == 2);
-    REQUIRE(group1.rank(parent_group) == rank / 16);
+    REQUIRE_DEVICE(cuda::warp.count(group1) == 16);
+    REQUIRE_DEVICE(cuda::warp.rank(group1) == rank % 16);
+    REQUIRE_DEVICE(group1.count(parent_group) == 2);
+    REQUIRE_DEVICE(group1.rank(parent_group) == rank / 16);
 
     auto& barriers2a = get_barriers<2, 1>(cuda::block);
     auto& barriers2b = get_barriers<2, 3>(cuda::block);
@@ -164,10 +164,10 @@ struct TestKernel3
       group1,
       cudax::coop::group_by{cuda::std::cw<8>},
       cudax::coop::barrier_synchronizer{(group1.rank(parent_group) == 0) ? barriers2a : barriers2b}};
-    REQUIRE(cuda::warp.count(group2) == 8);
-    REQUIRE(cuda::warp.rank(group2) == rank % 8);
-    REQUIRE(group2.count(group1) == 2);
-    REQUIRE(group2.rank(group1) == (rank / 8) % 2);
+    REQUIRE_DEVICE(cuda::warp.count(group2) == 8);
+    REQUIRE_DEVICE(cuda::warp.rank(group2) == rank % 8);
+    REQUIRE_DEVICE(group2.count(group1) == 2);
+    REQUIRE_DEVICE(group2.rank(group1) == (rank / 8) % 2);
 
     group1.sync();
     group2.sync();

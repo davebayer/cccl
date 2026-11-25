@@ -219,7 +219,7 @@ template <typename = void>
         // vvv !_CCCL_CUDA_COMPILER(NVCC, <, 12, 3) && !_CCCL_CUDA_COMPILER(NVRTC, <, 12, 3) vvv
       NV_IF_ELSE_TARGET(
         NV_PROVIDES_SM_90,
-        (bool __p = static_cast<bool>(::__isClusterShared(__ptr)); //
+        (const bool __p = static_cast<bool>(::__isClusterShared(__ptr)); //
          if (__p) //
          { //
            _CCCL_ASSUME(__p); //

@@ -65,7 +65,7 @@ struct path_builder
   //! \brief Construct a path builder that will insert nodes into a graph.
   //! \param __dev The device on which nodes inserted into the graph will execute.
   //! \param __graph The graph to create the path builder for.
-  path_builder(device_ref __dev, cudaGraph_t __graph)
+  _CCCL_HOST_API path_builder(device_ref __dev, cudaGraph_t __graph)
       : __dev_{__dev}
       , __graph_{__graph}
   {}

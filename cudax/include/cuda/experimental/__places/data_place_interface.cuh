@@ -92,41 +92,41 @@ class partition_mapper
 public:
   using call_type = ::std::function<void(pos4* result, pos4 data_coords, dim4 data_dims, dim4 grid_dims)>;
 
-  partition_mapper() = default;
+  _CCCL_HIDE_FROM_ABI partition_mapper() = default;
 
   //! A raw partition function is its own identity
-  /*implicit*/ partition_mapper(partition_fn_t fn)
+  /*implicit*/ _CCCL_HOST_API partition_mapper(partition_fn_t fn)
       : call_(fn)
       , identity_(fn)
   {}
 
   //! A mapper that is not callable as a partition_fn_t, with an explicit identity
-  partition_mapper(call_type call, partition_fn_t identity)
+  _CCCL_HOST_API partition_mapper(call_type call, partition_fn_t identity)
       : call_(::std::move(call))
       , identity_(identity)
   {}
 
-  void operator()(pos4* result, pos4 data_coords, dim4 data_dims, dim4 grid_dims) const
+  _CCCL_HOST_API void operator()(pos4* result, pos4 data_coords, dim4 data_dims, dim4 grid_dims) const
   {
     call_(result, data_coords, data_dims, grid_dims);
   }
 
-  [[nodiscard]] explicit operator bool() const noexcept
+  [[nodiscard]] _CCCL_HOST_API explicit operator bool() const noexcept
   {
     return static_cast<bool>(call_);
   }
 
-  [[nodiscard]] friend bool operator==(const partition_mapper& lhs, const partition_mapper& rhs) noexcept
+  [[nodiscard]] _CCCL_HOST_API friend bool operator==(const partition_mapper& lhs, const partition_mapper& rhs) noexcept
   {
     return lhs.identity_ == rhs.identity_;
   }
 
-  [[nodiscard]] friend bool operator!=(const partition_mapper& lhs, const partition_mapper& rhs) noexcept
+  [[nodiscard]] _CCCL_HOST_API friend bool operator!=(const partition_mapper& lhs, const partition_mapper& rhs) noexcept
   {
     return !(lhs == rhs);
   }
 
-  [[nodiscard]] friend bool operator<(const partition_mapper& lhs, const partition_mapper& rhs) noexcept
+  [[nodiscard]] _CCCL_HOST_API friend bool operator<(const partition_mapper& lhs, const partition_mapper& rhs) noexcept
   {
     return ::std::less<partition_fn_t>{}(lhs.identity_, rhs.identity_);
   }
@@ -146,7 +146,7 @@ private:
 class data_place_interface
 {
 public:
-  virtual ~data_place_interface() = default;
+  _CCCL_HIDE_FROM_ABI virtual ~data_place_interface() = default;
 
   /**
    * @brief Special device ordinal values for non-device places
@@ -154,7 +154,8 @@ public:
    * Returned by get_device_ordinal() for places that don't correspond
    * to a specific CUDA device.
    */
-  enum ord : int
+  // These sentinels are returned as integer device ordinals.
+  enum ord : int // NOLINT(cppcoreguidelines-use-enum-class)
   {
     invalid     = ::cuda::std::numeric_limits<int>::min(),
     composite   = -5,
@@ -246,7 +247,7 @@ public:
    * @param stream CUDA stream for stream-ordered allocations
    * @return Pointer to allocated memory
    */
-  virtual void* allocate_nd(dim4 data_dims, size_t elemsize, cudaStream_t stream) const
+  _CCCL_HOST_API virtual void* allocate_nd(dim4 data_dims, size_t elemsize, cudaStream_t stream) const
   {
     return allocate(static_cast<::std::ptrdiff_t>(data_dims.size() * elemsize), stream);
   }
@@ -283,7 +284,8 @@ public:
    * @param size Size of the allocation in bytes
    * @return CUresult indicating success or failure
    */
-  virtual CUresult mem_create(CUmemGenericAllocationHandle* handle, size_t size) const
+  _CCCL_HOST_API virtual CUresult
+  mem_create([[maybe_unused]] CUmemGenericAllocationHandle* handle, [[maybe_unused]] size_t size) const
   {
     return CUDA_ERROR_NOT_SUPPORTED;
   }
@@ -296,7 +298,7 @@ public:
    * causes data_place::affine_exec_place() to fall through to the error path.
    * The returned shared_ptr should be castable to shared_ptr<exec_place::impl>.
    */
-  virtual ::std::shared_ptr<void> get_affine_exec_impl() const
+  _CCCL_HOST_API virtual ::std::shared_ptr<void> get_affine_exec_impl() const
   {
     return nullptr;
   }
@@ -307,13 +309,13 @@ public:
    * @brief Whether this place is a composite place (data distributed over a
    * grid of places by a partitioner)
    */
-  virtual bool is_composite() const
+  _CCCL_HOST_API virtual bool is_composite() const
   {
     return false;
   }
 
   //! Whether this is a replicated data place (one copy per grid member)
-  virtual bool is_replicated() const noexcept
+  _CCCL_HOST_API virtual bool is_replicated() const noexcept
   {
     return false;
   }
@@ -321,7 +323,7 @@ public:
   //! Number of data instances a dependency at this place resolves to: 1 for
   //! ordinary and composite places, one per grid member for a replicated
   //! place (see data_place::member for the r-th instance's place)
-  virtual size_t instance_count() const
+  _CCCL_HOST_API virtual size_t instance_count() const
   {
     return 1;
   }
@@ -330,7 +332,7 @@ public:
    * @brief Get the partitioner function for composite places
    * @throws std::logic_error if not a composite place
    */
-  virtual const partition_mapper& get_partitioner() const
+  _CCCL_HOST_API virtual const partition_mapper& get_partitioner() const
   {
     _CCCL_THROW(::std::logic_error, "get_partitioner() called on non-composite data_place");
   }

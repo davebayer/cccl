@@ -30,6 +30,7 @@
 #  include <cuda/__mdspan/host_device_mdspan.h>
 #  include <cuda/__mdspan/traits.h>
 #  include <cuda/__stream/stream_ref.h>
+#  include <cuda/__type_traits/is_trivially_copyable.h>
 #  include <cuda/std/__cstddef/types.h>
 #  include <cuda/std/__exception/exception_macros.h>
 #  include <cuda/std/__host_stdlib/stdexcept>
@@ -39,7 +40,6 @@
 #  include <cuda/std/__type_traits/has_unique_object_representation.h>
 #  include <cuda/std/__type_traits/is_const.h>
 #  include <cuda/std/__type_traits/is_convertible.h>
-#  include <cuda/std/__type_traits/is_trivially_copyable.h>
 #  include <cuda/std/__type_traits/remove_cvref.h>
 
 #  include <cuda/experimental/__copy_bytes/memcpy_batch_tiles.cuh>
@@ -51,7 +51,7 @@ namespace cuda::experimental
 {
 template <typename _ByteT>
 inline constexpr bool __can_fill_bytes_value_v =
-  ::cuda::std::is_trivially_copyable_v<_ByteT> && ::cuda::std::has_unique_object_representations_v<_ByteT>
+  ::cuda::is_trivially_copyable_v<_ByteT> && ::cuda::std::has_unique_object_representations_v<_ByteT>
   && ::cuda::__driver::__cu_driver_memsetable<_ByteT>;
 
 // __half, __nv_bfloat16 don't have a unique object representation
@@ -139,8 +139,7 @@ _CCCL_HOST_API void fill_bytes(::cuda::device_mdspan<_Tp, _Extents, _Layout, _Ac
   using __stride_t   = __mdspan_stride_t<_Layout, typename __mdspan_t::mapping_type>;
 
   static_assert(!::cuda::std::is_const_v<_Tp>, "cudax::fill_bytes: element type must not be const");
-  static_assert(::cuda::std::is_trivially_copyable_v<_Tp>,
-                "cudax::fill_bytes: element type must be trivially copyable");
+  static_assert(::cuda::is_trivially_copyable_v<_Tp>, "cudax::fill_bytes: element type must be trivially copyable");
   static_assert(__can_fill_bytes_value_v<__value_t>,
                 "cudax::fill_bytes: fill value type must be trivially copyable with unique object representations and "
                 "have size 1, 2, or 4");
@@ -202,7 +201,7 @@ _CCCL_HOST_API void fill_bytes(::cuda::device_mdspan<_Tp, _Extents, _Layout, _Ac
     const auto __tile_bytes   = static_cast<::cuda::std::size_t>(__tile_size) * sizeof(_Tp);
     _CCCL_ASSERT(__tensor_size % __tile_size == 0, "cudax::fill_bytes: tensor size must be divisible by tile size");
 
-    __tile_iterator_linearized<__extent_t, __stride_t, _Tp, __rank> __tiles_iterator(__final_tensor, __tile_size);
+    const __tile_iterator_linearized<__extent_t, __stride_t, _Tp, __rank> __tiles_iterator(__final_tensor, __tile_size);
     for (::cuda::std::size_t __tile_idx = 0; __tile_idx < __num_tiles; ++__tile_idx)
     {
       auto* const __tile_ptr = __tiles_iterator(static_cast<__extent_t>(__tile_idx));

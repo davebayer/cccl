@@ -23,10 +23,10 @@
 
 #if _CCCL_HOSTED() && __has_include(<nv_decode.h>)
 
+#  include <cuda/std/__cstdlib/malloc.h>
 #  include <cuda/std/__exception/exception_macros.h>
 #  include <cuda/std/__host_stdlib/new>
 #  include <cuda/std/__host_stdlib/stdexcept>
-#  include <cuda/std/cstdlib>
 #  include <cuda/std/string_view>
 
 #  include <string>
@@ -54,10 +54,10 @@ template <class _Dummy = void>
 [[nodiscard]] _CCCL_HOST_API ::std::string demangle(::cuda::std::string_view __name)
 {
   // input must be zero-terminated, so we convert string_view to std::string
-  ::std::string __name_in{__name.data(), __name.size()};
+  const ::std::string __name_in{__name.data(), __name.size()};
 
   int __status{};
-  char* __dname = ::__cu_demangle(__name_in.c_str(), nullptr, nullptr, &__status);
+  const auto __dname = ::__cu_demangle(__name_in.c_str(), nullptr, nullptr, &__status);
 
   _CCCL_TRY
   {

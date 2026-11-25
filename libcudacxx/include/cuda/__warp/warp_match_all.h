@@ -70,11 +70,17 @@ warp_match_all(const _Tp& __data, const lane_mask __lane_mask = lane_mask::all()
     _CCCL_PRAGMA_UNROLL_FULL()
     for (int i = 0; i < __ratio; ++i)
     {
-      int __pred = false;
-      NV_IF_ELSE_TARGET(NV_PROVIDES_SM_70,
-                        (::__match_all_sync(__lane_mask.value(), __array[i], &__pred);),
-                        (::cuda::device::__cuda__match_all_sync_is_not_supported_before_SM_70__();));
-      __ret = __ret && __pred;
+      NV_IF_ELSE_TARGET(
+        NV_PROVIDES_SM_70,
+        ({
+          int __pred;
+          ::__match_all_sync(__lane_mask.value(), __array[i], &__pred);
+          __ret = __ret && __pred;
+        }),
+        ({
+          ::cuda::device::__cuda__match_all_sync_is_not_supported_before_SM_70__();
+          __ret = false;
+        }))
     }
     return __ret;
   }

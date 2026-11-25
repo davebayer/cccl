@@ -53,27 +53,27 @@ using ::cuda::experimental::stf::cuda_try;
 class data_place_invalid final : public data_place_interface
 {
 public:
-  bool is_resolved() const override
+  _CCCL_HOST_API bool is_resolved() const override
   {
     return false;
   }
 
-  int get_device_ordinal() const override
+  _CCCL_HOST_API int get_device_ordinal() const override
   {
     return data_place_interface::invalid;
   }
 
-  ::std::string to_string() const override
+  _CCCL_HOST_API ::std::string to_string() const override
   {
     return "invalid";
   }
 
-  size_t hash() const override
+  _CCCL_HOST_API size_t hash() const override
   {
     return ::std::hash<int>()(data_place_interface::invalid);
   }
 
-  int cmp(const data_place_interface& other) const override
+  _CCCL_HOST_API int cmp(const data_place_interface& other) const override
   {
     if (typeid(*this) != typeid(other))
     {
@@ -82,17 +82,17 @@ public:
     return 0;
   }
 
-  void* allocate(::std::ptrdiff_t, cudaStream_t) const override
+  _CCCL_HOST_API void* allocate(::std::ptrdiff_t, cudaStream_t) const override
   {
     _CCCL_THROW(::std::logic_error, "Cannot allocate from invalid data_place");
   }
 
-  void deallocate(void*, size_t, cudaStream_t) const override
+  _CCCL_HOST_API void deallocate(void*, size_t, cudaStream_t) const override
   {
     _CCCL_THROW(::std::logic_error, "Cannot deallocate from invalid data_place");
   }
 
-  bool allocation_is_stream_ordered() const override
+  _CCCL_HOST_API bool allocation_is_stream_ordered() const override
   {
     return false;
   }
@@ -104,27 +104,27 @@ public:
 class data_place_host final : public data_place_interface
 {
 public:
-  bool is_resolved() const override
+  _CCCL_HOST_API bool is_resolved() const override
   {
     return true;
   }
 
-  int get_device_ordinal() const override
+  _CCCL_HOST_API int get_device_ordinal() const override
   {
     return data_place_interface::host;
   }
 
-  ::std::string to_string() const override
+  _CCCL_HOST_API ::std::string to_string() const override
   {
     return "host";
   }
 
-  size_t hash() const override
+  _CCCL_HOST_API size_t hash() const override
   {
     return ::std::hash<int>()(data_place_interface::host);
   }
 
-  int cmp(const data_place_interface& other) const override
+  _CCCL_HOST_API int cmp(const data_place_interface& other) const override
   {
     if (typeid(*this) != typeid(other))
     {
@@ -133,24 +133,24 @@ public:
     return 0;
   }
 
-  void* allocate(::std::ptrdiff_t size, cudaStream_t) const override
+  _CCCL_HOST_API void* allocate(::std::ptrdiff_t size, cudaStream_t) const override
   {
     void* result = nullptr;
     cuda_try(cudaMallocHost(&result, static_cast<size_t>(size)));
     return result;
   }
 
-  void deallocate(void* ptr, size_t, cudaStream_t) const override
+  _CCCL_HOST_API void deallocate(void* ptr, size_t, cudaStream_t) const override
   {
     cuda_try(cudaFreeHost(ptr));
   }
 
-  bool allocation_is_stream_ordered() const override
+  _CCCL_HOST_API bool allocation_is_stream_ordered() const override
   {
     return false;
   }
 
-  CUresult mem_create(CUmemGenericAllocationHandle* handle, size_t size) const override
+  _CCCL_HOST_API CUresult mem_create(CUmemGenericAllocationHandle* handle, size_t size) const override
   {
 #if _CCCL_CTK_AT_LEAST(12, 2)
     CUmemAllocationProp prop = {};
@@ -172,27 +172,27 @@ public:
 class data_place_managed final : public data_place_interface
 {
 public:
-  bool is_resolved() const override
+  _CCCL_HOST_API bool is_resolved() const override
   {
     return true;
   }
 
-  int get_device_ordinal() const override
+  _CCCL_HOST_API int get_device_ordinal() const override
   {
     return data_place_interface::managed;
   }
 
-  ::std::string to_string() const override
+  _CCCL_HOST_API ::std::string to_string() const override
   {
     return "managed";
   }
 
-  size_t hash() const override
+  _CCCL_HOST_API size_t hash() const override
   {
     return ::std::hash<int>()(data_place_interface::managed);
   }
 
-  int cmp(const data_place_interface& other) const override
+  _CCCL_HOST_API int cmp(const data_place_interface& other) const override
   {
     if (typeid(*this) != typeid(other))
     {
@@ -201,19 +201,19 @@ public:
     return 0;
   }
 
-  void* allocate(::std::ptrdiff_t size, cudaStream_t) const override
+  _CCCL_HOST_API void* allocate(::std::ptrdiff_t size, cudaStream_t) const override
   {
     void* result = nullptr;
     cuda_try(cudaMallocManaged(&result, static_cast<size_t>(size)));
     return result;
   }
 
-  void deallocate(void* ptr, size_t, cudaStream_t) const override
+  _CCCL_HOST_API void deallocate(void* ptr, size_t, cudaStream_t) const override
   {
     cuda_try(cudaFree(ptr));
   }
 
-  bool allocation_is_stream_ordered() const override
+  _CCCL_HOST_API bool allocation_is_stream_ordered() const override
   {
     return false;
   }
@@ -225,43 +225,43 @@ public:
 class data_place_device final : public data_place_interface
 {
 public:
-  bool is_resolved() const override
+  _CCCL_HOST_API bool is_resolved() const override
   {
     return true;
   }
 
-  explicit data_place_device(int device_id)
+  _CCCL_HOST_API explicit data_place_device(int device_id)
       : device_id_(device_id)
   {
     _CCCL_ASSERT(device_id >= 0, "Device ID must be non-negative");
   }
 
-  int get_device_ordinal() const override
+  _CCCL_HOST_API int get_device_ordinal() const override
   {
     return device_id_;
   }
 
-  ::std::string to_string() const override
+  _CCCL_HOST_API ::std::string to_string() const override
   {
     return "dev" + ::std::to_string(device_id_);
   }
 
-  size_t hash() const override
+  _CCCL_HOST_API size_t hash() const override
   {
     return ::std::hash<int>()(device_id_);
   }
 
-  int cmp(const data_place_interface& other) const override
+  _CCCL_HOST_API int cmp(const data_place_interface& other) const override
   {
     if (typeid(*this) != typeid(other))
     {
       return typeid(*this).before(typeid(other)) ? -1 : 1;
     }
-    return (device_id_ > static_cast<const data_place_device&>(other).device_id_)
-         - (device_id_ < static_cast<const data_place_device&>(other).device_id_);
+    const int other_id = other.get_device_ordinal();
+    return (device_id_ > other_id) - (device_id_ < other_id);
   }
 
-  void* allocate(::std::ptrdiff_t size, cudaStream_t stream) const override
+  _CCCL_HOST_API void* allocate(::std::ptrdiff_t size, cudaStream_t stream) const override
   {
     // The device's primary context must be current for a driver allocation on
     // the null stream (cudaMallocAsync created it on demand; the driver call
@@ -280,18 +280,18 @@ public:
     return reinterpret_cast<void*>(ptr); // NOLINT(performance-no-int-to-ptr)
   }
 
-  void deallocate(void* ptr, size_t, cudaStream_t stream) const override
+  _CCCL_HOST_API void deallocate(void* ptr, size_t, cudaStream_t stream) const override
   {
     const ::cuda::__ensure_current_context __ctx{::cuda::device_ref{device_id_}};
     cuda_try(cuMemFreeAsync(reinterpret_cast<CUdeviceptr>(ptr), reinterpret_cast<CUstream>(stream)));
   }
 
-  bool allocation_is_stream_ordered() const override
+  _CCCL_HOST_API bool allocation_is_stream_ordered() const override
   {
     return true;
   }
 
-  CUresult mem_create(CUmemGenericAllocationHandle* handle, size_t size) const override
+  _CCCL_HOST_API CUresult mem_create(CUmemGenericAllocationHandle* handle, size_t size) const override
   {
     CUmemAllocationProp prop = {};
     prop.type                = CU_MEM_ALLOCATION_TYPE_PINNED;
@@ -310,27 +310,27 @@ private:
 class data_place_affine final : public data_place_interface
 {
 public:
-  bool is_resolved() const override
+  _CCCL_HOST_API bool is_resolved() const override
   {
     return false;
   }
 
-  int get_device_ordinal() const override
+  _CCCL_HOST_API int get_device_ordinal() const override
   {
     return data_place_interface::affine;
   }
 
-  ::std::string to_string() const override
+  _CCCL_HOST_API ::std::string to_string() const override
   {
     return "affine";
   }
 
-  size_t hash() const override
+  _CCCL_HOST_API size_t hash() const override
   {
     return ::std::hash<int>()(data_place_interface::affine);
   }
 
-  int cmp(const data_place_interface& other) const override
+  _CCCL_HOST_API int cmp(const data_place_interface& other) const override
   {
     if (typeid(*this) != typeid(other))
     {
@@ -339,17 +339,17 @@ public:
     return 0;
   }
 
-  void* allocate(::std::ptrdiff_t, cudaStream_t) const override
+  _CCCL_HOST_API void* allocate(::std::ptrdiff_t, cudaStream_t) const override
   {
     _CCCL_THROW(::std::logic_error, "Cannot allocate from affine data_place directly");
   }
 
-  void deallocate(void*, size_t, cudaStream_t) const override
+  _CCCL_HOST_API void deallocate(void*, size_t, cudaStream_t) const override
   {
     _CCCL_THROW(::std::logic_error, "Cannot deallocate from affine data_place directly");
   }
 
-  bool allocation_is_stream_ordered() const override
+  _CCCL_HOST_API bool allocation_is_stream_ordered() const override
   {
     return false;
   }
@@ -361,27 +361,27 @@ public:
 class data_place_device_auto final : public data_place_interface
 {
 public:
-  bool is_resolved() const override
+  _CCCL_HOST_API bool is_resolved() const override
   {
     return false;
   }
 
-  int get_device_ordinal() const override
+  _CCCL_HOST_API int get_device_ordinal() const override
   {
     return data_place_interface::device_auto;
   }
 
-  ::std::string to_string() const override
+  _CCCL_HOST_API ::std::string to_string() const override
   {
     return "auto";
   }
 
-  size_t hash() const override
+  _CCCL_HOST_API size_t hash() const override
   {
     return ::std::hash<int>()(data_place_interface::device_auto);
   }
 
-  int cmp(const data_place_interface& other) const override
+  _CCCL_HOST_API int cmp(const data_place_interface& other) const override
   {
     if (typeid(*this) != typeid(other))
     {
@@ -390,17 +390,17 @@ public:
     return 0;
   }
 
-  void* allocate(::std::ptrdiff_t, cudaStream_t) const override
+  _CCCL_HOST_API void* allocate(::std::ptrdiff_t, cudaStream_t) const override
   {
     _CCCL_THROW(::std::logic_error, "Cannot allocate from device_auto data_place directly");
   }
 
-  void deallocate(void*, size_t, cudaStream_t) const override
+  _CCCL_HOST_API void deallocate(void*, size_t, cudaStream_t) const override
   {
     _CCCL_THROW(::std::logic_error, "Cannot deallocate from device_auto data_place directly");
   }
 
-  bool allocation_is_stream_ordered() const override
+  _CCCL_HOST_API bool allocation_is_stream_ordered() const override
   {
     return true;
   }

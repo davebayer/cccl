@@ -31,9 +31,9 @@
 namespace cuda::experimental
 {
 #if _CCCL_HAS_CTK()
-using __cufile_error_t = ::CUfileOpError;
+using __cufile_error_t _CCCL_NODEBUG = ::CUfileOpError;
 #else // ^^^ _CCCL_HAS_CTK() ^^^ // vvv !_CCCL_HAS_CTK() vvv
-using __cufile_error_t = int;
+using __cufile_error_t _CCCL_NODEBUG = int;
 #endif // ^^^ !_CCCL_HAS_CTK() ^^^
 
 struct __cufile_msg_storage
@@ -41,7 +41,7 @@ struct __cufile_msg_storage
   char __buffer[512]{};
 };
 
-static char* __format_cufile_error_message(
+_CCCL_HOST_API inline char* __format_cufile_error_message(
   __cufile_msg_storage& __msg_buffer,
   const __cufile_error_t __status,
   const char* __msg,

@@ -90,8 +90,7 @@ template <class _Tp, class _FnType, class _Ret, bool _IsConst, bool _IsNothrow, 
   }
   else
   {
-    __value_type& __obj = *static_cast<__value_type*>(__pv);
-    return (*__fn)(__obj, static_cast<_Args&&>(__args)...);
+    return (*__fn)(*static_cast<__value_type*>(__pv), static_cast<_Args&&>(__args)...);
   }
 }
 

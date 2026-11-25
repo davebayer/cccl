@@ -8,6 +8,8 @@
 #
 #===----------------------------------------------------------------------===##
 
+set(CCCL_TIDY_CUDA_HOST_PASS OFF)
+
 add_subdirectory(fixed_capacity_map)
 add_subdirectory(fixed_capacity_set)
 add_subdirectory(hyperloglog)

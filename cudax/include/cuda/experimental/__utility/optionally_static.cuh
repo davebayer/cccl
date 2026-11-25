@@ -32,8 +32,9 @@
 
 namespace cuda::experimental
 {
+// Leave execution-space inference intact for constexpr operations on user-defined types.
 template <typename _Vp>
-constexpr _Vp __get_reserved_default()
+_CCCL_HIDE_FROM_ABI constexpr _Vp __get_reserved_default()
 {
   return ::std::is_floating_point_v<_Vp> ? -::std::numeric_limits<_Vp>::max()
        : ::std::is_unsigned_v<_Vp>
@@ -42,7 +43,7 @@ constexpr _Vp __get_reserved_default()
 }
 
 template <auto _Vp>
-using __copy_type_t = decltype(_Vp);
+using __copy_type_t _CCCL_NODEBUG = decltype(_Vp);
 
 //! @brief A value that can be either a compile-time constant or a runtime value.
 //!
@@ -65,19 +66,19 @@ public:
 
   static constexpr auto reserved_v = _Reserved;
 
-  constexpr optionally_static()                                    = default;
-  constexpr optionally_static(const optionally_static&)            = default;
-  constexpr optionally_static& operator=(const optionally_static&) = default;
+  _CCCL_HIDE_FROM_ABI constexpr optionally_static()                                    = default;
+  _CCCL_HIDE_FROM_ABI constexpr optionally_static(const optionally_static&)            = default;
+  _CCCL_HIDE_FROM_ABI constexpr optionally_static& operator=(const optionally_static&) = default;
 
   //! @brief Construct a dynamic value. Only valid when `_StaticV == _Reserved`.
   //! @param[in] __dynamic_value The runtime value.
-  constexpr optionally_static(type __dynamic_value)
+  _CCCL_HIDE_FROM_ABI constexpr optionally_static(type __dynamic_value)
       : __payload(__dynamic_value)
   {}
 
   //! @brief Retrieve the stored value (static or dynamic).
   //! @return The stored value.
-  constexpr type get() const
+  _CCCL_HIDE_FROM_ABI constexpr type get() const
   {
     if constexpr (is_static)
     {
@@ -90,50 +91,50 @@ public:
   }
 
   //! @brief Implicit conversion to the underlying type.
-  constexpr operator type() const
+  _CCCL_HIDE_FROM_ABI constexpr operator type() const
   {
     return get();
   }
 
   //! @brief Retrieve a mutable reference to the stored dynamic value.
   //! @return Reference to the dynamic payload.
-  constexpr type& get_ref()
+  _CCCL_HIDE_FROM_ABI constexpr type& get_ref()
   {
     return __payload;
   }
 
-  optionally_static& operator++()
+  _CCCL_HOST_API optionally_static& operator++()
   {
     ++get_ref();
     return *this;
   }
 
-  optionally_static operator++(int)
+  _CCCL_HOST_API optionally_static operator++(int)
   {
     auto __copy = *this;
     ++*this;
     return __copy;
   }
 
-  optionally_static& operator--()
+  _CCCL_HOST_API optionally_static& operator--()
   {
     --get_ref();
     return *this;
   }
 
-  optionally_static operator--(int)
+  _CCCL_HOST_API optionally_static operator--(int)
   {
     auto __copy = *this;
     --*this;
     return __copy;
   }
 
-  optionally_static operator+() const
+  _CCCL_HOST_API optionally_static operator+() const
   {
     return *this;
   }
 
-  auto operator-() const
+  _CCCL_HOST_API auto operator-() const
   {
     if constexpr (!is_static)
     {
@@ -152,7 +153,7 @@ public:
 private:
   struct __nonesuch
   {};
-  using __state_t                             = ::cuda::std::conditional_t<is_static, __nonesuch, type>;
+  using __state_t _CCCL_NODEBUG               = ::cuda::std::conditional_t<is_static, __nonesuch, type>;
   _CCCL_NO_UNIQUE_ADDRESS __state_t __payload = __state_t();
 };
 
@@ -161,8 +162,8 @@ private:
 // clang-format off
 #  define _CUDAX_OPTIONALLY_STATIC_BINARY_OP(op)                                                            \
     template <auto _V1, auto _V2, auto _R>                                                                  \
-    constexpr auto operator op(const optionally_static<_V1, _R>& __lhs,                                     \
-                               const optionally_static<_V2, _R>& __rhs)                                     \
+    _CCCL_HIDE_FROM_ABI constexpr auto operator op(const optionally_static<_V1, _R>& __lhs,                 \
+                                                   const optionally_static<_V2, _R>& __rhs)                 \
     {                                                                                                       \
       if constexpr (!::std::remove_reference_t<decltype(__lhs)>::is_static                                  \
                     || !::std::remove_reference_t<decltype(__rhs)>::is_static)                               \
@@ -179,23 +180,25 @@ private:
       }                                                                                                     \
     }                                                                                                       \
     template <auto _V, auto _R, typename _Tp>                                                               \
-    constexpr auto operator op(const optionally_static<_V, _R>& __lhs, const _Tp& __rhs)                    \
+    _CCCL_HIDE_FROM_ABI constexpr auto operator op(const optionally_static<_V, _R>& __lhs,                  \
+                                                   const _Tp& __rhs)                                        \
     {                                                                                                       \
       return __lhs.get() op __rhs;                                                                          \
     }                                                                                                       \
     template <auto _V, auto _R, typename _Tp>                                                               \
-    constexpr auto operator op(const _Tp& __lhs, const optionally_static<_V, _R>& __rhs)                    \
+    _CCCL_HIDE_FROM_ABI constexpr auto operator op(const _Tp& __lhs,                                        \
+                                                   const optionally_static<_V, _R>& __rhs)                  \
     {                                                                                                       \
       return __lhs op __rhs.get();                                                                          \
     }                                                                                                       \
     template <auto _V2, auto _R>                                                                            \
-    constexpr auto& operator op##=(optionally_static<_R, _R>& __lhs,                                        \
-                                   const optionally_static<_V2, _R>& __rhs)                                 \
+    _CCCL_HIDE_FROM_ABI constexpr auto& operator op##=(optionally_static<_R, _R>& __lhs,                    \
+                                                       const optionally_static<_V2, _R>& __rhs)             \
     {                                                                                                       \
       return __lhs.get_ref() op## = __rhs.get();                                                            \
     }                                                                                                       \
     template <auto _R, typename _Tp>                                                                        \
-    constexpr auto& operator op##=(optionally_static<_R, _R>& __lhs, const _Tp & __rhs)                     \
+    _CCCL_HIDE_FROM_ABI constexpr auto& operator op##=(optionally_static<_R, _R>& __lhs, const _Tp & __rhs) \
     {                                                                                                       \
       return __lhs.get_ref() op## = __rhs;                                                                  \
     }
@@ -213,20 +216,20 @@ _CUDAX_OPTIONALLY_STATIC_BINARY_OP(^)
 
 #  define _CUDAX_OPTIONALLY_STATIC_COMPARISON_OP(op)                                                              \
     template <auto _V1, auto _V2, auto _R>                                                                       \
-    constexpr bool operator op(const optionally_static<_V1, _R>& __lhs,                                          \
-                               const optionally_static<_V2, _R>& __rhs)                                          \
+    _CCCL_HIDE_FROM_ABI constexpr bool operator op(const optionally_static<_V1, _R>& __lhs,                      \
+                                                   const optionally_static<_V2, _R>& __rhs)                      \
     {                                                                                                             \
       return __lhs.get() op __rhs.get();                                                                          \
     }                                                                                                             \
     template <auto _V, auto _R, typename _Tp,                                                                    \
               typename = ::std::enable_if_t<!::std::is_same_v<_Tp, optionally_static<_V, _R>>>>                   \
-    constexpr bool operator op(const optionally_static<_V, _R>& __lhs, const _Tp& __rhs)                         \
+    _CCCL_HIDE_FROM_ABI constexpr bool operator op(const optionally_static<_V, _R>& __lhs, const _Tp& __rhs)     \
     {                                                                                                             \
       return __lhs.get() op __rhs;                                                                                \
     }                                                                                                             \
     template <auto _V, auto _R, typename _Tp,                                                                    \
               typename = ::std::enable_if_t<!::std::is_same_v<_Tp, optionally_static<_V, _R>>>>                   \
-    constexpr bool operator op(const _Tp& __lhs, const optionally_static<_V, _R>& __rhs)                         \
+    _CCCL_HIDE_FROM_ABI constexpr bool operator op(const _Tp& __lhs, const optionally_static<_V, _R>& __rhs)     \
     {                                                                                                             \
       return __lhs op __rhs.get();                                                                                \
     }

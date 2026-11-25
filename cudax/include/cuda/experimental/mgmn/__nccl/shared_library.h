@@ -45,6 +45,8 @@ namespace cuda::experimental
 #  if _CCCL_OS(WINDOWS)
 class __shared_library_base
 {
+  friend class __shared_library;
+
   struct __platform_deleter
   {
     using pointer _CCCL_NODEBUG = HMODULE;
@@ -76,11 +78,14 @@ protected:
     return __sym;
   }
 
+private:
   __platform_handle_t __handle_{};
 };
 #  elif _CCCL_OS(LINUX) || _CCCL_OS(APPLE) // ^^^ _CCCL_OS(WINDOWS) ^^^ / vvv _CCCL_OS(LINUX) vvv
 class __shared_library_base
 {
+  friend class __shared_library;
+
   struct __platform_deleter
   {
     _CCCL_HOST_API void operator()(void* const __mod) const noexcept
@@ -129,6 +134,7 @@ protected:
     return __sym;
   }
 
+private:
   __platform_handle_t __handle_{};
 };
 #  else // ^^^ _CCCL_OS(LINUX) ^^^ / vvv unknown arch vvv
@@ -138,7 +144,7 @@ protected:
 class __shared_library : __shared_library_base
 {
 public:
-  using native_handle_type = typename __shared_library_base::__platform_handle_t::pointer;
+  using native_handle_type = __shared_library_base::__platform_handle_t::pointer;
 
   /**
    * @brief __shared_library may not be default constructed

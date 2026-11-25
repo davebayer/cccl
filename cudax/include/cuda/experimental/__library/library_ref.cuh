@@ -60,11 +60,11 @@ public:
   //! @brief Constructs a `library_ref` from a CUlibrary handle
   //!
   //! @param __library The CUlibrary handle to wrap
-  constexpr library_ref(value_type __library) noexcept
+  _CCCL_HOST_DEVICE_API constexpr library_ref(value_type __library) noexcept
       : __library_((::CUlibrary) __library)
   {}
 
-  library_ref(const library_ref&) = default;
+  _CCCL_HIDE_FROM_ABI library_ref(const library_ref&) = default;
 
   //! @brief Checks if the library contains a kernel with the given name
   //!
@@ -73,7 +73,7 @@ public:
   //! @return true if the library contains a kernel with the given name, false otherwise
   //!
   //! @throws cuda_error if the library could not be queried for the kernel
-  [[nodiscard]] bool has_kernel(const char* __name) const
+  [[nodiscard]] _CCCL_HOST_API bool has_kernel(const char* __name) const
   {
     ::CUkernel __kernel{};
     switch (const auto __res = ::cuda::__driver::__libraryGetKernelNoThrow(__kernel, __library_, __name))
@@ -97,7 +97,7 @@ public:
   //!
   //! @throws cuda_error if the kernel could not be found in the library
   template <class _Signature>
-  [[nodiscard]] kernel_ref<_Signature> kernel(const char* __name) const
+  [[nodiscard]] _CCCL_HOST_API kernel_ref<_Signature> kernel(const char* __name) const
   {
     ::CUkernel __kernel{};
     _CCCL_TRY_DRIVER_API(
@@ -117,9 +117,9 @@ public:
   //! @return true if the library contains a global symbol with the given name, false otherwise
   //!
   //! @throws cuda_error if the library could not be queried for the global symbol
-  [[nodiscard]] bool has_global(const char* __name, ::cuda::device_ref __device) const
+  [[nodiscard]] _CCCL_HOST_API bool has_global(const char* __name, ::cuda::device_ref __device) const
   {
-    ::cuda::__ensure_current_context __ctx_guard(__device);
+    ::cuda::__ensure_current_context const __ctx_guard(__device);
 
     ::CUdeviceptr __dptr{};
     ::cuda::std::size_t __size{};
@@ -142,9 +142,9 @@ public:
   //! @return A pair containing a device pointer to the global symbol and its size
   //!
   //! @throws cuda_error if the global symbol could not be found in the library
-  [[nodiscard]] library_symbol_info global(const char* __name, ::cuda::device_ref __device) const
+  [[nodiscard]] _CCCL_HOST_API library_symbol_info global(const char* __name, ::cuda::device_ref __device) const
   {
-    ::cuda::__ensure_current_context __ctx_guard(__device);
+    ::cuda::__ensure_current_context const __ctx_guard(__device);
 
     ::CUdeviceptr __dptr{};
     ::cuda::std::size_t __size{};
@@ -155,6 +155,8 @@ public:
       __size,
       __library_,
       __name);
+    // The driver represents this device pointer as a CUdeviceptr.
+    // NOLINTNEXTLINE(performance-no-int-to-ptr)
     return library_symbol_info{reinterpret_cast<void*>(__dptr), __size};
   }
 
@@ -167,7 +169,7 @@ public:
   //! @throws cuda_error if the library could not be queried for the managed symbol
   //!
   //! @note Managed memory is shared across devices
-  [[nodiscard]] bool has_managed(const char* __name) const
+  [[nodiscard]] _CCCL_HOST_API bool has_managed(const char* __name) const
   {
     ::CUdeviceptr __dptr{};
     ::cuda::std::size_t __size{};
@@ -191,7 +193,7 @@ public:
   //! @throws cuda_error if the managed symbol could not be found in the library
   //!
   //! @note Managed memory is shared across devices
-  [[nodiscard]] library_symbol_info managed(const char* __name) const
+  [[nodiscard]] _CCCL_HOST_API library_symbol_info managed(const char* __name) const
   {
     ::CUdeviceptr __dptr{};
     ::cuda::std::size_t __size{};
@@ -202,13 +204,15 @@ public:
       __size,
       __library_,
       __name);
+    // The driver represents this device pointer as a CUdeviceptr.
+    // NOLINTNEXTLINE(performance-no-int-to-ptr)
     return library_symbol_info{reinterpret_cast<void*>(__dptr), __size};
   }
 
   //! @brief Gets the CUlibrary handle
   //!
   //! @return The CUlibrary handle wrapped by this `library_ref`
-  [[nodiscard]] constexpr value_type get() const noexcept
+  [[nodiscard]] _CCCL_HOST_DEVICE_API constexpr value_type get() const noexcept
   {
     return (value_type) __library_;
   }
@@ -218,7 +222,7 @@ public:
   //! @param __lhs The first `library_ref` to compare
   //! @param __rhs The second `library_ref` to compare
   //! @return true if `lhs` and `rhs` refer to the same library
-  [[nodiscard]] friend constexpr bool operator==(library_ref __lhs, library_ref __rhs) noexcept
+  [[nodiscard]] friend _CCCL_HOST_DEVICE_API constexpr bool operator==(library_ref __lhs, library_ref __rhs) noexcept
   {
     return __lhs.__library_ == __rhs.__library_;
   }
@@ -228,13 +232,14 @@ public:
   //! @param __lhs The first `library_ref` to compare
   //! @param __rhs The second `library_ref` to compare
   //! @return true if `lhs` and `rhs` refer to a different library
-  [[nodiscard]] friend constexpr bool operator!=(library_ref __lhs, library_ref __rhs) noexcept
+  [[nodiscard]] friend _CCCL_HOST_DEVICE_API constexpr bool operator!=(library_ref __lhs, library_ref __rhs) noexcept
   {
     return !(__lhs == __rhs);
   }
 
 protected:
-  ::CUlibrary __library_;
+  // The owning library exchanges this handle when transferring ownership.
+  ::CUlibrary __library_; // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes)
 };
 } // namespace cuda::experimental
 

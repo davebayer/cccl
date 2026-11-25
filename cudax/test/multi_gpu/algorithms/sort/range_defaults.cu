@@ -10,7 +10,6 @@
 
 #include <cuda/std/cstddef>
 #include <cuda/std/cstdint>
-#include <cuda/std/functional>
 #include <cuda/std/ranges>
 #include <cuda/std/span>
 
@@ -26,19 +25,11 @@
 #include "sort_common.cuh"
 #include <c2h/catch2_test_helper.h>
 
-namespace
-{
-// Orders exactly like the defaulted `cuda::std::less<>`, but is a distinct type, so the explicit
-// section really does exercise a separate instantiation instead of re-running the default one.
-struct custom_less : cuda::std::less<>
-{};
-} // namespace
-
 MULTI_GPU_TEST("sort, range overloads default values", )
 {
   using T = cuda::std::int32_t;
 
-  constexpr auto cmp = custom_less{};
+  constexpr auto cmp = sort_test_util::custom_less{};
 
   auto comms = this->communicators();
   auto rng   = make_rng(C2H_SEED(2));

@@ -408,8 +408,7 @@ public:
     // no need to back off on a barrier in SMEM on SM90+, SYNCS unit is taking care of this
     NV_IF_TARGET(NV_PROVIDES_SM_90,
                  (if (::cuda::device::is_object_from(__barrier, ::cuda::device::address_space::shared)) {
-                   while (!::cuda::ptx::mbarrier_try_wait(
-                     reinterpret_cast<uint64_t*>(const_cast<__barrier_base*>(&__barrier)), __phase))
+                   while (!::cuda::ptx::mbarrier_try_wait(__native_handle(), __phase))
                      ;
                    return;
                  }))
@@ -423,8 +422,7 @@ public:
     // no need to back off on a barrier in SMEM on SM90+, SYNCS unit is taking care of this
     NV_IF_TARGET(NV_PROVIDES_SM_90,
                  (if (::cuda::device::is_object_from(__barrier, ::cuda::device::address_space::shared)) {
-                   while (!::cuda::ptx::mbarrier_try_wait_parity(
-                     reinterpret_cast<uint64_t*>(const_cast<__barrier_base*>(&__barrier)), __phase_parity))
+                   while (!::cuda::ptx::mbarrier_try_wait_parity(__native_handle(), __phase_parity))
                      ;
                    return;
                  }))

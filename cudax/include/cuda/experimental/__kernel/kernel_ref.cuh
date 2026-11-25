@@ -63,7 +63,7 @@ public:
   //! @brief Constructs a `kernel_ref` from a kernel object
   //!
   //! @param __kernel The kernel object
-  explicit constexpr kernel_ref(value_type __kernel) noexcept
+  _CCCL_HOST_DEVICE_API explicit constexpr kernel_ref(value_type __kernel) noexcept
       : __kernel_((::CUkernel) __kernel)
   {}
 
@@ -73,7 +73,7 @@ public:
   //! @param __entry_func_address The entry function address
   //!
   //! @throws cuda_error if the kernel cannot be obtained from the entry function address
-  kernel_ref(void (*__entry_func_address)(_Args...))
+  _CCCL_HOST_API kernel_ref(void (*__entry_func_address)(_Args...))
   {
     _CCCL_TRY_RUNTIME_API(
       ::cudaGetKernel,
@@ -83,7 +83,7 @@ public:
   }
 #endif // _CCCL_CTK_AT_LEAST(12, 1)
 
-  kernel_ref(const kernel_ref&) = default;
+  _CCCL_HIDE_FROM_ABI kernel_ref(const kernel_ref&) = default;
 
 #if _CCCL_CTK_AT_LEAST(12, 3)
   //! @brief Get the mangled name of the kernel
@@ -91,7 +91,7 @@ public:
   //! @return The mangled name of the kernel
   //!
   //! @throws cuda_error if the kernel name cannot be obtained
-  [[nodiscard]] ::cuda::std::string_view name() const
+  [[nodiscard]] _CCCL_HOST_API ::cuda::std::string_view name() const
   {
     return ::cuda::__driver::__kernelGetName(__kernel_);
   }
@@ -107,7 +107,7 @@ public:
   //!
   //! @sa kernel::attributes
   template <typename _Attr>
-  [[nodiscard]] auto attribute(_Attr __attr, device_ref __dev) const
+  [[nodiscard]] _CCCL_HOST_API auto attribute(_Attr __attr, device_ref __dev) const
   {
     return __attr(*this, __dev);
   }
@@ -115,7 +115,7 @@ public:
   //! @brief Retrieve the native kernel handle
   //!
   //! @return The native kernel handle
-  [[nodiscard]] constexpr value_type get() const noexcept
+  [[nodiscard]] _CCCL_HOST_DEVICE_API constexpr value_type get() const noexcept
   {
     return (value_type) __kernel_;
   }
@@ -125,7 +125,7 @@ public:
   //! @param __lhs The first `kernel_ref` to compare
   //! @param __rhs The second `kernel_ref` to compare
   //! @return true if `lhs` and `rhs` refer to the same kernel
-  [[nodiscard]] friend constexpr bool operator==(kernel_ref __lhs, kernel_ref __rhs) noexcept
+  [[nodiscard]] friend _CCCL_HOST_DEVICE_API constexpr bool operator==(kernel_ref __lhs, kernel_ref __rhs) noexcept
   {
     return __lhs.__kernel_ == __rhs.__kernel_;
   }
@@ -135,13 +135,13 @@ public:
   //! @param __lhs The first `kernel_ref` to compare
   //! @param __rhs The second `kernel_ref` to compare
   //! @return true if `lhs` and `rhs` refer to a different kernels
-  [[nodiscard]] friend constexpr bool operator!=(kernel_ref __lhs, kernel_ref __rhs) noexcept
+  [[nodiscard]] friend _CCCL_HOST_DEVICE_API constexpr bool operator!=(kernel_ref __lhs, kernel_ref __rhs) noexcept
   {
     return !(__lhs == __rhs);
   }
 
 private:
-  ::CUkernel __kernel_;
+  ::CUkernel __kernel_{};
 };
 
 #if _CCCL_CTK_AT_LEAST(12, 1)

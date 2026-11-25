@@ -42,11 +42,11 @@ namespace cuda::experimental::stf
 /**
  * @brief Convert a size into a human readable string
  */
-inline ::std::string pretty_print_bytes(size_t bytes)
+_CCCL_HOST_API inline ::std::string pretty_print_bytes(size_t bytes)
 {
-  const char* units[] = {"B", "KB", "MB", "GB", "TB"};
-  size_t size         = sizeof(units) / sizeof(char*);
-  int i               = 0;
+  const char* const units[] = {"B", "KB", "MB", "GB", "TB"};
+  const size_t size         = sizeof(units) / sizeof(char*);
+  int i                     = 0;
 
   double pretty_size = static_cast<double>(bytes);
   while (pretty_size >= 1024.0 && static_cast<size_t>(i) < size - 1)
@@ -104,7 +104,7 @@ struct FormatSpecifier<uint64_t>
  * @param filename The output file name where the VTK data will be written
  */
 template <typename mdspan_like>
-void mdspan_to_vtk(mdspan_like s, const ::std::string& filename)
+_CCCL_HOST_API void mdspan_to_vtk(mdspan_like s, const ::std::string& filename)
 {
   fprintf(stderr, "Writing slice of size to file %s\n", filename.c_str());
   FILE* f = EXPECT(fopen(filename.c_str(), "w+") != nullptr);
@@ -202,7 +202,7 @@ void mdspan_to_vtk(mdspan_like s, const ::std::string& filename)
  * The output is prefixed by `text` followed by a newline.
  */
 template <typename mdspan_like>
-void mdspan_print(mdspan_like s, const ::std::string& text, FILE* f = stderr)
+_CCCL_HOST_API void mdspan_print(mdspan_like s, const ::std::string& text, FILE* f = stderr)
 {
   using T = typename mdspan_like::value_type;
 

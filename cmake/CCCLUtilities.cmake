@@ -250,12 +250,14 @@ function(cccl_add_xfail_compile_target_test target_name)
   # may exist if using a regex to check for warnings. Add a setup fixture to
   # delete the output file before each test run.
   if (NOT TEST ${target_name}.clean)
+    # CTest 4.5 infers a build dependency from TARGET_FILE. The files being
+    # cleaned can be absent, so construct the path from its components.
     add_test(
       NAME ${target_name}.clean
       # gersemi: off
       COMMAND
         "${CMAKE_COMMAND}" -E rm -f
-          "$<TARGET_FILE:${target_name}>"
+          "$<TARGET_FILE_DIR:${target_name}>/$<TARGET_FILE_NAME:${target_name}>"
           "$<TARGET_OBJECTS:${target_name}>"
       # gersemi: on
     )

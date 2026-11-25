@@ -11,7 +11,10 @@
 #ifndef __COMMON_HOST_DEVICE_H__
 #define __COMMON_HOST_DEVICE_H__
 
-#include "utility.cuh"
+#include <cuda/hierarchy>
+#include <cuda/std/tuple>
+
+#include "testing.cuh"
 
 template <typename Dims, typename Lambda>
 void __global__ lambda_launcher(const Dims dims, const Lambda lambda)
@@ -22,22 +25,18 @@ void __global__ lambda_launcher(const Dims dims, const Lambda lambda)
 template <typename Comparator, unsigned int FilterArch>
 bool arch_filter(const cudaDeviceProp& props)
 {
-  int act_arch = props.major * 10 + props.minor;
-  if (Comparator()(act_arch, FilterArch))
-  {
-    return true;
-  }
-  return false;
+  const int act_arch = (props.major * 10) + props.minor;
+  return static_cast<bool>(Comparator()(act_arch, FilterArch));
 }
 
-static bool skip_host_exec(bool (* /* filter */)(const cudaDeviceProp&))
+inline bool skip_host_exec(bool (* /* filter */)(const cudaDeviceProp&))
 {
   return false;
 }
 
-static bool skip_device_exec(bool (*filter)(const cudaDeviceProp&))
+inline bool skip_device_exec(bool (*filter)(const cudaDeviceProp&))
 {
-  cudaDeviceProp props;
+  cudaDeviceProp props{};
   REQUIRE_CUDART(cudaGetDeviceProperties(&props, 0));
   return filter(props);
 }
@@ -67,12 +66,12 @@ void test_host_dev(const Dims& dims, const Lambda& lambda, const Filters&... fil
     cudaLaunchAttribute attrs[1];
     config.attrs = &attrs[0];
 
-    config.blockDim = dims.extents(cuda::gpu_thread, cuda::block);
-    config.gridDim  = dims.extents(cuda::block, cuda::grid);
+    config.blockDim = dim3{cuda::gpu_thread.dims(cuda::block, dims)};
+    config.gridDim  = dim3{cuda::block.dims(cuda::grid, dims)};
 
-    if constexpr (Dims::has_level(cluster))
+    if constexpr (Dims::has_level(cuda::cluster))
     {
-      dim3 cluster_dims                            = dims.extents(cuda::block, cuda::cluster);
+      const dim3 cluster_dims{cuda::block.dims(cuda::cluster, dims)};
       config.attrs[config.numAttrs].id             = cudaLaunchAttributeClusterDimension;
       config.attrs[config.numAttrs].val.clusterDim = {cluster_dims.x, cluster_dims.y, cluster_dims.z};
       config.numAttrs                              = 1;

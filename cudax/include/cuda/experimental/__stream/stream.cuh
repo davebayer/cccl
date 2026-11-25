@@ -50,10 +50,10 @@ struct stream : stream_ref
   //! Priority is defaulted to stream::default_priority
   //!
   //! @throws cuda_error if stream creation fails
-  explicit stream(device_ref __dev, int __priority = default_priority)
+  _CCCL_HOST_API explicit stream(device_ref __dev, int __priority = default_priority)
       : stream_ref(::cuda::__invalid_stream())
   {
-    [[maybe_unused]] __ensure_current_device __dev_setter(__dev);
+    [[maybe_unused]] const __ensure_current_device __dev_setter(__dev);
     _CCCL_TRY_RUNTIME_API(
       ::cudaStreamCreateWithPriority, "Failed to create a stream", &__stream, cudaStreamNonBlocking, __priority);
   }
@@ -63,10 +63,10 @@ struct stream : stream_ref
   //! Priority is defaulted to stream::default_priority
   //!
   //! @throws cuda_error if stream creation fails
-  explicit stream(::cuda::experimental::logical_device __dev, int __priority = default_priority)
+  _CCCL_HOST_API explicit stream(::cuda::experimental::logical_device __dev, int __priority = default_priority)
       : stream_ref(::cuda::__invalid_stream())
   {
-    [[maybe_unused]] __ensure_current_device __dev_setter(__dev);
+    [[maybe_unused]] const __ensure_current_device __dev_setter(__dev);
     _CCCL_TRY_RUNTIME_API(
       ::cudaStreamCreateWithPriority, "Failed to create a stream", &__stream, cudaStreamNonBlocking, __priority);
   }
@@ -75,7 +75,7 @@ struct stream : stream_ref
   //!
   //! @post `stream()` returns an invalid stream handle
   // Can't be constexpr because __invalid_stream isn't
-  explicit stream(no_init_t) noexcept
+  _CCCL_HOST_API explicit stream(no_init_t) noexcept
       : stream_ref(::cuda::__invalid_stream())
   {}
 
@@ -84,7 +84,7 @@ struct stream : stream_ref
   //! @param __other
   //!
   //! @post `__other` is in moved-from state.
-  stream(stream&& __other) noexcept
+  _CCCL_HOST_API stream(stream&& __other) noexcept
       : stream(::cuda::std::exchange(__other.__stream, ::cuda::__invalid_stream()))
   {}
 
@@ -94,7 +94,7 @@ struct stream : stream_ref
   //!
   //! @note If the stream fails to be destroyed, the error is silently ignored or an assertion is triggered when
   //! enabled.
-  ~stream()
+  _CCCL_HOST_API ~stream()
   {
     if (__stream != ::cuda::__invalid_stream())
     {
@@ -107,7 +107,7 @@ struct stream : stream_ref
   //! @param __other
   //!
   //! @post `__other` is in a moved-from state.
-  stream& operator=(stream&& __other) noexcept
+  _CCCL_HOST_API stream& operator=(stream&& __other) noexcept
   {
     stream __tmp(::cuda::std::move(__other));
     ::cuda::std::swap(__stream, __tmp.__stream);
@@ -123,7 +123,7 @@ struct stream : stream_ref
   //! @return stream The constructed `stream` object
   //!
   //! @note The constructed `stream` object takes ownership of the native handle.
-  [[nodiscard]] static stream from_native_handle(::cudaStream_t __handle)
+  [[nodiscard]] _CCCL_HOST_API static stream from_native_handle(::cudaStream_t __handle)
   {
     return stream(__handle);
   }
@@ -139,7 +139,7 @@ struct stream : stream_ref
   //! @return cudaStream_t The native handle being held by the `stream` object.
   //!
   //! @post The stream object is in a moved-from state.
-  [[nodiscard]] ::cudaStream_t release()
+  [[nodiscard]] _CCCL_HOST_API ::cudaStream_t release()
   {
     return ::cuda::std::exchange(__stream, ::cuda::__invalid_stream());
   }
@@ -153,7 +153,7 @@ struct stream : stream_ref
 private:
   // Use `stream::from_native_handle(s)` to construct an owning `stream`
   // object from a `cudaStream_t` handle.
-  explicit stream(::cudaStream_t __handle)
+  _CCCL_HOST_API explicit stream(::cudaStream_t __handle)
       : stream_ref(__handle)
   {}
 };

@@ -12,6 +12,9 @@ CMAKE_OPTIONS=("-DCMAKE_CXX_STANDARD=${CXX_STANDARD}" "-DCMAKE_CUDA_STANDARD=${C
 # Clang does not understand -G, passed by all-dev-debug which all-tidy derives from
 CMAKE_OPTIONS+=("-DCMAKE_CUDA_FLAGS=")
 
+# The Linux clang-tidy image includes cuFile.
+CMAKE_OPTIONS+=("-Dcudax_ENABLE_CUFILE=ON")
+
 # todo(dabayer): Re-enable OpenMP thrust builds for clang-tidy.
 CMAKE_OPTIONS+=("-DTHRUST_MULTICONFIG_ENABLE_SYSTEM_OMP=OFF")
 

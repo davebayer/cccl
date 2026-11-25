@@ -161,6 +161,9 @@ once.
 
 If ``SOURCES`` is empty, this function does nothing.
 
+Set ``CCCL_TIDY_CUDA_HOST_PASS`` in a directory to also check the host side
+of its CUDA sources. Clang-tidy's default CUDA pass analyzes device code.
+
 Arguments
 ^^^^^^^^^
 
@@ -228,6 +231,15 @@ function(cccl_tidy_add_target)
     set(tidy_target "${tidy_target}.tidy")
 
     if (TARGET "${tidy_target}")
+      get_target_property(first_source "${tidy_target}" CCCL_TIDY_SOURCE)
+      if (NOT first_source STREQUAL src)
+        # MAKE_C_IDENTIFIER maps both directory separators and underscores to '_'.
+        string(MD5 source_hash "${rel_src}")
+        cmake_path(GET src FILENAME filename)
+        set(tidy_target "${filename}.${source_hash}.tidy")
+      endif()
+    endif()
+    if (TARGET "${tidy_target}")
       # We have seen this file before
       continue()
     endif()
@@ -238,6 +250,16 @@ function(cccl_tidy_add_target)
       COMMAND ${CCCL_RUN_CLANG_TIDY_SCRIPT} ${tidy_args} "${src}"
       COMMENT "clang-tidy ${rel_src}"
     )
+    set_property(TARGET "${tidy_target}" PROPERTY CCCL_TIDY_SOURCE "${src}")
+    if (CCCL_TIDY_CUDA_HOST_PASS AND src MATCHES "\\.cu$")
+      add_custom_command(
+        TARGET "${tidy_target}"
+        POST_BUILD
+        COMMAND
+          ${CCCL_RUN_CLANG_TIDY_SCRIPT} ${tidy_args}
+          --extra-arg=--cuda-host-only "${src}"
+      )
+    endif()
 
     # We need to ensure the plugins have actually built before running clang-tidy.
     add_dependencies("${tidy_target}" cccl.tidy.plugins)

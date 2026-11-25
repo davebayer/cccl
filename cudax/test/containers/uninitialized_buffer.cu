@@ -70,14 +70,14 @@ constexpr int get_property(const cuda::device_memory_pool_ref&, my_property)
 __global__ void kernel(::cuda::std::span<int> data)
 {
   // Touch the memory to be sure it's accessible
-  CHECK(data.size() == 1024);
+  REQUIRE_DEVICE(data.size() == 1024);
   data[0] = 42;
 }
 
 __global__ void const_kernel(::cuda::std::span<const int> data)
 {
   // Touch the memory to be sure it's accessible
-  CHECK(data.size() == 1024);
+  REQUIRE_DEVICE(data.size() == 1024);
 }
 
 C2H_TEST_LIST("uninitialized_buffer", "[container]", char, short, int, long, long long, float, double, do_not_construct)

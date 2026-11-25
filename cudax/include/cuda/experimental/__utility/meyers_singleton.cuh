@@ -58,7 +58,7 @@ protected:
   template <class _Up>
   struct __wrapper
   {
-    using type = _Up;
+    using type _CCCL_NODEBUG = _Up;
   };
   friend typename __wrapper<_Tp>::type;
 
@@ -70,12 +70,13 @@ protected:
   struct __instance_of : _Up
   {};
 
-  meyers_singleton()                        = default;
-  ~meyers_singleton()                       = default;
+  _CCCL_HIDE_FROM_ABI meyers_singleton()  = default;
+  _CCCL_HIDE_FROM_ABI ~meyers_singleton() = default;
+
+public:
   meyers_singleton(const meyers_singleton&) = delete;
   meyers_singleton(meyers_singleton&&)      = delete;
 
-public:
   //! @brief Provides access to the single instance of the class.
   //!
   //! @return A reference to the singleton instance.
@@ -84,7 +85,8 @@ public:
   //! runs `_Tp`'s constructor, so this function throws whatever that constructor throws,
   //! in which case a later call tries to create the instance again. It is `noexcept` when
   //! that constructor is.
-  static _Tp& instance() noexcept(::cuda::std::is_nothrow_default_constructible_v<__instance_of<_Tp>>)
+  _CCCL_PUBLIC_HOST_API static _Tp&
+  instance() noexcept(::cuda::std::is_nothrow_default_constructible_v<__instance_of<_Tp>>)
   {
     static_assert(!::cuda::std::is_default_constructible_v<_Tp>,
                   "Make the default constructor of your Meyers singleton protected.");

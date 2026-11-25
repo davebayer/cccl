@@ -40,12 +40,14 @@ C2H_CCCLRT_TEST("cuFile open mode", "[cufile][open_mode]")
 
   // 3. Test operator=|(cufile_open_flags&, cufile_open_flags)
   {
-    auto lhs = cudax::cufile_open_mode::in;
-    auto rhs = cudax::cufile_open_mode::out;
+    auto lhs           = cudax::cufile_open_mode::in;
+    constexpr auto rhs = cudax::cufile_open_mode::out;
     STATIC_REQUIRE(cuda::std::is_same_v<cudax::cufile_open_mode&, decltype(lhs |= rhs)>);
     STATIC_REQUIRE(noexcept(lhs |= rhs));
-    REQUIRE(cuda::std::to_underlying(lhs |= cudax::cufile_open_mode::in) == 0x1u);
-    REQUIRE(cuda::std::to_underlying(lhs |= rhs) == 0x3u);
+    const auto with_in = (lhs |= cudax::cufile_open_mode::in);
+    REQUIRE(cuda::std::to_underlying(with_in) == 0x1u);
+    const auto with_out = (lhs |= rhs);
+    REQUIRE(cuda::std::to_underlying(with_out) == 0x3u);
   }
 
   // 4. Test operator&(cufile_open_flags, cufile_open_flags)
@@ -60,12 +62,14 @@ C2H_CCCLRT_TEST("cuFile open mode", "[cufile][open_mode]")
 
   // 5. Test operator=&(cufile_open_flags&, cufile_open_flags)
   {
-    auto lhs = cudax::cufile_open_mode::in;
-    auto rhs = cudax::cufile_open_mode::out;
+    auto lhs           = cudax::cufile_open_mode::in;
+    constexpr auto rhs = cudax::cufile_open_mode::out;
     STATIC_REQUIRE(cuda::std::is_same_v<cudax::cufile_open_mode&, decltype(lhs &= rhs)>);
     STATIC_REQUIRE(noexcept(lhs &= rhs));
-    REQUIRE(cuda::std::to_underlying(lhs &= cudax::cufile_open_mode::in) == 0x1u);
-    REQUIRE(cuda::std::to_underlying(lhs &= rhs) == 0x0u);
+    const auto with_in = (lhs &= cudax::cufile_open_mode::in);
+    REQUIRE(cuda::std::to_underlying(with_in) == 0x1u);
+    const auto with_out = (lhs &= rhs);
+    REQUIRE(cuda::std::to_underlying(with_out) == 0x0u);
   }
 
   // 5. Test operator^(cufile_open_flags, cufile_open_flags)
@@ -80,12 +84,14 @@ C2H_CCCLRT_TEST("cuFile open mode", "[cufile][open_mode]")
 
   // 6. Test operator=^(cufile_open_flags&, cufile_open_flags)
   {
-    auto lhs = cudax::cufile_open_mode::in;
-    auto rhs = cudax::cufile_open_mode::out;
+    auto lhs           = cudax::cufile_open_mode::in;
+    constexpr auto rhs = cudax::cufile_open_mode::out;
     STATIC_REQUIRE(cuda::std::is_same_v<cudax::cufile_open_mode&, decltype(lhs ^= rhs)>);
     STATIC_REQUIRE(noexcept(lhs ^= rhs));
-    REQUIRE(cuda::std::to_underlying(lhs ^= rhs) == 0x3u);
-    REQUIRE(cuda::std::to_underlying(lhs ^= cudax::cufile_open_mode::in) == 0x2u);
+    const auto with_out = (lhs ^= rhs);
+    REQUIRE(cuda::std::to_underlying(with_out) == 0x3u);
+    const auto with_in = (lhs ^= cudax::cufile_open_mode::in);
+    REQUIRE(cuda::std::to_underlying(with_in) == 0x2u);
   }
 
   // 5. Test operator~(cufile_open_flags)

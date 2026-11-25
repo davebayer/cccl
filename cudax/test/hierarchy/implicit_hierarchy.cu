@@ -40,9 +40,9 @@ struct TestKernel
       static_assert(noexcept(cudax::implicit_hierarchy()));
 
       const auto hier = cudax::implicit_hierarchy();
-      REQUIRE(cuda::gpu_thread.extents(cuda::block) == cuda::gpu_thread.extents(cuda::block, hier));
-      REQUIRE(cuda::block.extents(cuda::cluster) == cuda::block.extents(cuda::cluster, hier));
-      REQUIRE(cuda::cluster.extents(cuda::grid) == cuda::cluster.extents(cuda::grid, hier));
+      REQUIRE_DEVICE(cuda::gpu_thread.extents(cuda::block) == cuda::gpu_thread.extents(cuda::block, hier));
+      REQUIRE_DEVICE(cuda::block.extents(cuda::cluster) == cuda::block.extents(cuda::cluster, hier));
+      REQUIRE_DEVICE(cuda::cluster.extents(cuda::grid) == cuda::cluster.extents(cuda::grid, hier));
     }
 
     // Test implicit_hierarchy_1d()
@@ -59,9 +59,9 @@ struct TestKernel
       static_assert(noexcept(cudax::implicit_hierarchy_1d()));
 
       const auto hier = cudax::implicit_hierarchy_1d();
-      REQUIRE(cuda::gpu_thread.extents(cuda::block) == cuda::gpu_thread.extents(cuda::block, hier));
-      REQUIRE(cuda::block.extents(cuda::cluster) == cuda::block.extents(cuda::cluster, hier));
-      REQUIRE(cuda::cluster.extents(cuda::grid) == cuda::cluster.extents(cuda::grid, hier));
+      REQUIRE_DEVICE(cuda::gpu_thread.extents(cuda::block) == cuda::gpu_thread.extents(cuda::block, hier));
+      REQUIRE_DEVICE(cuda::block.extents(cuda::cluster) == cuda::block.extents(cuda::cluster, hier));
+      REQUIRE_DEVICE(cuda::cluster.extents(cuda::grid) == cuda::cluster.extents(cuda::grid, hier));
     }
   }
 };

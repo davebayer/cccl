@@ -285,12 +285,12 @@ cp_async_bulk_commit_group()
 
 //! Deprecated [Since 3.2]
 // https://docs.nvidia.com/cuda/parallel-thread-execution/index.html#data-movement-and-conversion-instructions-cp-async-bulk-wait-group
-template <int __n_prior>
+template <int _NPrior>
 CCCL_DEPRECATED_BECAUSE("Use cuda::ptx::cp_async_bulk_wait_group_read instead") _CCCL_DEVICE_API inline void
 cp_async_bulk_wait_group_read()
 {
-  static_assert(__n_prior <= 63, "cp_async_bulk_wait_group_read: waiting for more than 63 groups is not supported.");
-  ::cuda::ptx::cp_async_bulk_wait_group_read(::cuda::ptx::n32_t<__n_prior>{});
+  static_assert(_NPrior <= 63, "cp_async_bulk_wait_group_read: waiting for more than 63 groups is not supported.");
+  ::cuda::ptx::cp_async_bulk_wait_group_read(::cuda::ptx::n32_t<_NPrior>{});
 }
 
 #endif // __cccl_lib_experimental_ctk12_cp_async_exposure

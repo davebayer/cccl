@@ -54,6 +54,7 @@ struct [[nodiscard]] scope_exit
   _CCCL_TEMPLATE(class _Fn2)
   _CCCL_REQUIRES((!::cuda::std::is_same_v<::cuda::std::remove_cvref_t<_Fn2>, scope_exit>)
                  && ::cuda::std::is_constructible_v<_Fn, _Fn2>)
+  // NOLINTNEXTLINE(bugprone-forwarding-reference-overload) -- the constraint excludes scope_exit.
   _CCCL_HOST_DEVICE_API explicit scope_exit(_Fn2&& __fn) noexcept(
     ::cuda::std::is_nothrow_constructible_v<_Fn, _Fn2> || ::cuda::std::is_nothrow_constructible_v<_Fn, _Fn2&>)
       : scope_exit(::cuda::std::forward<_Fn2>(__fn), ::cuda::std::is_nothrow_constructible<_Fn, _Fn2>{})
@@ -63,7 +64,7 @@ struct [[nodiscard]] scope_exit
   _CCCL_HOST_DEVICE_API
   scope_exit(scope_exit&& __other) noexcept(::cuda::std::is_nothrow_move_constructible_v<_Fn>
                                             || ::cuda::std::is_nothrow_copy_constructible_v<_Fn>)
-      : scope_exit(::cuda::std::move(__other), ::cuda::std::is_nothrow_move_constructible<_Fn>{})
+      : scope_exit(__other, ::cuda::std::is_nothrow_move_constructible<_Fn>{})
   {
     static_assert(::cuda::std::is_nothrow_move_constructible_v<_Fn> || ::cuda::std::is_copy_constructible_v<_Fn>,
                   "scope_exit move requires EF to be nothrow-move or copy constructible.");
@@ -105,20 +106,20 @@ private:
 
   _CCCL_EXEC_CHECK_DISABLE
   template <class _Fn2>
-  _CCCL_HOST_DEVICE_API explicit scope_exit(_Fn2& __fn, scope_exit<_Fn2&>&& __guard) noexcept(false)
+  _CCCL_HOST_DEVICE_API explicit scope_exit(_Fn2& __fn, scope_exit<_Fn2&> __guard) noexcept(false)
       : __fn_(__fn)
   {
     __guard.release();
   }
 
-  _CCCL_HOST_DEVICE_API explicit scope_exit(scope_exit&& __other, ::cuda::std::true_type) noexcept
+  _CCCL_HOST_DEVICE_API explicit scope_exit(scope_exit& __other, ::cuda::std::true_type) noexcept
       : __fn_(::cuda::std::move(__other.__fn_))
       , __active_(__other.__active_)
   {
     __other.release();
   }
 
-  _CCCL_HOST_DEVICE_API explicit scope_exit(scope_exit&& __other, ::cuda::std::false_type) noexcept(
+  _CCCL_HOST_DEVICE_API explicit scope_exit(scope_exit& __other, ::cuda::std::false_type) noexcept(
     ::cuda::std::is_nothrow_copy_constructible_v<_Fn>)
       : __fn_(__other.__fn_)
       , __active_(__other.__active_)
@@ -148,6 +149,7 @@ struct [[nodiscard]] scope_fail
   _CCCL_TEMPLATE(class _Fn2)
   _CCCL_REQUIRES((!::cuda::std::is_same_v<::cuda::std::remove_cvref_t<_Fn2>, scope_fail>)
                  && ::cuda::std::is_constructible_v<_Fn, _Fn2>)
+  // NOLINTNEXTLINE(bugprone-forwarding-reference-overload) -- the constraint excludes scope_fail.
   _CCCL_HOST_API explicit scope_fail(_Fn2&& __fn) noexcept(
     ::cuda::std::is_nothrow_constructible_v<_Fn, _Fn2> || ::cuda::std::is_nothrow_constructible_v<_Fn, _Fn2&>)
       : scope_fail(::cuda::std::forward<_Fn2>(__fn), ::cuda::std::is_nothrow_constructible<_Fn, _Fn2>{})
@@ -155,7 +157,7 @@ struct [[nodiscard]] scope_fail
 
   _CCCL_HOST_API scope_fail(scope_fail&& __other) noexcept(
     ::cuda::std::is_nothrow_move_constructible_v<_Fn> || ::cuda::std::is_nothrow_copy_constructible_v<_Fn>)
-      : scope_fail(::cuda::std::move(__other), ::cuda::std::is_nothrow_move_constructible<_Fn>{})
+      : scope_fail(__other, ::cuda::std::is_nothrow_move_constructible<_Fn>{})
   {
     static_assert(::cuda::std::is_nothrow_move_constructible_v<_Fn> || ::cuda::std::is_copy_constructible_v<_Fn>,
                   "scope_fail move requires EF to be nothrow-move or copy constructible.");
@@ -189,14 +191,14 @@ private:
   {}
 
   template <class _Fn2>
-  _CCCL_HOST_API explicit scope_fail(_Fn2& __fn, scope_fail<_Fn2&>&& __guard) noexcept(false)
+  _CCCL_HOST_API explicit scope_fail(_Fn2& __fn, scope_fail<_Fn2&> __guard) noexcept(false)
       : __fn_(__fn)
       , __uncaught_(::std::uncaught_exceptions())
   {
     __guard.release();
   }
 
-  _CCCL_HOST_API explicit scope_fail(scope_fail&& __other, ::cuda::std::true_type) noexcept
+  _CCCL_HOST_API explicit scope_fail(scope_fail& __other, ::cuda::std::true_type) noexcept
       : __fn_(::cuda::std::move(__other.__fn_))
       , __uncaught_(__other.__uncaught_)
       , __active_(__other.__active_)
@@ -204,7 +206,7 @@ private:
     __other.release();
   }
 
-  _CCCL_HOST_API explicit scope_fail(scope_fail&& __other, ::cuda::std::false_type) noexcept(
+  _CCCL_HOST_API explicit scope_fail(scope_fail& __other, ::cuda::std::false_type) noexcept(
     ::cuda::std::is_nothrow_copy_constructible_v<_Fn>)
       : __fn_(__other.__fn_)
       , __uncaught_(__other.__uncaught_)
@@ -234,6 +236,7 @@ struct [[nodiscard]] scope_success
   _CCCL_TEMPLATE(class _Fn2)
   _CCCL_REQUIRES((!::cuda::std::is_same_v<::cuda::std::remove_cvref_t<_Fn2>, scope_success>)
                  && ::cuda::std::is_constructible_v<_Fn, _Fn2>)
+  // NOLINTNEXTLINE(bugprone-forwarding-reference-overload) -- the constraint excludes scope_success.
   _CCCL_HOST_API explicit scope_success(_Fn2&& __fn) noexcept(
     ::cuda::std::is_nothrow_constructible_v<_Fn, _Fn2> || ::cuda::std::is_nothrow_constructible_v<_Fn, _Fn2&>)
       : scope_success(::cuda::std::forward<_Fn2>(__fn), ::cuda::std::is_nothrow_constructible<_Fn, _Fn2>{})
@@ -241,7 +244,7 @@ struct [[nodiscard]] scope_success
 
   _CCCL_HOST_API scope_success(scope_success&& __other) noexcept(
     ::cuda::std::is_nothrow_move_constructible_v<_Fn> || ::cuda::std::is_nothrow_copy_constructible_v<_Fn>)
-      : scope_success(::cuda::std::move(__other), ::cuda::std::is_nothrow_move_constructible<_Fn>{})
+      : scope_success(__other, ::cuda::std::is_nothrow_move_constructible<_Fn>{})
   {
     static_assert(::cuda::std::is_nothrow_move_constructible_v<_Fn> || ::cuda::std::is_copy_constructible_v<_Fn>,
                   "scope_success move requires EF to be nothrow-move or copy constructible.");
@@ -278,7 +281,7 @@ private:
       , __uncaught_(::std::uncaught_exceptions())
   {}
 
-  _CCCL_HOST_API explicit scope_success(scope_success&& __other, ::cuda::std::true_type) noexcept
+  _CCCL_HOST_API explicit scope_success(scope_success& __other, ::cuda::std::true_type) noexcept
       : __fn_(::cuda::std::move(__other.__fn_))
       , __uncaught_(__other.__uncaught_)
       , __active_(__other.__active_)
@@ -286,7 +289,7 @@ private:
     __other.release();
   }
 
-  _CCCL_HOST_API explicit scope_success(scope_success&& __other, ::cuda::std::false_type) noexcept(
+  _CCCL_HOST_API explicit scope_success(scope_success& __other, ::cuda::std::false_type) noexcept(
     ::cuda::std::is_nothrow_copy_constructible_v<_Fn>)
       : __fn_(__other.__fn_)
       , __uncaught_(__other.__uncaught_)

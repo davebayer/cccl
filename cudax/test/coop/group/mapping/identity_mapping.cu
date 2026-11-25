@@ -50,16 +50,16 @@ __device__ void test_identity_mapping(Config config, const NonExhaustive&... non
 
     static_assert(Result::static_group_count() == ThreadsInWarpMappingResult::static_group_count());
     static_assert(Result::static_group_rank() == ThreadsInWarpMappingResult::static_group_rank());
-    CHECK(result.group_count() == prev_mapping_result.group_count());
-    CHECK(result.group_rank() == prev_mapping_result.group_rank());
+    REQUIRE_DEVICE(result.group_count() == prev_mapping_result.group_count());
+    REQUIRE_DEVICE(result.group_rank() == prev_mapping_result.group_rank());
 
     static_assert(Result::static_unit_count() == ThreadsInWarpMappingResult::static_unit_count());
-    CHECK(result.unit_count() == prev_mapping_result.unit_count());
-    CHECK(result.unit_rank() == prev_mapping_result.unit_rank());
+    REQUIRE_DEVICE(result.unit_count() == prev_mapping_result.unit_count());
+    REQUIRE_DEVICE(result.unit_rank() == prev_mapping_result.unit_rank());
 
-    CHECK(result.lane_mask() == prev_mapping_result.lane_mask());
+    REQUIRE_DEVICE(result.lane_mask() == prev_mapping_result.lane_mask());
 
-    CHECK(result.is_valid() == prev_mapping_result.is_valid());
+    REQUIRE_DEVICE(result.is_valid() == prev_mapping_result.is_valid());
     static_assert(Result::is_always_exhaustive() == ThreadsInWarpMappingResult::is_always_exhaustive());
     static_assert(Result::is_always_contiguous() == ThreadsInWarpMappingResult::is_always_contiguous());
   }

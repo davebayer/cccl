@@ -46,7 +46,7 @@ struct library : public library_ref
   //! @return The constructed `library` object
   //!
   //! @note The constructed `library` object takes ownership of the native handle
-  [[nodiscard]] static library from_native_handle(value_type __handle) noexcept
+  [[nodiscard]] _CCCL_HOST_API static library from_native_handle(value_type __handle) noexcept
   {
     return library{__handle};
   }
@@ -57,7 +57,7 @@ struct library : public library_ref
   //! @brief Construct a new `library` object into the moved-from state
   //!
   //! @post `get()` will return an invalid `CUlibrary` handle
-  explicit constexpr library(no_init_t) noexcept
+  _CCCL_HOST_DEVICE_API explicit constexpr library(no_init_t) noexcept
       : library{value_type{}}
   {}
 
@@ -68,14 +68,14 @@ struct library : public library_ref
   //! @param __other The `library` to move from
   //!
   //! @post `__other` is in the moved-from state
-  library(library&& __other) noexcept
+  _CCCL_HOST_API library(library&& __other) noexcept
       : library{__other.release()}
   {}
 
   //! @brief Destroy the `library` object
   //!
   //! @note If the library fails to unload, the error is silently ignored or an assertion is triggered when enabled.
-  ~library()
+  _CCCL_HOST_API ~library()
   {
     if (__library_ != value_type{})
     {
@@ -90,7 +90,7 @@ struct library : public library_ref
   //! @param __other The `library` to move from
   //!
   //! @post `__other` is in the moved-from state
-  library& operator=(library&& __other) noexcept
+  _CCCL_HOST_API library& operator=(library&& __other) noexcept
   {
     if (this != ::cuda::std::addressof(__other))
     {
@@ -105,13 +105,13 @@ struct library : public library_ref
   //! @return The native handle being held by the `library` object
   //!
   //! @post The library object is in a moved-from state
-  [[nodiscard]] constexpr value_type release() noexcept
+  [[nodiscard]] _CCCL_HOST_DEVICE_API constexpr value_type release() noexcept
   {
     return ::cuda::std::exchange(__library_, value_type{});
   }
 
 private:
-  constexpr explicit library(value_type __handle) noexcept
+  _CCCL_HOST_DEVICE_API constexpr explicit library(value_type __handle) noexcept
       : library_ref{__handle}
   {}
 };

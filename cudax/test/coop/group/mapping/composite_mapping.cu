@@ -69,17 +69,17 @@ __device__ void test_composite_mapping(
 
     static_assert(Result::static_group_count() == ExpectedGroupCount);
     static_assert(Result::static_group_rank() == (ExpectedGroupCount == 1 ? 0 : cuda::std::dynamic_extent));
-    CHECK(result.group_count() == 16);
-    CHECK(result.group_rank() == (rank_in_warp / 4 * 2 + (rank_in_warp % 4 > 0)));
+    REQUIRE_DEVICE(result.group_count() == 16);
+    REQUIRE_DEVICE(result.group_rank() == (rank_in_warp / 4 * 2 + (rank_in_warp % 4 > 0)));
 
     static_assert(Result::static_unit_count() == cuda::std::dynamic_extent);
-    CHECK(result.unit_count() == ((rank_in_warp % 4 > 0) ? 3 : 1));
-    CHECK(result.unit_rank() == ((rank_in_warp % 4 > 0) ? (rank_in_warp % 4 - 1) : 0));
+    REQUIRE_DEVICE(result.unit_count() == ((rank_in_warp % 4 > 0) ? 3 : 1));
+    REQUIRE_DEVICE(result.unit_rank() == ((rank_in_warp % 4 > 0) ? (rank_in_warp % 4 - 1) : 0));
 
     const auto lane_mask_ref = ((rank_in_warp % 4 > 0) ? 0b1110u : 0b0001u) << ((rank_in_warp / 4) * 4);
-    CHECK(result.lane_mask() == cuda::device::lane_mask{lane_mask_ref});
+    REQUIRE_DEVICE(result.lane_mask() == cuda::device::lane_mask{lane_mask_ref});
 
-    CHECK(result.is_valid());
+    REQUIRE_DEVICE(result.is_valid());
     static_assert(Result::is_always_exhaustive() == (sizeof...(NonExhaustive) == 0));
     static_assert(Result::is_always_contiguous());
   }
@@ -143,12 +143,12 @@ __device__ void test_identity_composite_mapping(Mapping& mapping, Config config,
 
   const auto result = mapping.map(non_exhaustive..., cuda::gpu_thread, parent_group, prev_mapping_result);
   static_assert(cuda::std::is_same_v<decltype(result), const ThreadsInWarpMappingResult>);
-  CHECK(result.group_count() == prev_mapping_result.group_count());
-  CHECK(result.group_rank() == prev_mapping_result.group_rank());
-  CHECK(result.unit_count() == prev_mapping_result.unit_count());
-  CHECK(result.unit_rank() == prev_mapping_result.unit_rank());
-  CHECK(result.lane_mask() == prev_mapping_result.lane_mask());
-  CHECK(result.is_valid() == prev_mapping_result.is_valid());
+  REQUIRE_DEVICE(result.group_count() == prev_mapping_result.group_count());
+  REQUIRE_DEVICE(result.group_rank() == prev_mapping_result.group_rank());
+  REQUIRE_DEVICE(result.unit_count() == prev_mapping_result.unit_count());
+  REQUIRE_DEVICE(result.unit_rank() == prev_mapping_result.unit_rank());
+  REQUIRE_DEVICE(result.lane_mask() == prev_mapping_result.lane_mask());
+  REQUIRE_DEVICE(result.is_valid() == prev_mapping_result.is_valid());
 }
 
 template <class Config>
@@ -171,14 +171,14 @@ __device__ void test_non_exhaustive_composite_mapping(Config config)
 
   const auto lane         = cuda::gpu_thread.rank_as<unsigned>(cuda::warp);
   const auto is_valid_ref = lane < 30 && lane % 3 < 2;
-  CHECK(result.is_valid() == is_valid_ref);
+  REQUIRE_DEVICE(result.is_valid() == is_valid_ref);
   if (is_valid_ref)
   {
-    CHECK(result.group_count() == 10);
-    CHECK(result.group_rank() == lane / 3);
-    CHECK(result.unit_count() == 2);
-    CHECK(result.unit_rank() == lane % 3);
-    CHECK(result.lane_mask() == cuda::device::lane_mask{0b11u << (lane / 3 * 3)});
+    REQUIRE_DEVICE(result.group_count() == 10);
+    REQUIRE_DEVICE(result.group_rank() == lane / 3);
+    REQUIRE_DEVICE(result.unit_count() == 2);
+    REQUIRE_DEVICE(result.unit_rank() == lane % 3);
+    REQUIRE_DEVICE(result.lane_mask() == cuda::device::lane_mask{0b11u << (lane / 3 * 3)});
   }
 }
 

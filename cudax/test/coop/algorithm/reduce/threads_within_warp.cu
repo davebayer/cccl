@@ -84,7 +84,7 @@ struct ReduceKernel
     {
       const auto result = cudax::coop::reduce(*group, thread_data, red_op);
 
-      REQUIRE(result.has_value() == cuda::gpu_thread.is_root_rank(*group));
+      REQUIRE_DEVICE(result.has_value() == cuda::gpu_thread.is_root_rank(*group));
       if (cuda::gpu_thread.is_root_rank(*group))
       {
         *d_out = result.value();

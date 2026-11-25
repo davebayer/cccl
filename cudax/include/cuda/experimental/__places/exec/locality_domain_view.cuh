@@ -103,7 +103,7 @@ enum class locality_domain_sm_split : unsigned int
 class locality_domain_view
 {
 public:
-  locality_domain_view(int devid, int domain_id)
+  _CCCL_HOST_API locality_domain_view(int devid, int domain_id)
       : devid(devid)
       , domain_id(domain_id)
   {}
@@ -111,17 +111,17 @@ public:
   int devid;
   int domain_id;
 
-  bool operator==(const locality_domain_view& other) const
+  _CCCL_HOST_API bool operator==(const locality_domain_view& other) const
   {
     return (devid == other.devid) && (domain_id == other.domain_id);
   }
 
-  bool operator!=(const locality_domain_view& other) const
+  _CCCL_HOST_API bool operator!=(const locality_domain_view& other) const
   {
     return !(*this == other);
   }
 
-  bool operator<(const locality_domain_view& other) const
+  _CCCL_HOST_API bool operator<(const locality_domain_view& other) const
   {
     if (devid != other.devid)
     {
@@ -137,7 +137,7 @@ public:
 template <>
 struct hash<locality_domain_view>
 {
-  ::std::size_t operator()(const locality_domain_view& k) const
+  _CCCL_HOST_API ::std::size_t operator()(const locality_domain_view& k) const
   {
     return ::cuda::experimental::stf::hash_all(k.devid, k.domain_id);
   }

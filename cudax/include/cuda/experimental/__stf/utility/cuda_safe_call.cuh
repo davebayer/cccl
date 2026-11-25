@@ -47,8 +47,13 @@
 #include <string>
 
 #include <cuda.h>
-#include <cuda_occupancy.h>
 #include <cuda_runtime.h> // IWYU pragma: keep
+
+// CUDA's occupancy calculator has an unreachable break in a nested switch.
+_CCCL_DIAG_PUSH
+_CCCL_DIAG_SUPPRESS_NVHPC(code_is_unreachable)
+#include <cuda_occupancy.h>
+_CCCL_DIAG_POP
 
 #if __has_include(<cublas_v2.h>)
 #  include <cublas_v2.h>
@@ -61,41 +66,41 @@ namespace cuda::experimental::stf
 {
 #if __has_include(<cusolverDn.h>)
 // Undocumented
-inline const char* cusolverGetErrorString(const cusolverStatus_t status)
+_CCCL_HOST_API inline const char* cusolverGetErrorString(const cusolverStatus_t status)
 {
   switch (status)
   {
     default:
       break;
-#  define _b738a2a5fe81ee876deadae4a109521c(x) \
-    case x:                                    \
+#  define _CCCL_STF_CUSOLVER_STATUS_CASE(x) \
+    case x:                                 \
       return #x
-      _b738a2a5fe81ee876deadae4a109521c(CUSOLVER_STATUS_SUCCESS);
-      _b738a2a5fe81ee876deadae4a109521c(CUSOLVER_STATUS_NOT_INITIALIZED);
-      _b738a2a5fe81ee876deadae4a109521c(CUSOLVER_STATUS_ALLOC_FAILED);
-      _b738a2a5fe81ee876deadae4a109521c(CUSOLVER_STATUS_INVALID_VALUE);
-      _b738a2a5fe81ee876deadae4a109521c(CUSOLVER_STATUS_ARCH_MISMATCH);
-      _b738a2a5fe81ee876deadae4a109521c(CUSOLVER_STATUS_MAPPING_ERROR);
-      _b738a2a5fe81ee876deadae4a109521c(CUSOLVER_STATUS_EXECUTION_FAILED);
-      _b738a2a5fe81ee876deadae4a109521c(CUSOLVER_STATUS_INTERNAL_ERROR);
-      _b738a2a5fe81ee876deadae4a109521c(CUSOLVER_STATUS_MATRIX_TYPE_NOT_SUPPORTED);
-      _b738a2a5fe81ee876deadae4a109521c(CUSOLVER_STATUS_NOT_SUPPORTED);
-      _b738a2a5fe81ee876deadae4a109521c(CUSOLVER_STATUS_ZERO_PIVOT);
-      _b738a2a5fe81ee876deadae4a109521c(CUSOLVER_STATUS_INVALID_LICENSE);
-      _b738a2a5fe81ee876deadae4a109521c(CUSOLVER_STATUS_IRS_PARAMS_NOT_INITIALIZED);
-      _b738a2a5fe81ee876deadae4a109521c(CUSOLVER_STATUS_IRS_PARAMS_INVALID);
-      _b738a2a5fe81ee876deadae4a109521c(CUSOLVER_STATUS_IRS_PARAMS_INVALID_PREC);
-      _b738a2a5fe81ee876deadae4a109521c(CUSOLVER_STATUS_IRS_PARAMS_INVALID_REFINE);
-      _b738a2a5fe81ee876deadae4a109521c(CUSOLVER_STATUS_IRS_PARAMS_INVALID_MAXITER);
-      _b738a2a5fe81ee876deadae4a109521c(CUSOLVER_STATUS_IRS_INTERNAL_ERROR);
-      _b738a2a5fe81ee876deadae4a109521c(CUSOLVER_STATUS_IRS_NOT_SUPPORTED);
-      _b738a2a5fe81ee876deadae4a109521c(CUSOLVER_STATUS_IRS_OUT_OF_RANGE);
-      _b738a2a5fe81ee876deadae4a109521c(CUSOLVER_STATUS_IRS_NRHS_NOT_SUPPORTED_FOR_REFINE_GMRES);
-      _b738a2a5fe81ee876deadae4a109521c(CUSOLVER_STATUS_IRS_INFOS_NOT_INITIALIZED);
-      _b738a2a5fe81ee876deadae4a109521c(CUSOLVER_STATUS_IRS_INFOS_NOT_DESTROYED);
-      _b738a2a5fe81ee876deadae4a109521c(CUSOLVER_STATUS_IRS_MATRIX_SINGULAR);
-      _b738a2a5fe81ee876deadae4a109521c(CUSOLVER_STATUS_INVALID_WORKSPACE);
-#  undef _b738a2a5fe81ee876deadae4a109521c
+      _CCCL_STF_CUSOLVER_STATUS_CASE(CUSOLVER_STATUS_SUCCESS);
+      _CCCL_STF_CUSOLVER_STATUS_CASE(CUSOLVER_STATUS_NOT_INITIALIZED);
+      _CCCL_STF_CUSOLVER_STATUS_CASE(CUSOLVER_STATUS_ALLOC_FAILED);
+      _CCCL_STF_CUSOLVER_STATUS_CASE(CUSOLVER_STATUS_INVALID_VALUE);
+      _CCCL_STF_CUSOLVER_STATUS_CASE(CUSOLVER_STATUS_ARCH_MISMATCH);
+      _CCCL_STF_CUSOLVER_STATUS_CASE(CUSOLVER_STATUS_MAPPING_ERROR);
+      _CCCL_STF_CUSOLVER_STATUS_CASE(CUSOLVER_STATUS_EXECUTION_FAILED);
+      _CCCL_STF_CUSOLVER_STATUS_CASE(CUSOLVER_STATUS_INTERNAL_ERROR);
+      _CCCL_STF_CUSOLVER_STATUS_CASE(CUSOLVER_STATUS_MATRIX_TYPE_NOT_SUPPORTED);
+      _CCCL_STF_CUSOLVER_STATUS_CASE(CUSOLVER_STATUS_NOT_SUPPORTED);
+      _CCCL_STF_CUSOLVER_STATUS_CASE(CUSOLVER_STATUS_ZERO_PIVOT);
+      _CCCL_STF_CUSOLVER_STATUS_CASE(CUSOLVER_STATUS_INVALID_LICENSE);
+      _CCCL_STF_CUSOLVER_STATUS_CASE(CUSOLVER_STATUS_IRS_PARAMS_NOT_INITIALIZED);
+      _CCCL_STF_CUSOLVER_STATUS_CASE(CUSOLVER_STATUS_IRS_PARAMS_INVALID);
+      _CCCL_STF_CUSOLVER_STATUS_CASE(CUSOLVER_STATUS_IRS_PARAMS_INVALID_PREC);
+      _CCCL_STF_CUSOLVER_STATUS_CASE(CUSOLVER_STATUS_IRS_PARAMS_INVALID_REFINE);
+      _CCCL_STF_CUSOLVER_STATUS_CASE(CUSOLVER_STATUS_IRS_PARAMS_INVALID_MAXITER);
+      _CCCL_STF_CUSOLVER_STATUS_CASE(CUSOLVER_STATUS_IRS_INTERNAL_ERROR);
+      _CCCL_STF_CUSOLVER_STATUS_CASE(CUSOLVER_STATUS_IRS_NOT_SUPPORTED);
+      _CCCL_STF_CUSOLVER_STATUS_CASE(CUSOLVER_STATUS_IRS_OUT_OF_RANGE);
+      _CCCL_STF_CUSOLVER_STATUS_CASE(CUSOLVER_STATUS_IRS_NRHS_NOT_SUPPORTED_FOR_REFINE_GMRES);
+      _CCCL_STF_CUSOLVER_STATUS_CASE(CUSOLVER_STATUS_IRS_INFOS_NOT_INITIALIZED);
+      _CCCL_STF_CUSOLVER_STATUS_CASE(CUSOLVER_STATUS_IRS_INFOS_NOT_DESTROYED);
+      _CCCL_STF_CUSOLVER_STATUS_CASE(CUSOLVER_STATUS_IRS_MATRIX_SINGULAR);
+      _CCCL_STF_CUSOLVER_STATUS_CASE(CUSOLVER_STATUS_INVALID_WORKSPACE);
+#  undef _CCCL_STF_CUSOLVER_STATUS_CASE
   }
   return "Unknown cuSOLVER status";
 }
@@ -227,7 +232,7 @@ struct status_traits<cublasStatus_t> : cuda_status_traits_base<cublasStatus_t>
   //! `cublasGetStatusString`.
   //! @param[in] status the status
   //! @return a string such as "CUBLAS_STATUS_NOT_INITIALIZED: the library was not initialized"
-  static ::std::string name(const cublasStatus_t status)
+  _CCCL_HOST_API static ::std::string name(const cublasStatus_t status)
   {
     const char* const status_name   = ::cublasGetStatusName(status);
     const char* const status_string = ::cublasGetStatusString(status);
@@ -250,7 +255,7 @@ struct status_traits<cusolverStatus_t> : cuda_status_traits_base<cusolverStatus_
   //! @brief The status's enumerator name, from @ref cusolverGetErrorString.
   //! @param[in] status the status
   //! @return the name
-  static ::std::string name(const cusolverStatus_t status)
+  _CCCL_HOST_API static ::std::string name(const cusolverStatus_t status)
   {
     return ::std::string{cusolverGetErrorString(status)};
   }

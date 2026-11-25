@@ -102,7 +102,7 @@ public:
   //! @snippet communicators/nccl/basic.cu nccl_communicator_no_init_construction
   _CCCL_HOST_API explicit nccl_communicator(::cuda::no_init_t) noexcept
       : nccl_communicator_ref{::cuda::experimental::__nccl::__NCCL_COMM_NULL,
-                              ::cuda::__logical_device_ref{0},
+                              ::cuda::__logical_device_ref{__default_device, ::CUcontext{}},
                               /*__rank=*/0,
                               /*__size=*/0}
   {}
@@ -177,6 +177,9 @@ public:
   }
 
 private:
+  // A communicator without a native handle does not require a CUDA primary context.
+  static constexpr ::cuda::device_ref __default_device{0};
+
   _CCCL_HOST_API explicit nccl_communicator(native_handle_type __handle)
       : nccl_communicator_ref{__handle}
   {}

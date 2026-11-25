@@ -27,14 +27,16 @@
 
 namespace cuda::experimental
 {
-using __cufile_os_native_type = int;
+using __cufile_os_native_type _CCCL_NODEBUG = int;
 
 //! @brief A non-owning wrapper of \c CUfileHandle_t.
 class cufile_ref
 {
-protected:
+  friend class cufile;
+
   ::CUfileHandle_t __cufile_handle_{}; //!< The cuFile file handle.
 
+protected:
   _CCCL_HIDE_FROM_ABI cufile_ref() noexcept = default;
 
 public:

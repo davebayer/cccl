@@ -148,7 +148,7 @@ void test_set_attribute(const Attr& attr, const bool is_open)
 
   STATIC_REQUIRE(!noexcept(cudax::cufile_driver.set_attribute(attr, cuda::std::declval<ValueType>())));
   STATIC_REQUIRE(
-    cuda::std::is_same_v<void, decltype(cudax::cufile_driver.set_attribute(attr, cuda::std::declval<ValueType>()))>);
+    cuda::std::is_void_v<decltype(cudax::cufile_driver.set_attribute(attr, cuda::std::declval<ValueType>()))>);
 
   const bool expect_success = is_open == Attr::__can_be_set_when_opened || !is_open == Attr::__can_be_set_when_closed;
 
@@ -206,7 +206,7 @@ void test_set_attributes(const bool is_open)
 void test_open()
 {
   STATIC_REQUIRE(!noexcept(cudax::cufile_driver.open()));
-  STATIC_REQUIRE(cuda::std::is_same_v<void, decltype(cudax::cufile_driver.open())>);
+  STATIC_REQUIRE(cuda::std::is_void_v<decltype(cudax::cufile_driver.open())>);
 
   CHECK_NOTHROW(cudax::cufile_driver.open());
 }
@@ -214,7 +214,7 @@ void test_open()
 void test_close()
 {
   STATIC_REQUIRE(!noexcept(cudax::cufile_driver.close()));
-  STATIC_REQUIRE(cuda::std::is_same_v<void, decltype(cudax::cufile_driver.close())>);
+  STATIC_REQUIRE(cuda::std::is_void_v<decltype(cudax::cufile_driver.close())>);
 
   CHECK_NOTHROW(cudax::cufile_driver.close());
 }

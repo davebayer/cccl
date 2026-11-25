@@ -43,7 +43,7 @@ __device__ void check_and_reset_invoke_count(const Group& group)
   group.sync_aligned();
   __threadfence();
 
-  REQUIRE(cuda::atomic_ref<cuda::std::size_t, cuda::thread_scope_device>{invoke_count} == 1);
+  REQUIRE_DEVICE(cuda::atomic_ref<cuda::std::size_t, cuda::thread_scope_device>{invoke_count} == 1);
   __threadfence();
 
   if (cuda::gpu_thread.is_root_rank(group))
@@ -81,10 +81,10 @@ __device__ void test_invoke_one(const Group& group)
     static_assert(cuda::std::is_same_v<cuda::std::optional<int>, decltype(cudax::coop::invoke_one(group, callable))>);
 
     const auto ret = cudax::coop::invoke_one(group, callable);
-    REQUIRE(ret.has_value() == cudax::coop::__elect_one(group));
+    REQUIRE_DEVICE(ret.has_value() == cudax::coop::__elect_one(group));
     if (ret.has_value())
     {
-      REQUIRE(ret == 1);
+      REQUIRE_DEVICE(ret == 1);
     }
 
     check_and_reset_invoke_count(group);
@@ -100,11 +100,11 @@ __device__ void test_invoke_one(const Group& group)
     static_assert(cuda::std::is_same_v<cuda::std::optional<int&>, decltype(cudax::coop::invoke_one(group, callable))>);
 
     const auto ret = cudax::coop::invoke_one(group, callable);
-    REQUIRE(ret.has_value() == cudax::coop::__elect_one(group));
+    REQUIRE_DEVICE(ret.has_value() == cudax::coop::__elect_one(group));
     if (ret.has_value())
     {
-      REQUIRE(ret == 1);
-      REQUIRE(&ret.value() == &global_value);
+      REQUIRE_DEVICE(ret == 1);
+      REQUIRE_DEVICE(&ret.value() == &global_value);
     }
 
     check_and_reset_invoke_count(group);
@@ -120,10 +120,10 @@ __device__ void test_invoke_one(const Group& group)
     static_assert(cuda::std::is_same_v<cuda::std::optional<int>, decltype(cudax::coop::invoke_one(group, callable))>);
 
     const auto ret = cudax::coop::invoke_one(group, callable);
-    REQUIRE(ret.has_value() == cudax::coop::__elect_one(group));
+    REQUIRE_DEVICE(ret.has_value() == cudax::coop::__elect_one(group));
     if (ret.has_value())
     {
-      REQUIRE(ret == 1);
+      REQUIRE_DEVICE(ret == 1);
     }
 
     check_and_reset_invoke_count(group);
@@ -160,10 +160,10 @@ __device__ void test_invoke_one(const Group& group)
     unsigned arg2{20};
     const auto ret = cudax::coop::invoke_one(group, callable, arg1, cuda::std::move(arg2));
 
-    REQUIRE(ret.has_value() == cudax::coop::__elect_one(group));
+    REQUIRE_DEVICE(ret.has_value() == cudax::coop::__elect_one(group));
     if (ret.has_value())
     {
-      REQUIRE(ret == 1);
+      REQUIRE_DEVICE(ret == 1);
     }
   }
 }

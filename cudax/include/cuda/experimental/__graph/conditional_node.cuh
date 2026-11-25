@@ -62,19 +62,19 @@ struct conditional_handle
   //! \brief Sets the runtime value of the conditional handle from device code.
   //!
   //! \param __value Non-zero to execute the body, zero to skip.
-  _CCCL_DEVICE void set_value(bool __value) const noexcept
+  _CCCL_DEVICE_API void set_value(bool __value) const noexcept
   {
     ::cudaGraphSetConditional(__handle_, __value);
   }
 
   //! \brief Convenience: enables execution of the conditional body (sets the handle to 1).
-  _CCCL_DEVICE void enable() const noexcept
+  _CCCL_DEVICE_API void enable() const noexcept
   {
     set_value(true);
   }
 
   //! \brief Convenience: disables execution of the conditional body (sets the handle to 0).
-  _CCCL_DEVICE void disable() const noexcept
+  _CCCL_DEVICE_API void disable() const noexcept
   {
     set_value(false);
   }
@@ -136,7 +136,7 @@ __make_conditional_node(path_builder& __pb, conditional_handle __handle, ::CUgra
 //! \throws cuda::std::cuda_error if node creation fails.
 _CCCL_HOST_API inline conditional_node_result make_if_node(path_builder& __pb, bool __default_val = true)
 {
-  conditional_handle __handle{__pb.get_graph(), __default_val};
+  const conditional_handle __handle{__pb.get_graph(), __default_val};
   return __make_conditional_node(__pb, __handle, ::CU_GRAPH_COND_TYPE_IF);
 }
 
@@ -166,7 +166,7 @@ _CCCL_HOST_API inline conditional_node_result make_if_node(path_builder& __pb, c
 //! \throws cuda::std::cuda_error if node creation fails.
 _CCCL_HOST_API inline conditional_node_result make_while_node(path_builder& __pb, bool __default_val = true)
 {
-  conditional_handle __handle{__pb.get_graph(), __default_val};
+  const conditional_handle __handle{__pb.get_graph(), __default_val};
   return __make_conditional_node(__pb, __handle, ::CU_GRAPH_COND_TYPE_WHILE);
 }
 

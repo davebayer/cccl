@@ -47,7 +47,7 @@ struct hash;
 class green_ctx_view
 {
 public:
-  green_ctx_view(CUgreenCtx g_ctx, stream_pool pool, int devid)
+  _CCCL_HOST_API green_ctx_view(CUgreenCtx g_ctx, stream_pool pool, int devid)
       : g_ctx(g_ctx)
       , pool(::cuda::experimental::stf::mv(pool))
       , devid(devid)
@@ -57,12 +57,12 @@ public:
   stream_pool pool;
   int devid;
 
-  bool operator==(const green_ctx_view& other) const
+  _CCCL_HOST_API bool operator==(const green_ctx_view& other) const
   {
     return (g_ctx == other.g_ctx) && (devid == other.devid);
   }
 
-  bool operator<(const green_ctx_view& other) const
+  _CCCL_HOST_API bool operator<(const green_ctx_view& other) const
   {
     if (g_ctx != other.g_ctx)
     {
@@ -78,7 +78,7 @@ public:
 template <>
 struct hash<green_ctx_view>
 {
-  ::std::size_t operator()(const green_ctx_view& k) const
+  _CCCL_HOST_API ::std::size_t operator()(const green_ctx_view& k) const
   {
     return ::cuda::experimental::stf::hash_all(k.g_ctx, k.devid);
   }

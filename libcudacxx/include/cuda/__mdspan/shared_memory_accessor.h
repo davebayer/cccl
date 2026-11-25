@@ -193,14 +193,14 @@ public:
   [[nodiscard]] _CCCL_API static bool __detectably_invalid(
     [[maybe_unused]] data_handle_type __p, [[maybe_unused]] ::cuda::std::size_t __size_bytes) noexcept
   {
-    [[maybe_unused]] bool __is_valid = true;
-    NV_IF_TARGET(NV_IS_DEVICE,
-                 (bool __is_shared_mem           = ::cuda::device::is_address_from(__p, device::address_space::shared);
-                  const bool __exceeds_smem_size = __size_bytes > ::cuda::__max_smem_allocation_bytes();
-                  __is_valid                     = __is_shared_mem && !__exceeds_smem_size;))
-    _CCCL_ASSERT(__is_valid, "shared_memory_accessor (mdspan): data handle doesn't point to a valid shared memory");
     _CCCL_VERIFY_DEVICE_ONLY_USAGE();
-    return !__is_valid;
+    NV_IF_ELSE_TARGET(
+      NV_IS_DEVICE,
+      (const bool __is_valid = ::cuda::device::is_address_from(__p, device::address_space::shared)
+                            && __size_bytes <= ::cuda::__max_smem_allocation_bytes();
+       _CCCL_ASSERT(__is_valid, "shared_memory_accessor (mdspan): data handle doesn't point to a valid shared memory");
+       return !__is_valid;),
+      (return false;))
   }
 #endif // !defined(_CCCL_DISABLE_MDSPAN_ACCESSOR_DETECT_INVALIDITY)
 };

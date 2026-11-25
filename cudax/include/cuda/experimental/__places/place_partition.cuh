@@ -60,7 +60,7 @@ enum class place_partition_scope
  * @param scope The partitioning granularity to convert
  * @return A string representation of `scope` (e.g. "cuda_device", "green_context", "cuda_stream")
  */
-inline const char* place_partition_scope_to_string(place_partition_scope scope)
+_CCCL_HOST_API inline const char* place_partition_scope_to_string(place_partition_scope scope)
 {
   switch (scope)
   {
@@ -107,10 +107,11 @@ public:
    * @param scope Partitioning granularity (cuda_device, locality_domain, green_context, or cuda_stream)
    * @param ld_split SM split method applied when scope is locality_domain (see `locality_domain_sm_split`)
    */
-  place_partition(exec_place place,
-                  ::cuda::experimental::stf::async_resources_handle& handle,
-                  place_partition_scope scope,
-                  locality_domain_sm_split ld_split = locality_domain_sm_split::backfill)
+  _CCCL_HOST_API place_partition(
+    exec_place place,
+    ::cuda::experimental::stf::async_resources_handle& handle,
+    place_partition_scope scope,
+    locality_domain_sm_split ld_split = locality_domain_sm_split::backfill)
       : ld_split_(mv(ld_split))
   {
 #if _CCCL_CTK_BELOW(12, 4)
@@ -125,9 +126,9 @@ public:
    * @param scope Partitioning granularity (cuda_device or locality_domain when no handle is provided)
    * @param ld_split SM split method applied when scope is locality_domain (see `locality_domain_sm_split`)
    */
-  place_partition(const exec_place& place,
-                  place_partition_scope scope,
-                  locality_domain_sm_split ld_split = locality_domain_sm_split::backfill)
+  _CCCL_HOST_API place_partition(const exec_place& place,
+                                 place_partition_scope scope,
+                                 locality_domain_sm_split ld_split = locality_domain_sm_split::backfill)
       : ld_split_(mv(ld_split))
   {
 #if _CCCL_CTK_BELOW(12, 4)
@@ -141,10 +142,11 @@ public:
    * @param places Input execution places to partition
    * @param scope Partitioning granularity
    */
-  place_partition(::cuda::experimental::stf::async_resources_handle& handle,
-                  const ::std::vector<::std::shared_ptr<exec_place>>& places,
-                  place_partition_scope scope,
-                  locality_domain_sm_split ld_split = locality_domain_sm_split::backfill)
+  _CCCL_HOST_API place_partition(
+    ::cuda::experimental::stf::async_resources_handle& handle,
+    const ::std::vector<::std::shared_ptr<exec_place>>& places,
+    place_partition_scope scope,
+    locality_domain_sm_split ld_split = locality_domain_sm_split::backfill)
       : ld_split_(mv(ld_split))
   {
     for (const auto& place : places)
@@ -158,10 +160,11 @@ public:
    * @param grid Input execution place grid to partition
    * @param scope Partitioning granularity
    */
-  place_partition(::cuda::experimental::stf::async_resources_handle& handle,
-                  const exec_place& grid,
-                  place_partition_scope scope,
-                  locality_domain_sm_split ld_split = locality_domain_sm_split::backfill)
+  _CCCL_HOST_API place_partition(
+    ::cuda::experimental::stf::async_resources_handle& handle,
+    const exec_place& grid,
+    place_partition_scope scope,
+    locality_domain_sm_split ld_split = locality_domain_sm_split::backfill)
       : ld_split_(mv(ld_split))
   {
     ::std::vector<::std::shared_ptr<exec_place>> places;
@@ -182,9 +185,9 @@ public:
    * @param scope Partitioning granularity (cuda_device or locality_domain when no handle is provided)
    * @param ld_split SM split method applied when scope is locality_domain (see `locality_domain_sm_split`)
    */
-  place_partition(const ::std::vector<::std::shared_ptr<exec_place>>& places,
-                  place_partition_scope scope,
-                  locality_domain_sm_split ld_split = locality_domain_sm_split::backfill)
+  _CCCL_HOST_API place_partition(const ::std::vector<::std::shared_ptr<exec_place>>& places,
+                                 place_partition_scope scope,
+                                 locality_domain_sm_split ld_split = locality_domain_sm_split::backfill)
       : ld_split_(mv(ld_split))
   {
     for (const auto& place : places)
@@ -193,35 +196,35 @@ public:
     }
   }
 
-  ~place_partition() = default;
+  _CCCL_HIDE_FROM_ABI ~place_partition() = default;
 
   /** Iteration over subplaces. */
   using iterator       = ::std::vector<exec_place>::iterator;
   using const_iterator = ::std::vector<exec_place>::const_iterator;
 
   /** @brief Iterator to the first subplace. @return Begin iterator. */
-  iterator begin()
+  _CCCL_HOST_API iterator begin()
   {
     return sub_places.begin();
   }
   /** @brief Past-the-end iterator for subplaces. @return End iterator. */
-  iterator end()
+  _CCCL_HOST_API iterator end()
   {
     return sub_places.end();
   }
   /** @brief Const iterator to the first subplace. @return Begin const iterator. */
-  const_iterator begin() const
+  _CCCL_HOST_API const_iterator begin() const
   {
     return sub_places.begin();
   }
   /** @brief Past-the-end const iterator. @return End const iterator. */
-  const_iterator end() const
+  _CCCL_HOST_API const_iterator end() const
   {
     return sub_places.end();
   }
 
   /** @brief Number of subplaces in the partition. @return Size of the partition. */
-  size_t size() const
+  _CCCL_HOST_API size_t size() const
   {
     return sub_places.size();
   }
@@ -230,7 +233,7 @@ public:
    * @param i Index in [0, size()).
    * @return Reference to the i-th exec_place.
    */
-  exec_place& get(size_t i)
+  _CCCL_HOST_API exec_place& get(size_t i)
   {
     return sub_places[i];
   }
@@ -239,7 +242,7 @@ public:
    * @param i Index in [0, size()).
    * @return Const reference to the i-th exec_place.
    */
-  const exec_place& get(size_t i) const
+  _CCCL_HOST_API const exec_place& get(size_t i) const
   {
     return sub_places[i];
   }
@@ -247,14 +250,14 @@ public:
   /** @brief Build an exec_place from the subplaces.
    * @return A grid view of the partitioned execution places, or single place if size == 1.
    */
-  exec_place to_exec_place() const
+  _CCCL_HOST_API exec_place to_exec_place() const
   {
     return make_grid(sub_places);
   }
 
 private:
   /** @brief Compute the subplaces of a place at the specified granularity (scope) into the sub_places vector */
-  void compute_subplaces(
+  _CCCL_HOST_API void compute_subplaces(
     ::cuda::experimental::stf::async_resources_handle& handle, exec_place place, place_partition_scope scope)
   {
     // Handle multi-element grids by recursively partitioning
@@ -272,7 +275,7 @@ private:
     if (place.size() == 1 && scope == place_partition_scope::cuda_stream)
     {
       // Get the underlying scalar place (for 1-element grids, get the single element)
-      exec_place scalar_place = place.is_device() ? place : place.get_place(0);
+      const exec_place scalar_place = place.is_device() ? place : place.get_place(0);
       if (!scalar_place.is_device())
       {
         // Host or other non-device place - no streams to partition into
@@ -303,20 +306,20 @@ private:
     // Handle scalar places (including 1-element grids) for green_context scope
     if (place.size() == 1 && scope == place_partition_scope::green_context)
     {
-      exec_place scalar_place = place.is_device() ? place : place.get_place(0);
+      const exec_place scalar_place = place.is_device() ? place : place.get_place(0);
       if (!scalar_place.is_device())
       {
         sub_places.push_back(mv(place));
         return;
       }
-      int dev_id = device_ordinal(scalar_place.affine_data_place());
+      const int dev_id = device_ordinal(scalar_place.affine_data_place());
 
-      const char* env = getenv("CUDASTF_GREEN_CONTEXT_SIZE");
-      int sm_cnt      = env ? atoi(env) : 8;
+      const char* env  = ::std::getenv("CUDASTF_GREEN_CONTEXT_SIZE");
+      const int sm_cnt = env ? static_cast<int>(::std::strtol(env, nullptr, 10)) : 8;
 
       auto h = handle.get_gc_helper(dev_id, sm_cnt);
 
-      size_t cnt = h->get_count();
+      const size_t cnt = h->get_count();
       for (size_t i = 0; i < cnt; i++)
       {
         sub_places.push_back(exec_place::green_ctx(h->get_view(i)));
@@ -330,7 +333,7 @@ private:
   }
 
   /** @brief Compute the subplaces of a place at the specified granularity (scope) into the sub_places vector */
-  void compute_subplaces_no_handle(const exec_place& place, place_partition_scope scope)
+  _CCCL_HOST_API void compute_subplaces_no_handle(const exec_place& place, place_partition_scope scope)
   {
 #if _CCCL_CTK_BELOW(12, 4)
     _CCCL_ASSERT(scope != place_partition_scope::green_context, "Green contexts scope need an async resource handle.");
@@ -363,7 +366,7 @@ private:
         // Always at least 1: unsupported devices degrade to a single
         // whole-device domain, so this scope is usable on any machine.
         const int num_domains = static_cast<int>(locality_domain_count(dev_id));
-        for (int d : each(num_domains))
+        for (const int d : each(num_domains))
         {
           sub_places.push_back(exec_place::locality_domain(dev_id, d, ld_split_));
         }

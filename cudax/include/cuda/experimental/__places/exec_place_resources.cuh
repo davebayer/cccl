@@ -87,7 +87,7 @@ class exec_place_resources
 public:
   struct per_place_pools
   {
-    per_place_pools()
+    _CCCL_HOST_API per_place_pools()
         : compute(exec_place_default_pool_size)
         , data(exec_place_default_data_pool_size)
     {}
@@ -96,7 +96,7 @@ public:
     stream_pool data;
   };
 
-  exec_place_resources() = default;
+  _CCCL_HIDE_FROM_ABI exec_place_resources() = default;
 
   exec_place_resources(const exec_place_resources&)            = delete;
   exec_place_resources& operator=(const exec_place_resources&) = delete;
@@ -111,9 +111,9 @@ public:
    * reference is stable for the lifetime of the registry (`std::unordered_map`
    * preserves node addresses across rehashes).
    */
-  [[nodiscard]] per_place_pools& get(const void* impl_key)
+  [[nodiscard]] _CCCL_HOST_API per_place_pools& get(const void* impl_key)
   {
-    ::std::scoped_lock lock(mtx_);
+    const ::std::scoped_lock lock(mtx_);
     auto it = map_.find(impl_key);
     if (it == map_.end())
     {
@@ -123,9 +123,9 @@ public:
   }
 
   /// @brief Number of per-place entries currently cached. Mainly for tests.
-  [[nodiscard]] ::std::size_t size() const
+  [[nodiscard]] _CCCL_HOST_API ::std::size_t size() const
   {
-    ::std::scoped_lock lock(mtx_);
+    const ::std::scoped_lock lock(mtx_);
     return map_.size();
   }
 

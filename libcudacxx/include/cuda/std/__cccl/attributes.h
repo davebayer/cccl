@@ -232,6 +232,16 @@
 #  define _CCCL_NO_UNIQUE_ADDRESS
 #endif // _CCCL_HAS_ATTRIBUTE_NO_UNIQUE_ADDRESS() && _CCCL_COMPILER(CLANG)
 
+// NVCC emits void host stubs for device functions with deduced return types with NVHPC and, before 13, with Clang.
+// These compilers diagnose [[nodiscard]] on the stubs. Keep the attribute on the device function.
+#if !_CCCL_DEVICE_COMPILATION()                                   \
+  && ((_CCCL_CUDA_COMPILER(NVCC, <, 13) && _CCCL_COMPILER(CLANG)) \
+      || (_CCCL_CUDA_COMPILER(NVCC) && _CCCL_COMPILER(NVHPC)))
+#  define _CCCL_NODISCARD_DEVICE_AUTO
+#else
+#  define _CCCL_NODISCARD_DEVICE_AUTO [[nodiscard]]
+#endif
+
 // _CCCL_PREFERRED_NAME
 
 #if _CCCL_HAS_ATTRIBUTE(__preferred_name__)

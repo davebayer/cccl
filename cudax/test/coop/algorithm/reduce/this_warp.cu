@@ -62,7 +62,7 @@ struct ReduceKernel
     {
       const auto result = cudax::coop::reduce(warp, thread_data, red_op);
 
-      REQUIRE(result.has_value() == cuda::gpu_thread.is_root_rank(warp));
+      REQUIRE_DEVICE(result.has_value() == cuda::gpu_thread.is_root_rank(warp));
       if (cuda::gpu_thread.is_root_rank(warp))
       {
         *d_out = result.value();

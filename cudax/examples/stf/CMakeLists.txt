@@ -1,3 +1,5 @@
+set(CCCL_TIDY_CUDA_HOST_PASS OFF)
+
 set(
   stf_example_sources
   01-axpy.cu

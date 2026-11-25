@@ -95,12 +95,13 @@ _CCCL_TEMPLATE(class _Policy,
 _CCCL_REQUIRES(__range_of_communicators<_CommRange> _CCCL_AND ::cuda::std::ranges::forward_range<_EnvRange>
                  _CCCL_AND ::cuda::experimental::mgmn::__detail::__range_of_random_access_iterators<_InputIterRange>
                    _CCCL_AND ::cuda::std::ranges::forward_range<_SizeTRange>)
-void sort(const ::cuda::experimental::__result_policy_base<_Policy>& __policy,
-          _CommRange&& __comms,
-          _EnvRange&& __envs,
-          _InputIterRange&& __input_iters,
-          _SizeTRange&& __num_items_range,
-          _BinaryOp __cmp = {})
+_CCCL_HOST_API void
+sort(const ::cuda::experimental::__result_policy_base<_Policy>& __policy,
+     _CommRange&& __comms,
+     _EnvRange&& __envs,
+     _InputIterRange&& __input_iters,
+     _SizeTRange&& __num_items_range,
+     _BinaryOp __cmp = {})
 {
   using _Env = ::cuda::std::ranges::range_value_t<_EnvRange>;
 
@@ -163,12 +164,13 @@ void sort(const ::cuda::experimental::__result_policy_base<_Policy>& __policy,
 _CCCL_TEMPLATE(
   class _Policy, class _Comm, class _Env, class _InputIt, class _SizeT, class _BinaryOp = ::cuda::std::less<>)
 _CCCL_REQUIRES(__communicator<_Comm> _CCCL_AND ::cuda::std::random_access_iterator<_InputIt>)
-void sort(const ::cuda::experimental::__result_policy_base<_Policy>& __policy,
-          _Comm&& __comm,
-          _Env&& __env,
-          _InputIt __input_iter,
-          _SizeT __num_items,
-          _BinaryOp __cmp = {})
+_CCCL_HOST_API void
+sort(const ::cuda::experimental::__result_policy_base<_Policy>& __policy,
+     _Comm&& __comm,
+     _Env&& __env,
+     _InputIt __input_iter,
+     _SizeT __num_items,
+     _BinaryOp __cmp = {})
 {
   ::cuda::experimental::mgmn::sort(
     __policy,

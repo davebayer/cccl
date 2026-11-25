@@ -44,7 +44,7 @@ public:
   using native_handle_type = __cufile_os_native_type; //!< The underlying OS native handle type.
 
 private:
-  using __oflags_type = int;
+  using __oflags_type _CCCL_NODEBUG = int;
 
   static constexpr native_handle_type __invalid_native_handle = -1;
 
@@ -93,7 +93,7 @@ private:
       __ocreat_mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
     }
 
-    int __fd = ::open(__filename, __oflags, __ocreat_mode);
+    const int __fd = ::open(__filename, __oflags, __ocreat_mode);
 
     if (__fd == -1)
     {
@@ -107,7 +107,7 @@ private:
   //! @brief Wrapper for retrieving the open mode.
   [[nodiscard]] static _CCCL_HOST_API cufile_open_mode __open_mode(native_handle_type __native_handle)
   {
-    int __oflags = ::fcntl(__native_handle, F_GETFL);
+    const int __oflags = ::fcntl(__native_handle, F_GETFL);
 
     if (__oflags == -1)
     {
@@ -174,8 +174,8 @@ public:
   //! @throws cuda::cuda_error if a CUDA driver error occurs.
   //! @throws cuda::cufile_error if a cuFile driver error occurs.
   _CCCL_HOST_API cufile(const char* __filename, cufile_open_mode __open_mode)
+      : __native_handle_{__open_file(__filename, __make_oflags(__open_mode))}
   {
-    __native_handle_ = __open_file(__filename, __make_oflags(__open_mode));
     try
     {
       __cufile_handle_ = cufile_driver.register_native_handle(__native_handle_).get();
@@ -208,7 +208,7 @@ public:
   //! @post `__other` is in moved-from state.
   //!
   //! @throws cuda::std::runtime_error if the currently opened file fails to close.
-  _CCCL_HOST_API cufile& operator=(cufile&& __other)
+  _CCCL_HOST_API cufile& operator=(cufile&& __other) noexcept(false)
   {
     if (this != ::cuda::std::addressof(__other))
     {

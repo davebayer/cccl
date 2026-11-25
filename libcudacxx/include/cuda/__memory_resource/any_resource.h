@@ -266,6 +266,8 @@ struct _CCCL_DECLSPEC_EMPTY_BASES any_synchronous_resource
   // any_resource is convertible to any_synchronous_resource
   _CCCL_TEMPLATE(class... _OtherProperties)
   _CCCL_REQUIRES((::cuda::std::__type_set_contains_v<::cuda::std::__type_set<_OtherProperties...>, _Properties...>) )
+  // The source implements every interface of this resource, so the virtual table cast always succeeds.
+  // NOLINTNEXTLINE(bugprone-exception-escape)
   _CCCL_HOST_API any_synchronous_resource(any_resource<_OtherProperties...> __other) noexcept
       : __base(::cuda::std::move(__other.__get_base()))
   {}

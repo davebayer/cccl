@@ -49,20 +49,20 @@ public:
 
   // We might want to make this private depending on how this type ends up looking like long term,
   // not documenting it for now
-  [[nodiscard]] constexpr CUcontext context() const noexcept
+  [[nodiscard]] _CCCL_HOST_DEVICE_API constexpr CUcontext context() const noexcept
   {
     return __ctx;
   }
 
   //! @brief Retrieve the device on which this logical device resides
-  [[nodiscard]] constexpr device_ref underlying_device() const noexcept
+  [[nodiscard]] _CCCL_HOST_API constexpr device_ref underlying_device() const noexcept
   {
-    return __dev_id;
+    return __device;
   }
 
   //! @brief Retrieve the kind of logical device stored in this object
   //! The kind indicates if this logical_device holds a device or green_context
-  [[nodiscard]] constexpr kinds kind() const noexcept
+  [[nodiscard]] _CCCL_HOST_DEVICE_API constexpr kinds kind() const noexcept
   {
     return __kind;
   }
@@ -70,23 +70,23 @@ public:
   //! @brief Construct logical_device from a device ordinal
   //!
   //! Constructing a logical_device for a given device ordinal has a side effect of initializing that device
-  explicit logical_device(int __id)
-      : __dev_id(__id)
-      , __kind(kinds::device)
-      , __ctx(::cuda::__physical_devices()[__id].__primary_context())
+  _CCCL_HOST_API explicit logical_device(int __id)
+      : logical_device(device_ref{__id})
   {}
 
   //! @brief Construct logical_device from a device_ref
   //!
   //! Constructing a logical_device for a given device_ref has a side effect of initializing that device
-  explicit logical_device(device_ref __dev)
-      : logical_device(__dev.get())
+  _CCCL_HOST_API explicit logical_device(device_ref __dev)
+      : __device(__dev)
+      , __kind(kinds::device)
+      , __ctx(__dev.__primary_context())
   {}
 
 #if _CCCL_CTK_AT_LEAST(12, 5)
   //! @brief Construct logical_device from a green_context
-  logical_device(const green_context& __gctx)
-      : __dev_id(__gctx.__dev_id)
+  _CCCL_HOST_API logical_device(const green_context& __gctx)
+      : __device(__gctx.__dev_id)
       , __kind(kinds::green_context)
       , __ctx(__gctx.__transformed)
   {}
@@ -97,7 +97,7 @@ public:
   //! @param __lhs The first `logical_device` to compare
   //! @param __rhs The second `logical_device` to compare
   //! @return true if `lhs` and `rhs` refer to the same logical device
-  [[nodiscard]] friend bool operator==(logical_device __lhs, logical_device __rhs) noexcept
+  [[nodiscard]] friend _CCCL_HOST_API bool operator==(logical_device __lhs, logical_device __rhs) noexcept
   {
     return __lhs.__ctx == __rhs.__ctx;
   }
@@ -108,7 +108,7 @@ public:
   //! @param __lhs The first `logical_device` to compare
   //! @param __rhs The second `logical_device` to compare
   //! @return true if `lhs` and `rhs` refer to the different logical device
-  [[nodiscard]] friend bool operator!=(logical_device __lhs, logical_device __rhs) noexcept
+  [[nodiscard]] friend _CCCL_HOST_API bool operator!=(logical_device __lhs, logical_device __rhs) noexcept
   {
     return __lhs.__ctx != __rhs.__ctx;
   }
@@ -116,13 +116,12 @@ public:
 
 private:
   friend __logical_device_access;
-  // This might be a CUdevice as well
-  int __dev_id = 0;
+  device_ref __device;
   kinds __kind;
   CUcontext __ctx = nullptr;
 
-  logical_device(int __id, CUcontext __context, kinds __k)
-      : __dev_id(__id)
+  _CCCL_HOST_API logical_device(int __id, CUcontext __context, kinds __k)
+      : __device(__id)
       , __kind(__k)
       , __ctx(__context)
   {}
@@ -130,7 +129,7 @@ private:
 
 struct __logical_device_access
 {
-  static logical_device make_logical_device(int __id, CUcontext __context, logical_device::kinds __k)
+  _CCCL_HOST_API static logical_device make_logical_device(int __id, CUcontext __context, logical_device::kinds __k)
   {
     return logical_device(__id, __context, __k);
   }

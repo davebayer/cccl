@@ -56,7 +56,7 @@ struct stream_ref : ::cuda::stream_ref
   using ::cuda::stream_ref::stream_ref;
 
   //! @brief Deprecated. Use is_done() instead.
-  [[deprecated("Use is_done() instead.")]] [[nodiscard]] bool ready() const
+  [[deprecated("Use is_done() instead.")]] [[nodiscard]] _CCCL_HOST_API bool ready() const
   {
     return is_done();
   }
@@ -97,7 +97,7 @@ struct stream_ref : ::cuda::stream_ref
     }
     // Because the stream can come from_native_handle, we can't just loop over devices comparing contexts,
     // lower to CUDART for this instead
-    __ensure_current_device __setter(__stream_ctx);
+    const __ensure_current_device __setter(__stream_ctx);
     int __id;
     _CCCL_TRY_RUNTIME_API(cudaGetDevice, "Could not get device from a stream", &__id);
     return __logical_device_access::make_logical_device(__id, __stream_ctx, __ctx_kind);

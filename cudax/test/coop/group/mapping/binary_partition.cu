@@ -125,13 +125,13 @@ __device__ void check_binary_partition(
   const auto lane = cuda::gpu_thread.rank_as<unsigned>(cuda::warp);
   const bool pred = ((true_mask >> lane) & 1u) != 0;
   const auto mask = pred ? true_mask : ~true_mask;
-  REQUIRE(result.is_valid());
-  REQUIRE(result.group_count() == 2);
-  REQUIRE(result.group_rank() == static_cast<unsigned>(pred));
-  REQUIRE(result.unit_count() == static_cast<unsigned>(cuda::std::popcount(mask)));
-  REQUIRE(result.unit_rank()
-          == static_cast<unsigned>(cuda::std::popcount(mask & cuda::device::lane_mask::all_less().value())));
-  REQUIRE(result.lane_mask() == cuda::device::lane_mask{mask});
+  REQUIRE_DEVICE(result.is_valid());
+  REQUIRE_DEVICE(result.group_count() == 2);
+  REQUIRE_DEVICE(result.group_rank() == static_cast<unsigned>(pred));
+  REQUIRE_DEVICE(result.unit_count() == static_cast<unsigned>(cuda::std::popcount(mask)));
+  REQUIRE_DEVICE(result.unit_rank()
+                 == static_cast<unsigned>(cuda::std::popcount(mask & cuda::device::lane_mask::all_less().value())));
+  REQUIRE_DEVICE(result.lane_mask() == cuda::device::lane_mask{mask});
 }
 
 template <bool ConstCallable, class Config, class Pred, class... NonExhaustive>
@@ -174,11 +174,11 @@ __device__ void test_binary_partition(Config config, const NonExhaustive&... non
 
   unsigned calls = 0;
   test_predicate<false>(config, MutablePredFn{&calls}, even_mask, 0u, non_exhaustive...);
-  REQUIRE(calls == 1);
+  REQUIRE_DEVICE(calls == 1);
 
   calls = 0;
   test_predicate<true>(config, OverloadedPredFn{{&calls}}, even_mask, odd_mask, non_exhaustive...);
-  REQUIRE(calls == 2);
+  REQUIRE_DEVICE(calls == 2);
 }
 
 struct TestKernel

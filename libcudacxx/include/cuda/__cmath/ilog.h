@@ -240,7 +240,7 @@ _CCCL_REQUIRES(::cuda::std::__cccl_is_cv_integer_v<_Tp>)
     int __ret = 0;
 #if _CCCL_CUDA_COMPILATION() && !_CCCL_TILE_COMPILATION()
     _CCCL_IF_NOT_CONSTEVAL_DEFAULT
-    {
+    { // NOLINT(bugprone-branch-clone)
       NV_IF_ELSE_TARGET(NV_IS_DEVICE, (__ret = ::cuda::__ilog10_device(__uv);), (__ret = ::cuda::__ilog10_generic(__v);))
     }
     else

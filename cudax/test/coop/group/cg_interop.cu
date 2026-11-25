@@ -35,8 +35,8 @@ __device__ void test_cg_interop(Config config)
     auto cccl_group = cudax::coop::make_group(cg_group, config);
 
     static_assert(cuda::std::is_same_v<cudax::coop::this_grid<Hierarchy>, decltype(cccl_group)>);
-    REQUIRE(cuda::gpu_thread.count(cccl_group) == cg_group.size());
-    REQUIRE(cuda::gpu_thread.rank(cccl_group) == cg_group.thread_rank());
+    REQUIRE_DEVICE(cuda::gpu_thread.count(cccl_group) == cg_group.size());
+    REQUIRE_DEVICE(cuda::gpu_thread.rank(cccl_group) == cg_group.thread_rank());
     cccl_group.sync();
   }
 
@@ -59,8 +59,8 @@ __device__ void test_cg_interop(Config config)
     auto cccl_group = cudax::coop::make_group(cg_group, config);
 
     static_assert(cuda::std::is_same_v<cudax::coop::this_block<Hierarchy>, decltype(cccl_group)>);
-    REQUIRE(cuda::gpu_thread.count(cccl_group) == cg_group.size());
-    REQUIRE(cuda::gpu_thread.rank(cccl_group) == cg_group.thread_rank());
+    REQUIRE_DEVICE(cuda::gpu_thread.count(cccl_group) == cg_group.size());
+    REQUIRE_DEVICE(cuda::gpu_thread.rank(cccl_group) == cg_group.thread_rank());
     cccl_group.sync();
   }
 
@@ -70,8 +70,8 @@ __device__ void test_cg_interop(Config config)
     auto cccl_group = cudax::coop::make_group(cg_group, config);
 
     static_assert(cuda::std::is_same_v<cudax::coop::this_thread<Hierarchy>, decltype(cccl_group)>);
-    REQUIRE(cuda::gpu_thread.count(cccl_group) == cg_group.size());
-    REQUIRE(cuda::gpu_thread.rank(cccl_group) == cg_group.thread_rank());
+    REQUIRE_DEVICE(cuda::gpu_thread.count(cccl_group) == cg_group.size());
+    REQUIRE_DEVICE(cuda::gpu_thread.rank(cccl_group) == cg_group.thread_rank());
     cccl_group.sync();
   }
 
@@ -99,8 +99,8 @@ __device__ void test_cg_interop(Config config)
     auto cccl_group = cudax::coop::make_group(cg_group, config);
 
     static_assert(cuda::std::is_same_v<cudax::coop::this_warp<Hierarchy>, decltype(cccl_group)>);
-    REQUIRE(cuda::gpu_thread.count(cccl_group) == cg_group.size());
-    REQUIRE(cuda::gpu_thread.rank(cccl_group) == cg_group.thread_rank());
+    REQUIRE_DEVICE(cuda::gpu_thread.count(cccl_group) == cg_group.size());
+    REQUIRE_DEVICE(cuda::gpu_thread.rank(cccl_group) == cg_group.thread_rank());
     cccl_group.sync();
   }
 }

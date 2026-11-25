@@ -27,20 +27,20 @@ __device__ void test_group(const Group& group)
     // Test all threads with false.
     {
       const auto result = cudax::coop::any_of(group, false);
-      REQUIRE(result.has_value());
+      REQUIRE_DEVICE(result.has_value());
       if (result.has_value())
       {
-        REQUIRE(!result.value());
+        REQUIRE_DEVICE(!result.value());
       }
     }
 
     // Test all threads with true.
     {
       const auto result = cudax::coop::any_of(group, true);
-      REQUIRE(result.has_value());
+      REQUIRE_DEVICE(result.has_value());
       if (result.has_value())
       {
-        REQUIRE(result.value());
+        REQUIRE_DEVICE(result.value());
       }
     }
   }
@@ -49,13 +49,13 @@ __device__ void test_group(const Group& group)
     // Test all threads with false (broadcasted).
     {
       const bool result = cudax::coop::any_of(cudax::broadcasted, group, false);
-      REQUIRE(!result);
+      REQUIRE_DEVICE(!result);
     }
 
     // Test all threads with true (broadcasted).
     {
       const bool result = cudax::coop::any_of(cudax::broadcasted, group, true);
-      REQUIRE(result);
+      REQUIRE_DEVICE(result);
     }
   }
 
@@ -65,10 +65,10 @@ __device__ void test_group(const Group& group)
     {
       bool in[]{false, false, false};
       const auto result = cudax::coop::any_of(group, in);
-      REQUIRE(result.has_value());
+      REQUIRE_DEVICE(result.has_value());
       if (result.has_value())
       {
-        REQUIRE(!result.value());
+        REQUIRE_DEVICE(!result.value());
       }
     }
 
@@ -76,10 +76,10 @@ __device__ void test_group(const Group& group)
     {
       bool in[]{true, true, true, true};
       const auto result = cudax::coop::any_of(group, in);
-      REQUIRE(result.has_value());
+      REQUIRE_DEVICE(result.has_value());
       if (result.has_value())
       {
-        REQUIRE(result.value());
+        REQUIRE_DEVICE(result.value());
       }
     }
 
@@ -87,10 +87,10 @@ __device__ void test_group(const Group& group)
     {
       bool in[]{false, false, true};
       const auto result = cudax::coop::any_of(group, in);
-      REQUIRE(result.has_value());
+      REQUIRE_DEVICE(result.has_value());
       if (result.has_value())
       {
-        REQUIRE(result.value());
+        REQUIRE_DEVICE(result.value());
       }
     }
 
@@ -98,21 +98,21 @@ __device__ void test_group(const Group& group)
     {
       bool in[]{false, false, false};
       const bool result = cudax::coop::any_of(cudax::broadcasted, group, in);
-      REQUIRE(!result);
+      REQUIRE_DEVICE(!result);
     }
 
     // Test all threads with true (broadcasted).
     {
       bool in[]{true, true, true, true};
       const bool result = cudax::coop::any_of(cudax::broadcasted, group, in);
-      REQUIRE(result);
+      REQUIRE_DEVICE(result);
     }
 
     // Test all threads except 1 with false (broadcasted).
     {
       bool in[]{false, false, true};
       const bool result = cudax::coop::any_of(cudax::broadcasted, group, in);
-      REQUIRE(result);
+      REQUIRE_DEVICE(result);
     }
   }
 }

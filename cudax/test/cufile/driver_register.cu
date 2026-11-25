@@ -32,18 +32,17 @@ void test_register_native_handle()
   STATIC_REQUIRE(
     cuda::std::is_same_v<cudax::cufile_ref,
                          decltype(cudax::cufile_driver.register_native_handle(cuda::std::declval<int>()))>);
-  STATIC_REQUIRE(
-    cuda::std::
-      is_same_v<void, decltype(cudax::cufile_driver.deregister_native_handle(cuda::std::declval<cudax::cufile_ref>()))>);
+  STATIC_REQUIRE(cuda::std::is_void_v<decltype(cudax::cufile_driver.deregister_native_handle(
+                   cuda::std::declval<cudax::cufile_ref>()))>);
 
   FILE* cfile = std::fopen(filename, "w");
   test_check_file_exists(filename);
 
-  int fd = fileno(cfile);
+  const int fd = fileno(cfile);
   REQUIRE(fd != -1);
 
   // 3. Register a file handle. Should return a valid cuFile handle.
-  cudax::cufile_ref file = cudax::cufile_driver.register_native_handle(fd);
+  const cudax::cufile_ref file = cudax::cufile_driver.register_native_handle(fd);
   REQUIRE(file.get() != nullptr);
 
   // 4. Reregistering the same file handle should result in an cufile_error.

@@ -61,7 +61,7 @@ _CCCL_HOST_DEVICE_API _Tp __cuda_atomic_add(_Tp __lhs, _Tp __rhs)
 {
 #if _CCCL_HAS_NVFP16()
   if constexpr (is_same_v<_Tp, __half>)
-  {
+  { // NOLINT(bugprone-branch-clone)
     NV_IF_ELSE_TARGET(NV_PROVIDES_SM_53,
                       (return __hadd(__lhs, __rhs);),
                       (return __float2half(__atomic_adl_float<_Tp>{__half2float(__lhs) + __half2float(__rhs)});))
@@ -93,7 +93,7 @@ _CCCL_HOST_DEVICE_API _Tp __cuda_atomic_sub(_Tp __lhs, _Tp __rhs)
 {
 #if _CCCL_HAS_NVFP16()
   if constexpr (is_same_v<_Tp, __half>)
-  {
+  { // NOLINT(bugprone-branch-clone)
     NV_IF_ELSE_TARGET(NV_PROVIDES_SM_53,
                       (return __hsub(__lhs, __rhs);),
                       (return __float2half(__atomic_adl_float<_Tp>{__half2float(__lhs) - __half2float(__rhs)});))

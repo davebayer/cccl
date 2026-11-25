@@ -96,6 +96,9 @@ option(CCCL_ENABLE_CLANG_TIDY "Enable clang-tidy" OFF)
 mark_as_advanced(CCCL_ENABLE_CLANG_TIDY)
 
 if (CCCL_TOPLEVEL_PROJECT)
+  # Use a regular include path so our compiler and clang-tidy jobs diagnose cudax headers.
+  set(cudax_NO_IMPORTED_TARGETS TRUE)
+
   include(cmake/AppendOptionIfAvailable.cmake)
   include(cmake/CCCLUtilities.cmake) # include this before other CCCL helpers
 

@@ -256,7 +256,7 @@ struct _CCCL_TYPE_VISIBILITY_DEFAULT graph_builder_ref
   _CCCL_HOST_API auto instantiate() -> graph
   {
     _CCCL_ASSERT(__graph_ != nullptr, "cannot instantiate a NULL graph");
-    ::cuda::__ensure_current_context __ctx_guard{__dev_};
+    const ::cuda::__ensure_current_context __ctx_guard{__dev_};
     return graph{::cuda::experimental::__driver::__graphInstantiate(__graph_)};
   }
 

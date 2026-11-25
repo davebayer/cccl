@@ -119,6 +119,15 @@ if (
 endif()
 
 include(cmake/cudaxBuildCompilerTargets.cmake)
+if (CCCL_ENABLE_CLANG_TIDY)
+  set(CCCL_TIDY_CUDA_HOST_PASS ON)
+  # Generated header tests also need to find the project checks in out-of-tree builds.
+  configure_file(
+    "${CCCL_SOURCE_DIR}/.clang-tidy"
+    "${cudax_BINARY_DIR}/.clang-tidy"
+    COPYONLY
+  )
+endif()
 if (cudax_ENABLE_PLACES)
   include(cmake/cudaxPlacesConfigureTarget.cmake)
 endif()

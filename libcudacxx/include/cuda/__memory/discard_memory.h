@@ -44,7 +44,7 @@ discard_memory([[maybe_unused]] volatile void* __ptr, [[maybe_unused]] ::cuda::s
                  constexpr ::cuda::std::size_t __line_size = 128;
 
                  // Trim the first block and last block if they're not 128 bytes aligned
-                 const auto __p             = static_cast<char*>(const_cast<void*>(__ptr));
+                 const auto __p             = static_cast<volatile char*>(__ptr);
                  const auto __end_p         = __p + __nbytes;
                  const auto __start_aligned = ::cuda::align_up(__p, __line_size);
                  const auto __end_aligned   = ::cuda::align_down(__end_p, __line_size);

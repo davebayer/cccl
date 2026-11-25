@@ -45,7 +45,7 @@ using ::cuda::experimental::stf::cuda_try;
 class machine : public ::cuda::experimental::meyers_singleton<machine>
 {
 protected:
-  machine()
+  _CCCL_HOST_API machine()
       : ndevices(cuda_try<cudaGetDeviceCount>())
   {
     // TODO: remove this call? Currently anyone getting a machine gets peer access
@@ -53,14 +53,15 @@ protected:
     enable_peer_accesses();
   }
 
+  // Clients can't destroy an object (because they can't create one in the first place).
+  _CCCL_HIDE_FROM_ABI ~machine() = default;
+
+public:
   // Nobody can copy or assign.
   machine& operator=(const machine&) = delete;
   machine(const machine&)            = delete;
-  // Clients can't destroy an object (because they can't create one in the first place).
-  ~machine() = default;
 
-public:
-  void enable_peer_accesses()
+  _CCCL_HOST_API void enable_peer_accesses()
   {
     // Only once
     if (initialized_peer_accesses)
@@ -68,7 +69,7 @@ public:
       return;
     }
 
-    int current_dev = cuda_try<cudaGetDevice>();
+    const int current_dev = cuda_try<cudaGetDevice>();
 
     for (int d = 0; d < ndevices; d++)
     {
@@ -86,11 +87,11 @@ public:
         {
           continue;
         }
-        int can_access_peer = cuda_try<cudaDeviceCanAccessPeer>(d, peer_d);
+        const int can_access_peer = cuda_try<cudaDeviceCanAccessPeer>(d, peer_d);
 
         if (can_access_peer)
         {
-          cudaError_t res = cudaDeviceEnablePeerAccess(peer_d, 0);
+          const cudaError_t res = cudaDeviceEnablePeerAccess(peer_d, 0);
           assert(res == cudaErrorPeerAccessAlreadyEnabled || res == cudaSuccess);
           if (res == cudaErrorPeerAccessAlreadyEnabled)
           {
@@ -101,8 +102,8 @@ public:
           }
 
           // Enable access to remote memory pool
-          cudaMemAccessDesc desc = {.location = {.type = cudaMemLocationTypeDevice, .id = peer_d},
-                                    .flags    = cudaMemAccessFlagsProtReadWrite};
+          const cudaMemAccessDesc desc = {
+            .location = {.type = cudaMemLocationTypeDevice, .id = peer_d}, .flags = cudaMemAccessFlagsProtReadWrite};
           cuda_try(cudaMemPoolSetAccess(mempool, &desc, 1 /* numDescs */));
           // ::std::cout << "[DEV " << d << "] cudaMemPoolSetAccess to peer "<< peer_d << ::'\n';
         }
@@ -119,9 +120,9 @@ public:
   }
 
   // Naive solution
-  int get_ith_closest_node(int node, int ith)
+  _CCCL_HOST_API int get_ith_closest_node(int node, int ith) const
   {
-    int nnodes = ndevices + 1;
+    const int nnodes = ndevices + 1;
 
     return (node + ith) % nnodes;
   }

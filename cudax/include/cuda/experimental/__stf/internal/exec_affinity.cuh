@@ -58,13 +58,13 @@ using ::cuda::experimental::places::exec_place;
 class exec_affinity
 {
 public:
-  exec_affinity()  = default;
-  ~exec_affinity() = default;
+  _CCCL_HIDE_FROM_ABI exec_affinity()  = default;
+  _CCCL_HIDE_FROM_ABI ~exec_affinity() = default;
 
   /**
    * @brief Set the current affinity to a vector of execution places
    */
-  void push(::std::vector<::std::shared_ptr<exec_place>> p)
+  _CCCL_HOST_API void push(::std::vector<::std::shared_ptr<exec_place>> p)
   {
     s.push(mv(p));
   }
@@ -72,7 +72,7 @@ public:
   /**
    * @brief Set the current affinity to a single execution place
    */
-  void push(::std::shared_ptr<exec_place> p)
+  _CCCL_HOST_API void push(::std::shared_ptr<exec_place> p)
   {
     s.push(::std::vector<::std::shared_ptr<exec_place>>{::cuda::std::move(p)});
   }
@@ -80,7 +80,7 @@ public:
   /**
    * @brief Restore the affinity to its value before calling push
    */
-  void pop()
+  _CCCL_HOST_API void pop()
   {
     s.pop();
   }
@@ -88,7 +88,7 @@ public:
   /**
    * @brief Indicates if an affinity was set or not
    */
-  bool has_affinity() const
+  _CCCL_HOST_API bool has_affinity() const
   {
     return !s.empty();
   }
@@ -96,7 +96,7 @@ public:
   /**
    * @brief Get a reference to the vector of place pointers at the top of the stack (ie. thread's current affinity)
    */
-  const auto& top() const
+  _CCCL_HOST_API const auto& top() const
   {
     return s.top();
   }

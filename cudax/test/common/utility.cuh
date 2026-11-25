@@ -43,8 +43,10 @@ public:
 
   ~_malloc_pinned()
   {
-    const cuda::__ensure_current_context guard(cuda::device_ref{0});
-    [[maybe_unused]] auto status = ::cudaFreeHost(pv);
+    CHECK_NOTHROW([&] {
+      const cuda::__ensure_current_context guard(cuda::device_ref{0});
+      CHECK_CUDART(::cudaFreeHost(pv));
+    }());
   }
 
   template <class T>

@@ -29,7 +29,7 @@
 namespace cuda::experimental::cufile_driver_attributes
 {
 template <class _ParamEnum>
-[[nodiscard]] _CCCL_CONSTEVAL auto __attr_from_param_type() noexcept
+[[nodiscard]] _CCCL_HOST_API _CCCL_CONSTEVAL auto __attr_from_param_type() noexcept
 {
   if constexpr (::cuda::std::is_same_v<_ParamEnum, ::CUFileSizeTConfigParameter_t>)
   {
@@ -48,7 +48,7 @@ template <class _ParamEnum>
 template <auto _Param, bool _CanBeSetWhenOpened = false>
 struct __attr_from_param
 {
-  using __enum_type                              = decltype(_Param);
+  using __enum_type _CCCL_NODEBUG                = decltype(_Param);
   static constexpr auto __enum_value             = _Param;
   static constexpr auto __can_be_get_when_closed = true;
   static constexpr auto __can_be_set_when_closed = true;
@@ -61,7 +61,7 @@ struct __attr_from_param
 template <::CUfileDriverStatusFlags_t _Status>
 struct __attr_from_status
 {
-  using __enum_type                              = ::CUfileDriverStatusFlags_t;
+  using __enum_type _CCCL_NODEBUG                = ::CUfileDriverStatusFlags_t;
   static constexpr auto __enum_value             = _Status;
   static constexpr auto __can_be_get_when_closed = false;
   static constexpr auto __can_be_set_when_closed = false;
@@ -74,7 +74,7 @@ struct __attr_from_status
 template <::CUfileFeatureFlags_t _Feature>
 struct __attr_from_feature
 {
-  using __enum_type                              = ::CUfileFeatureFlags_t;
+  using __enum_type _CCCL_NODEBUG                = ::CUfileFeatureFlags_t;
   static constexpr auto __enum_value             = _Feature;
   static constexpr auto __can_be_get_when_closed = false;
   static constexpr auto __can_be_set_when_closed = false;

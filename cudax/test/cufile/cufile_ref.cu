@@ -32,9 +32,9 @@ C2H_CCCLRT_TEST("cuFile cufile_ref", "[cufile][cufile]")
   STATIC_REQUIRE(cuda::std::is_nothrow_constructible_v<cudax::cufile_ref, CUfileHandle_t>);
   STATIC_REQUIRE(cuda::std::is_convertible_v<CUfileHandle_t, cudax::cufile_ref>);
   {
-    cudax::cufile file{filename, cudax::cufile_open_mode::out};
+    const cudax::cufile file{filename, cudax::cufile_open_mode::out};
 
-    cudax::cufile_ref file_ref{file.get()};
+    const cudax::cufile_ref file_ref{file.get()};
     REQUIRE(file_ref.get() == file.get());
   }
   test_remove_file(filename);
@@ -59,11 +59,13 @@ C2H_CCCLRT_TEST("cuFile cufile_ref", "[cufile][cufile]")
   STATIC_REQUIRE(cuda::std::is_same_v<CUfileHandle_t, decltype(cuda::std::declval<cudax::cufile_ref>().get())>);
   {
     const cudax::cufile file;
-    REQUIRE(cudax::cufile_ref{file}.get() == nullptr);
+    const cudax::cufile_ref& ref = file;
+    REQUIRE(ref.get() == nullptr);
   }
   {
-    cudax::cufile file{filename, cudax::cufile_open_mode::out};
-    REQUIRE(cudax::cufile_ref{file}.get() != nullptr);
+    const cudax::cufile file{filename, cudax::cufile_open_mode::out};
+    const cudax::cufile_ref& ref = file;
+    REQUIRE(ref.get() != nullptr);
   }
   test_remove_file(filename);
 }

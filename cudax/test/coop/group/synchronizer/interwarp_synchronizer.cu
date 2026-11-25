@@ -145,8 +145,8 @@ __device__ void test_interwarp_synchronizer(Config config)
       auto synchronizer_instance = synchronizer.make_instance(cuda::warp, parent_group, mapping_result);
 
       // Test that synchronizer instance has the expected barrier id.
-      REQUIRE((cuda::std::bit_cast<cuda::std::array<unsigned, 2>>(synchronizer_instance)[0]
-               == static_cast<unsigned>(barrier_ids[mapping_result.group_rank()])));
+      REQUIRE_DEVICE((cuda::std::bit_cast<cuda::std::array<unsigned, 2>>(synchronizer_instance)[0]
+                      == static_cast<unsigned>(barrier_ids[mapping_result.group_rank()])));
 
       using SynchronizerInstance = decltype(synchronizer_instance);
 
@@ -242,8 +242,8 @@ __device__ void test_interwarp_synchronizer(Config config)
       auto synchronizer_instance = synchronizer.make_instance(cuda::warp, parent_group, mapping_result);
 
       // Test that synchronizer instance has the expected barrier id.
-      REQUIRE((cuda::std::bit_cast<cuda::std::array<unsigned, 2>>(synchronizer_instance)[0]
-               == mapping_result.group_rank() + 1));
+      REQUIRE_DEVICE((cuda::std::bit_cast<cuda::std::array<unsigned, 2>>(synchronizer_instance)[0]
+                      == mapping_result.group_rank() + 1));
 
       using SynchronizerInstance = decltype(synchronizer_instance);
 

@@ -31,12 +31,12 @@ namespace __detail
 {
 enum class __param_kind : unsigned
 {
-  _in    = 1,
-  _out   = 2,
-  _inout = 3
+  _in = 1,
+  _out,
+  _inout,
 };
 
-[[nodiscard]] _CCCL_HOST_DEVICE inline constexpr __param_kind operator&(__param_kind __a, __param_kind __b) noexcept
+[[nodiscard]] _CCCL_HOST_DEVICE_API inline constexpr __param_kind operator&(__param_kind __a, __param_kind __b) noexcept
 {
   return __param_kind(unsigned(__a) & unsigned(__b));
 }
@@ -50,7 +50,7 @@ struct [[nodiscard]] __box
 struct __in_t
 {
   template <class _Ty>
-  __box<_Ty, __param_kind::_in> operator()(const _Ty& __v) const noexcept
+  _CCCL_HOST_DEVICE_API __box<_Ty, __param_kind::_in> operator()(const _Ty& __v) const noexcept
   {
     return {__v};
   }
@@ -59,7 +59,7 @@ struct __in_t
 struct __out_t
 {
   template <class _Ty>
-  __box<_Ty, __param_kind::_out> operator()(_Ty& __v) const noexcept
+  _CCCL_HOST_DEVICE_API __box<_Ty, __param_kind::_out> operator()(_Ty& __v) const noexcept
   {
     return {__v};
   }
@@ -68,7 +68,7 @@ struct __out_t
 struct __inout_t
 {
   template <class _Ty>
-  __box<_Ty, __param_kind::_inout> operator()(_Ty& __v) const noexcept
+  _CCCL_HOST_DEVICE_API __box<_Ty, __param_kind::_inout> operator()(_Ty& __v) const noexcept
   {
     return {__v};
   }

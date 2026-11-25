@@ -71,7 +71,7 @@ inline const ::std::string_view type_name{
  * @snippet unittest.cuh tuple2tuple
  */
 template <typename Tuple, typename Fun>
-constexpr auto tuple2tuple(const Tuple& t, Fun&& f)
+_CCCL_HIDE_FROM_ABI constexpr auto tuple2tuple(const Tuple& t, Fun&& f)
 {
   // std::forward combined with tuple deduction crashes nvcc 12.0 with GCC 12 in C++17 mode. We need to do
   // static_cast<decltype(x)&&>(x) instead.
@@ -113,7 +113,7 @@ class print_type_name_and_fail
  * @endcode
  */
 template <typename Array>
-auto to_tuple(Array&& array)
+_CCCL_HOST_API auto to_tuple(Array&& array)
 {
   // std::forward combined with tuple deduction crashes nvcc 12.0 with GCC 12 in C++17 mode. We need to do
   // static_cast<decltype(x)&&>(x) instead.
@@ -160,7 +160,7 @@ namespace reserved
  * @return An `std::array` containing the elements from the tuple, converted to type `T0`.
  */
 template <typename T0, typename... Ts>
-::cuda::std::array<T0, 1 + sizeof...(Ts)> to_cuda_array(const ::std::tuple<T0, Ts...>& obj)
+_CCCL_HOST_API ::cuda::std::array<T0, 1 + sizeof...(Ts)> to_cuda_array(const ::std::tuple<T0, Ts...>& obj)
 {
   ::cuda::std::array<T0, 1 + sizeof...(Ts)> result;
   each_in_tuple(obj, [&](auto index, const auto& value) {
@@ -173,7 +173,7 @@ template <typename T0, typename... Ts>
  * @brief Converts an `std::array` to a `cuda::std::array`
  */
 template <typename T, size_t N>
-::cuda::std::array<T, N> convert_to_cuda_array(const ::std::array<T, N>& std_array)
+_CCCL_HOST_API ::cuda::std::array<T, N> convert_to_cuda_array(const ::std::array<T, N>& std_array)
 {
   ::cuda::std::array<T, N> result;
   for (size_t i = 0; i < N; i++)
@@ -211,7 +211,7 @@ template <typename T, size_t N>
  *
  */
 template <typename T, typename P0, typename... P>
-T only_convertible(P0&& p0, [[maybe_unused]] P&&... p)
+_CCCL_HOST_API T only_convertible(P0&& p0, [[maybe_unused]] P&&... p)
 {
   if constexpr (::cuda::std::is_convertible_v<P0, T>)
   {
@@ -254,7 +254,7 @@ T only_convertible(P0&& p0, [[maybe_unused]] P&&... p)
  * \endcode
  */
 template <typename T, typename... P>
-auto all_convertible(P&&... p)
+_CCCL_HOST_API auto all_convertible(P&&... p)
 {
   // We use a union here to prevent the compiler from calling the destructor of the array.
   // All construction/destruction will be done manually for efficiency purposes.
@@ -299,7 +299,7 @@ namespace reserved
  * @return T Either the first convertible parameter, or `default_v` if no such parameter is found
  */
 template <typename T, typename... P>
-T only_convertible_or([[maybe_unused]] T default_v, [[maybe_unused]] P&&... p)
+_CCCL_HOST_API T only_convertible_or([[maybe_unused]] T default_v, [[maybe_unused]] P&&... p)
 {
   if constexpr (!(::cuda::std::is_convertible_v<P, T> || ...))
   {
@@ -322,7 +322,7 @@ struct check_initialization
   static constexpr int count_convertibilty = (::cuda::std::is_convertible_v<T, DataTypes> + ... + 0);
 
   template <typename... ArgTypes>
-  static constexpr void from()
+  _CCCL_HOST_API static constexpr void from()
   {
     (
       [] {
@@ -371,7 +371,7 @@ struct check_initialization
  * \endcode
  */
 template <typename... ArgTypes, typename... DataTypes>
-void shuffled_args_check(const DataTypes&...)
+_CCCL_HOST_API void shuffled_args_check(const DataTypes&...)
 {
   reserved::check_initialization<DataTypes...>::template from<ArgTypes...>();
 }
@@ -416,7 +416,7 @@ void shuffled_args_check(const DataTypes&...)
  *  \endcode
  */
 template <typename... DataTypes, typename... ArgTypes>
-::std::tuple<DataTypes...> shuffled_tuple(ArgTypes... args)
+_CCCL_HOST_API ::std::tuple<DataTypes...> shuffled_tuple(ArgTypes... args)
 {
   reserved::check_initialization<DataTypes...>::template from<ArgTypes...>();
   return ::std::tuple<DataTypes...>{reserved::only_convertible_or(DataTypes(), mv(args)...)...};
@@ -447,7 +447,7 @@ template <typename... DataTypes, typename... ArgTypes>
  * @endcode
  */
 template <typename... DataTypes, typename... ArgTypes>
-auto shuffled_array_tuple(ArgTypes... args)
+_CCCL_HOST_API auto shuffled_array_tuple(ArgTypes... args)
 {
   reserved::check_initialization<DataTypes...>::template from<ArgTypes...>();
   return ::std::tuple{all_convertible<DataTypes>(mv(args)...)...};

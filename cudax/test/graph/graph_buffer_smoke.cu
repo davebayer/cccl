@@ -75,7 +75,7 @@ struct verify_iota
   {
     for (int i = 0; i < static_cast<int>(buf.size()); ++i)
     {
-      REQUIRE(buf[i] == i);
+      REQUIRE_DEVICE(buf[i] == i);
     }
   }
 };
@@ -86,7 +86,7 @@ struct verify_all_zero
   {
     for (const auto& val : buf)
     {
-      REQUIRE(val == 0);
+      REQUIRE_DEVICE(val == 0);
     }
   }
 };

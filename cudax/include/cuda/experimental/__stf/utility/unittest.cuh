@@ -38,9 +38,10 @@
 #include <cuda/experimental/__stf/utility/traits.cuh>
 
 #include <array>
-#include <cstdlib>
+#include <memory>
 #include <string>
 #include <tuple>
+#include <utility>
 
 #ifdef UNITTESTED_FILE
 #  include <cuda/std/__host_stdlib/cstdio>
@@ -49,11 +50,6 @@
 #endif // UNITTESTED_FILE
 
 #ifndef _CCCL_DOXYGEN_INVOKED // Do not document
-// One level of macro indirection is required in order to resolve __COUNTER__,
-// and get varname1 instead of varname__COUNTER__.
-#  define _55f56f4e3b45c8cf3fa50b28fed72e2a(a, b) _a56ec7069122ad2e0888a508ecdc4639(a, b)
-#  define _a56ec7069122ad2e0888a508ecdc4639(a, b) a##b
-
 /**
  * @brief A macro that creates a unique identifier based on a given base name.
  *
@@ -72,7 +68,7 @@
  *
  * @param base The base name for the unique identifier.
  */
-#  define CUDASTF_UNIQUE_NAME(base) _55f56f4e3b45c8cf3fa50b28fed72e2a(base, __COUNTER__)
+#  define CUDASTF_UNIQUE_NAME(base) _CCCL_PP_CAT(base, __COUNTER__)
 
 /**
  * @brief Macro to check a variety of conditions, throws if the condition is false
@@ -113,12 +109,12 @@ struct expecter
   struct failure : ::std::runtime_error
   {
     template <typename... Msgs>
-    failure(::cuda::std::source_location loc, const Msgs&... msgs)
+    _CCCL_HOST_API failure(::cuda::std::source_location loc, const Msgs&... msgs)
         : ::std::runtime_error(text(loc, msgs...))
     {}
 
     template <typename... Msgs>
-    static ::std::string text(::cuda::std::source_location loc, const Msgs&... msgs)
+    _CCCL_HOST_API static ::std::string text(::cuda::std::source_location loc, const Msgs&... msgs)
     {
       ::std::stringstream s;
       s << loc.file_name() << '(' << loc.line() << "): ";
@@ -133,7 +129,7 @@ struct expecter
 
   private:
     template <typename T>
-    static void stream(::std::stringstream& s, const T& x)
+    _CCCL_HOST_API static void stream(::std::stringstream& s, const T& x)
     {
       if constexpr (reserved::has_ostream_operator<T>::value)
       {
@@ -160,7 +156,7 @@ struct expecter
     L lhs;
     R rhs;
     const char* op;
-    comparison_expression(bool value, L lhs, R rhs, const char* op)
+    _CCCL_HOST_API comparison_expression(bool value, L lhs, R rhs, const char* op)
         : value(value)
         , lhs(::cuda::std::forward<L>(lhs))
         , rhs(::cuda::std::forward<R>(rhs))
@@ -178,18 +174,13 @@ struct expecter
   {
     T value;
 
-    template <typename U>
-    term(U&& value)
-        : value(::cuda::std::forward<U>(value))
-    {}
-
     /*
      * All comparison operators are defined assuming `const&` inputs. They are evaluated eagerly and return a
      * `compariso_expression` object with information necessary for constructing an error message, if any.
      */
-#  define _9d10c7e37932af3c4f39a5ce7ff00b5a(op)                                            \
+#  define _CCCL_STF_COMPARE(op)                                                            \
     template <typename U>                                                                  \
-    auto operator op(const U& rhs) &&                                                      \
+    _CCCL_HOST_API auto operator op(const U& rhs) &&                                       \
     {                                                                                      \
       using T_noref = std::remove_reference_t<T>;                                          \
       using U_noref = std::remove_reference_t<U>;                                          \
@@ -208,14 +199,14 @@ struct expecter
       }                                                                                    \
     }
 
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(==);
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(!=);
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(<);
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(>);
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(<=);
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(>=);
+    _CCCL_STF_COMPARE(==);
+    _CCCL_STF_COMPARE(!=);
+    _CCCL_STF_COMPARE(<);
+    _CCCL_STF_COMPARE(>);
+    _CCCL_STF_COMPARE(<=);
+    _CCCL_STF_COMPARE(>=);
 
-#  undef _9d10c7e37932af3c4f39a5ce7ff00b5a
+#  undef _CCCL_STF_COMPARE
 
     /*
      * Operators `^`, `|`, `*`, `/`, `%`, `+`, `-`, `>>`, and `<<` are defined only for carrying the actual
@@ -224,37 +215,38 @@ struct expecter
      * evaluating
      * `==`.
      */
-#  define _9d10c7e37932af3c4f39a5ce7ff00b5a(op)                                            \
+#  define _CCCL_STF_BINARY_OP(op)                                                          \
     template <typename U>                                                                  \
-    auto operator op(U&& rhs) &&                                                           \
+    _CCCL_HOST_API auto operator op(U&& rhs) &&                                            \
     {                                                                                      \
       using Result = decltype(value op ::cuda::std::forward<U>(rhs));                      \
-      return term<Result>(::cuda::std::forward<T>(value) op ::cuda::std::forward<U>(rhs)); \
+      return term<Result>{::cuda::std::forward<T>(value) op ::cuda::std::forward<U>(rhs)}; \
     }
 
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(*);
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(/);
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(%);
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(+);
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(-);
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(>>);
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(<<);
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(&);
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(^);
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(|);
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(=);
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(+=);
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(-=);
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(*=);
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(/=);
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(%=);
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(<<=);
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(>>=);
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(&=);
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(^=);
-    _9d10c7e37932af3c4f39a5ce7ff00b5a(|=);
+    _CCCL_STF_BINARY_OP(*);
+    _CCCL_STF_BINARY_OP(/);
+    _CCCL_STF_BINARY_OP(%);
+    _CCCL_STF_BINARY_OP(+);
+    _CCCL_STF_BINARY_OP(-);
+    _CCCL_STF_BINARY_OP(>>);
+    _CCCL_STF_BINARY_OP(<<);
+    _CCCL_STF_BINARY_OP(&);
+    _CCCL_STF_BINARY_OP(^);
+    _CCCL_STF_BINARY_OP(|);
+    // Assignment inside EXPECT carries the result into the next expression.
+    _CCCL_STF_BINARY_OP(=); // NOLINT(misc-unconventional-assign-operator)
+    _CCCL_STF_BINARY_OP(+=);
+    _CCCL_STF_BINARY_OP(-=);
+    _CCCL_STF_BINARY_OP(*=);
+    _CCCL_STF_BINARY_OP(/=);
+    _CCCL_STF_BINARY_OP(%=);
+    _CCCL_STF_BINARY_OP(<<=);
+    _CCCL_STF_BINARY_OP(>>=);
+    _CCCL_STF_BINARY_OP(&=);
+    _CCCL_STF_BINARY_OP(^=);
+    _CCCL_STF_BINARY_OP(|=);
 
-#  undef _9d10c7e37932af3c4f39a5ce7ff00b5a
+#  undef _CCCL_STF_BINARY_OP
 
     /*
      * Operators `&&`, `||`, `,` do not obey order of evaluation and are disallowed at top level. For example you
@@ -277,9 +269,9 @@ struct expecter
    * @return auto
    */
   template <typename T>
-  term<T> operator->*(T&& lhs)
+  _CCCL_HOST_API term<T> operator->*(T&& lhs)
   {
-    return term<T>(::cuda::std::forward<T>(lhs));
+    return term<T>{::cuda::std::forward<T>(lhs)};
   }
 
   /*
@@ -290,11 +282,11 @@ struct expecter
    * @param t term value, an exception will be thrown if non-true
    */
   template <typename T, typename... Msgs>
-  static decltype(auto) validate(::cuda::std::source_location loc, term<T>&& t, const Msgs&... msgs)
+  _CCCL_HOST_API static decltype(auto) validate(::cuda::std::source_location loc, term<T>&& t, const Msgs&... msgs)
   {
     if (t.value)
     {
-      return ::cuda::std::forward<T>(t.value);
+      return ::cuda::std::forward<T>(::std::move(t).value);
     }
     if constexpr (sizeof...(msgs) == 0)
     {
@@ -323,11 +315,12 @@ struct expecter
    * @param e expression, an exception will be thrown is `e.value` is false
    */
   template <typename L, typename R, typename... Msgs>
-  static decltype(auto) validate(::cuda::std::source_location loc, comparison_expression<L, R>&& e, const Msgs&... msgs)
+  _CCCL_HOST_API static decltype(auto)
+  validate(::cuda::std::source_location loc, comparison_expression<L, R>&& e, const Msgs&... msgs)
   {
     if (e.value)
     {
-      return ::cuda::std::forward<L>(e.lhs);
+      return ::cuda::std::forward<L>(::std::move(e).lhs);
     }
     _CCCL_THROW(
       ::cuda::experimental::stf::expecter::failure, loc, e.lhs, ' ', e.op, ' ', e.rhs, " is false.\n", msgs...);
@@ -362,7 +355,7 @@ public:
    * @param name name of the unittest, e.g. `UNITTEST("name goes here") { ... };`
    * @param loc current location of the use of `UNITTEST`, automatically provided by the `UNITTEST` macro.
    */
-  unittest(const char* name, ::cuda::std::source_location loc)
+  _CCCL_HOST_API unittest(const char* name, ::cuda::std::source_location loc)
       : name(name)
       , loc(mv(loc))
   {}
@@ -380,12 +373,11 @@ public:
    * `unittest<>::make("name", cuda::std::source_location::current(), 1, 2,2)`.
    */
   template <typename... Params>
-  static unittest<Params...> make(const char* name, ::cuda::std::source_location loc, Params&&... params)
+  _CCCL_HOST_API static unittest<Params...> make(const char* name, ::cuda::std::source_location loc, Params&&... params)
   {
     return unittest<Params...>(name, loc, ::cuda::std::forward<Params>(params)...);
   }
 
-public:
   /*
    * @brief Unittest entry point, to be used with the `UNITTEST` macro.
    *
@@ -394,7 +386,7 @@ public:
    * @return unittest& `*this`
    */
   template <typename Fun>
-  unittest& operator->*([[maybe_unused]] Fun&& fun)
+  _CCCL_HOST_API unittest& operator->*([[maybe_unused]] Fun&& fun)
   {
 #  ifdef UNITTESTED_FILE
     if (!::std::filesystem::equivalent(loc.file_name(), UNITTESTED_FILE))
@@ -420,22 +412,22 @@ public:
     return *this;
   }
 
-public:
-  static size_t& passed()
+  _CCCL_PUBLIC_HOST_API static size_t& passed()
   {
     static size_t result;
     return result;
   }
 
-  static size_t& total()
+  _CCCL_PUBLIC_HOST_API static size_t& total()
   {
     static size_t result;
     return result;
   }
 
 protected:
-  const char* const name;
-  const ::cuda::std::source_location loc;
+  // Parameterized tests inherit the test name and source location.
+  const char* const name; // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes)
+  const ::cuda::std::source_location loc; // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes)
 };
 
 /*
@@ -459,7 +451,7 @@ public:
    * @param param first parameter, is saved in this object and forwarded to the unittest lambda
    * @param params other parameters, if any
    */
-  unittest(const char* name, ::cuda::std::source_location loc, Param param, Params... params)
+  _CCCL_HOST_API unittest(const char* name, ::cuda::std::source_location loc, Param param, Params... params)
       : unittest<Params...>(name, loc, ::cuda::std::forward<Params>(params)...)
       , param(::cuda::std::forward<Param>(param))
   {}
@@ -472,7 +464,7 @@ public:
    * @return unittest& `*this`
    */
   template <typename Fun>
-  unittest& operator->*(Fun&& fun)
+  _CCCL_HOST_API unittest& operator->*(Fun&& fun)
   {
     unittest<>::operator->*([&](const char* name) {
       fun(name, ::cuda::std::forward<Param>(param));
@@ -496,7 +488,9 @@ private:
 
 #  ifdef UNITTESTED_FILE
 
-int main()
+// UNITTESTED_FILE selects exactly one translation unit to provide the test executable entry point.
+// NOLINTNEXTLINE(misc-definitions-in-headers)
+_CCCL_PUBLIC_HOST_API int main()
 {
   using namespace cuda::experimental::stf;
   if (unittest<>::total() != unittest<>::passed())
@@ -549,8 +543,9 @@ UNITTEST("EXPECT")
   //! [EXPECT]
   EXPECT(1 == 1); // pass
   EXPECT(1 + 1 == 2, "All we know about mathematics has been upended!"); // pass
-  auto p = EXPECT(malloc(100) != nullptr); // pass, put the pointer to allocated memory in p
-  free(p);
+  auto buffer = ::std::make_unique<int[]>(100);
+  auto* p     = EXPECT(buffer.get() != nullptr); // pass, put the pointer to allocated memory in p
+  EXPECT(p == buffer.get());
 
   // This test is specifically about how we handle exceptions, so we disable it
   // when exceptions are not allowed
@@ -598,6 +593,8 @@ UNITTEST("EXPECT")
  * If the unittest code throws an exception, it counts as a failure. Exception information will be output to `stderr`
  * and testing will continue with the next unittest.
  */
+// The documentation postprocessor uses this exact placeholder for UNITTEST.
+// NOLINTNEXTLINE(readability-identifier-naming)
 #  define babe699bbb083d2b0aac2460e75bca96(name, ...)
 
 #  undef babe699bbb083d2b0aac2460e75bca96
@@ -668,7 +665,7 @@ UNITTEST("shuffled arguments")
   auto x2 = reserved::only_convertible_or(42, "23", ::std::tuple{1});
   EXPECT(x2 == 42);
   // Note that a needs to be iniliazed because shuffled_args_check takes a const ref
-  int a = 0;
+  const int a = 0;
   shuffled_args_check<int>(a);
   shuffled_args_check<double>(a);
   // shuffled_args_check<int, double>(a);  // "Duplicate argument: ..."
@@ -692,9 +689,9 @@ UNITTEST("shuffled arguments")
     float number;
   };
 
-  A aa{10};
-  B bb{"example"};
-  C cc{3.14f};
+  const A aa{10};
+  const B bb{"example"};
+  const C cc{3.14f};
   // This will create an `::std::tuple<A, B, C>` from the provided arguments,
   // automatically assigning them based on their types.
   shuffled_tuple<A, B, C>(bb, cc, aa);

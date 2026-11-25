@@ -55,7 +55,7 @@ __device__ void test_make_group_non_exhaustive(
   static_assert(cuda::std::is_same_v<cuda::std::optional<Group>, decltype(group)>);
   static_assert(MappingResult::is_always_exhaustive() == IsAlwaysExhaustive);
 
-  REQUIRE(group.has_value() == is_valid);
+  REQUIRE_DEVICE(group.has_value() == is_valid);
   if (group)
   {
     group->sync_aligned();

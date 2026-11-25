@@ -75,6 +75,8 @@ struct graph_memory_resource
       __pb.get_native_graph_handle(), __deps.data(), __deps.size(), __size, __dev_.get());
 
     __pb.__clear_and_set_dependency_node(__node);
+    // The driver represents this device pointer as a CUdeviceptr.
+    // NOLINTNEXTLINE(performance-no-int-to-ptr)
     return reinterpret_cast<void*>(__dptr);
   }
 

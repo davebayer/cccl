@@ -39,16 +39,16 @@ __device__ void check_mapping(const Group& group, const View& view)
   const auto original = group.__mapping_result();
   const auto mapping  = view.__mapping_result();
 
-  CHECK(mapping.is_valid());
-  CHECK(mapping.group_count() == original.group_count());
-  CHECK(mapping.group_rank() == original.group_rank());
-  CHECK(mapping.unit_count() == original.unit_count());
-  CHECK(mapping.unit_rank() == original.unit_rank());
-  CHECK(mapping.lane_mask() == original.lane_mask());
+  REQUIRE_DEVICE(mapping.is_valid());
+  REQUIRE_DEVICE(mapping.group_count() == original.group_count());
+  REQUIRE_DEVICE(mapping.group_rank() == original.group_rank());
+  REQUIRE_DEVICE(mapping.unit_count() == original.unit_count());
+  REQUIRE_DEVICE(mapping.unit_rank() == original.unit_rank());
+  REQUIRE_DEVICE(mapping.lane_mask() == original.lane_mask());
 
   // Public queries must observe the same mapping as the internal getters.
-  CHECK(Unit{}.count(view) == Unit{}.count(group));
-  CHECK(Unit{}.rank(view) == Unit{}.rank(group));
+  REQUIRE_DEVICE(Unit{}.count(view) == Unit{}.count(group));
+  REQUIRE_DEVICE(Unit{}.rank(view) == Unit{}.rank(group));
 }
 
 template <class Group>
@@ -76,8 +76,8 @@ __device__ void test_uniform(const Group& group)
   });
 
   // Dispatch invokes the callable exactly once and returns its result.
-  CHECK(calls == 1);
-  CHECK(count == Unit{}.count(group));
+  REQUIRE_DEVICE(calls == 1);
+  REQUIRE_DEVICE(count == Unit{}.count(group));
 }
 
 template <class Config, class Level>
@@ -231,8 +231,8 @@ __device__ void test_nonuniform(const Group& group, const Parent& parent, unsign
 
   // An lvalue callable and its reference return must pass through without copying.
   static_assert(cuda::std::is_same_v<decltype(group.with_static_unit_count(callback)), unsigned&>);
-  CHECK(&group.with_static_unit_count(callback) == &calls);
-  CHECK(calls == 1);
+  REQUIRE_DEVICE(&group.with_static_unit_count(callback) == &calls);
+  REQUIRE_DEVICE(calls == 1);
 }
 
 // Split four warps into groups of one, two, and one warp, exercising all dispatch
@@ -254,7 +254,7 @@ __device__ void test_nonuniform_groups(Config config, Counts counts)
 
     CHECK(view.rank(parent) == virtual_group.rank(parent));
   });
-  CHECK(virtual_group.count(parent) == 3);
+  REQUIRE_DEVICE(virtual_group.count(parent) == 3);
 
   const cudax::coop::group_view threads{cuda::gpu_thread, virtual_group};
   test_nonuniform(threads, parent, 32);
@@ -263,7 +263,7 @@ __device__ void test_nonuniform_groups(Config config, Counts counts)
   auto& barriers = get_barriers<3>(cuda::warp);
   const cudax::coop::generic_group group{cuda::warp, parent, mapping, cudax::coop::barrier_synchronizer{barriers}};
   test_nonuniform(group, parent, 1);
-  CHECK(group.count(parent) == 3);
+  REQUIRE_DEVICE(group.count(parent) == 3);
 
   const cudax::coop::group_view group_threads{cuda::gpu_thread, group};
   test_nonuniform(group_threads, parent, 32);
@@ -321,7 +321,7 @@ struct ForwardedCallable
   template <class Group>
   __device__ unsigned& operator()(Group group) &&
   {
-    CHECK(cuda::gpu_thread.count(group) > 0);
+    REQUIRE_DEVICE(cuda::gpu_thread.count(group) > 0);
     ++calls;
 
     return calls;
@@ -351,8 +351,8 @@ struct CoalescedKernel
       static_assert(cuda::std::is_same_v<decltype(group.with_static_unit_count(cuda::std::move(callable))), unsigned&>);
 
       unsigned& result = group.with_static_unit_count(cuda::std::move(callable));
-      CHECK(&result == &calls);
-      CHECK(calls == 1);
+      REQUIRE_DEVICE(&result == &calls);
+      REQUIRE_DEVICE(calls == 1);
     }
   }
 };

@@ -86,7 +86,7 @@ template <bool __has_direct_reduction,
   const _BinaryOp& __op,
   const _Tp& __ident)
 {
-  ::cuda::stream_ref __stream = ::cuda::get_stream(__env);
+  const ::cuda::stream_ref __stream = ::cuda::get_stream(__env);
   auto __resource = ::cuda::experimental::mgmn::__detail::__resource_from_env(__env, __stream.__logical_device());
 
   // One partial per segment. The butterfly fallback folds in place, but needs extra room for

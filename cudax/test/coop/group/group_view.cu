@@ -34,21 +34,21 @@ __device__ void check_group_view(const View& view, const Group&, Level level)
 {
   if constexpr (cuda::std::is_same_v<Level, cuda::thread_level>)
   {
-    REQUIRE(cuda::gpu_thread.count(view) == 1);
-    REQUIRE(cuda::gpu_thread.rank(view) == 0);
+    REQUIRE_DEVICE(cuda::gpu_thread.count(view) == 1);
+    REQUIRE_DEVICE(cuda::gpu_thread.rank(view) == 0);
   }
   else
   {
-    REQUIRE(cuda::gpu_thread.count(view) == cuda::gpu_thread.count(level));
-    REQUIRE(cuda::gpu_thread.rank(view) == cuda::gpu_thread.rank(level));
+    REQUIRE_DEVICE(cuda::gpu_thread.count(view) == cuda::gpu_thread.count(level));
+    REQUIRE_DEVICE(cuda::gpu_thread.rank(view) == cuda::gpu_thread.rank(level));
   }
 
   static_assert(View::static_count(Level{}) == 1);
   static_assert(View::static_rank(Level{}) == 0);
-  REQUIRE(view.count(level) == 1);
-  REQUIRE(view.template count_as<unsigned>(level) == 1);
-  REQUIRE(view.rank(level) == 0);
-  REQUIRE(view.template rank_as<unsigned>(level) == 0);
+  REQUIRE_DEVICE(view.count(level) == 1);
+  REQUIRE_DEVICE(view.template count_as<unsigned>(level) == 1);
+  REQUIRE_DEVICE(view.rank(level) == 0);
+  REQUIRE_DEVICE(view.template rank_as<unsigned>(level) == 0);
   static_assert(View::is_always_contiguous() == Group::is_always_contiguous());
 
   test_view_synchronization(view);
@@ -101,18 +101,18 @@ __device__ void test_group_view(Config config, Level level)
 
     const cudax::coop::generic_group g2{
       cuda::warp, g, cudax::coop::group_by{cuda::std::cw<n>}, cudax::coop::barrier_synchronizer{barriers}};
-    REQUIRE(cuda::warp.count(g2) == n);
-    REQUIRE(g2.count(g) == cuda::warp.count(level) / n);
+    REQUIRE_DEVICE(cuda::warp.count(g2) == n);
+    REQUIRE_DEVICE(g2.count(g) == cuda::warp.count(level) / n);
 
     const cudax::coop::group_view g2_view{g2};
-    REQUIRE(cuda::warp.count(g2_view) == n);
-    REQUIRE(g2_view.count(g) == cuda::warp.count(level) / n);
+    REQUIRE_DEVICE(cuda::warp.count(g2_view) == n);
+    REQUIRE_DEVICE(g2_view.count(g) == cuda::warp.count(level) / n);
     static_assert(g2_view.is_always_contiguous());
     test_view_synchronization(g2_view);
 
     const cudax::coop::group_view g2_view_threads{cuda::gpu_thread, g2_view};
-    REQUIRE(cuda::gpu_thread.count(g2_view_threads) == n * cuda::gpu_thread.count(cuda::warp));
-    REQUIRE(g2_view_threads.count(g) == cuda::warp.count(level) / n);
+    REQUIRE_DEVICE(cuda::gpu_thread.count(g2_view_threads) == n * cuda::gpu_thread.count(cuda::warp));
+    REQUIRE_DEVICE(g2_view_threads.count(g) == cuda::warp.count(level) / n);
     static_assert(g2_view_threads.is_always_contiguous());
     test_view_synchronization(g2_view_threads);
   }
@@ -528,7 +528,7 @@ __device__ void test_viewed_parent(const Parent& parent, const View& view)
 
   const auto optional = cudax::coop::make_group<cudax::coop::generic_group>(
     cudax::coop::non_exhaustive, cuda::gpu_thread, view, mapping, synchronizer);
-  REQUIRE(optional.has_value());
+  REQUIRE_DEVICE(optional.has_value());
   check(*optional);
   optional->sync();
 }
