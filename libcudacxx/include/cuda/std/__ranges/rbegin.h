@@ -26,10 +26,13 @@
 #include <cuda/std/__iterator/concepts.h>
 #include <cuda/std/__iterator/reverse_iterator.h>
 #include <cuda/std/__ranges/access.h>
+#include <cuda/std/__type_traits/enable_if.h>
 #include <cuda/std/__type_traits/is_reference.h>
 #include <cuda/std/__type_traits/remove_cvref.h>
 #include <cuda/std/__type_traits/remove_reference.h>
+#include <cuda/std/__type_traits/void_t.h>
 #include <cuda/std/__utility/auto_cast.h>
+#include <cuda/std/__utility/declval.h>
 
 #include <cuda/std/__cccl/prologue.h>
 
@@ -65,39 +68,36 @@ concept __can_reverse =
     { ::cuda::std::ranges::begin(__t) } -> bidirectional_iterator;
   };
 #else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
-template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(
-  __member_rbegin_,
-  requires(_Tp&& __t)(requires(__can_borrow<_Tp>),
-                      requires(__workaround_52970<_Tp>),
-                      requires(input_or_output_iterator<decltype(_LIBCUDACXX_AUTO_CAST(__t.rbegin()))>)));
+// Check borrowing and customization priority before substituting the iterator expressions.
+template <class _Tp, bool = __can_borrow<_Tp> && __workaround_52970<_Tp>, class = void>
+inline constexpr bool __member_rbegin = false;
 
 template <class _Tp>
-_CCCL_CONCEPT __member_rbegin = _CCCL_FRAGMENT(__member_rbegin_, _Tp);
+inline constexpr bool __member_rbegin<
+  _Tp,
+  true,
+  enable_if_t<input_or_output_iterator<decltype(_LIBCUDACXX_AUTO_CAST(::cuda::std::declval<_Tp&>().rbegin()))>>> = true;
+
+template <class _Tp,
+          bool  = __can_borrow<_Tp> && __class_or_enum<remove_cvref_t<_Tp>> && !__member_rbegin<_Tp>,
+          class = void>
+inline constexpr bool __unqualified_rbegin = false;
 
 template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(
-  __unqualified_rbegin_,
-  requires(_Tp&& __t)(requires(!__member_rbegin<_Tp>),
-                      requires(__can_borrow<_Tp>),
-                      requires(__class_or_enum<remove_cvref_t<_Tp>>),
-                      requires(input_or_output_iterator<decltype(_LIBCUDACXX_AUTO_CAST(rbegin(__t)))>)));
+inline constexpr bool __unqualified_rbegin<
+  _Tp,
+  true,
+  enable_if_t<input_or_output_iterator<decltype(_LIBCUDACXX_AUTO_CAST(rbegin(::cuda::std::declval<_Tp&>())))>>> = true;
+
+template <class _Tp, bool = __can_borrow<_Tp> && !__member_rbegin<_Tp> && !__unqualified_rbegin<_Tp>, class = void>
+inline constexpr bool __can_reverse = false;
 
 template <class _Tp>
-_CCCL_CONCEPT __unqualified_rbegin = _CCCL_FRAGMENT(__unqualified_rbegin_, _Tp);
-
-template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(
-  __can_reverse_,
-  requires(_Tp&& __t)(
-    requires(__can_borrow<_Tp>),
-    requires(!__member_rbegin<_Tp>),
-    requires(!__unqualified_rbegin<_Tp>),
-    requires(same_as<decltype(::cuda::std::ranges::end(__t)), decltype(::cuda::std::ranges::begin(__t))>),
-    requires(bidirectional_iterator<decltype(::cuda::std::ranges::begin(__t))>)));
-
-template <class _Tp>
-_CCCL_CONCEPT __can_reverse = _CCCL_FRAGMENT(__can_reverse_, _Tp);
+inline constexpr bool __can_reverse<
+  _Tp,
+  true,
+  void_t<enable_if_t<same_as<iterator_t<_Tp>, decltype(::cuda::std::ranges::end(::cuda::std::declval<_Tp&>()))>>,
+         enable_if_t<bidirectional_iterator<iterator_t<_Tp>>>>> = true;
 #endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
 
 struct __fn
