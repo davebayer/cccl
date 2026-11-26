@@ -35,6 +35,7 @@
 #include <cuda/std/__type_traits/is_nothrow_constructible.h>
 #include <cuda/std/__type_traits/remove_cv.h>
 #include <cuda/std/__type_traits/remove_cvref.h>
+#include <cuda/std/__type_traits/void_t.h>
 #include <cuda/std/__utility/ctad_support.h>
 #include <cuda/std/__utility/forward.h>
 #include <cuda/std/__utility/move.h>
@@ -112,6 +113,7 @@ _CCCL_CONCEPT __is_range_adaptor_closure = _CCCL_REQUIRES_EXPR(
          _Same_as(remove_cvref_t<_Tp>)::cuda::std::ranges::__derived_from_range_adaptor_closure(
            (remove_cvref_t<_Tp>*) nullptr));
 
+#if _CCCL_HAS_CONCEPTS()
 template <class _Range, class _Closure>
 _CCCL_CONCEPT __range_adaptor_can_pipe_invoke = _CCCL_REQUIRES_EXPR((_Range, _Closure))(
   requires(range<_Range>), requires(__is_range_adaptor_closure<_Closure>), requires(invocable<_Closure, _Range>));
@@ -122,6 +124,29 @@ _CCCL_CONCEPT __range_adaptor_can_pipe_compose = _CCCL_REQUIRES_EXPR((_Closure, 
   requires(__is_range_adaptor_closure<_OtherClosure>),
   requires(constructible_from<decay_t<_Closure>, _Closure>),
   requires(constructible_from<decay_t<_OtherClosure>, _OtherClosure>));
+#else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
+// Resolve the operands in order before checking invocation or composition.
+template <class _Range, class _Closure, class = void>
+inline constexpr bool __range_adaptor_can_pipe_invoke = false;
+
+template <class _Range, class _Closure>
+inline constexpr bool __range_adaptor_can_pipe_invoke<
+  _Range,
+  _Closure,
+  void_t<enable_if_t<range<_Range>>, enable_if_t<__is_range_adaptor_closure<_Closure>>>> = invocable<_Closure, _Range>;
+
+template <class _Closure, class _OtherClosure, class = void>
+inline constexpr bool __range_adaptor_can_pipe_compose = false;
+
+template <class _Closure, class _OtherClosure>
+inline constexpr bool __range_adaptor_can_pipe_compose<
+  _Closure,
+  _OtherClosure,
+  void_t<enable_if_t<__is_range_adaptor_closure<_Closure>>,
+         enable_if_t<__is_range_adaptor_closure<_OtherClosure>>,
+         enable_if_t<constructible_from<decay_t<_Closure>, _Closure>>>> =
+  constructible_from<decay_t<_OtherClosure>, _OtherClosure>;
+#endif // !_CCCL_HAS_CONCEPTS()
 
 _CCCL_TEMPLATE(class _Range, class _Closure)
 _CCCL_REQUIRES(__range_adaptor_can_pipe_invoke<_Range, _Closure>)
