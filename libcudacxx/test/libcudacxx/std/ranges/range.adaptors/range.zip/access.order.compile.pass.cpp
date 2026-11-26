@@ -20,13 +20,13 @@ struct tracked_view : cuda::std::ranges::view_base
 
   TEST_FUNC constexpr int* begin() const
   {
-    *calls = *calls * 10 + id;
+    *calls = (*calls * 10) + id;
     return nullptr;
   }
 
   TEST_FUNC constexpr cuda::std::unreachable_sentinel_t end() const
   {
-    *calls = *calls * 10 + id;
+    *calls = (*calls * 10) + id;
     return {};
   }
 };

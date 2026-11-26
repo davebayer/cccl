@@ -74,6 +74,7 @@ struct __transform_view_iterator_category_base
 template <class _View, class _Fn>
 struct __transform_view_iterator_category_base<_View, _Fn, enable_if_t<forward_range<_View>>>
 {
+  // NOLINTNEXTLINE(readability-redundant-typename): The dependent type requires typename in C++17.
   using _Cat _CCCL_NODEBUG = typename iterator_traits<iterator_t<_View>>::iterator_category;
 
   using iterator_category =
