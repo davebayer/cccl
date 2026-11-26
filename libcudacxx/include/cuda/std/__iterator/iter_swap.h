@@ -63,7 +63,6 @@ inline constexpr bool __noexcept_unqualified_iter_swap<_T1, _T2, true> =
 
 template <class _T1, class _T2>
 _CCCL_CONCEPT __readable_swappable = _CCCL_REQUIRES_EXPR((_T1, _T2))(
-  requires(!__unqualified_iter_swap<_T1, _T2>),
   requires(indirectly_readable<_T1>),
   requires(indirectly_readable<_T2>),
   requires(__referenceable<iter_reference_t<_T1>>),
@@ -85,11 +84,8 @@ inline constexpr bool __noexcept_readable_swappable<_T1, _T2, true> =
 #endif // !_CCCL_HAS_NOEXCEPT_MANGLING()
 
 template <class _T1, class _T2>
-_CCCL_CONCEPT __movable_storable = _CCCL_REQUIRES_EXPR((_T1, _T2))(
-  requires(!__unqualified_iter_swap<_T1, _T2>),
-  requires(!__readable_swappable<_T1, _T2>),
-  requires(indirectly_movable_storable<_T1, _T2>),
-  requires(indirectly_movable_storable<_T2, _T1>));
+_CCCL_CONCEPT __movable_storable = _CCCL_REQUIRES_EXPR(
+  (_T1, _T2))(requires(indirectly_movable_storable<_T1, _T2>), requires(indirectly_movable_storable<_T2, _T1>));
 
 #if _CCCL_HAS_NOEXCEPT_MANGLING() // older GCC cannot use noexcept inside a requires clause
 template <class _T1, class _T2>
@@ -123,7 +119,7 @@ struct __fn
   }
 
   _CCCL_TEMPLATE(class _T1, class _T2)
-  _CCCL_REQUIRES(__readable_swappable<_T1, _T2>)
+  _CCCL_REQUIRES((!__unqualified_iter_swap<_T1, _T2>) _CCCL_AND __readable_swappable<_T1, _T2>)
   _CCCL_API constexpr void
   _CCCL_STATIC_CALL_OPERATOR(_T1&& __x, _T2&& __y) noexcept(__noexcept_readable_swappable<_T1, _T2>)
   {
@@ -132,7 +128,8 @@ struct __fn
 
   _CCCL_EXEC_CHECK_DISABLE
   _CCCL_TEMPLATE(class _T1, class _T2)
-  _CCCL_REQUIRES(__movable_storable<_T2, _T1>)
+  _CCCL_REQUIRES((!__unqualified_iter_swap<_T1, _T2>) _CCCL_AND(!__readable_swappable<_T1, _T2>)
+                   _CCCL_AND __movable_storable<_T1, _T2>)
   _CCCL_API constexpr void
   _CCCL_STATIC_CALL_OPERATOR(_T1&& __x, _T2&& __y) noexcept(__noexcept_movable_storable<_T1, _T2>)
   {
