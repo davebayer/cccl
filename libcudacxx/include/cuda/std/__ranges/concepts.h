@@ -186,12 +186,14 @@ template <class _Rp>
 using range_common_reference_t = enable_if_t<range<_Rp>, iter_common_reference_t<iterator_t<_Rp>>>;
 
 // [range.sized]
-template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(__sized_range_,
-                       requires(_Tp& __t)(requires(range<_Tp>), typename(decltype(::cuda::std::ranges::size(__t)))));
+template <class _Tp, bool = range<_Tp>>
+inline constexpr bool __sized_range = false;
 
 template <class _Tp>
-_CCCL_CONCEPT sized_range = _CCCL_FRAGMENT(__sized_range_, _Tp);
+inline constexpr bool __sized_range<_Tp, true> = _CCCL_REQUIRES_EXPR((_Tp), _Tp& __t)((::cuda::std::ranges::size(__t)));
+
+template <class _Tp>
+_CCCL_CONCEPT sized_range = __sized_range<_Tp>;
 
 template <class _Rp>
 using range_size_t = enable_if_t<sized_range<_Rp>, decltype(::cuda::std::ranges::size(::cuda::std::declval<_Rp&>()))>;
