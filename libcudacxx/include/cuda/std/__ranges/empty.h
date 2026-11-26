@@ -25,6 +25,9 @@
 #include <cuda/std/__iterator/concepts.h>
 #include <cuda/std/__ranges/access.h>
 #include <cuda/std/__ranges/size.h>
+#include <cuda/std/__type_traits/enable_if.h>
+#include <cuda/std/__type_traits/void_t.h>
+#include <cuda/std/__utility/declval.h>
 
 #include <cuda/std/__cccl/prologue.h>
 
@@ -47,29 +50,30 @@ concept __can_compare_begin_end = !__member_empty<_Tp> && !__can_invoke_size<_Tp
   { ::cuda::std::ranges::begin(__t) } -> forward_iterator;
 };
 #else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
-template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(__member_empty_, requires(_Tp&& __t)(requires(__workaround_52970<_Tp>), (bool(__t.empty()))));
+// Check for a higher-priority customization before substituting the fallback expression.
+template <class _Tp, bool = __workaround_52970<_Tp>, class = void>
+inline constexpr bool __member_empty = false;
 
 template <class _Tp>
-_CCCL_CONCEPT __member_empty = _CCCL_FRAGMENT(__member_empty_, _Tp);
+inline constexpr bool __member_empty<_Tp, true, void_t<decltype(bool(::cuda::std::declval<_Tp&>().empty()))>> = true;
+
+template <class _Tp, bool = !__member_empty<_Tp>, class = void>
+inline constexpr bool __can_invoke_size = false;
 
 template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(__can_invoke_size_,
-                       requires(_Tp&& __t)(requires(!__member_empty<_Tp>), ((void) ::cuda::std::ranges::size(__t))));
+inline constexpr bool
+  __can_invoke_size<_Tp, true, void_t<decltype(::cuda::std::ranges::size(::cuda::std::declval<_Tp&>()))>> = true;
+
+template <class _Tp, bool = !__member_empty<_Tp> && !__can_invoke_size<_Tp>, class = void>
+inline constexpr bool __can_compare_begin_end = false;
 
 template <class _Tp>
-_CCCL_CONCEPT __can_invoke_size = _CCCL_FRAGMENT(__can_invoke_size_, _Tp);
-
-template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(
-  __can_compare_begin_end_,
-  requires(_Tp&& __t)(requires(!__member_empty<_Tp>),
-                      requires(!__can_invoke_size<_Tp>),
-                      (bool(::cuda::std::ranges::begin(__t) == ::cuda::std::ranges::end(__t))),
-                      requires(forward_iterator<decltype(::cuda::std::ranges::begin(__t))>)));
-
-template <class _Tp>
-_CCCL_CONCEPT __can_compare_begin_end = _CCCL_FRAGMENT(__can_compare_begin_end_, _Tp);
+inline constexpr bool __can_compare_begin_end<
+  _Tp,
+  true,
+  void_t<decltype(bool(::cuda::std::ranges::begin(::cuda::std::declval<_Tp&>())
+                       == ::cuda::std::ranges::end(::cuda::std::declval<_Tp&>()))),
+         enable_if_t<forward_iterator<iterator_t<_Tp>>>>> = true;
 #endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
 
 struct __fn
