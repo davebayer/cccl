@@ -26,7 +26,6 @@
 #include <cuda/std/__concepts/concept_macros.h>
 #include <cuda/std/__concepts/convertible_to.h>
 #include <cuda/std/__concepts/same_as.h>
-#include <cuda/std/__functional/invoke.h>
 #include <cuda/std/__iterator/concepts.h>
 #include <cuda/std/__ranges/access.h>
 #include <cuda/std/__ranges/all.h>
@@ -41,6 +40,7 @@
 #include <cuda/std/__type_traits/make_unsigned.h>
 #include <cuda/std/__type_traits/maybe_const.h>
 #include <cuda/std/__utility/forward.h>
+#include <cuda/std/__utility/integer_sequence.h>
 #include <cuda/std/__utility/move.h>
 
 #include <cuda/std/__cccl/prologue.h>
@@ -51,43 +51,16 @@ _LIBCUDACXX_BEGIN_HIDDEN_FRIEND_NAMESPACE
 
 struct __zv_functors
 {
-  // view functors
-  struct __zip_begin
+  template <class _Result, class _Tuple, size_t... _Indices>
+  [[nodiscard]] _CCCL_API static constexpr _Result __view_begin(_Tuple& __views, index_sequence<_Indices...>)
   {
-    template <class... _Types>
-    [[nodiscard]] _CCCL_API constexpr tuple<invoke_result_t<const ::cuda::std::ranges::__begin::__fn&, _Types>...>
-    _CCCL_STATIC_CALL_OPERATOR(_Types&&... __tuple_elements) noexcept(
-      noexcept(tuple<invoke_result_t<const ::cuda::std::ranges::__begin::__fn&, _Types>...>{
-        ::cuda::std::ranges::begin(::cuda::std::forward<_Types>(__tuple_elements))...}))
-    {
-      return {::cuda::std::ranges::begin(::cuda::std::forward<_Types>(__tuple_elements))...};
-    }
-  };
-
-  template <class _Tuple>
-  [[nodiscard]] _CCCL_API static constexpr auto __view_begin(_Tuple&& __tuple) noexcept(
-    noexcept(::cuda::std::apply(__zv_functors::__zip_begin{}, ::cuda::std::forward<_Tuple>(__tuple))))
-  {
-    return ::cuda::std::apply(__zv_functors::__zip_begin{}, ::cuda::std::forward<_Tuple>(__tuple));
+    return {::cuda::std::ranges::begin(::cuda::std::get<_Indices>(__views))...};
   }
 
-  struct __zip_end
+  template <class _Result, class _Tuple, size_t... _Indices>
+  [[nodiscard]] _CCCL_API static constexpr _Result __view_end(_Tuple& __views, index_sequence<_Indices...>)
   {
-    template <class... _Types>
-    [[nodiscard]] _CCCL_API constexpr tuple<invoke_result_t<const ::cuda::std::ranges::__end::__fn&, _Types>...>
-    _CCCL_STATIC_CALL_OPERATOR(_Types&&... __tuple_elements) noexcept(
-      noexcept(tuple<invoke_result_t<::cuda::std::ranges::__end::__fn&, _Types>...>{
-        ::cuda::std::ranges::end(::cuda::std::forward<_Types>(__tuple_elements))...}))
-    {
-      return {::cuda::std::ranges::end(::cuda::std::forward<_Types>(__tuple_elements))...};
-    }
-  };
-
-  template <class _Tuple>
-  [[nodiscard]] _CCCL_API static constexpr auto __view_end(_Tuple&& __tuple) noexcept(
-    noexcept(::cuda::std::apply(__zv_functors::__zip_end{}, ::cuda::std::forward<_Tuple>(__tuple))))
-  {
-    return ::cuda::std::apply(__zv_functors::__zip_end{}, ::cuda::std::forward<_Tuple>(__tuple));
+    return {::cuda::std::ranges::end(::cuda::std::get<_Indices>(__views))...};
   }
 
   struct __zip_size
@@ -159,6 +132,8 @@ class zip_view : public view_interface<zip_view<_Views...>>
 
   tuple<_Views...> __views_;
 
+  using __indices _CCCL_NODEBUG = index_sequence_for<_Views...>;
+
   template <bool _OtherConst>
   using __iterator _CCCL_NODEBUG = ::cuda::zip_iterator<iterator_t<__maybe_const<_OtherConst, _Views>>...>;
 
@@ -176,14 +151,16 @@ public:
   _CCCL_REQUIRES(_Packed::__none_simple)
   [[nodiscard]] _CCCL_API constexpr auto begin()
   {
-    return __iterator</*const*/ false>{__zv_functors::__view_begin(__views_)};
+    return __iterator</*const*/ false>{
+      __zv_functors::__view_begin<tuple<iterator_t<_Views>...>>(__views_, __indices{})};
   }
 
   _CCCL_TEMPLATE(class _Packed = __packed_views<_Views...>)
   _CCCL_REQUIRES(_Packed::__all_const_range)
   [[nodiscard]] _CCCL_API constexpr auto begin() const
   {
-    return __iterator</*const*/ true>{__zv_functors::__view_begin(__views_)};
+    return __iterator</*const*/ true>{
+      __zv_functors::__view_begin<tuple<iterator_t<const _Views>...>>(__views_, __indices{})};
   }
 
   _CCCL_TEMPLATE(class _Packed = __packed_views<_Views...>)
@@ -192,7 +169,8 @@ public:
   {
     if constexpr (!__zip_is_common<_Views...>)
     {
-      return __sentinel</*const*/ false>{__zv_functors::__view_end(__views_)};
+      return __sentinel</*const*/ false>{
+        __zv_functors::__view_end<tuple<sentinel_t<_Views>...>>(__views_, __indices{})};
     }
     else if constexpr (__zip_all_random_access</*const*/ false, _Views...>)
     {
@@ -203,7 +181,8 @@ public:
     }
     else
     {
-      return __iterator</*const*/ false>{__zv_functors::__view_end(__views_)};
+      return __iterator</*const*/ false>{
+        __zv_functors::__view_end<tuple<sentinel_t<_Views>...>>(__views_, __indices{})};
     }
     _CCCL_UNREACHABLE();
   }
@@ -214,7 +193,8 @@ public:
   {
     if constexpr (!__zip_is_common<const _Views...>)
     {
-      return __sentinel</*const*/ true>{__zv_functors::__view_end(__views_)};
+      return __sentinel</*const*/ true>{
+        __zv_functors::__view_end<tuple<sentinel_t<const _Views>...>>(__views_, __indices{})};
     }
     else if constexpr (__zip_all_random_access</*const*/ true, _Views...>)
     {
@@ -224,7 +204,8 @@ public:
     }
     else
     {
-      return __iterator</*const*/ true>{__zv_functors::__view_end(__views_)};
+      return __iterator</*const*/ true>{
+        __zv_functors::__view_end<tuple<sentinel_t<const _Views>...>>(__views_, __indices{})};
     }
     _CCCL_UNREACHABLE();
   }
