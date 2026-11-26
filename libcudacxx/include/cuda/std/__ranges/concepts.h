@@ -268,17 +268,28 @@ template <class _Tp>
 _CCCL_CONCEPT common_range = _CCCL_FRAGMENT(__common_range_, _Tp);
 
 template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(
-  __viewable_range_,
-  requires()(requires(range<_Tp>),
-             requires(((view<remove_cvref_t<_Tp>> && constructible_from<remove_cvref_t<_Tp>, _Tp>)
-                       || (!view<remove_cvref_t<_Tp>>
-                           && (is_lvalue_reference_v<_Tp>
-                               || (movable<remove_reference_t<_Tp>>
-                                   && !__is_cuda_std_initializer_list<remove_cvref_t<_Tp>>) ))))));
+[[nodiscard]] _CCCL_API constexpr bool __is_viewable_range() noexcept
+{
+  if constexpr (!range<_Tp>)
+  {
+    return false;
+  }
+  else if constexpr (view<remove_cvref_t<_Tp>>)
+  {
+    return constructible_from<remove_cvref_t<_Tp>, _Tp>;
+  }
+  else if constexpr (is_lvalue_reference_v<_Tp>)
+  {
+    return true;
+  }
+  else
+  {
+    return movable<remove_reference_t<_Tp>> && !__is_cuda_std_initializer_list<remove_cvref_t<_Tp>>;
+  }
+}
 
 template <class _Tp>
-_CCCL_CONCEPT viewable_range = _CCCL_FRAGMENT(__viewable_range_, _Tp);
+_CCCL_CONCEPT viewable_range = __is_viewable_range<_Tp>();
 
 #endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
 
