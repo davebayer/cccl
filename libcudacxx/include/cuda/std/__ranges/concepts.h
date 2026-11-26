@@ -40,6 +40,7 @@
 #include <cuda/std/__type_traits/is_reference.h>
 #include <cuda/std/__type_traits/remove_cvref.h>
 #include <cuda/std/__type_traits/remove_reference.h>
+#include <cuda/std/__type_traits/void_t.h>
 #include <cuda/std/__utility/declval.h>
 #include <cuda/std/initializer_list>
 
@@ -249,16 +250,18 @@ _CCCL_CONCEPT_FRAGMENT(
 template <class _Tp>
 _CCCL_CONCEPT random_access_range = _CCCL_FRAGMENT(__random_access_range_, _Tp);
 
-template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(
-  __contiguous_range_,
-  requires(_Tp& __t)(
-    requires(random_access_range<_Tp>),
-    requires(contiguous_iterator<iterator_t<_Tp>>),
-    requires(same_as<decltype(::cuda::std::ranges::data(__t)), add_pointer_t<range_reference_t<_Tp>>>)));
+template <class _Tp, class = void>
+inline constexpr bool __contiguous_range = false;
 
 template <class _Tp>
-_CCCL_CONCEPT contiguous_range = _CCCL_FRAGMENT(__contiguous_range_, _Tp);
+inline constexpr bool
+  __contiguous_range<_Tp,
+                     void_t<enable_if_t<random_access_range<_Tp>>, enable_if_t<contiguous_iterator<iterator_t<_Tp>>>>> =
+    _CCCL_REQUIRES_EXPR((_Tp), _Tp& __t)(
+      requires(same_as<decltype(::cuda::std::ranges::data(__t)), add_pointer_t<range_reference_t<_Tp>>>));
+
+template <class _Tp>
+_CCCL_CONCEPT contiguous_range = __contiguous_range<_Tp>;
 
 template <class _Tp>
 _CCCL_CONCEPT_FRAGMENT(__common_range_,
