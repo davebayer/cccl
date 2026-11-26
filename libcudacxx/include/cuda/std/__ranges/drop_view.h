@@ -263,21 +263,23 @@ template <class _Range, class _Np>
 _CCCL_CONCEPT __use_empty = _CCCL_REQUIRES_EXPR((_Range, _Np))(
   requires(convertible_to<_Np, range_difference_t<_Range>>), requires(__is_empty_view<remove_cvref_t<_Range>>));
 
-template <class _Range, class _Np>
-_CCCL_CONCEPT __use_passthrough = _CCCL_REQUIRES_EXPR((_Range, _Np))(
-  requires(convertible_to<_Np, range_difference_t<_Range>>),
-  requires(!__is_empty_view<remove_cvref_t<_Range>>),
-  requires(random_access_range<remove_cvref_t<_Range>>),
-  requires(sized_range<remove_cvref_t<_Range>>),
-  requires(__is_passthrough_specialization<remove_cvref_t<_Range>>));
+// Only the specified range specializations need the random-access and sized-range checks.
+template <bool _Candidate, class _Range, class _Np>
+inline constexpr bool __use_specialization = false;
 
 template <class _Range, class _Np>
-_CCCL_CONCEPT __use_subrange = _CCCL_REQUIRES_EXPR((_Range, _Np))(
+inline constexpr bool __use_specialization<true, _Range, _Np> = _CCCL_REQUIRES_EXPR((_Range, _Np))(
   requires(convertible_to<_Np, range_difference_t<_Range>>),
-  requires(!__is_empty_view<remove_cvref_t<_Range>>),
   requires(random_access_range<remove_cvref_t<_Range>>),
-  requires(sized_range<remove_cvref_t<_Range>>),
-  requires(__is_subrange_specialization_with_store_size<remove_cvref_t<_Range>>));
+  requires(sized_range<remove_cvref_t<_Range>>));
+
+template <class _Range, class _Np>
+_CCCL_CONCEPT __use_passthrough =
+  __use_specialization<__is_passthrough_specialization<remove_cvref_t<_Range>>, _Range, _Np>;
+
+template <class _Range, class _Np>
+_CCCL_CONCEPT __use_subrange =
+  __use_specialization<__is_subrange_specialization_with_store_size<remove_cvref_t<_Range>>, _Range, _Np>;
 
 template <class _Range, class _Np>
 _CCCL_CONCEPT __use_generic = _CCCL_REQUIRES_EXPR((_Range, _Np))(
