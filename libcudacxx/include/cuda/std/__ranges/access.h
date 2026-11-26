@@ -25,6 +25,7 @@
 #include <cuda/std/__cstddef/types.h>
 #include <cuda/std/__iterator/concepts.h>
 #include <cuda/std/__ranges/enable_borrowed_range.h>
+#include <cuda/std/__type_traits/enable_if.h>
 #include <cuda/std/__type_traits/is_reference.h>
 #include <cuda/std/__type_traits/remove_cvref.h>
 #include <cuda/std/__type_traits/remove_reference.h>
@@ -61,26 +62,26 @@ concept __unqualified_begin =
     { _LIBCUDACXX_AUTO_CAST(begin(__t)) } -> input_or_output_iterator;
   };
 #else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
-template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(
-  __member_begin_,
-  requires(_Tp&& __t)(requires(__can_borrow<_Tp>),
-                      requires(__workaround_52970<_Tp>),
-                      requires(input_or_output_iterator<decltype(_LIBCUDACXX_AUTO_CAST(__t.begin()))>)));
+// Check borrowing and customization priority before substituting the expression.
+template <class _Tp, bool = __can_borrow<_Tp> && __workaround_52970<_Tp>, class = void>
+inline constexpr bool __member_begin = false;
 
 template <class _Tp>
-_CCCL_CONCEPT __member_begin = _CCCL_FRAGMENT(__member_begin_, _Tp);
+inline constexpr bool __member_begin<
+  _Tp,
+  true,
+  enable_if_t<input_or_output_iterator<decltype(_LIBCUDACXX_AUTO_CAST(::cuda::std::declval<_Tp&>().begin()))>>> = true;
+
+template <class _Tp,
+          bool  = __can_borrow<_Tp> && __class_or_enum<remove_cvref_t<_Tp>> && !__member_begin<_Tp>,
+          class = void>
+inline constexpr bool __unqualified_begin = false;
 
 template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(
-  __unqualified_begin_,
-  requires(_Tp&& __t)(requires(!__member_begin<_Tp>),
-                      requires(__can_borrow<_Tp>),
-                      requires(__class_or_enum<remove_cvref_t<_Tp>>),
-                      requires(input_or_output_iterator<decltype(_LIBCUDACXX_AUTO_CAST(begin(__t)))>)));
-
-template <class _Tp>
-_CCCL_CONCEPT __unqualified_begin = _CCCL_FRAGMENT(__unqualified_begin_, _Tp);
+inline constexpr bool __unqualified_begin<
+  _Tp,
+  true,
+  enable_if_t<input_or_output_iterator<decltype(_LIBCUDACXX_AUTO_CAST(begin(::cuda::std::declval<_Tp&>())))>>> = true;
 #endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
 
 struct __fn
