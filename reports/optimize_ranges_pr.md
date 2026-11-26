@@ -49,7 +49,7 @@ For the adaptors, Clang 22 counted the following constant-expression evaluations
 
 ### Repeat measurements
 
-Two large C++20 movements occurred on access paths where native constraints were unchanged. We repeated those cells, the largest C++17 access slowdown, and the C++20 `size` result with nine additional measured pairs per cell. The primary table retains the original five-pair measurements. The repeat put the first three changes within 1% of baseline. The C++20 `size` improvement reproduced.
+Two large C++20 movements occurred on access paths where native constraints were unchanged. We repeated those cells, the largest C++17 access slowdown, and the C++20 `size` result with nine additional measured pairs per cell. The primary table retains the original five-pair measurements. The first three rows came back within 1% of baseline. Five more nine-pair repeats below check positive C++20 results from the original matrix. The C++20 `size` improvement reproduced.
 
 | Benchmark | Configuration | Five-pair median (s) | Nine-pair median (s) |
 |---|---|---:|---:|
@@ -57,6 +57,15 @@ Two large C++20 movements occurred on access paths where native constraints were
 | `ranges::end` | NVCC + Clang, C++20 | 4.111 -> 2.868 (−30.3%) | 2.218 -> 2.231 (+0.6%) |
 | `ranges::rbegin` | NVCC + Clang, C++17 | 3.666 -> 4.232 (+15.5%) | 2.653 -> 2.666 (+0.5%) |
 | `ranges::size` | NVCC + Clang, C++20 | 3.442 -> 1.949 (−43.4%) | 3.143 -> 1.758 (−44.1%) |
+| `ranges::data` | NVCC + GCC, C++20 | 1.855 -> 1.955 (+5.4%) | 1.7693 -> 1.7611 (−0.5%) |
+| `ranges::size` | NVCC + GCC, C++20 | 2.002 -> 2.058 (+2.8%) | 1.7093 -> 1.7087 (−0.03%) |
+| `ranges::end` | NVRTC, C++20 | 0.471 -> 0.485 (+2.8%) | 0.2598 -> 0.2596 (−0.07%) |
+| `ranges::empty` | NVRTC, C++20 | 0.168 -> 0.172 (+2.3%) | 0.1553 -> 0.1558 (+0.3%) |
+| Include only | NVRTC, C++20 | 0.159 -> 0.163 (+2.9%) | 0.1438 -> 0.1427 (−0.8%) |
+
+For the original C++20 `data` workload with NVCC/GCC, the +5.4% compares the two separate five-sample medians. The median of the five within-pair changes was +1.3%. In a separate nine-pair control, recompiling the same pre-change headers on both sides gave 1.7476 -> 1.7400 (−0.4%) seconds. CPU time also varies with clock frequency and cache contention on a pinned core.
+
+For `begin`, `end`, `data`, `empty`, `rbegin`, and `rend`, NVCC/GCC produced identical preprocessed C++20 source lines for the host and both device passes after stripping line markers and blank lines. Those changes affect the C++17 constraint implementation. The full include-only comparison also parses the changed C++20 declarations for `size`, `take`, and `drop`.
 
 ## Reproduce
 
