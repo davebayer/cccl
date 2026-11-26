@@ -22,11 +22,13 @@
 
 #include <cuda/std/__concepts/concept_macros.h>
 #include <cuda/std/__ranges/concepts.h>
+#include <cuda/std/__ranges/enable_view.h>
 #include <cuda/std/__ranges/owning_view.h>
 #include <cuda/std/__ranges/range_adaptor.h>
 #include <cuda/std/__ranges/ref_view.h>
 #include <cuda/std/__type_traits/decay.h>
-#include <cuda/std/__type_traits/enable_if.h> // IWYU pragma: keep
+#include <cuda/std/__type_traits/enable_if.h>
+#include <cuda/std/__type_traits/is_same.h>
 #include <cuda/std/__utility/auto_cast.h>
 #include <cuda/std/__utility/declval.h>
 #include <cuda/std/__utility/forward.h>
@@ -37,6 +39,7 @@ _CCCL_BEGIN_NAMESPACE_CUDA_STD_VIEWS
 
 _CCCL_BEGIN_NAMESPACE_CPO(__all)
 
+#if _CCCL_HAS_CONCEPTS()
 template <class _Range>
 _CCCL_CONCEPT __to_ref_view = _CCCL_REQUIRES_EXPR((_Range), _Range&& __r)(
   requires(!::cuda::std::ranges::view<decay_t<_Range>>),
@@ -47,11 +50,39 @@ _CCCL_CONCEPT __to_owning_view = _CCCL_REQUIRES_EXPR((_Range), _Range&& __r)(
   requires(!::cuda::std::ranges::view<decay_t<_Range>>),
   requires(!__to_ref_view<_Range>),
   (::cuda::std::ranges::owning_view{::cuda::std::forward<_Range>(__r)}));
+#else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
+template <class _Range, class = void>
+inline constexpr bool __is_view = ::cuda::std::ranges::view<_Range>;
+
+// The primary ref_view and owning_view already guarantee range and movable. Check the exact type
+// so derived types and user specializations still go through the full view constraints.
+template <class _Range>
+inline constexpr bool __is_view<_Range, enable_if_t<is_same_v<_Range, typename _Range::__all_view>>> =
+  ::cuda::std::ranges::enable_view<_Range>;
+
+template <class _Range, bool = !__is_view<decay_t<_Range>>>
+inline constexpr bool __to_ref_view = false;
+
+template <class _Range>
+inline constexpr bool __to_ref_view<_Range, true> =
+  _CCCL_REQUIRES_EXPR((_Range), _Range&& __r)((::cuda::std::ranges::ref_view{::cuda::std::forward<_Range>(__r)}));
+
+template <class _Range, bool = !__is_view<decay_t<_Range>> && !__to_ref_view<_Range>>
+inline constexpr bool __to_owning_view = false;
+
+template <class _Range>
+inline constexpr bool __to_owning_view<_Range, true> =
+  _CCCL_REQUIRES_EXPR((_Range), _Range&& __r)((::cuda::std::ranges::owning_view{::cuda::std::forward<_Range>(__r)}));
+#endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
 
 struct __fn : __range_adaptor_closure<__fn>
 {
   _CCCL_TEMPLATE(class _Tp)
+#if _CCCL_HAS_CONCEPTS()
   _CCCL_REQUIRES(::cuda::std::ranges::view<decay_t<_Tp>>)
+#else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
+  _CCCL_REQUIRES(__is_view<decay_t<_Tp>>)
+#endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
   [[nodiscard]] _CCCL_API constexpr auto
   _CCCL_STATIC_CALL_OPERATOR(_Tp&& __t) noexcept(noexcept(_LIBCUDACXX_AUTO_CAST(::cuda::std::forward<_Tp>(__t))))
     -> decltype(_LIBCUDACXX_AUTO_CAST(::cuda::std::forward<_Tp>(__t)))

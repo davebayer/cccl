@@ -61,6 +61,8 @@ public:
     requires default_initializable<_Rp>
   = default;
 #else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
+  using __all_view _CCCL_NODEBUG = owning_view;
+
   _CCCL_TEMPLATE(class _Range = _Rp)
   _CCCL_REQUIRES(default_initializable<_Range>)
   _CCCL_API constexpr owning_view() noexcept(is_nothrow_default_constructible_v<_Range>)

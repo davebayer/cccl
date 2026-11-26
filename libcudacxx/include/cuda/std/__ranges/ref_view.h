@@ -63,6 +63,10 @@ class ref_view : public view_interface<ref_view<_Range>>
   _Range* __range_;
 
 public:
+#if !_CCCL_HAS_CONCEPTS()
+  using __all_view _CCCL_NODEBUG = ref_view;
+#endif // !_CCCL_HAS_CONCEPTS()
+
   _CCCL_TEMPLATE(class _Tp)
   _CCCL_REQUIRES(__different_from<_Tp, ref_view> _CCCL_AND convertible_to<_Tp, _Range&> _CCCL_AND
                    __convertible_to_lvalue<_Tp, _Range>)
