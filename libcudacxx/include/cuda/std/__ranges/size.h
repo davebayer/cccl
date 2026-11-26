@@ -73,40 +73,32 @@ concept __difference =
   !__member_size<_Tp> && !__unqualified_size<_Tp> && __class_or_enum<remove_cvref_t<_Tp>> && requires(_Tp&& __t) {
     { ::cuda::std::ranges::begin(__t) } -> forward_iterator;
     { ::cuda::std::ranges::end(__t) } -> sized_sentinel_for<decltype(::cuda::std::ranges::begin(__t))>;
+    ::cuda::std::__to_unsigned_like(::cuda::std::ranges::end(__t) - ::cuda::std::ranges::begin(__t));
   };
 #else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
-template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(__member_size_,
-                       requires(_Tp&& __t)(requires(__size_enabled<_Tp>),
-                                           requires(__workaround_52970<_Tp>),
-                                           requires(__integer_like<decltype(_LIBCUDACXX_AUTO_CAST(__t.size()))>)));
+// Only probe a lower-priority customization when all preceding ones have been ruled out.
+template <class _Tp, bool = __size_enabled<_Tp> && __workaround_52970<_Tp>>
+inline constexpr bool __member_size = false;
 
 template <class _Tp>
-_CCCL_CONCEPT __member_size = _CCCL_FRAGMENT(__member_size_, _Tp);
+inline constexpr bool __member_size<_Tp, true> =
+  _CCCL_REQUIRES_EXPR((_Tp), _Tp&& __t)(requires(__integer_like<decltype(_LIBCUDACXX_AUTO_CAST(__t.size()))>));
+
+template <class _Tp, bool = __size_enabled<_Tp> && __class_or_enum<remove_cvref_t<_Tp>> && !__member_size<_Tp>>
+inline constexpr bool __unqualified_size = false;
 
 template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(
-  __unqualified_size_,
-  requires(_Tp&& __t)(requires(__size_enabled<_Tp>),
-                      requires(!__member_size<_Tp>),
-                      requires(__class_or_enum<remove_cvref_t<_Tp>>),
-                      requires(__integer_like<decltype(_LIBCUDACXX_AUTO_CAST(size(__t)))>)));
+inline constexpr bool __unqualified_size<_Tp, true> =
+  _CCCL_REQUIRES_EXPR((_Tp), _Tp&& __t)(requires(__integer_like<decltype(_LIBCUDACXX_AUTO_CAST(size(__t)))>));
+
+template <class _Tp, bool = __class_or_enum<remove_cvref_t<_Tp>> && !__member_size<_Tp> && !__unqualified_size<_Tp>>
+inline constexpr bool __difference = false;
 
 template <class _Tp>
-_CCCL_CONCEPT __unqualified_size = _CCCL_FRAGMENT(__unqualified_size_, _Tp);
-
-template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(
-  __difference_,
-  requires(_Tp&& __t)(
-    requires(!__member_size<_Tp>),
-    requires(!__unqualified_size<_Tp>),
-    requires(__class_or_enum<remove_cvref_t<_Tp>>),
-    requires(forward_iterator<decltype(::cuda::std::ranges::begin(__t))>),
-    requires(sized_sentinel_for<decltype(::cuda::std::ranges::end(__t)), decltype(::cuda::std::ranges::begin(__t))>)));
-
-template <class _Tp>
-_CCCL_CONCEPT __difference = _CCCL_FRAGMENT(__difference_, _Tp);
+inline constexpr bool __difference<_Tp, true> = _CCCL_REQUIRES_EXPR((_Tp), _Tp&& __t)(
+  requires(forward_iterator<decltype(::cuda::std::ranges::begin(__t))>),
+  requires(sized_sentinel_for<decltype(::cuda::std::ranges::end(__t)), decltype(::cuda::std::ranges::begin(__t))>),
+  (::cuda::std::__to_unsigned_like(::cuda::std::ranges::end(__t) - ::cuda::std::ranges::begin(__t))));
 #endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
 
 struct __fn
@@ -152,7 +144,6 @@ struct __fn
   _CCCL_REQUIRES(__difference<_Tp>)
   [[nodiscard]] _CCCL_API constexpr auto _CCCL_STATIC_CALL_OPERATOR(_Tp&& __t) noexcept(
     noexcept(::cuda::std::__to_unsigned_like(::cuda::std::ranges::end(__t) - ::cuda::std::ranges::begin(__t))))
-    -> decltype(::cuda::std::__to_unsigned_like(::cuda::std::ranges::end(__t) - ::cuda::std::ranges::begin(__t)))
   {
     return ::cuda::std::__to_unsigned_like(::cuda::std::ranges::end(__t) - ::cuda::std::ranges::begin(__t));
   }
