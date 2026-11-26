@@ -25,12 +25,14 @@
 #include <cuda/std/__iterator/concepts.h>
 #include <cuda/std/__memory/pointer_traits.h>
 #include <cuda/std/__ranges/access.h>
+#include <cuda/std/__type_traits/enable_if.h>
 #include <cuda/std/__type_traits/is_object.h>
 #include <cuda/std/__type_traits/is_pointer.h>
 #include <cuda/std/__type_traits/is_reference.h>
 #include <cuda/std/__type_traits/remove_pointer.h>
 #include <cuda/std/__type_traits/remove_reference.h>
 #include <cuda/std/__utility/auto_cast.h>
+#include <cuda/std/__utility/declval.h>
 
 #include <cuda/std/__cccl/prologue.h>
 
@@ -54,23 +56,25 @@ concept __ranges_begin_invocable = !__member_data<_Tp> && __can_borrow<_Tp> && r
   { ::cuda::std::ranges::begin(__t) } -> contiguous_iterator;
 };
 #else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
-template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(__member_data_,
-                       requires(_Tp&& __t)(requires(__can_borrow<_Tp>),
-                                           requires(__workaround_52970<_Tp>),
-                                           requires(__ptr_to_object<decltype(_LIBCUDACXX_AUTO_CAST(__t.data()))>)));
+// Check borrowing and customization priority before substituting the expression.
+template <class _Tp, bool = __can_borrow<_Tp> && __workaround_52970<_Tp>, class = void>
+inline constexpr bool __member_data = false;
 
 template <class _Tp>
-_CCCL_CONCEPT __member_data = _CCCL_FRAGMENT(__member_data_, _Tp);
+inline constexpr bool
+  __member_data<_Tp,
+                true,
+                enable_if_t<__ptr_to_object<decltype(_LIBCUDACXX_AUTO_CAST(::cuda::std::declval<_Tp&>().data()))>>> =
+    true;
+
+template <class _Tp, bool = __can_borrow<_Tp> && !__member_data<_Tp>, class = void>
+inline constexpr bool __ranges_begin_invocable = false;
 
 template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(__ranges_begin_invocable_,
-                       requires(_Tp&& __t)(requires(!__member_data<_Tp>),
-                                           requires(__can_borrow<_Tp>),
-                                           requires(contiguous_iterator<decltype(::cuda::std::ranges::begin(__t))>)));
-
-template <class _Tp>
-_CCCL_CONCEPT __ranges_begin_invocable = _CCCL_FRAGMENT(__ranges_begin_invocable_, _Tp);
+inline constexpr bool __ranges_begin_invocable<
+  _Tp,
+  true,
+  enable_if_t<contiguous_iterator<decltype(::cuda::std::ranges::begin(::cuda::std::declval<_Tp&>()))>>> = true;
 #endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
 
 struct __fn
