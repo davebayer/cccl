@@ -345,6 +345,7 @@ struct __passthrough_type<::cuda::std::ranges::subrange<_Iter, _Sent, _Kind>,
 };
 
 template <class _Tp>
+// NOLINTNEXTLINE(readability-redundant-typename): The dependent type requires typename in C++17.
 using __passthrough_type_t _CCCL_NODEBUG = typename __passthrough_type<_Tp>::type;
 
 template <class _Range, class _Np>
