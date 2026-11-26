@@ -522,11 +522,14 @@ _CCCL_BEGIN_NAMESPACE_CPO(__transform)
 struct __fn
 {
   template <class _Range, class _Fn>
+  using __view _CCCL_NODEBUG = transform_view<all_t<_Range>, decay_t<_Fn>>;
+
+  template <class _Range, class _Fn>
   [[nodiscard]] _CCCL_API constexpr auto _CCCL_STATIC_CALL_OPERATOR(_Range&& __range, _Fn&& __f) noexcept(
-    noexcept(transform_view(::cuda::std::forward<_Range>(__range), ::cuda::std::forward<_Fn>(__f))))
-    -> transform_view<all_t<_Range>, remove_cvref_t<_Fn>>
+    noexcept(__view<_Range, _Fn>(::cuda::std::forward<_Range>(__range), ::cuda::std::forward<_Fn>(__f))))
+    -> decltype(__view<_Range, _Fn>(::cuda::std::forward<_Range>(__range), ::cuda::std::forward<_Fn>(__f)))
   {
-    return transform_view(::cuda::std::forward<_Range>(__range), ::cuda::std::forward<_Fn>(__f));
+    return __view<_Range, _Fn>(::cuda::std::forward<_Range>(__range), ::cuda::std::forward<_Fn>(__f));
   }
 
   _CCCL_TEMPLATE(class _Fn)
