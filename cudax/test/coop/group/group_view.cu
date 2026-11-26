@@ -217,7 +217,7 @@ __device__ void check_parent_view_queries(const Group& group, const Parent& pare
   }
 
   // A child group and its view are not the parent, even when they share a hierarchy.
-  using Unrelated = cudax::coop::group_view<typename Group::unit_level, Group, typename Group::__mapping_result_type>;
+  using Unrelated = decltype(cudax::coop::group_view{group});
   check_invalid_parent_queries<Group, Unrelated>();
 }
 
@@ -420,7 +420,8 @@ __device__ void test_nonuniform_group_view(Config config)
     using Specialized = cuda::std::remove_cvref_t<decltype(specialized)>;
     using Result      = typename Specialized::__mapping_result_type;
     using Group       = cuda::std::remove_cv_t<decltype(group)>;
-    static_assert(cuda::std::is_same_v<Specialized, cudax::coop::group_view<cuda::warp_level, Group, Result>>);
+    using Sync        = typename Group::__synchronizer_instance_type;
+    static_assert(cuda::std::is_same_v<Specialized, cudax::coop::group_view<cuda::warp_level, Group, Result, Sync>>);
     static_assert(Result::static_group_rank() != cuda::std::dynamic_extent);
     check(specialized, cuda::warp, 4);
     specialized.dispatch(cudax::coop::by_group_rank, [&](const auto& again) {
@@ -448,8 +449,9 @@ __device__ void test_nonuniform_group_view(Config config)
   check(converted_threads, cuda::gpu_thread, 128);
 
   // Exercise the conversion from a view while retaining the original group type.
-  const cudax::coop::group_view<cuda::thread_level, cuda::std::remove_cv_t<decltype(group)>, Threads> converted{
-    cuda::gpu_thread, warps};
+  using Group = cuda::std::remove_cv_t<decltype(group)>;
+  const cudax::coop::group_view<cuda::thread_level, Group, Threads, typename Group::__synchronizer_instance_type>
+    converted{cuda::gpu_thread, warps};
 
   check(converted, cuda::gpu_thread, 128);
 }
@@ -491,8 +493,11 @@ __device__ void test_viewed_parent(const Parent& parent, const View& view)
     using Result = typename Child::__mapping_result_type;
     using Sync   = typename Child::__synchronizer_instance_type;
 
-    static_assert(cuda::std::is_same_v<Child, cudax::coop::virtual_group<cuda::thread_level, Parent, Result>>
-                  || cuda::std::is_same_v<Child, cudax::coop::generic_group<cuda::thread_level, Parent, Result, Sync>>);
+    static_assert(
+      cuda::std::is_same_v<
+        Child,
+        cudax::coop::virtual_group<cuda::thread_level, Parent, Result, typename View::__synchronizer_instance_type>>
+      || cuda::std::is_same_v<Child, cudax::coop::generic_group<cuda::thread_level, Parent, Result, Sync>>);
 
     // Static counts must come from the view, including specialized views.
     const cudax::coop::group_view child_view{child};
@@ -565,7 +570,11 @@ struct ViewedParentKernel
 
 // Same-unit views preserve the group's mapping result type without requiring device construction.
 template <class Group>
-using group_view_t = cudax::coop::group_view<typename Group::unit_level, Group, typename Group::__mapping_result_type>;
+using group_view_t =
+  cudax::coop::group_view<typename Group::unit_level,
+                          Group,
+                          typename Group::__mapping_result_type,
+                          typename Group::__synchronizer_instance_type>;
 
 void test_viewed_parent_types()
 {
@@ -580,7 +589,7 @@ void test_viewed_parent_types()
   static_assert(can_rank_parent<View, cuda::block_level>);
   using Result      = Parent::__mapping_result_type;
   using Sync        = Parent::__synchronizer_instance_type;
-  using Virtual     = cudax::coop::virtual_group<cuda::thread_level, Parent, Result>;
+  using Virtual     = cudax::coop::virtual_group<cuda::thread_level, Parent, Result, Sync>;
   using Generic     = cudax::coop::generic_group<cuda::thread_level, Parent, Result, Sync>;
   using VirtualView = group_view_t<Virtual>;
   using GenericView = group_view_t<Generic>;

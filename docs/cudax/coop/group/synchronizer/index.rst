@@ -16,6 +16,7 @@ Group Synchronizer Instance Concept
   concept /*group-synchronizer-instance*/ = requires (T& t,
                                                       const T& ct,
                                                       const MappingResult& mapping_result,
+                                                      const /*specialized-mapping-result*/& specialized_mapping_result,
                                                       const Hierarchy& hierarchy)
   {
     requires(cuda::std::is_trivially_copyable_v<T>);
@@ -27,6 +28,7 @@ Group Synchronizer Instance Concept
     // Synchronization interface.
     { ct.do_sync(hierarchy) } -> cuda::std::same_as<void>;               // (2)
     { ct.do_sync_aligned(hierarchy) } -> cuda::std::same_as<void>;       // (3)
+    ct.specialize(specialized_mapping_result);                           // (4)
   };
 
 Where:
@@ -34,8 +36,28 @@ Where:
 #. Deinitializes the synchronizer instance.
 #. Runs the synchronization. It doesn't require the units to be contextually aligned.
 #. Runs the synchronization. The caller guarantees that all of the units are contextually aligned (execute the exact same statement in the code).
+#. Returns a synchronizer instance for the refined mapping. The returned instance must also support specialization for subsequent dispatches.
 
 Every synchronizer instance must be trivially copyable and destructible. The object can be copied multiple times, but it is guaranteed to be destroyed only once by calling the ``.deinit(...)`` method with the same parameters it was constructed with by the synchronizer object.
+
+Every synchronizer instance must provide ``specialize(specialized_mapping_result)`` as a const device member.
+When dispatch refines an owning group's mapping, it calls this member and stores the returned instance in the callback's group view.
+The mapping's ``unit_level`` identifies the units used by ``static_unit_count()``, including when a view expresses a warp group in threads.
+``static_group_rank()`` supplies the rank when known. Either query may return ``cuda::std::dynamic_extent``.
+
+The returned instance must synchronize the same participants using the same resources as the original.
+The owning group retains responsibility for deinitialization.
+A virtual subgroup inherits the parent synchronizer and keeps the parent's barrier and participant count when dispatch refines the subgroup's mapping.
+
+An instance that uses the same implementation for every mapping returns a copy of itself.
+
+.. code:: cuda
+
+  template <class MappingResult>
+  [[nodiscard]] __device__ my_synchronizer_instance specialize(const MappingResult&) const
+  {
+    return *this;
+  }
 
 Group Synchronizer Instantiation Process
 ----------------------------------------

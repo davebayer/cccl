@@ -44,7 +44,7 @@
     requires /*unit-same-as-or-below*/<Unit, typename ParentGroup::unit_level>
   generic_group(const Unit&, const ParentGroup&, Mapping&&, Synchronizer&&)
     -> generic_group<Unit,
-                      ParentGroup,
+                      /*viewed-group-of*/<ParentGroup>,
                       MappingResult,
                       /*synchronizer-instance-for*/<Unit, ParentGroup, MappingResult, Synchronizer>>;
 

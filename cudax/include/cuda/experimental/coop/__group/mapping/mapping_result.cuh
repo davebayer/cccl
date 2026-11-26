@@ -47,22 +47,28 @@ struct __uniform_static_unit_count;
 template <::cuda::std::size_t... _StaticUnitCounts>
 struct __static_unit_counts;
 
+// A view records the unit of its counts and ranks so a synchronizer can interpret them after conversion.
 template <class _CountsTag,
           bool _IsAlwaysExhaustive,
           bool _IsAlwaysContiguous,
-          ::cuda::std::size_t _StaticGroupRank = ::cuda::std::dynamic_extent>
+          ::cuda::std::size_t _StaticGroupRank = ::cuda::std::dynamic_extent,
+          class _Unit                          = void>
 struct __mapping_result;
 
 template <::cuda::std::size_t _StaticGroupCount,
           ::cuda::std::size_t _StaticUnitCount,
           bool _IsAlwaysExhaustive,
           bool _IsAlwaysContiguous,
-          ::cuda::std::size_t _StaticGroupRank>
+          ::cuda::std::size_t _StaticGroupRank,
+          class _Unit>
 struct __mapping_result<__uniform_static_unit_count<_StaticGroupCount, _StaticUnitCount>,
                         _IsAlwaysExhaustive,
                         _IsAlwaysContiguous,
-                        _StaticGroupRank>
+                        _StaticGroupRank,
+                        _Unit>
 {
+  using unit_level = _Unit;
+
   static_assert(_StaticGroupRank == ::cuda::std::dynamic_extent || _StaticGroupRank < _StaticGroupCount,
                 "group rank out of range");
 
@@ -209,12 +215,16 @@ struct __mapping_result<__uniform_static_unit_count<_StaticGroupCount, _StaticUn
 template <::cuda::std::size_t... _StaticUnitCounts,
           bool _IsAlwaysExhaustive,
           bool _IsAlwaysContiguous,
-          ::cuda::std::size_t _StaticGroupRank>
+          ::cuda::std::size_t _StaticGroupRank,
+          class _Unit>
 struct __mapping_result<__static_unit_counts<_StaticUnitCounts...>,
                         _IsAlwaysExhaustive,
                         _IsAlwaysContiguous,
-                        _StaticGroupRank>
+                        _StaticGroupRank,
+                        _Unit>
 {
+  using unit_level = _Unit;
+
   static constexpr ::cuda::std::size_t _StaticGroupCount = sizeof...(_StaticUnitCounts);
 
   static_assert(_StaticGroupCount > 0, "per-group unit counts require at least one group");

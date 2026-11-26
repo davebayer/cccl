@@ -47,6 +47,12 @@ public:
 
     ::cuda::device::lane_mask __lane_mask_;
 
+    template <class _MappingResult>
+    [[nodiscard]] _CCCL_DEVICE_API constexpr __synchronizer_instance specialize(const _MappingResult&) const noexcept
+    {
+      return *this;
+    }
+
     template <class _Hierarchy>
     _CCCL_DEVICE_API void do_sync(const _Hierarchy&) const
     {

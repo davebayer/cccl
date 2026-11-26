@@ -100,6 +100,13 @@ struct __barrier_synchronizer_instance
 
   _Barrier* __barrier_;
 
+  template <class _MappingResult>
+  [[nodiscard]] _CCCL_DEVICE_API constexpr __barrier_synchronizer_instance
+  specialize(const _MappingResult&) const noexcept
+  {
+    return *this;
+  }
+
   template <class _Hierarchy>
   _CCCL_DEVICE_API void do_sync(const _Hierarchy&) const
   {

@@ -7,7 +7,7 @@
 
   namespace cuda::experimental::coop {
 
-  template <typename Unit, typename Group, typename MappingResult>
+  template <typename Unit, typename Group, typename MappingResult, typename SynchronizerInstance>
   class group_view : public /*group-interface-for*/<group_view>
   {
   public:
@@ -24,7 +24,7 @@
 
     template <typename OtherUnit, typename OtherMappingResult>
       requires /*unit-same-as-or-below*/<Unit, OtherUnit>
-    __device__ explicit group_view(const Unit& unit, const group_view<OtherUnit, Group, OtherMappingResult>& other);
+    __device__ explicit group_view(const Unit& unit, const group_view<OtherUnit, Group, OtherMappingResult, SynchronizerInstance>& other);
 
     group_view(const group_view&) = default;
 
@@ -39,18 +39,18 @@
   group_view(const Group&)
     -> group_view<typename Group::unit_level,
                   Group,
-                  /*view-mapping-result*/<typename Group::unit_level, Group>>;
+                  /*view-mapping-result*/<typename Group::unit_level, Group>,
+                  /*synchronizer-instance-of*/<Group>>;
 
-  template <typename Unit, class Group, class MappingResult>
-  group_view(const group_view<Unit, Group, MappingResult>&) -> group_view<Unit, Group, MappingResult>;
+  template <typename Unit, class Group, class MappingResult, class SynchronizerInstance>
+  group_view(const group_view<Unit, Group, MappingResult, SynchronizerInstance>&)
+    -> group_view<Unit, Group, MappingResult, SynchronizerInstance>;
 
   template </*hierarchy-level-type*/ Unit, group Group>
-  group_view(const Unit&, const Group&) -> group_view<Unit, Group, /*view-mapping-result*/<Unit, Group>>;
-
-  template </*hierarchy-level-type*/ Unit, class OtherUnit, class Group, class MappingResult>
-    requires /*unit-same-as-or-below*/<Unit, OtherUnit>
-  group_view(const Unit&, const group_view<OtherUnit, Group, MappingResult>&)
-    -> group_view<Unit, Group, /*view-mapping-result*/<Unit, group_view<OtherUnit, Group, MappingResult>>>;
+    requires /*unit-same-as-or-below*/<Unit, typename Group::unit_level>
+  group_view(const Unit&, const Group&)
+    -> group_view<Unit, /*viewed-group-of*/<Group>, /*view-mapping-result*/<Unit, Group>,
+                  /*synchronizer-instance-of*/<Group>>;
 
   } // namespace cuda::experimental::coop
 

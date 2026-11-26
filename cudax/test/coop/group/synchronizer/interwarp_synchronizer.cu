@@ -110,7 +110,8 @@ __device__ void test_interwarp_synchronizer(Config config)
 
   // Test array input range.
   {
-    const int barrier_ids[]{5, 3, 15, 1};
+    // Keep these disjoint from the iota range used by other groups later in this kernel.
+    const int barrier_ids[]{5, 7, 15, 6};
 
     using Synchronizer = decltype(cudax::coop::interwarp_synchronizer{barrier_ids});
 
@@ -295,13 +296,129 @@ __device__ void test_interwarp_synchronizer(Config config)
   }
 }
 
+template <class StaticIds, class View>
+__device__ void check_interwarp_instance(View view)
+{
+  constexpr unsigned barrier_ids[]{8, 14, 10};
+  constexpr auto count = cuda::gpu_thread.static_count(view);
+  constexpr auto rank  = view.static_rank(cudax::coop::parent_group);
+  using Instance       = typename View::__synchronizer_instance_type;
+
+  if constexpr (!cuda::std::is_void_v<StaticIds> && rank != cuda::std::dynamic_extent)
+  {
+    using Expected = cudax::coop::__interwarp_synchronizer_instance<count, StaticIds, barrier_ids[rank]>;
+    static_assert(cuda::std::is_same_v<Instance, Expected>);
+    static_assert(cuda::std::is_empty_v<Instance> == (count != cuda::std::dynamic_extent));
+  }
+  else
+  {
+    using Expected = cudax::coop::__interwarp_synchronizer_instance<count, StaticIds>;
+    static_assert(cuda::std::is_same_v<Instance, Expected>);
+    CHECK(cuda::std::bit_cast<unsigned>(view.__synchronizer_instance())
+          == barrier_ids[view.rank(cudax::coop::parent_group)]);
+  }
+}
+
+template <class StaticIds, class Group, class Policy>
+__device__ void test_interwarp_dispatch(const Group& group, Policy policy)
+{
+  __shared__ unsigned values[256];
+  const auto thread = cuda::gpu_thread.rank_as<unsigned>(cuda::block);
+  values[thread]    = thread;
+
+  group.dispatch(policy, [&](auto view) {
+    constexpr auto count = cuda::gpu_thread.static_count(view);
+    static_assert(count == 64 || count == 128);
+    check_interwarp_instance<StaticIds>(view);
+    const cudax::coop::group_view threads{cuda::gpu_thread, view};
+    check_interwarp_instance<StaticIds>(threads);
+    const auto specialized = group.__synchronizer_instance().specialize(threads.__mapping_result());
+    static_assert(
+      cuda::std::is_same_v<decltype(specialized), const typename decltype(threads)::__synchronizer_instance_type>);
+
+    // Exchange values with the opposite end of this group across a warp boundary.
+    specialized.do_wait(threads.hierarchy(), group.arrive());
+    const auto rank = cuda::gpu_thread.rank(view);
+    const auto peer = thread - rank + (count - 1 - rank);
+    CHECK(values[peer] == peer);
+    group.wait(threads.arrive());
+  });
+}
+
+template <class StaticIds, class Config, class Synchronizer>
+__device__ void test_specialized_interwarp_synchronizer(const Config& config, const Synchronizer& synchronizer)
+{
+  const cudax::coop::this_block block{config};
+  const cudax::coop::generic_group group{
+    cuda::warp, block, cudax::coop::group_as{cuda::std::integer_sequence<int, 2, 4, 2>{}}, synchronizer};
+
+  test_interwarp_dispatch<StaticIds>(group, cudax::coop::by_unit_count);
+  test_interwarp_dispatch<StaticIds>(group, cudax::coop::by_group_rank);
+  const cudax::coop::group_view threads{cuda::gpu_thread, group};
+  static_assert(
+    cuda::std::is_same_v<typename decltype(threads)::__mapping_result_type::unit_level, cuda::thread_level>);
+  test_interwarp_dispatch<StaticIds>(threads, cudax::coop::by_unit_count);
+  test_interwarp_dispatch<StaticIds>(threads, cudax::coop::by_group_rank);
+
+  group.dispatch(cudax::coop::by_unit_count, [&](auto parent) {
+    // Rank dispatch on the thread view keeps the count already specialized in warps.
+    const cudax::coop::group_view parent_threads{cuda::gpu_thread, parent};
+    parent_threads.dispatch(cudax::coop::by_group_rank, [&](auto ranked) {
+      static_assert(cuda::gpu_thread.static_count(ranked) == 32 * cuda::warp.static_count(parent));
+      check_interwarp_instance<StaticIds>(ranked);
+      ranked.wait(parent.arrive());
+    });
+
+    // A one-warp virtual subgroup and its thread view both share the larger parent's barrier.
+    const cudax::coop::virtual_group child{cuda::warp, parent, cudax::coop::group_by{cuda::std::cw<1>}};
+    const auto check_inherited = [&](auto view) {
+      static_assert(cuda::gpu_thread.static_count(view) == 32);
+      static_assert(cuda::std::is_same_v<typename decltype(view)::__synchronizer_instance_type,
+                                         typename decltype(parent)::__synchronizer_instance_type>);
+      view.wait(parent.arrive());
+    };
+    child.dispatch(cudax::coop::by_group_rank, check_inherited);
+    cudax::coop::group_view{cuda::gpu_thread, child}.dispatch(cudax::coop::by_group_rank, check_inherited);
+  });
+
+  if constexpr (!cuda::std::is_void_v<StaticIds>)
+  {
+    // A static rank selects a constant barrier ID even when the participant count is supplied at runtime.
+    const unsigned counts[]{2, 4, 2};
+    const cudax::coop::generic_group dynamic{cuda::warp, block, cudax::coop::group_as{counts}, synchronizer};
+    const auto check_dynamic_count = [&](auto view) {
+      static_assert(cuda::gpu_thread.static_count(view) == cuda::std::dynamic_extent);
+      check_interwarp_instance<StaticIds>(view);
+      constexpr auto rank = view.static_rank(cudax::coop::parent_group);
+      CHECK(cuda::std::bit_cast<unsigned>(view.__synchronizer_instance()) == 32 * counts[rank]);
+      view.sync();
+    };
+    dynamic.dispatch(cudax::coop::by_group_rank, check_dynamic_count);
+    cudax::coop::group_view{cuda::gpu_thread, dynamic}.dispatch(cudax::coop::by_group_rank, check_dynamic_count);
+  }
+}
+
 struct TestKernel
 {
   template <class Config>
   __device__ void operator()(const Config& config)
   {
+    // Look up every native barrier ID, including both sides of the eight-ID boundary.
+    using AllBarrierIds = cuda::std::index_sequence<15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0>;
+    const auto rank     = cuda::gpu_thread.rank_as<unsigned>(cuda::warp) % 16;
+    CHECK(cudax::coop::__interwarp_barrier_id_at(AllBarrierIds{}, rank) == 15 - rank);
+
     test_interwarp_synchronizer<false>(config);
     test_interwarp_synchronizer<true>(config);
+    const unsigned ids[]{8, 14, 10};
+    test_specialized_interwarp_synchronizer<void>(config, cudax::coop::interwarp_synchronizer{ids});
+    using StaticIds = cuda::std::index_sequence<8, 14, 10>;
+    test_specialized_interwarp_synchronizer<StaticIds>(
+      config, cudax::coop::interwarp_synchronizer{cuda::std::integer_sequence<int, 8, 14, 10>{}});
+#if _CCCL_STD_VER >= 2020
+    test_specialized_interwarp_synchronizer<StaticIds>(
+      config, cudax::coop::interwarp_synchronizer{cuda::std::cw<cuda::std::array{8, 14, 10}>});
+#endif // _CCCL_STD_VER >= 2020
   }
 };
 

@@ -350,6 +350,25 @@ __device__ void test_dispatch_types(const Group& group, const Parent& parent, Po
   parent.sync();
 }
 
+template <class Mapping = void>
+struct RecordingSynchronizer : cudax::coop::level_synchronizer::__synchronizer_instance<cuda::block_level>
+{
+  using mapping_type = Mapping;
+  unsigned unit_rank{};
+
+  template <class Unit, class Parent, class InitialMapping>
+  __device__ RecordingSynchronizer make_instance(const Unit&, const Parent&, const InitialMapping&) const
+  {
+    return {};
+  }
+
+  template <class SpecializedMapping>
+  __device__ RecordingSynchronizer<SpecializedMapping> specialize(const SpecializedMapping& mapping) const
+  {
+    return {{}, mapping.unit_rank()};
+  }
+};
+
 // Split four warps into groups of one, two, and one warp, exercising all dispatch
 // positions and two groups that share the same static unit count.
 template <class Config, class Counts>
@@ -357,6 +376,26 @@ __device__ void test_nonuniform_groups(Config config, Counts counts)
 {
   const cudax::coop::this_block parent{config};
   const cudax::coop::group_as mapping{counts};
+
+  const cudax::coop::generic_group recorded{cuda::warp, parent, mapping, RecordingSynchronizer<>{}};
+  const auto check_specialization = [&](auto view) {
+    using Instance = typename decltype(view)::__synchronizer_instance_type;
+    using Mapping  = typename Instance::mapping_type;
+    using Unit     = typename decltype(view)::unit_level;
+    static_assert(cuda::std::is_same_v<typename Mapping::unit_level, Unit>);
+    static_assert(Mapping::static_unit_count() == Unit{}.static_count(view));
+    static_assert(Mapping::static_group_rank() == view.static_rank(cudax::coop::parent_group));
+    CHECK(view.__synchronizer_instance().unit_rank == Unit{}.rank(recorded));
+  };
+  recorded.dispatch(cudax::coop::by_group_rank, check_specialization);
+  recorded.dispatch(cudax::coop::by_unit_count, [&](auto view) {
+    check_specialization(view);
+    view.dispatch(cudax::coop::by_group_rank, check_specialization);
+    const cudax::coop::group_view threads{cuda::gpu_thread, view};
+    threads.dispatch(cudax::coop::by_group_rank, check_specialization);
+  });
+  const cudax::coop::group_view recorded_threads{cuda::gpu_thread, recorded};
+  recorded_threads.dispatch(cudax::coop::by_unit_count, check_specialization);
 
   // Check nonuniform mappings while retaining the parent block synchronizer.
   const cudax::coop::virtual_group virtual_group{cuda::warp, parent, mapping};

@@ -39,11 +39,17 @@ using __hierarchy_type_of _CCCL_NODEBUG =
 
 template <class _Group>
 extern _Group (*__viewed_group_impl)();
-template <class _Unit, class _Group, class _MappingResult>
-extern _Group (*__viewed_group_impl<group_view<_Unit, _Group, _MappingResult>>)();
+template <class _Unit, class _Group, class _MappingResult, class _SynchronizerInstance>
+extern _Group (*__viewed_group_impl<group_view<_Unit, _Group, _MappingResult, _SynchronizerInstance>>)();
 
 template <class _Group>
 using __viewed_group_t _CCCL_NODEBUG = decltype(__viewed_group_impl<_Group>());
+
+template <class _Group>
+inline constexpr bool __is_virtual_group_v = false;
+template <class _Unit, class _ParentGroup, class _MappingResult, class _SynchronizerInstance>
+inline constexpr bool __is_virtual_group_v<virtual_group<_Unit, _ParentGroup, _MappingResult, _SynchronizerInstance>> =
+  true;
 
 template <class _Arg, class _ParentGroup>
 inline constexpr bool __is_parent_group_query_v = false;
@@ -51,10 +57,10 @@ template <class _ParentGroup>
 inline constexpr bool __is_parent_group_query_v<_ParentGroup, _ParentGroup> = true;
 template <class _ParentGroup>
 inline constexpr bool __is_parent_group_query_v<parent_group_t, _ParentGroup> = true;
-template <class _ParentGroup, class _ViewMappingResult>
-inline constexpr bool
-  __is_parent_group_query_v<group_view<typename _ParentGroup::unit_level, _ParentGroup, _ViewMappingResult>,
-                            _ParentGroup> = true;
+template <class _ParentGroup, class _ViewMappingResult, class _SynchronizerInstance>
+inline constexpr bool __is_parent_group_query_v<
+  group_view<typename _ParentGroup::unit_level, _ParentGroup, _ViewMappingResult, _SynchronizerInstance>,
+  _ParentGroup> = true;
 } // namespace cuda::experimental::coop
 
 #endif // !_CCCL_DOXYGEN_INVOKED

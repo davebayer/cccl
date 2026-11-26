@@ -7,7 +7,7 @@
 
   namespace cuda::experimental::coop {
 
-  template <typename Unit, typename ParentGroup, typename MappingResult>
+  template <typename Unit, typename ParentGroup, typename MappingResult, typename SynchronizerInstance>
   class virtual_group : public /*group-interface-for*/<virtual_group>
   {
   public:
@@ -34,8 +34,9 @@
     requires /*unit-same-as-or-below*/<Unit, typename ParentGroup::unit_level>
   virtual_group(const Unit&, const ParentGroup&, Mapping&&)
     -> virtual_group<Unit,
-                      ParentGroup,
-                      /*mapping-result-of*/<Unit, ParentGroup, Mapping>>;
+                     /*viewed-group-of*/<ParentGroup>,
+                     /*mapping-result-of*/<Unit, ParentGroup, Mapping>,
+                     /*synchronizer-instance-of*/<ParentGroup>>;
 
   } // namespace cuda::experimental::coop
 

@@ -90,20 +90,20 @@ public:
           ::cuda::std::forward<_Synchronizer>(__synchronizer).make_instance(__unit, __parent, __mapping_result_)}
   {}
 
-  _CCCL_TEMPLATE(class _ParentUnit, class _ParentMappingResult, class _Mapping, class _Synchronizer)
+  _CCCL_TEMPLATE(
+    class _ParentUnit,
+    class _ParentMappingResult,
+    class _ParentSynchronizerInstance,
+    class _Mapping,
+    class _Synchronizer,
+    class _ParentView = group_view<_ParentUnit, _ParentGroup, _ParentMappingResult, _ParentSynchronizerInstance>)
   _CCCL_REQUIRES(
-    ::cuda::std::is_same_v<
-      _MappingResult,
-      __group_mapping_result_t<_Unit, group_view<_ParentUnit, _ParentGroup, _ParentMappingResult>, _Mapping>>
-      _CCCL_AND ::cuda::std::is_same_v<
-        _SynchronizerInstance,
-        __group_synchronizer_instance_t<_Unit,
-                                        group_view<_ParentUnit, _ParentGroup, _ParentMappingResult>,
-                                        _MappingResult,
-                                        _Synchronizer>>)
+    ::cuda::std::is_same_v<_MappingResult, __group_mapping_result_t<_Unit, _ParentView, _Mapping>> _CCCL_AND ::cuda::
+      std::is_same_v<_SynchronizerInstance,
+                     __group_synchronizer_instance_t<_Unit, _ParentView, _MappingResult, _Synchronizer>>)
   _CCCL_DEVICE_API explicit generic_group(
     const _Unit& __unit,
-    const group_view<_ParentUnit, _ParentGroup, _ParentMappingResult>& __parent,
+    const group_view<_ParentUnit, _ParentGroup, _ParentMappingResult, _ParentSynchronizerInstance>& __parent,
     _Mapping&& __mapping,
     _Synchronizer&& __synchronizer)
       : __hier_{__parent.hierarchy()}
@@ -125,11 +125,11 @@ public:
       , __synchronizer_instance_{__synchronizer_instance}
   {}
 
-  template <class _ParentUnit, class _ParentMappingResult>
+  template <class _ParentUnit, class _ParentMappingResult, class _ParentSynchronizerInstance>
   _CCCL_DEVICE_API explicit generic_group(
     const non_exhaustive_t&,
     const _Unit&,
-    const group_view<_ParentUnit, _ParentGroup, _ParentMappingResult>& __parent,
+    const group_view<_ParentUnit, _ParentGroup, _ParentMappingResult, _ParentSynchronizerInstance>& __parent,
     const ::cuda::std::type_identity_t<_MappingResult>& __mapping_result,
     const ::cuda::std::type_identity_t<_SynchronizerInstance>& __synchronizer_instance)
       : __hier_{__parent.hierarchy()}
@@ -284,22 +284,7 @@ _CCCL_TEMPLATE(
 _CCCL_REQUIRES(__is_hierarchy_level_v<_Unit> _CCCL_AND group<_ParentGroup> _CCCL_AND
                  __unit_same_as_or_below_v<_Unit, typename _ParentGroup::unit_level>)
 _CCCL_DEDUCTION_GUIDE_ATTRIBUTES generic_group(const _Unit&, const _ParentGroup&, _Mapping&&, _Synchronizer&&)
-  -> generic_group<_Unit, _ParentGroup, _MappingResult, _SynchronizerInstance>;
-
-_CCCL_TEMPLATE(
-  class _Unit,
-  class _ParentUnit,
-  class _ParentGroup,
-  class _ParentMappingResult,
-  class _Mapping,
-  class _Synchronizer,
-  class _ParentView           = group_view<_ParentUnit, _ParentGroup, _ParentMappingResult>,
-  class _MappingResult        = __group_mapping_result_t<_Unit, _ParentView, _Mapping>,
-  class _SynchronizerInstance = __group_synchronizer_instance_t<_Unit, _ParentView, _MappingResult, _Synchronizer>)
-_CCCL_REQUIRES(__is_hierarchy_level_v<_Unit> _CCCL_AND __unit_same_as_or_below_v<_Unit, _ParentUnit>)
-_CCCL_DEDUCTION_GUIDE_ATTRIBUTES generic_group(
-  const _Unit&, const group_view<_ParentUnit, _ParentGroup, _ParentMappingResult>&, _Mapping&&, _Synchronizer&&)
-  -> generic_group<_Unit, _ParentGroup, _MappingResult, _SynchronizerInstance>;
+  -> generic_group<_Unit, __viewed_group_t<_ParentGroup>, _MappingResult, _SynchronizerInstance>;
 } // namespace cuda::experimental::coop
 
 #endif // !_CCCL_DOXYGEN_INVOKED

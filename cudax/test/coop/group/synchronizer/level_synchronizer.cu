@@ -43,6 +43,10 @@ __device__ void test_level_synchronizer(const Level&, Config config)
     static_assert(cuda::std::is_default_constructible_v<SynchronizerInstance>);
     SynchronizerInstance synchronizer_instance{};
 
+    static_assert(
+      cuda::std::is_same_v<SynchronizerInstance,
+                           decltype(cuda::std::as_const(synchronizer_instance).specialize(mapping_result))>);
+
     static_assert(cuda::is_trivially_copyable_v<SynchronizerInstance>);
     static_assert(cuda::std::is_trivially_destructible_v<SynchronizerInstance>);
 
@@ -66,7 +70,7 @@ __device__ void test_level_synchronizer(const Level&, Config config)
     static_assert(
       // NOLINTNEXTLINE(cccl-simplify-type-traits)
       cuda::std::is_same_v<void, decltype(synchronizer_instance.do_wait(hierarchy, cuda::std::move(arrival_token)))>);
-    synchronizer_instance.do_wait(hierarchy, cuda::std::move(arrival_token));
+    synchronizer_instance.specialize(mapping_result).do_wait(hierarchy, cuda::std::move(arrival_token));
 
     // Test do_sync_aligned(...).
     // NOLINTNEXTLINE(cccl-simplify-type-traits)

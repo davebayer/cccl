@@ -40,9 +40,25 @@
 
 namespace cuda::experimental::coop
 {
-template <class _Group, class _MappingResult = typename _Group::__mapping_result_type>
+template <class _Group,
+          class _MappingResult        = typename _Group::__mapping_result_type,
+          class _SynchronizerInstance = typename _Group::__synchronizer_instance_type>
 using __dispatch_view_t _CCCL_NODEBUG =
-  group_view<typename _Group::unit_level, __viewed_group_t<_Group>, _MappingResult>;
+  group_view<typename _Group::unit_level, __viewed_group_t<_Group>, _MappingResult, _SynchronizerInstance>;
+
+template <class _Group, class _MappingResult>
+[[nodiscard]] _CCCL_DEVICE_API auto __dispatch_synchronizer(const _Group& __group, const _MappingResult& __mapping)
+{
+  if constexpr (__is_virtual_group_v<__viewed_group_t<_Group>>)
+  {
+    // A virtual subgroup inherits its parent's barrier and participant count.
+    return __group.__synchronizer_instance();
+  }
+  else
+  {
+    return __group.__synchronizer_instance().specialize(__mapping);
+  }
+}
 
 template <::cuda::std::size_t _Count, ::cuda::std::size_t _GroupRank = ::cuda::std::dynamic_extent, class _Group>
 [[nodiscard]] _CCCL_DEVICE_API auto __make_dispatch_view(const _Group& __group)
@@ -52,17 +68,19 @@ template <::cuda::std::size_t _Count, ::cuda::std::size_t _GroupRank = ::cuda::s
     __mapping_result<__uniform_static_unit_count<_MappingResult::static_group_count(), _Count>,
                      _MappingResult::is_always_exhaustive(),
                      _MappingResult::is_always_contiguous(),
-                     _GroupRank>;
+                     _GroupRank,
+                     typename _Group::unit_level>;
 
   const auto& __mapping = __group.__mapping_result();
-  return __dispatch_view_t<_Group, _SpecializedMappingResult>{
-    __group,
-    _SpecializedMappingResult{
-      __mapping.group_count(),
-      __mapping.group_rank(),
-      __mapping.unit_count(),
-      __mapping.unit_rank(),
-      __mapping.lane_mask()}};
+  const _SpecializedMappingResult __specialized{
+    __mapping.group_count(),
+    __mapping.group_rank(),
+    __mapping.unit_count(),
+    __mapping.unit_rank(),
+    __mapping.lane_mask()};
+  auto __instance = ::cuda::experimental::coop::__dispatch_synchronizer(__group, __specialized);
+  return __dispatch_view_t<_Group, _SpecializedMappingResult, decltype(__instance)>{
+    __group.hierarchy(), __specialized, __instance};
 }
 
 // Number distinct unit counts in order of first appearance so equal-sized groups dispatch to the same callback.

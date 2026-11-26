@@ -45,6 +45,11 @@ __device__ void test_lane_synchronizer(const Level& level, Config config)
 
     using SynchronizerInstance = decltype(synchronizer_instance);
 
+    static_assert(
+      cuda::std::is_same_v<SynchronizerInstance,
+                           decltype(cuda::std::as_const(synchronizer_instance).specialize(mapping_result))>);
+    CHECK(synchronizer_instance.specialize(mapping_result).__lane_mask_.value() == mapping_result.lane_mask().value());
+
     static_assert(cuda::is_trivially_copyable_v<SynchronizerInstance>);
     static_assert(cuda::std::is_trivially_destructible_v<SynchronizerInstance>);
 
@@ -68,7 +73,7 @@ __device__ void test_lane_synchronizer(const Level& level, Config config)
     static_assert(
       // NOLINTNEXTLINE(cccl-simplify-type-traits)
       cuda::std::is_same_v<void, decltype(synchronizer_instance.do_wait(hierarchy, cuda::std::move(arrival_token)))>);
-    synchronizer_instance.do_wait(hierarchy, cuda::std::move(arrival_token));
+    synchronizer_instance.specialize(mapping_result).do_wait(hierarchy, cuda::std::move(arrival_token));
 
     // Test do_sync_aligned(...).
     // NOLINTNEXTLINE(cccl-simplify-type-traits)

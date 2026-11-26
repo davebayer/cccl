@@ -70,6 +70,12 @@ struct level_synchronizer::__synchronizer_instance
 {
   using arrival_token _CCCL_NODEBUG = __dummy_arrival_token<__synchronizer_instance>;
 
+  template <class _MappingResult>
+  [[nodiscard]] _CCCL_DEVICE_API constexpr __synchronizer_instance specialize(const _MappingResult&) const noexcept
+  {
+    return *this;
+  }
+
   template <class _Hierarchy>
   _CCCL_DEVICE_API void do_sync(const _Hierarchy& __hier) const
   {
@@ -179,6 +185,12 @@ struct level_synchronizer::__synchronizer_instance<grid_level>
   static constexpr ::cuda::std::uint32_t __phase_bit = 0x8000'0000u;
 
   __grid_workspace* __grid_workspace_ptr_ = ::cuda::experimental::coop::__get_grid_barrier_ptr();
+
+  template <class _MappingResult>
+  [[nodiscard]] _CCCL_DEVICE_API constexpr __synchronizer_instance specialize(const _MappingResult&) const noexcept
+  {
+    return *this;
+  }
 
   _CCCL_DEVICE_API ::cuda::std::uint32_t* __get_grid_barrier_ptr() const
   {

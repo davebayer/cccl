@@ -65,7 +65,8 @@ __do_group_view_mapping(const _Unit&, const _Group& __group, ::cuda::std::index_
     __mapping_result<__static_unit_counts<(_GroupMappingResult::static_unit_count(_Is) * __units_per_group_unit)...>,
                      _GroupMappingResult::is_always_exhaustive(),
                      _GroupMappingResult::is_always_contiguous(),
-                     _GroupMappingResult::static_group_rank()>;
+                     _GroupMappingResult::static_group_rank(),
+                     _Unit>;
 
   const auto& __group_mapping_result = __group.__mapping_result();
   if constexpr (!_GroupMappingResult::is_always_exhaustive())
@@ -104,7 +105,8 @@ template <class _Unit, class _Group>
                                     ::cuda::experimental::coop::__static_count_query_group<_Unit, _Group>()>,
         _GroupMappingResult::is_always_exhaustive(),
         _GroupMappingResult::is_always_contiguous(),
-        _GroupMappingResult::static_group_rank()>;
+        _GroupMappingResult::static_group_rank(),
+        _Unit>;
 
       const auto& __group_mapping_result = __group.__mapping_result();
       return _MappingResult{
@@ -121,7 +123,7 @@ template <class _Unit, class _Group>
 using __group_view_mapping_result_t _CCCL_NODEBUG =
   decltype(::cuda::experimental::coop::__do_group_view_mapping(_Unit{}, ::cuda::std::declval<_Group>()));
 
-template <class _Unit, class _Group, class _MappingResult>
+template <class _Unit, class _Group, class _MappingResult, class _SynchronizerInstance>
 class group_view
 {
   static_assert(__is_hierarchy_level_v<_Unit>);
@@ -131,7 +133,6 @@ class group_view
   static_assert(__unit_same_as_or_below_v<_Unit, typename _Group::unit_level>,
                 "unit_level must be same as or below the _Group's unit_level");
 
-  using _SynchronizerInstance _CCCL_NODEBUG = typename _Group::__synchronizer_instance_type;
   static_assert(__group_mapping_result<_MappingResult>);
 
   typename _Group::hierarchy_type __hier_;
@@ -144,7 +145,7 @@ public:
   using hierarchy_type                             = typename _Group::hierarchy_type;
   using __mapping_result_type _CCCL_NODEBUG        = _MappingResult;
   using __synchronizer_instance_type _CCCL_NODEBUG = _SynchronizerInstance;
-  using arrival_token                              = typename _Group::arrival_token;
+  using arrival_token                              = typename _SynchronizerInstance::arrival_token;
 
   group_view() = delete;
 
@@ -171,30 +172,23 @@ public:
   {}
 
   _CCCL_TEMPLATE(class _OtherUnit, class _OtherMappingResult)
-  _CCCL_REQUIRES(__unit_same_as_or_below_v<_Unit, _OtherUnit> _CCCL_AND ::cuda::std::is_same_v<
-                 _MappingResult,
-                 __group_view_mapping_result_t<_Unit, group_view<_OtherUnit, _Group, _OtherMappingResult>>>)
-  _CCCL_DEVICE_API explicit group_view(const _Unit& __unit,
-                                       const group_view<_OtherUnit, _Group, _OtherMappingResult>& __other)
+  _CCCL_REQUIRES(
+    __unit_same_as_or_below_v<_Unit, _OtherUnit> _CCCL_AND ::cuda::std::is_same_v<
+      _MappingResult,
+      __group_view_mapping_result_t<_Unit, group_view<_OtherUnit, _Group, _OtherMappingResult, _SynchronizerInstance>>>)
+  _CCCL_DEVICE_API explicit group_view(
+    const _Unit& __unit, const group_view<_OtherUnit, _Group, _OtherMappingResult, _SynchronizerInstance>& __other)
       : __hier_{__other.hierarchy()}
       , __mapping_result_{::cuda::experimental::coop::__do_group_view_mapping(__unit, __other)}
       , __synchronizer_instance_{__other.__synchronizer_instance()}
   {}
 
-  // Internal constructor for a view with a specialized mapping result.
-  _CCCL_DEVICE_API explicit group_view(const _Group& __group _CCCL_LIFETIMEBOUND, const _MappingResult& __mapping_result)
-      : __hier_{__group.hierarchy()}
-      , __mapping_result_{__mapping_result}
-      , __synchronizer_instance_{__group.__synchronizer_instance()}
-  {}
-
-  _CCCL_TEMPLATE(class _OtherUnit, class _OtherMappingResult)
-  _CCCL_REQUIRES(::cuda::std::is_same_v<_Unit, _OtherUnit>)
-  _CCCL_DEVICE_API explicit group_view(const group_view<_OtherUnit, _Group, _OtherMappingResult>& __group,
-                                       const _MappingResult& __mapping_result)
-      : __hier_{__group.hierarchy()}
-      , __mapping_result_{__mapping_result}
-      , __synchronizer_instance_{__group.__synchronizer_instance()}
+  // Internal constructor for a dispatch view over the same synchronization resources.
+  _CCCL_DEVICE_API explicit group_view(
+    const hierarchy_type& __hier, const _MappingResult& __mapping, const _SynchronizerInstance& __instance)
+      : __hier_{__hier}
+      , __mapping_result_{__mapping}
+      , __synchronizer_instance_{__instance}
   {}
 
   template <class _Fn>
@@ -335,21 +329,23 @@ public:
 _CCCL_TEMPLATE(class _Group)
 _CCCL_REQUIRES(group<_Group>)
 _CCCL_DEDUCTION_GUIDE_ATTRIBUTES group_view(const _Group&)
-  -> group_view<typename _Group::unit_level, _Group, __group_view_mapping_result_t<typename _Group::unit_level, _Group>>;
+  -> group_view<typename _Group::unit_level,
+                _Group,
+                __group_view_mapping_result_t<typename _Group::unit_level, _Group>,
+                typename _Group::__synchronizer_instance_type>;
 
-template <class _Unit, class _Group, class _MappingResult>
-_CCCL_DEDUCTION_GUIDE_ATTRIBUTES group_view(const group_view<_Unit, _Group, _MappingResult>&)
-  -> group_view<_Unit, _Group, _MappingResult>;
+template <class _Unit, class _Group, class _MappingResult, class _SynchronizerInstance>
+_CCCL_DEDUCTION_GUIDE_ATTRIBUTES group_view(const group_view<_Unit, _Group, _MappingResult, _SynchronizerInstance>&)
+  -> group_view<_Unit, _Group, _MappingResult, _SynchronizerInstance>;
 
 _CCCL_TEMPLATE(class _Unit, class _Group)
-_CCCL_REQUIRES(__is_hierarchy_level_v<_Unit> _CCCL_AND group<_Group>)
+_CCCL_REQUIRES(__is_hierarchy_level_v<_Unit> _CCCL_AND group<_Group> _CCCL_AND
+                 __unit_same_as_or_below_v<_Unit, typename _Group::unit_level>)
 _CCCL_DEDUCTION_GUIDE_ATTRIBUTES group_view(const _Unit&, const _Group&)
-  -> group_view<_Unit, _Group, __group_view_mapping_result_t<_Unit, _Group>>;
-
-_CCCL_TEMPLATE(class _Unit, class _OtherUnit, class _Group, class _MappingResult)
-_CCCL_REQUIRES(__is_hierarchy_level_v<_Unit> _CCCL_AND __unit_same_as_or_below_v<_Unit, _OtherUnit>)
-_CCCL_DEDUCTION_GUIDE_ATTRIBUTES group_view(const _Unit&, const group_view<_OtherUnit, _Group, _MappingResult>&)
-  -> group_view<_Unit, _Group, __group_view_mapping_result_t<_Unit, group_view<_OtherUnit, _Group, _MappingResult>>>;
+  -> group_view<_Unit,
+                __viewed_group_t<_Group>,
+                __group_view_mapping_result_t<_Unit, _Group>,
+                typename _Group::__synchronizer_instance_type>;
 } // namespace cuda::experimental::coop
 
 #endif // !_CCCL_DOXYGEN_INVOKED

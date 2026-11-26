@@ -66,13 +66,13 @@ class this_grid;
 template <class _Unit, class _ParentGroup, class _MappingResult, class _SynchronizerInstance>
 class generic_group;
 
-template <class _Unit, class _ParentGroup, class _MappingResult>
+template <class _Unit, class _ParentGroup, class _MappingResult, class _SynchronizerInstance>
 class virtual_group;
 
 template <class _Hierarchy>
 class coalesced_group;
 
-template <class _Unit, class _Group, class _MappingResult>
+template <class _Unit, class _Group, class _MappingResult, class _SynchronizerInstance>
 class group_view;
 
 // mappings
