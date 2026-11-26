@@ -55,6 +55,17 @@ class common_view : public view_interface<common_view<_View>>
 {
   _View __base_{};
 
+  template <class _Range>
+  [[nodiscard]] _CCCL_API static constexpr bool __use_base_iterator() noexcept
+  {
+    // Forward-only ranges use common_iterator without querying the size of the base.
+    if constexpr (random_access_range<_Range>)
+    {
+      return sized_range<_Range>;
+    }
+    return false;
+  }
+
 public:
 #if _CCCL_HAS_CONCEPTS()
   _CCCL_HIDE_FROM_ABI common_view()
@@ -86,7 +97,7 @@ public:
 
   [[nodiscard]] _CCCL_API constexpr auto begin()
   {
-    if constexpr (random_access_range<_View> && sized_range<_View>)
+    if constexpr (__use_base_iterator<_View>())
     {
       return ::cuda::std::ranges::begin(__base_);
     }
@@ -101,7 +112,7 @@ public:
   _CCCL_REQUIRES(range<const _View2>)
   [[nodiscard]] _CCCL_API constexpr auto begin() const
   {
-    if constexpr (random_access_range<const _View> && sized_range<const _View>)
+    if constexpr (__use_base_iterator<const _View>())
     {
       return ::cuda::std::ranges::begin(__base_);
     }
@@ -114,7 +125,7 @@ public:
 
   [[nodiscard]] _CCCL_API constexpr auto end()
   {
-    if constexpr (random_access_range<_View> && sized_range<_View>)
+    if constexpr (__use_base_iterator<_View>())
     {
       return ::cuda::std::ranges::begin(__base_) + ::cuda::std::ranges::size(__base_);
     }
@@ -129,7 +140,7 @@ public:
   _CCCL_REQUIRES(range<const _View2>)
   [[nodiscard]] _CCCL_API constexpr auto end() const
   {
-    if constexpr (random_access_range<const _View> && sized_range<const _View>)
+    if constexpr (__use_base_iterator<const _View>())
     {
       return ::cuda::std::ranges::begin(__base_) + ::cuda::std::ranges::size(__base_);
     }
