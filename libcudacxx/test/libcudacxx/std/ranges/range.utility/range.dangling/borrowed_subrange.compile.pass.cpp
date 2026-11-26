@@ -21,6 +21,7 @@
 #include <cuda/std/inplace_vector>
 #include <cuda/std/string_view>
 
+#include "test_iterators.h"
 #include "test_macros.h"
 
 #ifdef _LIBCUDACXX_HAS_STRING
@@ -50,8 +51,22 @@ template <class T, class = void>
 constexpr bool has_type = false;
 
 template <class T>
-constexpr bool has_type<T, cuda::std::void_t<cuda::std::ranges::borrowed_subrange_t<T>>> = false;
+constexpr bool has_type<T, cuda::std::void_t<cuda::std::ranges::borrowed_subrange_t<T>>> = true;
 #endif
+
+struct move_only_input_range
+{
+  using iterator = cpp20_input_iterator<int*>;
+  TEST_FUNC iterator begin();
+  TEST_FUNC sentinel_wrapper<iterator> end();
+};
+
+static_assert(cuda::std::ranges::range<move_only_input_range>);
+static_assert(has_type<move_only_input_range>);
+static_assert(
+  cuda::std::same_as<cuda::std::ranges::borrowed_subrange_t<move_only_input_range>, cuda::std::ranges::dangling>);
+// This iterator cannot act as its own sentinel in a borrowed subrange.
+static_assert(!has_type<move_only_input_range&>);
 
 static_assert(!has_type<int>);
 

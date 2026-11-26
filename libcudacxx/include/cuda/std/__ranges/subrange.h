@@ -414,8 +414,23 @@ get(subrange<_Iter, _Sent, _Kind>&& __subrange) // NOLINT(cppcoreguidelines-rval
 template <class _Ip, class _Sp, subrange_kind _Kp>
 inline constexpr bool enable_borrowed_range<subrange<_Ip, _Sp, _Kp>> = true;
 
+template <bool>
+struct __borrowed_subrange
+{
+  template <class>
+  using __type _CCCL_NODEBUG = dangling;
+};
+
+template <>
+struct __borrowed_subrange<true>
+{
+  template <class _Rp>
+  using __type _CCCL_NODEBUG = subrange<iterator_t<_Rp>>;
+};
+
 template <class _Rp>
-using borrowed_subrange_t = enable_if_t<range<_Rp>, _If<borrowed_range<_Rp>, subrange<iterator_t<_Rp>>, dangling>>;
+using borrowed_subrange_t =
+  enable_if_t<range<_Rp>, typename __borrowed_subrange<borrowed_range<_Rp>>::template __type<_Rp>>;
 
 _CCCL_END_NAMESPACE_CUDA_STD_RANGES
 
