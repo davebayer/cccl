@@ -29,6 +29,7 @@
 #include <cuda/std/__type_traits/is_reference.h>
 #include <cuda/std/__type_traits/remove_cvref.h>
 #include <cuda/std/__type_traits/remove_reference.h>
+#include <cuda/std/__type_traits/void_t.h>
 #include <cuda/std/__utility/auto_cast.h>
 #include <cuda/std/__utility/declval.h>
 
@@ -172,28 +173,28 @@ concept __unqualified_end =
     { _LIBCUDACXX_AUTO_CAST(end(__t)) } -> sentinel_for<iterator_t<_Tp>>;
   };
 #else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
-template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(
-  __member_end_,
-  requires(_Tp&& __t)(requires(__can_borrow<_Tp>),
-                      requires(__workaround_52970<_Tp>),
-                      typename(iterator_t<_Tp>),
-                      requires(sentinel_for<decltype(_LIBCUDACXX_AUTO_CAST(__t.end())), iterator_t<_Tp>>)));
+template <class _Tp, bool = __can_borrow<_Tp> && __workaround_52970<_Tp>, class = void>
+inline constexpr bool __member_end = false;
 
 template <class _Tp>
-_CCCL_CONCEPT __member_end = _CCCL_FRAGMENT(__member_end_, _Tp);
+inline constexpr bool __member_end<
+  _Tp,
+  true,
+  void_t<
+    iterator_t<_Tp>,
+    enable_if_t<sentinel_for<decltype(_LIBCUDACXX_AUTO_CAST(::cuda::std::declval<_Tp&>().end())), iterator_t<_Tp>>>>> =
+  true;
+
+template <class _Tp, bool = __can_borrow<_Tp> && __class_or_enum<remove_cvref_t<_Tp>> && !__member_end<_Tp>, class = void>
+inline constexpr bool __unqualified_end = false;
 
 template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(
-  __unqualified_end_,
-  requires(_Tp&& __t)(requires(!__member_end<_Tp>),
-                      requires(__can_borrow<_Tp>),
-                      requires(__class_or_enum<remove_cvref_t<_Tp>>),
-                      typename(iterator_t<_Tp>),
-                      requires(sentinel_for<decltype(_LIBCUDACXX_AUTO_CAST(end(__t))), iterator_t<_Tp>>)));
-
-template <class _Tp>
-_CCCL_CONCEPT __unqualified_end = _CCCL_FRAGMENT(__unqualified_end_, _Tp);
+inline constexpr bool __unqualified_end<
+  _Tp,
+  true,
+  void_t<iterator_t<_Tp>,
+         enable_if_t<sentinel_for<decltype(_LIBCUDACXX_AUTO_CAST(end(::cuda::std::declval<_Tp&>()))), iterator_t<_Tp>>>>> =
+  true;
 #endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
 
 struct __fn
