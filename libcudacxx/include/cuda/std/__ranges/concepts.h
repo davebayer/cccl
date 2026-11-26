@@ -203,11 +203,14 @@ using range_size_t = enable_if_t<sized_range<_Rp>, decltype(::cuda::std::ranges:
 // `enable_view` defined in <__ranges/enable_view.h>
 // `view_base` defined in <__ranges/enable_view.h>
 
-template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(__view_, requires()(requires(range<_Tp>), requires(movable<_Tp>), requires(enable_view<_Tp>)));
+template <class _Tp, class = void>
+inline constexpr bool __view = false;
 
 template <class _Tp>
-_CCCL_CONCEPT view = _CCCL_FRAGMENT(__view_, _Tp);
+inline constexpr bool __view<_Tp, void_t<enable_if_t<range<_Tp>>, enable_if_t<movable<_Tp>>>> = enable_view<_Tp>;
+
+template <class _Tp>
+_CCCL_CONCEPT view = __view<_Tp>;
 
 template <class _Range>
 _CCCL_CONCEPT_FRAGMENT(
