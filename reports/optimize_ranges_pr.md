@@ -5,7 +5,8 @@
 - In C++17, skip lower-priority ADL and iterator expressions once a member customization wins for `ranges::begin`, `end`, `data`, `empty`, `rbegin`, and `rend`. Check borrowing first for the operations that require it.
 - Probe the `ranges::size` subtraction fallback only after member and ADL customizations fail. Check the actual subtraction of the two returned values inside the constraint. This also avoids eager trailing-return substitution with NVCC and Clang in C++20.
 - For `views::take` and `views::drop`, check whether the range is one of the explicitly supported specializations before testing random access and sizing. Ordinary user ranges go directly to their generic adaptor.
-- Skip irrelevant checks in range concepts, `reverse_view`, `common_view`, `views::all`, and range adaptor composition. Add sixteen standalone workloads and an include-only control.
+- Honor one-way `iter_swap` customizations, short-circuit iterator difference-type and borrowed-subrange selection, and avoid redundant deduction in transform and zip views.
+- Skip irrelevant checks in range concepts, `reverse_view`, `common_view`, `views::all`, and range adaptor composition. Add 22 standalone workloads and an include-only control.
 
 ## First nine range optimizations
 
@@ -69,7 +70,7 @@ For `begin`, `end`, `data`, `empty`, `rbegin`, and `rend`, NVCC/GCC produced ide
 
 ## Seven additional range optimizations
 
-Each row compares one change with its immediate parent, using one warm-up pair and nine measured pairs. The include-only row compares the original main revision with all sixteen optimizations. Times are median compiler CPU seconds. The C++17 `views::all` wrapper workload saved 17.5% with NVCC/GCC, 18.6% with NVCC/Clang and 24.7% with NVRTC. The `reverse_view` workload saved 5.2–11.2% across all six configurations.
+Each row compares one change with its immediate parent, using one warm-up pair and nine measured pairs. The include-only row compares the original main revision with the sixteen optimizations through this update. Times are median compiler CPU seconds. The C++17 `views::all` wrapper workload saved 17.5% with NVCC/GCC, 18.6% with NVCC/Clang and 24.7% with NVRTC. The `reverse_view` workload saved 5.2–11.2% across all six configurations.
 
 | Benchmark | C++ | NVCC 13.5 + GCC 15 | NVCC 13.5 + Clang 22 | NVRTC 13.5 |
 |---|---:|---:|---:|---:|
@@ -118,9 +119,55 @@ The largest measured slowdown on a changed code path was C++17 `common_view` wit
 |---|---|---:|---:|
 | `common_view::begin/end` | NVCC + GCC, C++17 | 8.078 -> 8.572 (+6.1%) | 8.341 -> 8.219 (−1.5%) |
 
+## Six further range and iterator optimizations
+
+Times are median compiler CPU seconds from nine measured pairs per configuration. Each operation uses identical benchmark source against the optimization commit and its immediate parent. The include-only control compares upstream main (`ebeb7505ad`) with all 22 optimizations. On the 64-type workloads, `iter_swap` used 31.8–62.9% less compiler CPU and `range_difference_t` used 17.4–35.9% less across the six configurations.
+
+| Benchmark | C++ | NVCC 13.5 + GCC 15 | NVCC 13.5 + Clang 22 | NVRTC 13.5 |
+|---|---:|---:|---:|---:|
+| `ranges::sized_range` | 17 | 3.640 -> 3.467 (−4.7%) | 3.732 -> 3.734 (0.0%) | 0.563 -> 0.550 (−2.2%) |
+| `ranges::sized_range` | 20 | 2.277 -> 2.234 (−1.9%) | 2.380 -> 2.427 (+2.0%) | 0.255 -> 0.259 (+1.3%) |
+| `ranges::iter_swap` | 17 | 8.938 -> 4.306 (−51.8%) | 9.426 -> 4.550 (−51.7%) | 1.876 -> 0.696 (−62.9%) |
+| `ranges::iter_swap` | 20 | 5.772 -> 3.935 (−31.8%) | 6.609 -> 4.122 (−37.6%) | 1.040 -> 0.533 (−48.8%) |
+| `ranges::borrowed_subrange_t` | 17 | 11.333 -> 11.251 (−0.7%) | 12.553 -> 11.976 (−4.6%) | 2.374 -> 2.350 (−1.0%) |
+| `ranges::borrowed_subrange_t` | 20 | 5.366 -> 5.552 (+3.5%) | 6.297 -> 5.972 (−5.2%) | 0.947 -> 0.909 (−4.1%) |
+| `views::transform` | 17 | 7.141 -> 7.392 (+3.5%) | 7.493 -> 7.640 (+2.0%) | 1.694 -> 1.669 (−1.5%) |
+| `views::transform` | 20 | 4.379 -> 4.281 (−2.2%) | 4.861 -> 4.655 (−4.2%) | 0.759 -> 0.705 (−7.1%) |
+| `ranges::range_difference_t` | 17 | 5.992 -> 4.271 (−28.7%) | 6.435 -> 4.517 (−29.8%) | 1.206 -> 0.773 (−35.9%) |
+| `ranges::range_difference_t` | 20 | 3.406 -> 2.814 (−17.4%) | 3.747 -> 3.057 (−18.4%) | 0.480 -> 0.341 (−28.9%) |
+| `zip_view::begin/end` | 17 | 7.908 -> 7.760 (−1.9%) | 8.446 -> 8.159 (−3.4%) | 1.767 -> 1.709 (−3.2%) |
+| `zip_view::begin/end` | 20 | 5.851 -> 5.650 (−3.4%) | 6.257 -> 6.204 (−0.8%) | 1.032 -> 0.997 (−3.3%) |
+| Include only | 17 | 2.226 -> 2.203 (−1.0%) | 2.290 -> 2.263 (−1.2%) | 0.278 -> 0.280 (+0.7%) |
+| Include only | 20 | 2.044 -> 2.003 (−2.0%) | 1.997 -> 2.009 (+0.6%) | 0.178 -> 0.180 (+1.0%) |
+
+- `sized_range` rejects a non-range before probing its size in C++17. The benchmark queries 64 queue-like types that expose the size of their underlying storage. In C++20, NVCC/GCC produced identical preprocessed input for the host and both device passes after stripping line markers and blank lines.
+- `iter_swap` checks for a customization in the caller's operand order before considering either fallback. The benchmark swaps a cursor and a pointer through a one-way ADL overload on 64 tuple types. The previous move-exchange overload could conflict with a valid customization or suppress the fallback for the opposite order. [C++ draft, iterator.cust.swap](https://eel.is/c++draft/iterator.cust.swap)
+- `borrowed_subrange_t` constructs the iterator-based subrange type only for borrowed ranges. The benchmark requests the result for 64 temporary ranges with a reverse cursor. The regression test also checks that a temporary with a move-only input iterator yields `dangling`. [LWG 3551](https://cplusplus.github.io/LWG/issue3551)
+- `views::transform` constructs the known result type directly and checks that construction during substitution. The benchmark adapts 32 reverse-iterator ranges. The new test checks function-reference decay and distinguishes an rvalue move-only callable from an lvalue that would need a copy.
+- `zip_view::begin/end` constructs the already-known iterator or sentinel tuple with direct calls to each view, in tuple order. The benchmark obtains an iterator and a non-common sentinel for 24 pairs of views.
+- `range_difference_t` uses a named iterator difference type before probing subtraction. The benchmark queries 64 strided ranges. Clang deduced 64 subtraction function bodies before the change and zero after it in both dialects. When the iterator has no named type, the existing fallback still derives a signed type from integral subtraction.
+
+| Benchmark | GCC 15 class records, C++17 | Clang 22 constant evaluations, C++17 | Clang 22 constant evaluations, C++20 |
+|---|---:|---:|---:|
+| `ranges::sized_range` | 3,310 -> 2,925 (−11.6%) | 48,620 -> 48,429 (−0.4%) | 13,615 -> 13,615 (0.0%) |
+| `ranges::iter_swap` | 7,553 -> 2,303 (−69.5%) | 100,257 -> 6,517 (−93.5%) | 36,145 -> 5,535 (−84.7%) |
+| `ranges::borrowed_subrange_t` | 9,213 -> 9,151 (−0.7%) | 216,358 -> 203,558 (−5.9%) | 56,693 -> 53,237 (−6.1%) |
+| `views::transform` | 5,820 -> 5,820 (0.0%) | 122,321 -> 121,297 (−0.8%) | 35,691 -> 30,155 (−15.5%) |
+| `ranges::range_difference_t` | 5,432 -> 3,576 (−34.2%) | 95,898 -> 49,950 (−47.9%) | 27,829 -> 15,474 (−44.4%) |
+| `zip_view::begin/end` | 4,342 -> 4,084 (−5.9%) | 91,730 -> 81,828 (−10.8%) | 41,902 -> 33,629 (−19.7%) |
+
+The first C++20 NVCC/GCC run for `borrowed_subrange_t` was 3.5% slower, and a fresh nine-pair run was 3.9% faster. For the final typed zip implementation, NVCC/Clang C++20 used 0.8% less CPU in the main run and 6.2% less in the repeat. The two C++17 transform rows also have independent nine-pair repeats below.
+
+| Benchmark | Configuration | First run (s) | Repeat (s) |
+|---|---|---:|---:|
+| `ranges::borrowed_subrange_t` | NVCC + GCC, C++20 | 5.366 -> 5.552 (+3.5%) | 5.289 -> 5.083 (−3.9%) |
+| `views::transform` | NVCC + Clang, C++17 | 7.493 -> 7.640 (+2.0%) | 6.491 -> 6.337 (−2.4%) |
+| `views::transform` | NVCC + GCC, C++17 | 7.141 -> 7.392 (+3.5%) | 5.973 -> 5.931 (−0.7%) |
+| `zip_view::begin/end` | NVCC + Clang, C++20 | 6.257 -> 6.204 (−0.8%) | 5.081 -> 4.766 (−6.2%) |
+
 ## Reproduce
 
-Linux x86-64, Intel Core i9-14900K, CUDA Toolkit 13.5.37, GCC 15.2.0, Clang 22.1.8, and `sm_120a`. Each matrix cell used one warm-up compile per side, followed by five measured pairs for the first nine optimizations and nine pairs for the seven additional optimizations and the repeat measurements in alternating before/after order on the same pinned logical CPU. Independent pairs of header revisions were measured on multiple physical cores. NVCC CPU time includes the driver and compiler subprocesses with `-O2 -c`. NVRTC CPU time covers `nvrtcCompileProgram` with a new program on every call and its backend cache disabled. No benchmark launches a kernel. Individual sample times, in measured-pair order, are in `reports/optimize_ranges_samples.csv`.
+Linux x86-64, Intel Core i9-14900K, CUDA Toolkit 13.5.37, GCC 15.2.0, Clang 22.1.8, and `sm_120a`. Each matrix cell used one warm-up compile per side, followed by five measured pairs for the first nine optimizations and nine pairs for the subsequent optimizations and repeat measurements in alternating before/after order on the same pinned logical CPU. Independent pairs of header revisions were measured on multiple physical cores. NVCC CPU time includes the driver and compiler subprocesses with `-O2 -c`. NVRTC CPU time covers `nvrtcCompileProgram` with a new program on every call and its backend cache disabled. No benchmark launches a kernel. Individual sample times, in measured-pair order, are in `reports/optimize_ranges_samples.csv`.
 
 Run from the version of the branch containing the benchmark suite. Substitute any operation and its commit from the list below to run all six configurations for that operation.
 
@@ -145,6 +192,8 @@ The first nine optimization commits, in measurement order, are `begin` (`94d82ac
 
 For the seven additional workloads, use `--repeats 9`. Their benchmark filenames and optimization commits are `reverse.cu` (`df2bad63a7`), `viewable_range.cu` (`9088e5a063`), `contiguous_range.cu` (`f8444aa65e`), `common.cu` (`6924b7409b`), `pipe.cu` (`c0737d8109`), `view.cu` (`8b716764ca`), `all.cu` (`99db57a0b9`).
 
+For the six further workloads use `--repeats 9`. The benchmark files and commits are `sized_range.cu` (`7181b31341`), `iter_swap.cu` (`5ae0992c44`), `borrowed_subrange.cu` (`c94857dc9c`), `transform.cu` (`3730061915`), `range_difference.cu` (`9ffc892405`), `zip_access.cu` (`a1fb9b4ae8`).
+
 ## Validation
 
 - On an RTX PRO 6000 Blackwell Workstation Edition, all 38 targeted lit tests passed in each of the four NVCC host-compiler/dialect combinations (15 range-access, 14 take, and 9 drop). All five new regression sources also compiled with NVRTC 13.5 in both dialects.
@@ -165,3 +214,13 @@ For the seven additional workloads, use `--repeats 9`. Their benchmark filenames
 | GPU workload | C++17 runtime | C++20 runtime |
 |---|---:|---:|
 | Combined range consumer | 8.144 µs -> 8.177 µs (+0.033 µs) | 8.071 µs -> 8.095 µs (+0.024 µs) |
+
+### Six further changes
+
+The six affected lit directories contain 57 tests. With each of GCC 15 and Clang 22 under NVCC 13.5, 56 passed in C++17 and 57 in C++20 on the RTX PRO 6000. The remaining C++17 case tests C++20 concept subsumption. All six regression sources compiled with NVRTC 13.5 and MSVC 19.52 in both dialects. Root clang-tidy 22 with the CCCL plugin passed on all 18 changed C++ files in CUDA host and device modes under both dialects.
+
+The combined consumer swaps through ADL, zips and transforms two distinct input buffers, obtains a borrowed subrange and indexes the result using its range difference type. All 4,194,304 output elements matched. The before and after `sm_120a` SASS was identical in both dialects, with 32 instructions, 12 registers, zero stack bytes and zero spills. Runtime uses 21 alternating measured batches of 32 launches.
+
+| GPU workload | C++17 runtime | C++20 runtime |
+|---|---:|---:|
+| Combined range and iterator consumer | 8.192 µs -> 8.224 µs (+0.032 µs) | 8.212 µs -> 8.222 µs (+0.010 µs) |
