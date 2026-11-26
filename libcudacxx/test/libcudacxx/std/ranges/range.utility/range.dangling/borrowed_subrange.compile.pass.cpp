@@ -12,14 +12,13 @@
 // cuda::std::ranges::borrowed_subrange_t;
 
 #include <cuda/std/concepts>
+#include <cuda/std/inplace_vector>
 #include <cuda/std/ranges>
 #include <cuda/std/span>
 #include <cuda/std/string_view>
 #ifdef _LIBCUDACXX_HAS_STRING
 #  include <cuda/std/string>
 #endif // _LIBCUDACXX_HAS_STRING
-#include <cuda/std/inplace_vector>
-#include <cuda/std/string_view>
 
 #include "test_iterators.h"
 #include "test_macros.h"
@@ -43,16 +42,11 @@ static_assert(cuda::std::same_as<cuda::std::ranges::borrowed_subrange_t<cuda::st
 static_assert(cuda::std::same_as<cuda::std::ranges::borrowed_subrange_t<cuda::std::string_view>,
                                  cuda::std::ranges::subrange<cuda::std::string_view::iterator>>);
 
-#if TEST_STD_VER > 2017
-template <class T>
-constexpr bool has_type = requires { typename cuda::std::ranges::borrowed_subrange_t<T>; };
-#else
 template <class T, class = void>
 constexpr bool has_type = false;
 
 template <class T>
 constexpr bool has_type<T, cuda::std::void_t<cuda::std::ranges::borrowed_subrange_t<T>>> = true;
-#endif
 
 struct move_only_input_range
 {
