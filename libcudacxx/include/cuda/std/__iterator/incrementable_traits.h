@@ -96,8 +96,8 @@ struct incrementable_traits<_Tp>
   using difference_type = typename _Tp::difference_type;
 };
 
-template <__has_integral_minus _Tp>
-  requires(!__has_member_difference_type<_Tp>)
+template <class _Tp>
+  requires(!__has_member_difference_type<_Tp>) && __has_integral_minus<_Tp>
 struct incrementable_traits<_Tp>
 {
   using difference_type = make_signed_t<decltype(::cuda::std::declval<_Tp>() - ::cuda::std::declval<_Tp>())>;
@@ -134,9 +134,10 @@ struct incrementable_traits<_Tp, enable_if_t<!is_pointer_v<_Tp> && !is_const_v<_
 };
 
 template <class _Tp>
-struct incrementable_traits<
-  _Tp,
-  enable_if_t<!is_pointer_v<_Tp> && !is_const_v<_Tp> && !__has_member_difference_type<_Tp> && __has_integral_minus<_Tp>>>
+struct incrementable_traits<_Tp,
+                            void_t<enable_if_t<!is_pointer_v<_Tp> && !is_const_v<_Tp>>,
+                                   enable_if_t<!__has_member_difference_type<_Tp>>,
+                                   enable_if_t<__has_integral_minus<_Tp>>>>
 {
   using difference_type = make_signed_t<decltype(::cuda::std::declval<_Tp>() - ::cuda::std::declval<_Tp>())>;
 };

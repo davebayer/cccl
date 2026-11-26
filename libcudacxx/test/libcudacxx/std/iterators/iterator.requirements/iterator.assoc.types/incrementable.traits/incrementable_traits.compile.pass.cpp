@@ -79,6 +79,21 @@ struct non_integral_difference_type
 };
 static_assert(check_incrementable_traits<non_integral_difference_type, void>());
 
+template <class Difference>
+struct named_difference
+{
+  using difference_type = Difference;
+
+  TEST_FUNC friend auto operator-(const named_difference&, const named_difference&)
+  {
+    return Difference::unused;
+  }
+};
+
+static_assert(check_incrementable_traits<named_difference<long>, long>());
+static_assert(check_incrementable_traits<named_difference<unsigned>, unsigned>());
+static_assert(check_incrementable_traits<named_difference<void>, void>());
+
 struct int_subtraction
 {
   TEST_FUNC friend int operator-(int_subtraction, int_subtraction);
