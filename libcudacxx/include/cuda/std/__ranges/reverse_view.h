@@ -55,9 +55,20 @@ template <class _View, class = enable_if_t<view<_View>>, class = enable_if_t<bid
 #endif // !_CCCL_HAS_CONCEPTS()
 class reverse_view : public view_interface<reverse_view<_View>>
 {
-  // We cache begin() whenever ranges::next is not guaranteed O(1) to provide an
-  // amortized O(1) begin() method.
-  static constexpr bool _UseCache = !random_access_range<_View> && !common_range<_View>;
+  // A common range supplies its end iterator directly, regardless of its iterator category.
+  [[nodiscard]] _CCCL_API static _CCCL_CONSTEVAL bool __use_cache() noexcept
+  {
+    if constexpr (common_range<_View>)
+    {
+      return false;
+    }
+    else
+    {
+      return !random_access_range<_View>;
+    }
+  }
+
+  static constexpr bool _UseCache = __use_cache();
   using _Cache _CCCL_NODEBUG =
     _If<_UseCache, __non_propagating_cache<reverse_iterator<iterator_t<_View>>>, __empty_cache>;
   _CCCL_NO_UNIQUE_ADDRESS _Cache __cached_begin_ = _Cache();
@@ -210,6 +221,7 @@ struct __unwrapped_reverse_subrange<
 };
 
 template <class _Tp>
+// NOLINTNEXTLINE(readability-redundant-typename): The dependent type requires typename in C++17.
 using __unwrapped_reverse_subrange_t _CCCL_NODEBUG = typename __unwrapped_reverse_subrange<_Tp>::type;
 
 struct __fn : __range_adaptor_closure<__fn>
