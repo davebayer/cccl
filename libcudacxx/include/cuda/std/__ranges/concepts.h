@@ -196,7 +196,7 @@ template <class _Tp>
 _CCCL_CONCEPT sized_range = __sized_range<_Tp>;
 
 template <class _Rp>
-using range_size_t = enable_if_t<sized_range<_Rp>, decltype(::cuda::std::ranges::size(::cuda::std::declval<_Rp&>()))>;
+using range_size_t = decltype(::cuda::std::ranges::size(::cuda::std::declval<enable_if_t<sized_range<_Rp>, _Rp>&>()));
 
 // `disable_sized_range` defined in `<__ranges/size.h>`
 
