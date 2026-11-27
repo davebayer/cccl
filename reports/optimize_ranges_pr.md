@@ -1,5 +1,7 @@
 # Reduce compile time for libcu++ range access and adaptors
 
+The [cumulative compile-time comparison](optimize_ranges_cumulative_pr.md) measures every workload against the same upstream baseline. The tables below measure each optimization against its parent commit.
+
 ## Summary
 
 - In C++17, skip lower-priority ADL and iterator expressions once a member customization wins for `ranges::begin`, `end`, `data`, `empty`, `rbegin`, and `rend`. Check borrowing first for the operations that require it.
