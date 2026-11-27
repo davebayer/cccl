@@ -77,8 +77,7 @@ struct __deref_move_result<_Tp&>
 struct __fn
 {
   _CCCL_EXEC_CHECK_DISABLE
-  _CCCL_TEMPLATE(class _Ip)
-  _CCCL_REQUIRES(__unqualified_iter_move<_Ip>)
+  template <class _Ip, class = enable_if_t<__unqualified_iter_move<_Ip>>>
   [[nodiscard]] _CCCL_API constexpr auto
   _CCCL_STATIC_CALL_OPERATOR(_Ip&& __i) noexcept(noexcept(iter_move(::cuda::std::forward<_Ip>(__i))))
     -> decltype(iter_move(::cuda::std::forward<_Ip>(__i)))
