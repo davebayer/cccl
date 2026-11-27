@@ -24,9 +24,9 @@
 #include <cuda/std/__concepts/convertible_to.h>
 #include <cuda/std/__concepts/destructible.h>
 #include <cuda/std/__concepts/same_as.h> // IWYU pragma: keep
-#include <cuda/std/__type_traits/add_lvalue_reference.h> // IWYU pragma: keep
 #include <cuda/std/__type_traits/is_callable.h> // IWYU pragma: keep
 #include <cuda/std/__type_traits/is_constructible.h>
+#include <cuda/std/__type_traits/is_convertible.h>
 #include <cuda/std/__type_traits/is_nothrow_constructible.h>
 
 #include <cuda/std/__cccl/prologue.h>
@@ -59,12 +59,14 @@ concept copy_constructible =
 
 #else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
 
-template <class _Tp, class... _Args>
-_CCCL_CONCEPT_FRAGMENT(__constructible_from_,
-                       requires()(requires(destructible<_Tp>), requires(is_constructible_v<_Tp, _Args...>)));
+template <bool, class _Tp, class... _Args>
+inline constexpr bool __constructible_from = false;
 
 template <class _Tp, class... _Args>
-_CCCL_CONCEPT constructible_from = _CCCL_FRAGMENT(__constructible_from_, _Tp, _Args...);
+inline constexpr bool __constructible_from<true, _Tp, _Args...> = is_constructible_v<_Tp, _Args...>;
+
+template <class _Tp, class... _Args>
+_CCCL_CONCEPT constructible_from = __constructible_from<destructible<_Tp>, _Tp, _Args...>;
 
 template <class _Tp>
 _CCCL_CONCEPT_FRAGMENT(__default_initializable_, requires()((::new _Tp)));
@@ -80,23 +82,28 @@ template <class _Tp>
 _CCCL_CONCEPT default_initializable = _CCCL_FRAGMENT(_Default_initializable_, _Tp);
 
 // [concept.moveconstructible]
-template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(__move_constructible_,
-                       requires()(requires(constructible_from<_Tp, _Tp>), requires(convertible_to<_Tp, _Tp>)));
+// Direct construction from the same class (or a reference to it) already
+// tests the explicit conversion required by convertible_to. Only its implicit
+// conversion check remains.
+template <class _Tp, bool = constructible_from<_Tp, _Tp>>
+inline constexpr bool __move_constructible = false;
 
 template <class _Tp>
-_CCCL_CONCEPT move_constructible = _CCCL_FRAGMENT(__move_constructible_, _Tp);
+inline constexpr bool __move_constructible<_Tp, true> = is_convertible_v<_Tp, _Tp>;
 
-// [concept.copyconstructible]
+template <class _Tp>
+_CCCL_CONCEPT move_constructible = __move_constructible<_Tp>;
+
+template <class _Tp, class _From>
+inline constexpr bool __copy_constructible_from = is_constructible_v<_Tp, _From> && is_convertible_v<_From, _Tp>;
+
 template <class _Tp>
 _CCCL_CONCEPT_FRAGMENT(
   __copy_constructible_,
-  requires()(
-    requires(move_constructible<_Tp>),
-    requires(constructible_from<_Tp, add_lvalue_reference_t<_Tp>>&& convertible_to<add_lvalue_reference_t<_Tp>, _Tp>),
-    requires(constructible_from<_Tp, const add_lvalue_reference_t<_Tp>>&&
-               convertible_to<const add_lvalue_reference_t<_Tp>, _Tp>),
-    requires(constructible_from<_Tp, const _Tp>&& convertible_to<const _Tp, _Tp>)));
+  requires()(requires(move_constructible<_Tp>),
+             requires(__copy_constructible_from<_Tp, _Tp&>),
+             requires(__copy_constructible_from<_Tp, const _Tp&>),
+             requires(__copy_constructible_from<_Tp, const _Tp>)));
 
 template <class _Tp>
 _CCCL_CONCEPT copy_constructible = _CCCL_FRAGMENT(__copy_constructible_, _Tp);
