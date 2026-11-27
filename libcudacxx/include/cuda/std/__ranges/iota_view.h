@@ -150,11 +150,17 @@ public:
       , __bound_sentinel_(::cuda::std::move(__bound_sentinel))
   {
     // Validate the precondition if possible.
-    if constexpr (totally_ordered_with<_Start, _BoundSentinel>)
-    {
-      _CCCL_ASSERT(::cuda::std::ranges::less_equal()(__value_, __bound_sentinel_),
-                   "Precondition violated: value is greater than bound.");
-    }
+    _CCCL_ASSERT(([this] {
+                   if constexpr (totally_ordered_with<_Start, _BoundSentinel>)
+                   {
+                     return ::cuda::std::ranges::less_equal()(__value_, __bound_sentinel_);
+                   }
+                   else
+                   {
+                     return true;
+                   }
+                 }()),
+                 "Precondition violated: value is greater than bound.");
   }
 
   _CCCL_TEMPLATE(class _BoundSentinel2 = _BoundSentinel)
