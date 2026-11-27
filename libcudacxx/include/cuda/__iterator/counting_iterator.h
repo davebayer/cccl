@@ -70,6 +70,12 @@ _CCCL_CONCEPT __advanceable = _CCCL_REQUIRES_EXPR((_Iter), _Iter __iter, const _
   requires(::cuda::std::is_constructible_v<_Iter, decltype(__j - __n)>),
   requires(::cuda::std::convertible_to<decltype(__j - __j), _IotaDiffT<_Iter>>));
 
+#if !_CCCL_HAS_CONCEPTS()
+// For a complete object pointer, increment, decrement and signed offsets are built in.
+template <class _Tp>
+inline constexpr bool __advanceable<_Tp*> = ::cuda::std::incrementable<_Tp*>;
+#endif // !_CCCL_HAS_CONCEPTS()
+
 template <class, class = void>
 struct __counting_iterator_category
 {};
