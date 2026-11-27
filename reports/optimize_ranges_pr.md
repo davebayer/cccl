@@ -310,3 +310,63 @@ Each workload compares the listed commit with its immediate parent on the same c
 | Workload | Compiler | Core | First run (s) | Repeat (s) |
 | --- | --- | --- | ---: | ---: |
 | `views::common` | NVCC 13.5 + Clang 22 | E | 9.832 -> 10.138 (+3.1%) | 9.173 -> 9.319 (+1.6%) |
+
+## C++17 compile-time changes for the 10% target
+
+Each row compares the listed commit with its immediate parent. The compiler columns show median CPU seconds, with one warm-up per revision and nine alternating measured pairs. The core column gives the class used by GCC, Clang and NVRTC respectively when they differ.
+
+| Change | Commit | Workload | Core | NVCC 13.5 + GCC 15 | NVCC 13.5 + Clang 22 | NVRTC 13.5 |
+| --- | --- | --- | --- | ---: | ---: | ---: |
+| Expose the ADL iterator move result without deducing the function body | [b902859ccb](https://github.com/davebayer/cccl/commit/b902859ccbcb9348673dd9a65f162607e506eea4) | `ranges::iter_move` (ADL customization) | P | 4.702 -> 3.992 (−15.1%) | 4.813 -> 3.986 (−17.2%) | 0.795 -> 0.624 (−21.5%) |
+| Reuse the common assignment requirement for pointer copies | [ed6e9c51e9](https://github.com/davebayer/cccl/commit/ed6e9c51e9debb6cbb8b48cd3c3f04c5cb1447c8) | `iota_view` bounded pointer construction | P | 3.440 -> 3.198 (−7.0%) | 3.538 -> 3.242 (−8.4%) | 0.634 -> 0.556 (−12.4%) |
+| Recognize built-in counting iterator arithmetic for pointers | [8bae5b1fba](https://github.com/davebayer/cccl/commit/8bae5b1fbaad731b5ede3f00d5f72c8c2db0a43f) | `views::iota` | P | 3.451 -> 3.223 (−6.6%) | 3.519 -> 3.402 (−3.3%) | 0.591 -> 0.564 (−4.6%) |
+| Reuse the built-in properties of bounded arrays in range refinements | [08bb594de5](https://github.com/davebayer/cccl/commit/08bb594de5cb30d80b5fe2a53765671556c87808) | `ref_view` members | P | 2.700 -> 2.623 (−2.8%) | 2.813 -> 2.699 (−4.1%) | 0.417 -> 0.389 (−6.7%) |
+| Use the array forward declaration in span | [a844d73030](https://github.com/davebayer/cccl/commit/a844d73030966f9cbbd9e22eeccfe03a8671d4e2) | `<cuda/std/ranges>` include only | P | 2.138 -> 2.086 (−2.4%) | 2.202 -> 2.130 (−3.3%) | 0.269 -> 0.258 (−4.1%) |
+| Store a partial range adaptor's bound argument directly | [c61ea8ec38](https://github.com/davebayer/cccl/commit/c61ea8ec381a1925128ddc6c8e66c4a2bd0798b5) | `views::transform` and `views::filter` closure composition | P | 13.073 -> 9.022 (−31.0%) | 13.760 -> 9.279 (−32.6%) | 2.598 -> 1.739 (−33.1%) |
+| Parse bounds exception types only for host compilation | [1aad72294a](https://github.com/davebayer/cccl/commit/1aad72294a2d1150aeacb4a9c67a397761269eb4) | `ranges::viewable_range` | P | 2.261 -> 2.156 (−4.6%) | 2.328 -> 2.174 (−6.6%) | 0.278 -> 0.277 (−0.4%) |
+| Reuse direct construction checks in C++17 object concepts | [2e6a21f7a0](https://github.com/davebayer/cccl/commit/2e6a21f7a0f5d1d8dc66ab949a22f8a5d5c9e957) | `views::single` | P | 3.636 -> 3.299 (−9.3%) | 3.927 -> 3.654 (−6.9%) | 0.653 -> 0.579 (−11.3%) |
+| Cache the C++17 iterator rvalue reference result | [b011e551f4](https://github.com/davebayer/cccl/commit/b011e551f437eb0a2c8bbfc4609a29bfcd683386) | `ranges::range_rvalue_reference_t` | P | 2.994 -> 2.929 (−2.2%) | 3.091 -> 3.033 (−1.9%) | 0.504 -> 0.492 (−2.5%) |
+| Check ADL eligibility before substituting the result (Clang C++20 correctness) | [0e77f5e09c](https://github.com/davebayer/cccl/commit/0e77f5e09c4b20645d7cd090bfbc3090c5e562fc) | `ranges::iter_move` (ADL customization) | E | 7.364 -> 7.276 (−1.2%) | 7.895 -> 7.910 (+0.2%) | 1.257 -> 1.264 (+0.5%) |
+| Limit swap ADL to class and enumeration operands | [56c8a438e5](https://github.com/davebayer/cccl/commit/56c8a438e5d04e11c079c7c8e1c077f7852bee6f) | `ranges::swap` (raw pointers) | E | 8.236 -> 8.041 (−2.4%) | 8.742 -> 8.544 (−2.3%) | 1.520 -> 1.461 (−3.9%) |
+| Include the tuple facilities used by forwarding wrappers and repeat views | [ea1c244f01](https://github.com/davebayer/cccl/commit/ea1c244f01196c3f261219fff892da11e22fa9d5) | `views::empty` | E | 4.559 -> 4.448 (−2.4%) | 4.934 -> 4.744 (−3.9%) | 0.718 -> 0.698 (−2.8%) |
+| Cache compiler-version checks repeated by each header prologue | [44c5a12d26](https://github.com/davebayer/cccl/commit/44c5a12d265d1cad9df7b0d886c4c1b92e3b2a97) | `ranges::view` | E | 7.484 -> 7.437 (−0.6%) | 7.514 -> 7.565 (+0.7%) | 1.290 -> 1.252 (−3.0%) |
+
+The first ADL iterator move change made the result type available in the declaration. The later eligibility check prevents substitution for operands outside the ADL branch, including pointers with an associated user-defined type. Both commits appear above so the cost of the correctness fix is visible. The cumulative ADL row uses the final implementation.
+
+The sample series are `update6` and `update6-repeat`. The CSV contains both C++17 and C++20 measurements for each change. [Raw CPU-time samples](https://github.com/davebayer/cccl/blob/optimize_ranges/reports/optimize_ranges_samples.csv)
+
+### Direct measurements for the two workloads below 10%
+
+These paired C++17 builds compare the previous headers (`e26bf74a572d2e5a8ea9d2ee30d01445a67c9504`) directly with the final headers (`44c5a12d265d1cad9df7b0d886c4c1b92e3b2a97`). All six comparisons ran on performance cores. For `views::empty`, the cumulative upstream comparison ran on efficiency cores. Each cell gives median CPU seconds. The CSV series is `targeted3-direct`.
+
+| Workload | NVCC 13.5 + GCC 15 | NVCC 13.5 + Clang 22 | NVRTC 13.5 |
+| --- | ---: | ---: | ---: |
+| `ranges::view` | 4.145 -> 3.828 (−7.6%) | 4.195 -> 4.015 (−4.3%) | 0.645 -> 0.649 (+0.7%) |
+| `views::empty` | 2.613 -> 2.346 (−10.2%) | 2.719 -> 2.387 (−12.2%) | 0.393 -> 0.360 (−8.4%) |
+
+## Intermediate C++17 results for the 20 targeted workloads
+
+The first twelve changes were measured at `ea1c244f01196c3f261219fff892da11e22fa9d5` against upstream `ebeb7505ad946445b2c2fd8d7b1b8f07a474fdae` before the final header change. This partial sweep completed 134 of 252 cumulative compiler/workload comparisons. The table contains all three compilers for each of the 20 workloads previously under 10%. Cells give median CPU seconds and their percentage change. The last column compares mean savings at `e26bf74a57` and this intermediate commit. All completed checkpoint samples are in the `cumulative3-intermediate` and `cumulative3-intermediate-e-control` CSV series.
+
+| Targeted workload | Core | NVCC 13.5 + GCC 15 | NVCC 13.5 + Clang 22 | NVRTC 13.5 | Mean savings, previous -> intermediate |
+| --- | --- | ---: | ---: | ---: | ---: |
+| `views::transform` and `views::filter` closure composition | P | 13.889 -> 7.078 (−49.0%) | 14.394 -> 7.278 (−49.4%) | 2.814 -> 1.376 (−51.1%) | 0.8% -> 49.9% (+49.1 pp) |
+| `ranges::enable_view` | E | 4.270 -> 3.747 (−12.2%) | 4.824 -> 4.259 (−11.7%) | 0.631 -> 0.583 (−7.6%) | 1.3% -> 10.6% (+9.3 pp) |
+| `ranges::view` | P | 4.436 -> 4.090 (−7.8%) | 4.496 -> 4.314 (−4.1%) | 0.698 -> 0.684 (−2.0%) | 1.3% -> 4.6% (+3.3 pp) |
+| `views::empty` | E | 4.742 -> 4.387 (−7.5%) | 5.201 -> 4.707 (−9.5%) | 0.732 -> 0.691 (−5.7%) | 1.7% -> 7.6% (+5.8 pp) |
+| `ranges::swap` | E | 4.074 -> 3.582 (−12.1%) | 4.514 -> 3.833 (−15.1%) | 0.550 -> 0.498 (−9.4%) | 2.4% -> 12.2% (+9.8 pp) |
+| `ranges::viewable_range` | P | 2.551 -> 2.141 (−16.1%) | 2.568 -> 2.222 (−13.5%) | 0.337 -> 0.306 (−9.2%) | 3.3% -> 13.0% (+9.7 pp) |
+| `range_adaptor_closure` application | E | 4.935 -> 4.234 (−14.2%) | 5.403 -> 4.624 (−14.4%) | 0.699 -> 0.617 (−11.8%) | 3.6% -> 13.5% (+9.8 pp) |
+| `views::indices` | E | 4.916 -> 4.096 (−16.7%) | 5.274 -> 4.408 (−16.4%) | 0.700 -> 0.582 (−16.8%) | 4.0% -> 16.6% (+12.6 pp) |
+| `ranges::iter_move` (ADL customization) | P | 5.558 -> 4.092 (−26.4%) | 5.162 -> 4.270 (−17.3%) | 0.858 -> 0.675 (−21.4%) | 4.6% -> 21.8% (+17.2 pp) |
+| `views::repeat` | E | 6.846 -> 5.725 (−16.4%) | 7.371 -> 6.077 (−17.5%) | 1.202 -> 0.986 (−18.0%) | 5.2% -> 17.3% (+12.1 pp) |
+| `transform_view` traversal and observers | E | 7.120 -> 5.979 (−16.0%) | 7.639 -> 6.401 (−16.2%) | 1.304 -> 1.091 (−16.4%) | 6.0% -> 16.2% (+10.2 pp) |
+| `views::drop_while` | E | 9.392 -> 7.242 (−22.9%) | 10.308 -> 7.793 (−24.4%) | 1.935 -> 1.442 (−25.5%) | 6.1% -> 24.3% (+18.1 pp) |
+| `views::iota` | E | 8.031 -> 6.161 (−23.3%) | 8.620 -> 6.557 (−23.9%) | 1.445 -> 1.047 (−27.5%) | 6.3% -> 24.9% (+18.6 pp) |
+| `ref_view` members | E | 5.916 -> 4.755 (−19.6%) | 6.356 -> 5.192 (−18.3%) | 0.928 -> 0.722 (−22.2%) | 6.6% -> 20.1% (+13.4 pp) |
+| `views::filter` | E | 7.098 -> 5.828 (−17.9%) | 7.818 -> 6.387 (−18.3%) | 1.262 -> 1.015 (−19.5%) | 7.7% -> 18.6% (+10.9 pp) |
+| `views::take_while` | E | 8.153 -> 6.627 (−18.7%) | 8.845 -> 7.097 (−19.8%) | 1.574 -> 1.226 (−22.1%) | 7.8% -> 20.2% (+12.4 pp) |
+| `views::single` | E | 8.188 -> 6.509 (−20.5%) | 8.885 -> 6.939 (−21.9%) | 1.568 -> 1.200 (−23.5%) | 7.9% -> 22.0% (+14.0 pp) |
+| `ranges::size` | P | 2.946 -> 2.092 (−29.0%) | 2.498 -> 2.157 (−13.7%) | 0.319 -> 0.282 (−11.6%) | 8.3% -> 18.5% (+10.2 pp) |
+| `ranges::range_rvalue_reference_t` | E | 6.918 -> 5.413 (−21.7%) | 7.549 -> 5.899 (−21.9%) | 1.233 -> 0.930 (−24.6%) | 8.4% -> 22.7% (+14.3 pp) |
+| `ranges::data` | P | 3.092 -> 2.154 (−30.3%) | 2.583 -> 2.221 (−14.0%) | 0.363 -> 0.325 (−10.5%) | 9.6% -> 18.7% (+9.2 pp) |
