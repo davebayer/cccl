@@ -27,6 +27,16 @@ static_assert(copyable<int volatile*>);
 static_assert(copyable<int volatile const*>);
 static_assert(copyable<int (*)()>);
 
+struct incomplete;
+static_assert(copyable<incomplete*>);
+
+struct no_common_reference
+{};
+template <>
+struct cuda::std::common_reference<no_common_reference* const&, no_common_reference* const&>
+{};
+static_assert(!copyable<no_common_reference*>);
+
 struct S
 {};
 static_assert(copyable<S>);

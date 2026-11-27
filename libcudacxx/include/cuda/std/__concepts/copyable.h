@@ -51,6 +51,11 @@ _CCCL_CONCEPT_FRAGMENT(
 template <class _Tp>
 _CCCL_CONCEPT copyable = _CCCL_FRAGMENT(__copyable_, _Tp);
 
+// Pointer copies use built-in construction and assignment. All four assignment
+// requirements have the same common-reference operands.
+template <class _Tp>
+inline constexpr bool copyable<_Tp*> = assignable_from<_Tp*&, _Tp*>;
+
 #endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
 
 _CCCL_END_NAMESPACE_CUDA_STD
