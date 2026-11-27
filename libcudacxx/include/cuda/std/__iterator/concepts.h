@@ -50,6 +50,7 @@
 #include <cuda/std/__type_traits/common_reference.h>
 #include <cuda/std/__type_traits/decay.h>
 #include <cuda/std/__type_traits/enable_if.h> // IWYU pragma: keep
+#include <cuda/std/__type_traits/is_object.h>
 #include <cuda/std/__type_traits/remove_cv.h>
 #include <cuda/std/__type_traits/remove_cvref.h>
 #include <cuda/std/__type_traits/void_t.h> // IWYU pragma: keep
@@ -374,6 +375,15 @@ _CCCL_CONCEPT_FRAGMENT(
 template <class _Ip>
 _CCCL_CONCEPT weakly_incrementable = _CCCL_FRAGMENT(__weakly_incrementable_, _Ip);
 
+// Built-in pointer increment requires a complete object. Its difference type can still be customized.
+template <class _Tp>
+_CCCL_CONCEPT_FRAGMENT(
+  __incrementable_pointer_,
+  requires()(requires(is_object_v<_Tp>), (sizeof(_Tp)), requires(__signed_integer_like<iter_difference_t<_Tp*>>)));
+
+template <class _Tp>
+inline constexpr bool weakly_incrementable<_Tp*> = _CCCL_FRAGMENT(__incrementable_pointer_, _Tp);
+
 // [iterator.concept.inc]
 template <class _Ip>
 _CCCL_CONCEPT incrementable = _CCCL_REQUIRES_EXPR((_Ip), _Ip __i)(
@@ -382,6 +392,10 @@ _CCCL_CONCEPT incrementable = _CCCL_REQUIRES_EXPR((_Ip), _Ip __i)(
   // Requirement is unevaluated, not sure why clang-tidy complains
   // NOLINTNEXTLINE(bugprone-pointer-arithmetic-on-polymorphic-object)
   requires(same_as<_Ip, decltype(__i++)>));
+
+// Pointers are regular, and their postfix increment returns the original pointer type.
+template <class _Tp>
+inline constexpr bool incrementable<_Tp*> = weakly_incrementable<_Tp*>;
 
 // [iterator.concept.iterator]
 template <class _Ip>
@@ -392,6 +406,9 @@ _CCCL_CONCEPT_FRAGMENT(
 template <class _Ip>
 _CCCL_CONCEPT input_or_output_iterator = _CCCL_FRAGMENT(__input_or_output_iterator_, _Ip);
 
+template <class _Tp>
+inline constexpr bool input_or_output_iterator<_Tp*> = weakly_incrementable<_Tp*>;
+
 // [iterator.concept.sentinel]
 template <class _Sp, class _Ip>
 _CCCL_CONCEPT_FRAGMENT(__sentinel_for_,
@@ -401,6 +418,9 @@ _CCCL_CONCEPT_FRAGMENT(__sentinel_for_,
 
 template <class _Sp, class _Ip>
 _CCCL_CONCEPT sentinel_for = _CCCL_FRAGMENT(__sentinel_for_, _Sp, _Ip);
+
+template <class _Tp>
+inline constexpr bool sentinel_for<_Tp*, _Tp*> = input_or_output_iterator<_Tp*>;
 
 template <class, class>
 inline constexpr bool disable_sized_sentinel_for = false;
