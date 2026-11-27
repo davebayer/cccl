@@ -65,13 +65,17 @@ concept __exchangeable =
 
 #else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
 
-template <class _Tp, class _Up, class = void>
+template <class _Tp,
+          class _Up,
+          bool  = __class_or_enum<remove_cvref_t<_Tp>> || __class_or_enum<remove_cvref_t<_Up>>,
+          class = void>
 inline constexpr bool __unqualified_swappable_with = false;
 
 template <class _Tp, class _Up>
 inline constexpr bool __unqualified_swappable_with<
   _Tp,
   _Up,
+  true,
   void_t<decltype(static_cast<void>(swap(::cuda::std::declval<_Tp>(), ::cuda::std::declval<_Up>())))>> = true;
 
 template <class _Tp>
@@ -90,7 +94,7 @@ struct __fn;
 _CCCL_BEGIN_NV_DIAG_SUPPRESS(2642)
 template <class _Tp, class _Up, size_t _Size>
 concept __swappable_arrays =
-  !__unqualified_swappable_with<_Tp (&)[_Size], _Up (&)[_Size]> && extent_v<_Tp> == extent_v<_Up>
+  extent_v<_Tp> == extent_v<_Up>
   && requires(_Tp (&__t)[_Size], _Up (&__u)[_Size], const __fn& __swap) { __swap(__t[0], __u[0]); };
 _CCCL_END_NV_DIAG_SUPPRESS()
 
@@ -139,12 +143,9 @@ struct __fn
 
 #if !_CCCL_HAS_CONCEPTS() || _CCCL_COMPILER(NVHPC)
 template <class _Tp, class _Up, class _Size>
-_CCCL_CONCEPT_FRAGMENT(
-  __swappable_arrays_,
-  requires(_Tp (&__t)[_Size::value], _Up (&__u)[_Size::value], const __fn& __swap)(
-    requires(!__unqualified_swappable_with<_Tp (&)[_Size::value], _Up (&)[_Size::value]>),
-    requires(extent_v<_Tp> == extent_v<_Up>),
-    (__swap(__t[0], __u[0]))));
+_CCCL_CONCEPT_FRAGMENT(__swappable_arrays_,
+                       requires(_Tp (&__t)[_Size::value], _Up (&__u)[_Size::value], const __fn& __swap)(
+                         requires(extent_v<_Tp> == extent_v<_Up>), (__swap(__t[0], __u[0]))));
 
 template <class _Tp, class _Up, size_t _Size>
 inline constexpr bool __swappable_arrays<_Tp, _Up, _Size, void_t<type_identity_t<_Tp>>> =
