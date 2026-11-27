@@ -24,6 +24,11 @@
 #include <cuda/std/__concepts/convertible_to.h>
 #include <cuda/std/__concepts/same_as.h>
 #include <cuda/std/__type_traits/common_reference.h>
+#include <cuda/std/__type_traits/enable_if.h>
+#include <cuda/std/__type_traits/is_convertible.h>
+#include <cuda/std/__type_traits/is_reference.h>
+#include <cuda/std/__type_traits/is_same.h>
+#include <cuda/std/__type_traits/remove_cvref.h>
 
 #include <cuda/std/__cccl/prologue.h>
 
@@ -40,23 +45,38 @@ concept common_reference_with =
 
 #else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
 
-template <class _Tp, class _Up>
-_CCCL_CONCEPT_FRAGMENT(__common_reference_exists_,
-                       requires()(typename(common_reference_t<_Tp, _Up>), typename(common_reference_t<_Up, _Tp>)));
+template <class _Tp,
+          class _Up,
+          class _Common = common_reference_t<_Tp, _Up>,
+          class         = enable_if_t<same_as<_Common, common_reference_t<_Up, _Tp>>>>
+[[nodiscard]] _CCCL_API _CCCL_CONSTEVAL bool __common_reference_with(int) noexcept
+{
+  // Reference conversions between cv-qualified forms of the same type bind directly.
+  // Checking implicit convertibility also covers the explicit cast required by convertible_to.
+  if constexpr (is_reference_v<_Tp> && is_reference_v<_Up> && is_reference_v<_Common>
+                && is_same_v<remove_cvref_t<_Tp>, remove_cvref_t<_Common>>
+                && is_same_v<remove_cvref_t<_Up>, remove_cvref_t<_Common>>)
+  {
+    return is_convertible_v<_Tp, _Common> && is_convertible_v<_Up, _Common>;
+  }
+  else if constexpr (convertible_to<_Tp, _Common>)
+  {
+    return convertible_to<_Up, _Common>;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+template <class, class>
+[[nodiscard]] _CCCL_API _CCCL_CONSTEVAL bool __common_reference_with(long) noexcept
+{
+  return false;
+}
 
 template <class _Tp, class _Up>
-_CCCL_CONCEPT _Common_reference_exists = _CCCL_FRAGMENT(__common_reference_exists_, _Tp, _Up);
-
-template <class _Tp, class _Up>
-_CCCL_CONCEPT_FRAGMENT(
-  __common_reference_with_,
-  requires()(requires(_Common_reference_exists<_Tp, _Up>),
-             requires(same_as<common_reference_t<_Tp, _Up>, common_reference_t<_Up, _Tp>>),
-             requires(convertible_to<_Tp, common_reference_t<_Tp, _Up>>),
-             requires(convertible_to<_Up, common_reference_t<_Tp, _Up>>)));
-
-template <class _Tp, class _Up>
-_CCCL_CONCEPT common_reference_with = _CCCL_FRAGMENT(__common_reference_with_, _Tp, _Up);
+_CCCL_CONCEPT common_reference_with = ::cuda::std::__common_reference_with<_Tp, _Up>(0);
 
 #endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
 
