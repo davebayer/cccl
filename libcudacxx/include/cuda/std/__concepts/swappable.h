@@ -65,13 +65,14 @@ concept __exchangeable =
 
 #else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
 
-template <class _Tp, class _Up>
-_CCCL_CONCEPT_FRAGMENT(
-  __unqualified_swappable_with_,
-  requires(_Tp&& __t, _Up&& __u)((swap(::cuda::std::forward<_Tp>(__t), ::cuda::std::forward<_Up>(__u)))));
+template <class _Tp, class _Up, class = void>
+inline constexpr bool __unqualified_swappable_with = false;
 
 template <class _Tp, class _Up>
-_CCCL_CONCEPT __unqualified_swappable_with = _CCCL_FRAGMENT(__unqualified_swappable_with_, _Tp, _Up);
+inline constexpr bool __unqualified_swappable_with<
+  _Tp,
+  _Up,
+  void_t<decltype(static_cast<void>(swap(::cuda::std::declval<_Tp>(), ::cuda::std::declval<_Up>())))>> = true;
 
 template <class _Tp>
 _CCCL_CONCEPT_FRAGMENT(__exchangeable_,
