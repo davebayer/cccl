@@ -288,3 +288,25 @@ The combined kernel drops variable prefixes from two forward ranges, zips them, 
 |---|---:|---:|---:|---:|---:|
 | 17 | 36 -> 36 (0) | 17 -> 17 (0) | 0 -> 0 (0) | 0 -> 0 (0) | 9.129 µs -> 9.153 µs (+0.26%) |
 | 20 | 36 -> 36 (0) | 17 -> 17 (0) | 0 -> 0 (0) | 0 -> 0 (0) | 9.132 µs -> 9.106 µs (−0.28%) |
+
+## Additional C++17 compile-time measurements
+
+Each workload compares the listed commit with its immediate parent on the same core, using one warm-up per revision and nine alternating before/after pairs. Cells show median compiler CPU seconds and their percentage change. P and E denote performance and efficiency cores. The raw CSV records all three compilers in C++17 and C++20 under `update5`. Use the cumulative report's reproduction command with the indicated commit and its parent. The CSV's `benchmark` field gives the source filename without its `.cu` extension.
+
+| Change | Commit | Workload | Core | NVCC 13.5 + GCC 15 | NVCC 13.5 + Clang 22 | NVRTC 13.5 |
+| --- | --- | --- | --- | ---: | ---: | ---: |
+| Reuse C++17 begin/end constraint results and iterator types | [93bd457e74](https://github.com/davebayer/cccl/commit/93bd457e7493fb3fe8b22d4621221c73e7a3aed1) | `view_interface` | P | 3.532 -> 3.160 (−10.5%) | 3.775 -> 3.337 (−11.6%) | 0.671 -> 0.555 (−17.3%) |
+| Include the optional definition used by movable-box | [683d389115](https://github.com/davebayer/cccl/commit/683d389115a19dbb0bdf0bf880a869dab634b653) | `<cuda/std/ranges>` include only | E | 3.595 -> 3.572 (−0.6%) | 3.778 -> 3.763 (−0.4%) | 0.435 -> 0.428 (−1.5%) |
+| Specialize incrementability and sentinel checks for raw pointers | [0d520586e5](https://github.com/davebayer/cccl/commit/0d520586e5dc5e3454cd1475b61e30b48ead049a) | `ranges::sized_range` | E | 7.045 -> 4.458 (−36.7%) | 7.730 -> 4.845 (−37.3%) | 1.299 -> 0.638 (−50.9%) |
+| Construct the known common view type directly | [6093c884bb](https://github.com/davebayer/cccl/commit/6093c884bbadd6d68481bafc92638031d15d66f8) | `views::common` | E | 9.129 -> 9.146 (+0.2%) | 9.832 -> 10.138 (+3.1%) | 1.928 -> 1.894 (−1.7%) |
+| Construct the known take-while view type directly | [5972c2ee38](https://github.com/davebayer/cccl/commit/5972c2ee38266b13be28199b65b5ad435d566f66) | `views::take_while` | E | 7.651 -> 7.413 (−3.1%) | 8.253 -> 7.931 (−3.9%) | 1.423 -> 1.377 (−3.3%) |
+| Skip the redundant ADL swap probe in C++17 movable | [b959653566](https://github.com/davebayer/cccl/commit/b9596535668a82f27d7fba4830d05330486df7ef) | `subrange` tuple access | E | 6.920 -> 6.726 (−2.8%) | 7.605 -> 7.371 (−3.1%) | 1.342 -> 1.279 (−4.7%) |
+| Recognize compatible references when checking iterator requirements | [bb68664d97](https://github.com/davebayer/cccl/commit/bb68664d972ef454b81db9f943570ae144f0c43a) | `ranges::advance` | E | 9.080 -> 8.591 (−5.4%) | 10.041 -> 9.467 (−5.7%) | 2.039 -> 1.912 (−6.2%) |
+| Detect ADL swap with a direct C++17 expression | [b585c026fc](https://github.com/davebayer/cccl/commit/b585c026fc71112fb2965f4d78da313e3a739c57) | `ranges::swap` | E | 3.976 -> 3.956 (−0.5%) | 4.190 -> 4.177 (−0.3%) | 0.513 -> 0.513 (+0.1%) |
+| Evaluate the bounded iota constructor ordering check only when assertions run | [e26bf74a57](https://github.com/davebayer/cccl/commit/e26bf74a572d2e5a8ea9d2ee30d01445a67c9504) | `iota_view` bounded pointer construction | E | 7.035 -> 6.731 (−4.3%) | 7.623 -> 7.202 (−5.5%) | 1.286 -> 1.188 (−7.7%) |
+
+### C++17 confirmations
+
+| Workload | Compiler | Core | First run (s) | Repeat (s) |
+| --- | --- | --- | ---: | ---: |
+| `views::common` | NVCC 13.5 + Clang 22 | E | 9.832 -> 10.138 (+3.1%) | 9.173 -> 9.319 (+1.6%) |
