@@ -136,7 +136,7 @@ struct WithADL
   TEST_HOST_DEVICE_FUNC constexpr WithADL& operator++();
   TEST_HOST_DEVICE_FUNC constexpr void operator++(int);
   TEST_HOST_DEVICE_FUNC constexpr bool operator==(WithADL const&) const;
-  TEST_HOST_DEVICE_FUNC friend constexpr int iter_move(WithADL&&) noexcept(NoExcept)
+  TEST_HOST_DEVICE_FUNC friend constexpr int iter_move([[maybe_unused]] WithADL&&) noexcept(NoExcept)
   {
     return 0;
   }
@@ -181,7 +181,7 @@ TEST_HOST_DEVICE_FUNC constexpr bool test()
         : _counter(counter)
     {}
 
-    TEST_HOST_DEVICE_FUNC constexpr bool operator()(move_tracker const& x)
+    TEST_HOST_DEVICE_FUNC constexpr bool operator()(move_tracker const& x) const
     {
       return x.moves() == _counter;
     }
@@ -223,15 +223,15 @@ TEST_HOST_DEVICE_FUNC constexpr bool test()
 
   auto unscoped = check_unqualified_lookup::unscoped_enum::a;
   assert(cuda::std::ranges::iter_move(unscoped) == check_unqualified_lookup::unscoped_enum::a);
-  assert(!noexcept(cuda::std::ranges::iter_move(unscoped)));
+  static_assert(!noexcept(cuda::std::ranges::iter_move(unscoped)));
 
   auto scoped = check_unqualified_lookup::scoped_enum::a;
   assert(cuda::std::ranges::iter_move(scoped) == nullptr);
-  assert(noexcept(cuda::std::ranges::iter_move(scoped)));
+  static_assert(noexcept(cuda::std::ranges::iter_move(scoped)));
 
   auto some_union = check_unqualified_lookup::some_union{0};
   assert(cuda::std::ranges::iter_move(some_union) == 0);
-  assert(!noexcept(cuda::std::ranges::iter_move(some_union)));
+  static_assert(!noexcept(cuda::std::ranges::iter_move(some_union)));
 
   // Check noexcept-correctness
   static_assert(noexcept(cuda::std::ranges::iter_move(cuda::std::declval<WithADL<true>>())));
@@ -248,7 +248,6 @@ TEST_HOST_DEVICE_FUNC constexpr bool test()
 static_assert(!cuda::std::is_invocable_v<IterMoveT, int*, int*>); // too many arguments
 static_assert(!cuda::std::is_invocable_v<IterMoveT, int>);
 
-#if TEST_STD_VER > 2017
 // Test ADL-proofing.
 struct Incomplete;
 template <class T>
@@ -258,7 +257,6 @@ struct Holder
 };
 static_assert(cuda::std::is_invocable_v<IterMoveT, Holder<Incomplete>**>);
 static_assert(cuda::std::is_invocable_v<IterMoveT, Holder<Incomplete>**&>);
-#endif
 
 int main(int, char**)
 {

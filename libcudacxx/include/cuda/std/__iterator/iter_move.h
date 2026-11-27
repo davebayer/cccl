@@ -50,13 +50,12 @@ concept __unqualified_iter_move =
 
 #else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
 
-template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(__unqualified_iter_move_,
-                       requires(_Tp&& __t)(requires(__class_or_enum<remove_cvref_t<_Tp>>),
-                                           ((void) iter_move(::cuda::std::forward<_Tp>(__t)))));
+template <class _Tp, bool = __class_or_enum<remove_cvref_t<_Tp>>>
+inline constexpr bool __unqualified_iter_move = false;
 
 template <class _Tp>
-_CCCL_CONCEPT __unqualified_iter_move = _CCCL_FRAGMENT(__unqualified_iter_move_, _Tp);
+inline constexpr bool __unqualified_iter_move<_Tp, true> =
+  _CCCL_REQUIRES_EXPR((_Tp), _Tp&& __t)(((void) iter_move(::cuda::std::forward<_Tp>(__t))));
 
 #endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
 
