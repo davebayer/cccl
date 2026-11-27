@@ -28,6 +28,7 @@
 #include <cuda/std/__type_traits/enable_if.h>
 #include <cuda/std/__type_traits/remove_cvref.h>
 #include <cuda/std/__type_traits/type_list.h>
+#include <cuda/std/__type_traits/void_t.h>
 #include <cuda/std/__utility/declval.h>
 #include <cuda/std/__utility/forward.h>
 
@@ -118,18 +119,21 @@ using iter_rvalue_reference_t = decltype(::cuda::std::ranges::iter_move(::cuda::
 #else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
 
 template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(__can_iter_rvalue_reference_t_,
-                       requires(_Tp& __t)(requires(__dereferenceable<_Tp>),
-                                          requires(__referenceable<decltype(::cuda::std::ranges::iter_move(__t))>)));
-
-template <class _Tp>
-_CCCL_CONCEPT __can_iter_rvalue_reference_t = _CCCL_FRAGMENT(__can_iter_rvalue_reference_t_, _Tp);
-
-template <class _Tp>
 using __iter_rvalue_reference_t _CCCL_NODEBUG = decltype(::cuda::std::ranges::iter_move(::cuda::std::declval<_Tp&>()));
 
+template <class _Tp, class = void>
+struct __iter_rvalue_reference
+{};
+
+// Check dereferenceability before substituting the customization. Both results must be referenceable.
 template <class _Tp>
-using iter_rvalue_reference_t = enable_if_t<__can_iter_rvalue_reference_t<_Tp>, __iter_rvalue_reference_t<_Tp>>;
+struct __iter_rvalue_reference<_Tp, void_t<decltype(*::cuda::std::declval<_Tp&>())&, __iter_rvalue_reference_t<_Tp>&>>
+{
+  using type _CCCL_NODEBUG = __iter_rvalue_reference_t<_Tp>;
+};
+
+template <class _Tp>
+using iter_rvalue_reference_t = __type<__iter_rvalue_reference<_Tp>>;
 #endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
 
 _CCCL_END_NAMESPACE_CUDA_STD
