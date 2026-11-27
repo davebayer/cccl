@@ -34,11 +34,11 @@
 #include <cuda/std/__ranges/enable_borrowed_range.h>
 #include <cuda/std/__ranges/size.h>
 #include <cuda/std/__ranges/view_interface.h>
-#include <cuda/std/__tuple_dir/apply.h>
 #include <cuda/std/__tuple_dir/tuple.h>
 #include <cuda/std/__type_traits/common_type.h>
 #include <cuda/std/__type_traits/make_unsigned.h>
 #include <cuda/std/__type_traits/maybe_const.h>
+#include <cuda/std/__utility/declval.h>
 #include <cuda/std/__utility/forward.h>
 #include <cuda/std/__utility/integer_sequence.h>
 #include <cuda/std/__utility/move.h>
@@ -63,28 +63,11 @@ struct __zv_functors
     return {::cuda::std::ranges::end(::cuda::std::get<_Indices>(__views))...};
   }
 
-  struct __zip_size
+  template <class _Result, class _Tuple, size_t... _Indices>
+  [[nodiscard]] _CCCL_API static constexpr _Result __view_size(_Tuple& __views, index_sequence<_Indices...>)
   {
-    template <class... _Sizes>
-    [[nodiscard]] _CCCL_API static constexpr auto __get_min(_Sizes&&... __tuple_sizes) noexcept
-    {
-      using __size_type = make_unsigned_t<common_type_t<_Sizes...>>;
-      return ::cuda::std::ranges::min({static_cast<__size_type>(__tuple_sizes)...});
-    }
-
-    template <class... _Types>
-    [[nodiscard]] _CCCL_API constexpr auto _CCCL_STATIC_CALL_OPERATOR(_Types&&... __tuple_elements) noexcept(
-      noexcept(__zip_size::__get_min(::cuda::std::ranges::size(::cuda::std::forward<_Types>(__tuple_elements))...)))
-    {
-      return __zip_size::__get_min(::cuda::std::ranges::size(::cuda::std::forward<_Types>(__tuple_elements))...);
-    }
-  };
-
-  template <class _Tuple>
-  [[nodiscard]] _CCCL_API static constexpr auto __view_size(_Tuple&& __tuple) noexcept(
-    noexcept(::cuda::std::apply(__zv_functors::__zip_size{}, ::cuda::std::forward<_Tuple>(__tuple))))
-  {
-    return ::cuda::std::apply(__zv_functors::__zip_size{}, ::cuda::std::forward<_Tuple>(__tuple));
+    return ::cuda::std::ranges::min(
+      {static_cast<_Result>(::cuda::std::ranges::size(::cuda::std::get<_Indices>(__views)))...});
   }
 };
 
@@ -103,9 +86,28 @@ _CCCL_CONCEPT __zip_all_input = (input_range<_Views> && ...);
 template <class... _Views>
 _CCCL_CONCEPT __zip_all_views = (view<_Views> && ...);
 
+// Keep the return type valid while overload resolution checks the sized_range constraints.
+template <bool _Sized, class... _Views>
+struct __zip_size_result
+{
+  using type _CCCL_NODEBUG = void;
+};
+
+template <class... _Views>
+struct __zip_size_result<true, _Views...>
+{
+  using type _CCCL_NODEBUG = make_unsigned_t<common_type_t<range_size_t<_Views>...>>;
+};
+
 template <class... _Views>
 struct __packed_views
 {
+  template <bool _Const>
+  using __size_type _CCCL_NODEBUG =
+    // NOLINTNEXTLINE(readability-redundant-typename): The dependent type requires typename in C++17.
+    typename __zip_size_result<(sized_range<__maybe_const<_Const, _Views>> && ...),
+                               __maybe_const<_Const, _Views>...>::type;
+
   static constexpr bool __none_simple           = !(__simple_view<_Views> && ...);
   static constexpr bool __all_const_range       = (range<const _Views> && ...);
   static constexpr bool __all_sized_range       = (sized_range<_Views> && ...);
@@ -212,16 +214,22 @@ public:
 
   _CCCL_TEMPLATE(class _Packed = __packed_views<_Views...>)
   _CCCL_REQUIRES(_Packed::__all_sized_range)
-  [[nodiscard]] _CCCL_API constexpr auto size() noexcept(noexcept(__zv_functors::__view_size(__views_)))
+  [[nodiscard]] _CCCL_API constexpr auto
+  size() noexcept((noexcept(::cuda::std::ranges::size(::cuda::std::declval<_Views&>())) && ...)) ->
+    // NOLINTNEXTLINE(readability-redundant-typename): The dependent type requires typename in C++17.
+    typename _Packed::template __size_type<false>
   {
-    return __zv_functors::__view_size(__views_);
+    return __zv_functors::__view_size<typename _Packed::template __size_type<false>>(__views_, __indices{});
   }
 
   _CCCL_TEMPLATE(class _Packed = __packed_views<_Views...>)
   _CCCL_REQUIRES(_Packed::__all_const_sized_range)
-  [[nodiscard]] _CCCL_API constexpr auto size() const noexcept(noexcept(__zv_functors::__view_size(__views_)))
+  [[nodiscard]] _CCCL_API constexpr auto size() const
+    noexcept((noexcept(::cuda::std::ranges::size(::cuda::std::declval<const _Views&>())) && ...)) ->
+    // NOLINTNEXTLINE(readability-redundant-typename): The dependent type requires typename in C++17.
+    typename _Packed::template __size_type<true>
   {
-    return __zv_functors::__view_size(__views_);
+    return __zv_functors::__view_size<typename _Packed::template __size_type<true>>(__views_, __indices{});
   }
 };
 
