@@ -24,7 +24,6 @@
 #include <cuda/std/__concepts/derived_from.h>
 #include <cuda/std/__concepts/same_as.h>
 #include <cuda/std/__exception/exception_macros.h>
-#include <cuda/std/__host_stdlib/stdexcept> // IWYU pragma: keep
 #include <cuda/std/__iterator/concepts.h>
 #include <cuda/std/__iterator/distance.h>
 #include <cuda/std/__iterator/prev.h>
@@ -36,6 +35,10 @@
 #include <cuda/std/__type_traits/is_class.h>
 #include <cuda/std/__type_traits/is_signed.h>
 #include <cuda/std/__type_traits/remove_cv.h>
+
+#if _CCCL_HOST_COMPILATION()
+#  include <cuda/std/__host_stdlib/stdexcept> // IWYU pragma: keep
+#endif // _CCCL_HOST_COMPILATION()
 
 #include <cuda/std/__cccl/prologue.h>
 

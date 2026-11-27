@@ -28,7 +28,6 @@
 #include <cuda/std/__fwd/array.h>
 #include <cuda/std/__fwd/span.h>
 #include <cuda/std/__fwd/string.h>
-#include <cuda/std/__host_stdlib/stdexcept>
 #include <cuda/std/__iterator/access.h>
 #include <cuda/std/__iterator/concepts.h>
 #include <cuda/std/__iterator/data.h>
@@ -58,6 +57,10 @@
 #include <cuda/std/cstddef>
 #include <cuda/std/initializer_list>
 #include <cuda/std/version>
+
+#if _CCCL_HOST_COMPILATION()
+#  include <cuda/std/__host_stdlib/stdexcept> // IWYU pragma: keep
+#endif // _CCCL_HOST_COMPILATION()
 
 #include <cuda/std/__cccl/prologue.h>
 
