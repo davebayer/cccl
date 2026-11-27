@@ -24,7 +24,9 @@
 #include <cuda/std/__concepts/concept_macros.h> // IWYU pragma: keep
 #include <cuda/std/__concepts/constructible.h>
 #include <cuda/std/__concepts/swappable.h>
+#include <cuda/std/__type_traits/enable_if.h>
 #include <cuda/std/__type_traits/is_object.h>
+#include <cuda/std/__type_traits/void_t.h>
 
 #include <cuda/std/__cccl/prologue.h>
 
@@ -37,18 +39,16 @@ concept movable = is_object_v<_Tp> && move_constructible<_Tp> && assignable_from
 
 #else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
 
-// [concepts.object]
-template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(
-  _Movable_,
-  requires()(requires(is_object_v<_Tp>),
-             requires(move_constructible<_Tp>),
-             requires(assignable_from<_Tp&, _Tp>),
-             requires(swappable<_Tp>)));
+// These requirements guarantee that ranges::swap has a move fallback whenever ADL finds no swap.
+template <class _Tp, class = void>
+inline constexpr bool __movable = false;
 
 template <class _Tp>
-_CCCL_CONCEPT movable = _CCCL_FRAGMENT(_Movable_, _Tp);
+inline constexpr bool __movable<_Tp, void_t<enable_if_t<is_object_v<_Tp>>, enable_if_t<move_constructible<_Tp>>>> =
+  assignable_from<_Tp&, _Tp>;
 
+template <class _Tp>
+_CCCL_CONCEPT movable = __movable<_Tp>;
 #endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
 
 _CCCL_END_NAMESPACE_CUDA_STD

@@ -13,11 +13,35 @@
 #include "type_classification/movable.h"
 
 #include <cuda/std/concepts>
+#include <cuda/std/type_traits>
 
 #include "test_macros.h"
 #include "type_classification/moveconstructible.h"
 
 using cuda::std::movable;
+
+struct no_common_reference
+{};
+
+template <>
+struct cuda::std::common_reference<const no_common_reference&, const no_common_reference&>
+{};
+
+static_assert(!movable<no_common_reference>);
+
+#if TEST_STD_VER < 2020
+template <class T>
+struct movable_without_swap_lookup
+{
+  TEST_FUNC friend auto swap(movable_without_swap_lookup&, movable_without_swap_lookup&)
+  {
+    return T::unused;
+  }
+};
+
+// The move fallback already guarantees swappability here.
+static_assert(movable<movable_without_swap_lookup<void>>);
+#endif // TEST_STD_VER < 2020
 
 // Movable types
 static_assert(movable<int>);
