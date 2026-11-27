@@ -98,7 +98,6 @@ static_assert(cuda::std::ranges::contiguous_range<WrongObjectness>);
 
 #if TEST_STD_VER > 2017
 // Test ADL-proofing.
-struct Incomplete;
 template <class T>
 struct Holder
 {
