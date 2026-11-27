@@ -237,11 +237,14 @@ _CCCL_BEGIN_NAMESPACE_CPO(__take_while)
 struct __fn
 {
   template <class _Range, class _Pred>
+  using __view _CCCL_NODEBUG = take_while_view<all_t<_Range>, decay_t<_Pred>>;
+
+  template <class _Range, class _Pred>
   [[nodiscard]] _CCCL_API constexpr auto _CCCL_STATIC_CALL_OPERATOR(_Range&& __range, _Pred&& __pred) noexcept(
-    noexcept(take_while_view(::cuda::std::forward<_Range>(__range), ::cuda::std::forward<_Pred>(__pred))))
-    -> take_while_view<all_t<_Range>, remove_cvref_t<_Pred>>
+    noexcept(__view<_Range, _Pred>(::cuda::std::forward<_Range>(__range), ::cuda::std::forward<_Pred>(__pred))))
+    -> decltype(__view<_Range, _Pred>(::cuda::std::forward<_Range>(__range), ::cuda::std::forward<_Pred>(__pred)))
   {
-    return take_while_view(::cuda::std::forward<_Range>(__range), ::cuda::std::forward<_Pred>(__pred));
+    return __view<_Range, _Pred>(::cuda::std::forward<_Range>(__range), ::cuda::std::forward<_Pred>(__pred));
   }
 
   _CCCL_TEMPLATE(class _Pred)
