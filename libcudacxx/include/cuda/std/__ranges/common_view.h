@@ -197,10 +197,10 @@ struct __fn : __range_adaptor_closure<__fn>
 
   _CCCL_TEMPLATE(class _Range)
   _CCCL_REQUIRES((!common_range<_Range>) )
-  [[nodiscard]] _CCCL_API constexpr common_view<all_t<_Range>>
-  _CCCL_STATIC_CALL_OPERATOR(_Range&& __range) noexcept(noexcept(common_view{::cuda::std::forward<_Range>(__range)}))
+  [[nodiscard]] _CCCL_API constexpr common_view<all_t<_Range>> _CCCL_STATIC_CALL_OPERATOR(_Range&& __range) noexcept(
+    noexcept(common_view<all_t<_Range>>{::cuda::std::forward<_Range>(__range)}))
   {
-    return common_view{::cuda::std::forward<_Range>(__range)};
+    return common_view<all_t<_Range>>{::cuda::std::forward<_Range>(__range)};
   }
 };
 _CCCL_END_NAMESPACE_CPO
