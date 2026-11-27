@@ -27,6 +27,7 @@
 #include <cuda/std/__concepts/movable.h>
 #include <cuda/std/__memory/addressof.h>
 #include <cuda/std/__memory/construct_at.h>
+#include <cuda/std/__optional/optional.h>
 #include <cuda/std/__type_traits/conditional.h>
 #include <cuda/std/__type_traits/is_constructible.h>
 #include <cuda/std/__type_traits/is_nothrow_constructible.h>
@@ -36,7 +37,6 @@
 #include <cuda/std/__utility/delegate_constructors.h>
 #include <cuda/std/__utility/in_place.h>
 #include <cuda/std/__utility/move.h>
-#include <cuda/std/optional>
 
 #include <cuda/std/__cccl/prologue.h>
 
