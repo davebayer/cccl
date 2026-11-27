@@ -66,12 +66,22 @@ template <class _View, enable_if_t<view<_View>, int> = 0>
 #endif // !_CCCL_HAS_CONCEPTS()
 class drop_view : public view_interface<drop_view<_View>>
 {
+  template <class _Range>
+  [[nodiscard]] _CCCL_API static _CCCL_CONSTEVAL bool __use_random_access() noexcept
+  {
+    if constexpr (random_access_range<_Range>)
+    {
+      return sized_range<_Range>;
+    }
+    return false;
+  }
+
   // We cache begin() whenever ::cuda::std::ranges::next is not guaranteed O(1) to provide an
   // amortized O(1) begin() method. If this is an input_range, then we cannot cache
   // begin because begin is not equality preserving.
   // Note: drop_view<input-range>::begin() is still trivially amortized O(1) because
   // one can't call begin() on it more than once.
-  static constexpr bool _UseCache = forward_range<_View> && !(random_access_range<_View> && sized_range<_View>);
+  static constexpr bool _UseCache = forward_range<_View> && !__use_random_access<_View>();
   using _Cache _CCCL_NODEBUG      = conditional_t<_UseCache, __non_propagating_cache<iterator_t<_View>>, __empty_cache>;
   _CCCL_NO_UNIQUE_ADDRESS _Cache __cached_begin_ = _Cache();
   _View __base_                                  = _View();
@@ -112,10 +122,10 @@ public:
   }
 
   _CCCL_TEMPLATE(class _View2 = _View)
-  _CCCL_REQUIRES((!(__simple_view<_View2> && random_access_range<const _View2> && sized_range<const _View2>) ))
+  _CCCL_REQUIRES((!(__simple_view<_View2> && __use_random_access<const _View2>())))
   _CCCL_API constexpr auto begin()
   {
-    if constexpr (random_access_range<_View2> && sized_range<_View2>)
+    if constexpr (__use_random_access<_View2>())
     {
       const auto __dist = ::cuda::std::min(::cuda::std::ranges::distance(__base_), __count_);
       return ::cuda::std::ranges::begin(__base_) + __dist;
@@ -136,7 +146,7 @@ public:
   }
 
   _CCCL_TEMPLATE(class _View2 = _View)
-  _CCCL_REQUIRES(random_access_range<const _View2>&& sized_range<const _View2>)
+  _CCCL_REQUIRES(random_access_range<const _View2> _CCCL_AND sized_range<const _View2>)
   _CCCL_API constexpr auto begin() const
   {
     const auto __dist = ::cuda::std::min(::cuda::std::ranges::distance(__base_), __count_);
