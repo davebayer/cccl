@@ -37,11 +37,22 @@ struct rvalue_only
   TEST_FUNC int& operator*() &&;
 };
 
+template <class T>
+struct custom_result
+{
+  TEST_FUNC friend int iter_move(custom_result) noexcept
+  {
+    return T::unused;
+  }
+};
+
 int main(int, char**)
 {
   using move = decltype(cuda::std::ranges::iter_move);
   static_assert(cuda::std::is_nothrow_invocable_v<move, customized<void>>);
   static_assert(cuda::std::ranges::iter_move(customized<void>{}) == 42);
+  // Querying the customization result does not require the definition of its body.
+  static_assert(cuda::std::is_same_v<cuda::std::invoke_result_t<move, custom_result<void>>, int>);
   static_assert(cuda::std::is_same_v<cuda::std::invoke_result_t<move, ref_qualified>, long>);
   static_assert(cuda::std::is_nothrow_invocable_v<move, ref_qualified>);
   static_assert(cuda::std::is_same_v<cuda::std::invoke_result_t<move, ref_qualified&>, int&&>);
