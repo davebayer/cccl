@@ -33,6 +33,8 @@
 #include <cuda/std/__memory/addressof.h>
 #include <cuda/std/__ranges/movable_box.h>
 #include <cuda/std/__ranges/view_interface.h>
+#include <cuda/std/__tuple_dir/apply.h>
+#include <cuda/std/__tuple_dir/tuple.h>
 #include <cuda/std/__type_traits/conditional.h>
 #include <cuda/std/__type_traits/enable_if.h> // IWYU pragma: keep
 #include <cuda/std/__type_traits/is_object.h>
@@ -43,7 +45,6 @@
 #include <cuda/std/__utility/in_place.h>
 #include <cuda/std/__utility/move.h>
 #include <cuda/std/__utility/piecewise_construct.h>
-#include <cuda/std/tuple>
 
 #include <cuda/std/__cccl/prologue.h>
 
