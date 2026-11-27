@@ -87,9 +87,23 @@ def make_prologue(file):
     write_section(
         file,
         """\
-#include <cuda/std/__cccl/compiler.h>
-#include <cuda/std/__cccl/diagnostic.h>
-#include <cuda/std/__cccl/dialect.h>""",
+// Select compiler-version-specific warning groups once per translation unit.
+#ifndef _CCCL_PROLOGUE_CONFIGURED
+#  define _CCCL_PROLOGUE_CONFIGURED
+#  include <cuda/std/__cccl/compiler.h>
+#  include <cuda/std/__cccl/diagnostic.h>
+#  include <cuda/std/__cccl/dialect.h>
+
+#  if _CCCL_COMPILER(GCC, >=, 12)
+#    define _CCCL_PROLOGUE_GCC_GE_12
+#  endif // _CCCL_COMPILER(GCC, >=, 12)
+#  if _CCCL_COMPILER(GCC, >=, 14)
+#    define _CCCL_PROLOGUE_GCC_GE_14
+#  endif // _CCCL_COMPILER(GCC, >=, 14)
+#  if _CCCL_COMPILER(CLANG, >=, 17)
+#    define _CCCL_PROLOGUE_CLANG_GE_17
+#  endif // _CCCL_COMPILER(CLANG, >=, 17)
+#endif // !_CCCL_PROLOGUE_CONFIGURED""",
     )
 
     # Add push macros.
@@ -130,21 +144,21 @@ _CCCL_DIAG_SUPPRESS_MSVC(4100 4127 4180 4197 4296 4324 4455 4503 4522 4668 4800 
 
 // Suppress compiler warnings about C++ extensions.
 
-#if _CCCL_COMPILER(GCC, >=, 12)
+#ifdef _CCCL_PROLOGUE_GCC_GE_12
 _CCCL_DIAG_SUPPRESS_GCC("-Wc++20-extensions")
 _CCCL_DIAG_SUPPRESS_GCC("-Wc++23-extensions")
-#endif // _CCCL_COMPILER(GCC, >=, 12)
-#if _CCCL_COMPILER(GCC, >=, 14)
+#endif // _CCCL_PROLOGUE_GCC_GE_12
+#ifdef _CCCL_PROLOGUE_GCC_GE_14
 _CCCL_DIAG_SUPPRESS_GCC("-Wc++26-extensions")
-#endif // _CCCL_COMPILER(GCC, >=, 14)
+#endif // _CCCL_PROLOGUE_GCC_GE_14
 
 _CCCL_DIAG_SUPPRESS_CLANG("-Wc++20-extensions")
-#if _CCCL_COMPILER(CLANG, >=, 17)
+#ifdef _CCCL_PROLOGUE_CLANG_GE_17
 _CCCL_DIAG_SUPPRESS_CLANG("-Wc++23-extensions")
 _CCCL_DIAG_SUPPRESS_CLANG("-Wc++26-extensions")
-#else // ^^^ _CCCL_COMPILER(CLANG, >=, 17) ^^^ / vvv _CCCL_COMPILER(CLANG, <, 17) vvv
+#else // ^^^ _CCCL_PROLOGUE_CLANG_GE_17 ^^^ / vvv !_CCCL_PROLOGUE_CLANG_GE_17 vvv
 _CCCL_DIAG_SUPPRESS_CLANG("-Wc++2b-extensions")
-#endif // ^^^ _CCCL_COMPILER(CLANG, <, 17) ^^^
+#endif // ^^^ !_CCCL_PROLOGUE_CLANG_GE_17 ^^^
 
 // Suppress `static operator()`-related warnings.
 _CCCL_DIAG_SUPPRESS_NVHPC(static_member_operator_not_allowed)
