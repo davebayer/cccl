@@ -20,6 +20,21 @@
 
 namespace ranges = cuda::std::ranges;
 
+struct Incomplete;
+static_assert(!ranges::range<Incomplete[2]>);
+static_assert(!ranges::sized_range<Incomplete[2]>);
+static_assert(!ranges::contiguous_range<Incomplete[2]>);
+static_assert(ranges::contiguous_range<const int[2][3]>);
+
+struct Element
+{};
+template <>
+inline constexpr bool cuda::std::disable_sized_sentinel_for<Element*, Element*> = true;
+
+static_assert(ranges::range<Element[2]>);
+static_assert(ranges::sized_range<Element[2]>);
+static_assert(!ranges::contiguous_range<Element[2]>);
+
 template <template <class...> class I>
 TEST_FUNC constexpr bool check_range()
 {

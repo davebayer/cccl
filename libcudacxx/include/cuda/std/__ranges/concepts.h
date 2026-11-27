@@ -25,6 +25,7 @@
 #include <cuda/std/__concepts/convertible_to.h>
 #include <cuda/std/__concepts/movable.h>
 #include <cuda/std/__concepts/same_as.h>
+#include <cuda/std/__cstddef/types.h>
 #include <cuda/std/__iterator/concepts.h>
 #include <cuda/std/__iterator/incrementable_traits.h>
 #include <cuda/std/__iterator/iter_move.h>
@@ -156,6 +157,10 @@ _CCCL_CONCEPT input_range =
   );
 // clang-format on
 
+// For a bounded array, begin and end only require a complete element type.
+template <class _Tp, size_t _Np>
+inline constexpr bool range<_Tp[_Np]> = _CCCL_REQUIRES_EXPR((_Tp))((sizeof(_Tp)));
+
 template <class _Range>
 _CCCL_CONCEPT_FRAGMENT(
   __borrowed_range_,
@@ -194,6 +199,9 @@ inline constexpr bool __sized_range<_Tp, true> = _CCCL_REQUIRES_EXPR((_Tp), _Tp&
 
 template <class _Tp>
 _CCCL_CONCEPT sized_range = __sized_range<_Tp>;
+
+template <class _Tp, size_t _Np>
+inline constexpr bool sized_range<_Tp[_Np]> = range<_Tp[_Np]>;
 
 template <class _Rp>
 using range_size_t = decltype(::cuda::std::ranges::size(::cuda::std::declval<enable_if_t<sized_range<_Rp>, _Rp>&>()));
@@ -267,6 +275,10 @@ inline constexpr bool
 
 template <class _Tp>
 _CCCL_CONCEPT contiguous_range = __contiguous_range<_Tp>;
+
+// Array begin and end return pointers, and data returns the begin pointer unchanged.
+template <class _Tp, size_t _Np>
+inline constexpr bool contiguous_range<_Tp[_Np]> = contiguous_iterator<_Tp*>;
 
 template <class _Tp>
 _CCCL_CONCEPT_FRAGMENT(__common_range_,
