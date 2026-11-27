@@ -64,25 +64,32 @@ concept __unqualified_begin =
   };
 #else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
 // Check borrowing and customization priority before substituting the expression.
+// Keep the default template arguments behind a single-parameter predicate so repeated calls reuse the result.
 template <class _Tp, bool = __can_borrow<_Tp> && __workaround_52970<_Tp>, class = void>
-inline constexpr bool __member_begin = false;
+inline constexpr bool __member_begin_impl = false;
 
 template <class _Tp>
-inline constexpr bool __member_begin<
+inline constexpr bool __member_begin_impl<
   _Tp,
   true,
   enable_if_t<input_or_output_iterator<decltype(_LIBCUDACXX_AUTO_CAST(::cuda::std::declval<_Tp&>().begin()))>>> = true;
 
+template <class _Tp>
+inline constexpr bool __member_begin = __member_begin_impl<_Tp>;
+
 template <class _Tp,
           bool  = __can_borrow<_Tp> && __class_or_enum<remove_cvref_t<_Tp>> && !__member_begin<_Tp>,
           class = void>
-inline constexpr bool __unqualified_begin = false;
+inline constexpr bool __unqualified_begin_impl = false;
 
 template <class _Tp>
-inline constexpr bool __unqualified_begin<
+inline constexpr bool __unqualified_begin_impl<
   _Tp,
   true,
   enable_if_t<input_or_output_iterator<decltype(_LIBCUDACXX_AUTO_CAST(begin(::cuda::std::declval<_Tp&>())))>>> = true;
+
+template <class _Tp>
+inline constexpr bool __unqualified_begin = __unqualified_begin_impl<_Tp>;
 #endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
 
 struct __fn
@@ -145,8 +152,27 @@ _CCCL_GLOBAL_CONSTANT auto begin = __begin::__fn{};
 
 // [range.range]
 
+#if _CCCL_HAS_CONCEPTS()
 template <class _Tp>
 using iterator_t = decltype(::cuda::std::ranges::begin(::cuda::std::declval<_Tp&>()));
+#else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
+// Cache the begin result for range constraints that repeatedly ask for the same iterator type.
+template <class _Tp>
+using __begin_result_t _CCCL_NODEBUG = decltype(::cuda::std::ranges::begin(::cuda::std::declval<_Tp&>()));
+
+template <class _Tp, class = void>
+struct __range_iterator
+{};
+
+template <class _Tp>
+struct __range_iterator<_Tp, void_t<__begin_result_t<_Tp>>>
+{
+  using type _CCCL_NODEBUG = __begin_result_t<_Tp>;
+};
+
+template <class _Tp>
+using iterator_t = typename __range_iterator<remove_reference_t<_Tp>>::type;
+#endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
 
 // [range.access.end]
 
@@ -174,10 +200,10 @@ concept __unqualified_end =
   };
 #else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
 template <class _Tp, bool = __can_borrow<_Tp> && __workaround_52970<_Tp>, class = void>
-inline constexpr bool __member_end = false;
+inline constexpr bool __member_end_impl = false;
 
 template <class _Tp>
-inline constexpr bool __member_end<
+inline constexpr bool __member_end_impl<
   _Tp,
   true,
   void_t<
@@ -185,16 +211,22 @@ inline constexpr bool __member_end<
     enable_if_t<sentinel_for<decltype(_LIBCUDACXX_AUTO_CAST(::cuda::std::declval<_Tp&>().end())), iterator_t<_Tp>>>>> =
   true;
 
+template <class _Tp>
+inline constexpr bool __member_end = __member_end_impl<_Tp>;
+
 template <class _Tp, bool = __can_borrow<_Tp> && __class_or_enum<remove_cvref_t<_Tp>> && !__member_end<_Tp>, class = void>
-inline constexpr bool __unqualified_end = false;
+inline constexpr bool __unqualified_end_impl = false;
 
 template <class _Tp>
-inline constexpr bool __unqualified_end<
+inline constexpr bool __unqualified_end_impl<
   _Tp,
   true,
   void_t<iterator_t<_Tp>,
          enable_if_t<sentinel_for<decltype(_LIBCUDACXX_AUTO_CAST(end(::cuda::std::declval<_Tp&>()))), iterator_t<_Tp>>>>> =
   true;
+
+template <class _Tp>
+inline constexpr bool __unqualified_end = __unqualified_end_impl<_Tp>;
 #endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
 
 struct __fn
