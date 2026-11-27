@@ -25,12 +25,11 @@
 #include <cuda/std/__concepts/concept_macros.h>
 #include <cuda/std/__concepts/referenceable.h>
 #include <cuda/std/__iterator/iterator_traits.h>
-#include <cuda/std/__type_traits/enable_if.h> // IWYU pragma: keep
-#include <cuda/std/__type_traits/is_reference.h>
+#include <cuda/std/__type_traits/enable_if.h>
 #include <cuda/std/__type_traits/remove_cvref.h>
+#include <cuda/std/__type_traits/type_list.h>
 #include <cuda/std/__utility/declval.h>
 #include <cuda/std/__utility/forward.h>
-#include <cuda/std/__utility/move.h>
 
 #include <cuda/std/__cccl/prologue.h>
 
@@ -49,18 +48,6 @@ template <class _Tp>
 concept __unqualified_iter_move =
   __class_or_enum<remove_cvref_t<_Tp>> && requires(_Tp&& __t) { iter_move(::cuda::std::forward<_Tp>(__t)); };
 
-template <class _Tp>
-concept __move_deref = !__unqualified_iter_move<_Tp> && requires(_Tp&& __t) {
-  *__t;
-  requires is_lvalue_reference_v<decltype(*__t)>;
-};
-
-template <class _Tp>
-concept __just_deref = !__unqualified_iter_move<_Tp> && !__move_deref<_Tp> && requires(_Tp&& __t) {
-  *__t;
-  requires(!is_lvalue_reference_v<decltype(*__t)>);
-};
-
 #else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
 
 template <class _Tp>
@@ -71,23 +58,19 @@ _CCCL_CONCEPT_FRAGMENT(__unqualified_iter_move_,
 template <class _Tp>
 _CCCL_CONCEPT __unqualified_iter_move = _CCCL_FRAGMENT(__unqualified_iter_move_, _Tp);
 
-template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(
-  __move_deref_,
-  requires(_Tp&& __t)(requires(!__unqualified_iter_move<_Tp>), requires(is_lvalue_reference_v<decltype(*__t)>)));
-
-template <class _Tp>
-_CCCL_CONCEPT __move_deref = _CCCL_FRAGMENT(__move_deref_, _Tp);
-
-template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(__just_deref_,
-                       requires(_Tp&& __t)(requires(!__unqualified_iter_move<_Tp>),
-                                           requires(!__move_deref<_Tp>),
-                                           requires(!is_lvalue_reference_v<decltype(*__t)>)));
-
-template <class _Tp>
-_CCCL_CONCEPT __just_deref = _CCCL_FRAGMENT(__just_deref_, _Tp);
 #endif // ^^^ !_CCCL_HAS_CONCEPTS() ^^^
+
+template <class _Tp>
+struct __deref_move_result
+{
+  using type _CCCL_NODEBUG = _Tp;
+};
+
+template <class _Tp>
+struct __deref_move_result<_Tp&>
+{
+  using type _CCCL_NODEBUG = _Tp&&;
+};
 
 // [iterator.cust.move]
 
@@ -102,24 +85,15 @@ struct __fn
     return iter_move(::cuda::std::forward<_Ip>(__i));
   }
 
+  // Check for ADL before substituting the dereference expression.
   _CCCL_EXEC_CHECK_DISABLE
-  _CCCL_TEMPLATE(class _Ip)
-  _CCCL_REQUIRES(__move_deref<_Ip>)
-  [[nodiscard]] _CCCL_API constexpr auto
-  _CCCL_STATIC_CALL_OPERATOR(_Ip&& __i) noexcept(noexcept(::cuda::std::move(*::cuda::std::forward<_Ip>(__i))))
-    -> decltype(::cuda::std::move(*::cuda::std::forward<_Ip>(__i)))
-  {
-    return ::cuda::std::move(*::cuda::std::forward<_Ip>(__i));
-  }
-
-  _CCCL_EXEC_CHECK_DISABLE
-  _CCCL_TEMPLATE(class _Ip)
-  _CCCL_REQUIRES(__just_deref<_Ip>)
-  [[nodiscard]] _CCCL_API constexpr auto
+  template <class _Ip,
+            class         = enable_if_t<!__unqualified_iter_move<_Ip>>,
+            class _Result = __type<__deref_move_result<decltype(*::cuda::std::declval<_Ip>())>>>
+  [[nodiscard]] _CCCL_API constexpr _Result
   _CCCL_STATIC_CALL_OPERATOR(_Ip&& __i) noexcept(noexcept(*::cuda::std::forward<_Ip>(__i)))
-    -> decltype(*::cuda::std::forward<_Ip>(__i))
   {
-    return *::cuda::std::forward<_Ip>(__i);
+    return static_cast<_Result>(*::cuda::std::forward<_Ip>(__i));
   }
 };
 
