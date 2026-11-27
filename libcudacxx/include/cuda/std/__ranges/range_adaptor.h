@@ -25,11 +25,10 @@
 #include <cuda/std/__concepts/constructible.h>
 #include <cuda/std/__concepts/invocable.h>
 #include <cuda/std/__concepts/same_as.h>
-#include <cuda/std/__functional/bind_back.h>
 #include <cuda/std/__functional/compose.h>
 #include <cuda/std/__functional/invoke.h>
+#include <cuda/std/__functional/perfect_forward.h>
 #include <cuda/std/__ranges/concepts.h>
-#include <cuda/std/__tuple_dir/tuple.h>
 #include <cuda/std/__type_traits/decay.h>
 #include <cuda/std/__type_traits/enable_if.h>
 #include <cuda/std/__type_traits/is_nothrow_constructible.h>
@@ -53,13 +52,6 @@ template <class _Tp, enable_if_t<is_class_v<_Tp>, int> = 0, enable_if_t<same_as<
 struct __range_adaptor_closure
 {};
 
-// Tag for constructing a binder directly as the closure, so each bound argument is constructed once.
-struct __bind_back_in_place_t
-{
-  _CCCL_HIDE_FROM_ABI explicit constexpr __bind_back_in_place_t() noexcept = default;
-};
-_CCCL_GLOBAL_CONSTANT __bind_back_in_place_t __bind_back_in_place{};
-
 // Type that wraps an arbitrary function object and makes it into a range adaptor closure,
 // i.e. something that can be called via the `x | f` notation.
 template <class _Fn>
@@ -77,31 +69,34 @@ struct __pipeable
     ::cuda::std::is_nothrow_constructible_v<_Fn, _Arg1, _Arg2>)
       : _Fn(::cuda::std::forward<_Arg1>(__arg1), ::cuda::std::forward<_Arg2>(__arg2))
   {}
-
-  _CCCL_TEMPLATE(class... _Args)
-  _CCCL_REQUIRES(::cuda::std::constructible_from<_Fn, _Args...>)
-  _CCCL_API constexpr explicit __pipeable(__bind_back_in_place_t, _Args&&... __args) noexcept(
-    ::cuda::std::is_nothrow_constructible_v<_Fn, _Args...>)
-      : _Fn(::cuda::std::forward<_Args>(__args)...)
-  {}
 };
 _CCCL_CTAD_SUPPORTED_FOR_TYPE(__pipeable);
 
-// `__pipeable(__bind_back(...))` materializes the binder and then move-constructs it into the closure.
-// Building the binder in place constructs each bound argument once from the original argument.
-template <class _Fn, class... _Args>
-[[nodiscard]] _CCCL_API constexpr auto __pipeable_bind_back(_Fn&& __f, _Args&&... __args) noexcept(
-  noexcept(::cuda::std::ranges::__pipeable<__bind_back_t<decay_t<_Fn>, tuple<decay_t<_Args>...>>>(
-    __bind_back_in_place,
-    ::cuda::std::forward<_Fn>(__f),
-    ::cuda::std::forward_as_tuple(::cuda::std::forward<_Args>(__args)...))))
-  -> ::cuda::std::ranges::__pipeable<__bind_back_t<decay_t<_Fn>, tuple<decay_t<_Args>...>>>
+// Each range adaptor binds one trailing argument. Keep it alongside the adaptor
+// in the forwarding wrapper so it is constructed directly from the caller's argument.
+struct __bind_range_adaptor_op
 {
-  using _Binder _CCCL_NODEBUG = __bind_back_t<decay_t<_Fn>, tuple<decay_t<_Args>...>>;
-  return ::cuda::std::ranges::__pipeable<_Binder>(
-    __bind_back_in_place,
-    ::cuda::std::forward<_Fn>(__f),
-    ::cuda::std::forward_as_tuple(::cuda::std::forward<_Args>(__args)...));
+  template <class _Fn, class _Bound, class... _Args>
+  [[nodiscard]] _CCCL_API constexpr auto
+  _CCCL_STATIC_CALL_OPERATOR(_Fn&& __f, _Bound&& __bound, _Args&&... __args) noexcept(noexcept(::cuda::std::invoke(
+    ::cuda::std::forward<_Fn>(__f), ::cuda::std::forward<_Args>(__args)..., ::cuda::std::forward<_Bound>(__bound))))
+    -> decltype(::cuda::std::invoke(
+      ::cuda::std::forward<_Fn>(__f), ::cuda::std::forward<_Args>(__args)..., ::cuda::std::forward<_Bound>(__bound)))
+  {
+    return ::cuda::std::invoke(
+      ::cuda::std::forward<_Fn>(__f), ::cuda::std::forward<_Args>(__args)..., ::cuda::std::forward<_Bound>(__bound));
+  }
+};
+
+template <class _Fn, class _Arg>
+using __bound_range_adaptor _CCCL_NODEBUG =
+  __pipeable<__perfect_forward<__bind_range_adaptor_op, decay_t<_Fn>, decay_t<_Arg>>>;
+
+template <class _Fn, class _Arg>
+[[nodiscard]] _CCCL_API constexpr auto __pipeable_bind_back(_Fn&& __f, _Arg&& __arg) noexcept(
+  is_nothrow_constructible_v<__bound_range_adaptor<_Fn, _Arg>, _Fn, _Arg>) -> __bound_range_adaptor<_Fn, _Arg>
+{
+  return __bound_range_adaptor<_Fn, _Arg>(::cuda::std::forward<_Fn>(__f), ::cuda::std::forward<_Arg>(__arg));
 }
 
 template <class _Tp>
