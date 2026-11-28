@@ -64,7 +64,7 @@ _CCCL_DIAG_PUSH
 _CCCL_DIAG_SUPPRESS_CLANG("-Wvoid-ptr-dereference")
 
 template <class _Tp>
-_CCCL_CONCEPT __dereferenceable = _CCCL_REQUIRES_EXPR((_Tp), _Tp& __t)(requires(__referenceable<decltype(*__t)>));
+_CCCL_CONCEPT __dereferenceable = _CCCL_REQUIRES_EXPR((_Tp), _Tp& __t)(_Satisfies(__referenceable)(*__t));
 
 _CCCL_DIAG_POP
 

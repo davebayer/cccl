@@ -95,12 +95,11 @@ _CCCL_CONCEPT __unqualified_rend = _CCCL_FRAGMENT(__unqualified_rend_, _Tp);
 template <class _Tp>
 _CCCL_CONCEPT_FRAGMENT(
   __can_reverse_,
-  requires(_Tp&& __t)(
-    requires(!__member_rend<_Tp>),
-    requires(!__unqualified_rend<_Tp>),
-    requires(__can_borrow<_Tp>),
-    requires(same_as<decltype(::cuda::std::ranges::begin(__t)), decltype(::cuda::std::ranges::end(__t))>),
-    requires(bidirectional_iterator<decltype(::cuda::std::ranges::begin(__t))>)));
+  requires(_Tp&& __t)(requires(!__member_rend<_Tp>),
+                      requires(!__unqualified_rend<_Tp>),
+                      requires(__can_borrow<_Tp>),
+                      _Same_as(decltype(::cuda::std::ranges::end(__t)))::cuda::std::ranges::begin(__t),
+                      _Satisfies(bidirectional_iterator)::cuda::std::ranges::begin(__t)));
 
 template <class _Tp>
 _CCCL_CONCEPT __can_reverse = _CCCL_FRAGMENT(__can_reverse_, _Tp);

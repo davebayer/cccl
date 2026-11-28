@@ -50,7 +50,7 @@ _CCCL_CONCEPT_FRAGMENT(
   requires(_Lhs __lhs,
            _Rhs&& __rhs)(requires(is_lvalue_reference_v<_Lhs>),
                          requires(common_reference_with<__make_const_lvalue_ref<_Lhs>, __make_const_lvalue_ref<_Rhs>>),
-                         requires(same_as<_Lhs, decltype(__lhs = ::cuda::std::forward<_Rhs>(__rhs))>)));
+                         _Same_as(_Lhs) __lhs = ::cuda::std::forward<_Rhs>(__rhs)));
 
 template <class _Lhs, class _Rhs>
 _CCCL_CONCEPT assignable_from = _CCCL_FRAGMENT(__assignable_from_, _Lhs, _Rhs);

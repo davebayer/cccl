@@ -100,9 +100,9 @@ template <class _Mapping>
 _CCCL_CONCEPT __layout_mapping_alike = _CCCL_REQUIRES_EXPR((_Mapping))(
   requires(__is_mapping_of<typename _Mapping::layout_type, _Mapping>),
   requires(__is_cuda_std_extents_v<typename _Mapping::extents_type>),
-  requires(same_as<bool, decltype(_Mapping::is_always_strided())>),
-  requires(same_as<bool, decltype(_Mapping::is_always_exhaustive())>),
-  requires(same_as<bool, decltype(_Mapping::is_always_unique())>),
+  _Same_as(bool) _Mapping::is_always_strided(),
+  _Same_as(bool) _Mapping::is_always_exhaustive(),
+  _Same_as(bool) _Mapping::is_always_unique(),
   (bool_constant<_Mapping::is_always_strided()>::value),
   (bool_constant<_Mapping::is_always_exhaustive()>::value),
   (bool_constant<_Mapping::is_always_unique()>::value));

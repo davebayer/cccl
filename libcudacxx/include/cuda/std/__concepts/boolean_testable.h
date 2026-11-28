@@ -46,10 +46,9 @@ template <class _Tp>
 _CCCL_CONCEPT __boolean_testable_impl = convertible_to<_Tp, bool>;
 
 template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(
-  __boolean_testable_,
-  requires(_Tp&& __t)(requires(__boolean_testable_impl<_Tp>),
-                      requires(__boolean_testable_impl<decltype(!::cuda::std::forward<_Tp>(__t))>)));
+_CCCL_CONCEPT_FRAGMENT(__boolean_testable_,
+                       requires(_Tp&& __t)(requires(__boolean_testable_impl<_Tp>),
+                                           _Satisfies(__boolean_testable_impl) !::cuda::std::forward<_Tp>(__t)));
 
 template <class _Tp>
 _CCCL_CONCEPT __boolean_testable = _CCCL_FRAGMENT(__boolean_testable_, _Tp);

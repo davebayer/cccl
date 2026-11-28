@@ -42,18 +42,18 @@ _CCCL_CONCEPT __convertible_to_stream_ref = ::cuda::std::convertible_to<_Tp, ::c
 template <class _Tp>
 _CCCL_CONCEPT __has_member_stream = _CCCL_REQUIRES_EXPR((_Tp), const _Tp& __t)(
   requires(!__convertible_to_stream_ref<_Tp>), //
-  requires(__convertible_to_stream_ref<decltype(__t.stream())>));
+  _Satisfies(__convertible_to_stream_ref) __t.stream());
 
 template <class _Tp>
 _CCCL_CONCEPT __has_member_get_stream = _CCCL_REQUIRES_EXPR((_Tp), const _Tp& __t)(
   requires(!__convertible_to_stream_ref<_Tp>), //
-  requires(__convertible_to_stream_ref<decltype(__t.get_stream())>));
+  _Satisfies(__convertible_to_stream_ref) __t.get_stream());
 
 template <class _Env>
 _CCCL_CONCEPT __has_query_get_stream = _CCCL_REQUIRES_EXPR((_Env), const _Env& __env, const get_stream_t& __cpo)(
   requires(!__convertible_to_stream_ref<_Env>),
   requires(!__has_member_stream<_Env>),
-  requires(__convertible_to_stream_ref<decltype(__env.query(__cpo))>));
+  _Satisfies(__convertible_to_stream_ref) __env.query(__cpo));
 
 template <class _Tp>
 _CCCL_CONCEPT __convertible_to_stream =

@@ -252,10 +252,9 @@ _CCCL_CONCEPT random_access_range = _CCCL_FRAGMENT(__random_access_range_, _Tp);
 template <class _Tp>
 _CCCL_CONCEPT_FRAGMENT(
   __contiguous_range_,
-  requires(_Tp& __t)(
-    requires(random_access_range<_Tp>),
-    requires(contiguous_iterator<iterator_t<_Tp>>),
-    requires(same_as<decltype(::cuda::std::ranges::data(__t)), add_pointer_t<range_reference_t<_Tp>>>)));
+  requires(_Tp& __t)(requires(random_access_range<_Tp>),
+                     requires(contiguous_iterator<iterator_t<_Tp>>),
+                     _Same_as(add_pointer_t<range_reference_t<_Tp>>)::cuda::std::ranges::data(__t)));
 
 template <class _Tp>
 _CCCL_CONCEPT contiguous_range = _CCCL_FRAGMENT(__contiguous_range_, _Tp);

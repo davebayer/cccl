@@ -79,7 +79,7 @@ template <class _Tp>
 _CCCL_CONCEPT_FRAGMENT(__member_size_,
                        requires(_Tp&& __t)(requires(__size_enabled<_Tp>),
                                            requires(__workaround_52970<_Tp>),
-                                           requires(__integer_like<decltype(_LIBCUDACXX_AUTO_CAST(__t.size()))>)));
+                                           _Satisfies(__integer_like) _LIBCUDACXX_AUTO_CAST(__t.size())));
 
 template <class _Tp>
 _CCCL_CONCEPT __member_size = _CCCL_FRAGMENT(__member_size_, _Tp);
@@ -90,7 +90,7 @@ _CCCL_CONCEPT_FRAGMENT(
   requires(_Tp&& __t)(requires(__size_enabled<_Tp>),
                       requires(!__member_size<_Tp>),
                       requires(__class_or_enum<remove_cvref_t<_Tp>>),
-                      requires(__integer_like<decltype(_LIBCUDACXX_AUTO_CAST(size(__t)))>)));
+                      _Satisfies(__integer_like) _LIBCUDACXX_AUTO_CAST(size(__t))));
 
 template <class _Tp>
 _CCCL_CONCEPT __unqualified_size = _CCCL_FRAGMENT(__unqualified_size_, _Tp);
@@ -102,7 +102,7 @@ _CCCL_CONCEPT_FRAGMENT(
     requires(!__member_size<_Tp>),
     requires(!__unqualified_size<_Tp>),
     requires(__class_or_enum<remove_cvref_t<_Tp>>),
-    requires(forward_iterator<decltype(::cuda::std::ranges::begin(__t))>),
+    _Satisfies(forward_iterator)::cuda::std::ranges::begin(__t),
     requires(sized_sentinel_for<decltype(::cuda::std::ranges::end(__t)), decltype(::cuda::std::ranges::begin(__t))>)));
 
 template <class _Tp>

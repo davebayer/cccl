@@ -58,7 +58,7 @@ template <class _Tp>
 _CCCL_CONCEPT_FRAGMENT(__member_data_,
                        requires(_Tp&& __t)(requires(__can_borrow<_Tp>),
                                            requires(__workaround_52970<_Tp>),
-                                           requires(__ptr_to_object<decltype(_LIBCUDACXX_AUTO_CAST(__t.data()))>)));
+                                           _Satisfies(__ptr_to_object) _LIBCUDACXX_AUTO_CAST(__t.data())));
 
 template <class _Tp>
 _CCCL_CONCEPT __member_data = _CCCL_FRAGMENT(__member_data_, _Tp);
@@ -67,7 +67,7 @@ template <class _Tp>
 _CCCL_CONCEPT_FRAGMENT(__ranges_begin_invocable_,
                        requires(_Tp&& __t)(requires(!__member_data<_Tp>),
                                            requires(__can_borrow<_Tp>),
-                                           requires(contiguous_iterator<decltype(::cuda::std::ranges::begin(__t))>)));
+                                           _Satisfies(contiguous_iterator)::cuda::std::ranges::begin(__t)));
 
 template <class _Tp>
 _CCCL_CONCEPT __ranges_begin_invocable = _CCCL_FRAGMENT(__ranges_begin_invocable_, _Tp);

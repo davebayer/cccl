@@ -66,11 +66,10 @@ concept __can_reverse =
   };
 #else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
 template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(
-  __member_rbegin_,
-  requires(_Tp&& __t)(requires(__can_borrow<_Tp>),
-                      requires(__workaround_52970<_Tp>),
-                      requires(input_or_output_iterator<decltype(_LIBCUDACXX_AUTO_CAST(__t.rbegin()))>)));
+_CCCL_CONCEPT_FRAGMENT(__member_rbegin_,
+                       requires(_Tp&& __t)(requires(__can_borrow<_Tp>),
+                                           requires(__workaround_52970<_Tp>),
+                                           _Satisfies(input_or_output_iterator) _LIBCUDACXX_AUTO_CAST(__t.rbegin())));
 
 template <class _Tp>
 _CCCL_CONCEPT __member_rbegin = _CCCL_FRAGMENT(__member_rbegin_, _Tp);
@@ -81,7 +80,7 @@ _CCCL_CONCEPT_FRAGMENT(
   requires(_Tp&& __t)(requires(!__member_rbegin<_Tp>),
                       requires(__can_borrow<_Tp>),
                       requires(__class_or_enum<remove_cvref_t<_Tp>>),
-                      requires(input_or_output_iterator<decltype(_LIBCUDACXX_AUTO_CAST(rbegin(__t)))>)));
+                      _Satisfies(input_or_output_iterator) _LIBCUDACXX_AUTO_CAST(rbegin(__t))));
 
 template <class _Tp>
 _CCCL_CONCEPT __unqualified_rbegin = _CCCL_FRAGMENT(__unqualified_rbegin_, _Tp);
@@ -89,12 +88,11 @@ _CCCL_CONCEPT __unqualified_rbegin = _CCCL_FRAGMENT(__unqualified_rbegin_, _Tp);
 template <class _Tp>
 _CCCL_CONCEPT_FRAGMENT(
   __can_reverse_,
-  requires(_Tp&& __t)(
-    requires(__can_borrow<_Tp>),
-    requires(!__member_rbegin<_Tp>),
-    requires(!__unqualified_rbegin<_Tp>),
-    requires(same_as<decltype(::cuda::std::ranges::end(__t)), decltype(::cuda::std::ranges::begin(__t))>),
-    requires(bidirectional_iterator<decltype(::cuda::std::ranges::begin(__t))>)));
+  requires(_Tp&& __t)(requires(__can_borrow<_Tp>),
+                      requires(!__member_rbegin<_Tp>),
+                      requires(!__unqualified_rbegin<_Tp>),
+                      _Same_as(decltype(::cuda::std::ranges::end(__t)))::cuda::std::ranges::begin(__t),
+                      _Satisfies(bidirectional_iterator)::cuda::std::ranges::begin(__t)));
 
 template <class _Tp>
 _CCCL_CONCEPT __can_reverse = _CCCL_FRAGMENT(__can_reverse_, _Tp);

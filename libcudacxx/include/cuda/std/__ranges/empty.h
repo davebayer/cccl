@@ -66,7 +66,7 @@ _CCCL_CONCEPT_FRAGMENT(
   requires(_Tp&& __t)(requires(!__member_empty<_Tp>),
                       requires(!__can_invoke_size<_Tp>),
                       (bool(::cuda::std::ranges::begin(__t) == ::cuda::std::ranges::end(__t))),
-                      requires(forward_iterator<decltype(::cuda::std::ranges::begin(__t))>)));
+                      _Satisfies(forward_iterator)::cuda::std::ranges::begin(__t)));
 
 template <class _Tp>
 _CCCL_CONCEPT __can_compare_begin_end = _CCCL_FRAGMENT(__can_compare_begin_end_, _Tp);

@@ -144,9 +144,9 @@ using iter_rvalue_reference_t = decltype(::cuda::std::ranges::iter_move(::cuda::
 #else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
 
 template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(__can_iter_rvalue_reference_t_,
-                       requires(_Tp& __t)(requires(__dereferenceable<_Tp>),
-                                          requires(__referenceable<decltype(::cuda::std::ranges::iter_move(__t))>)));
+_CCCL_CONCEPT_FRAGMENT(
+  __can_iter_rvalue_reference_t_,
+  requires(_Tp& __t)(requires(__dereferenceable<_Tp>), _Satisfies(__referenceable)::cuda::std::ranges::iter_move(__t)));
 
 template <class _Tp>
 _CCCL_CONCEPT __can_iter_rvalue_reference_t = _CCCL_FRAGMENT(__can_iter_rvalue_reference_t_, _Tp);

@@ -333,8 +333,8 @@ _CCCL_CONCEPT_FRAGMENT(
     typename(iter_value_t<_In>),
     typename(iter_reference_t<_In>),
     typename(iter_rvalue_reference_t<_In>),
-    requires(same_as<iter_reference_t<_In>, decltype(*__i)>),
-    requires(same_as<iter_rvalue_reference_t<_In>, decltype(::cuda::std::ranges::iter_move(__i))>),
+    _Same_as(iter_reference_t<_In>)(*__i),
+    _Same_as(iter_rvalue_reference_t<_In>)::cuda::std::ranges::iter_move(__i),
     requires(common_reference_with<iter_reference_t<_In>&&, iter_value_t<_In>&>),
     requires(common_reference_with<iter_reference_t<_In>&&, iter_rvalue_reference_t<_In>&&>),
     requires(common_reference_with<iter_rvalue_reference_t<_In>&&, const iter_value_t<_In>&>)));
@@ -368,7 +368,7 @@ _CCCL_CONCEPT_FRAGMENT(
                     requires(!same_as<_Ip, bool>),
                     requires(movable<_Ip>),
                     requires(__signed_integer_like<iter_difference_t<_Ip>>),
-                    requires(same_as<_Ip&, decltype(++__i)>),
+                    _Same_as(_Ip&)(++__i),
                     (__i++)));
 
 template <class _Ip>
@@ -381,13 +381,12 @@ _CCCL_CONCEPT incrementable = _CCCL_REQUIRES_EXPR((_Ip), _Ip __i)(
   requires(weakly_incrementable<_Ip>),
   // Requirement is unevaluated, not sure why clang-tidy complains
   // NOLINTNEXTLINE(bugprone-pointer-arithmetic-on-polymorphic-object)
-  requires(same_as<_Ip, decltype(__i++)>));
+  _Same_as(_Ip) __i++);
 
 // [iterator.concept.iterator]
 template <class _Ip>
-_CCCL_CONCEPT_FRAGMENT(
-  __input_or_output_iterator_,
-  requires(_Ip __i)(requires(weakly_incrementable<_Ip>), requires(__referenceable<decltype(*__i)>)));
+_CCCL_CONCEPT_FRAGMENT(__input_or_output_iterator_,
+                       requires(_Ip __i)(requires(weakly_incrementable<_Ip>), _Satisfies(__referenceable)(*__i)));
 
 template <class _Ip>
 _CCCL_CONCEPT input_or_output_iterator = _CCCL_FRAGMENT(__input_or_output_iterator_, _Ip);
@@ -411,8 +410,8 @@ _CCCL_CONCEPT_FRAGMENT(
   requires(const _Ip& __i, const _Sp& __s)(
     requires(sentinel_for<_Sp, _Ip>),
     requires(!disable_sized_sentinel_for<remove_cv_t<_Sp>, remove_cv_t<_Ip>>),
-    requires(same_as<iter_difference_t<_Ip>, decltype(__s - __i)>),
-    requires(same_as<iter_difference_t<_Ip>, decltype(__i - __s)>)));
+    _Same_as(iter_difference_t<_Ip>) __s - __i,
+    _Same_as(iter_difference_t<_Ip>) __i - __s));
 
 template <class _Sp, class _Ip>
 _CCCL_CONCEPT sized_sentinel_for = _CCCL_FRAGMENT(__sized_sentinel_for_, _Sp, _Ip);
@@ -510,7 +509,7 @@ _CCCL_CONCEPT_FRAGMENT(
     requires(derived_from<_ITER_CONCEPT<_Ip>, contiguous_iterator_tag>),
     requires(is_lvalue_reference_v<iter_reference_t<_Ip>>),
     requires(same_as<iter_value_t<_Ip>, remove_cvref_t<iter_reference_t<_Ip>>>),
-    requires(same_as<add_pointer_t<iter_reference_t<_Ip>>, decltype(::cuda::std::to_address(__i))>)));
+    _Same_as(add_pointer_t<iter_reference_t<_Ip>>)::cuda::std::to_address(__i)));
 
 template <class _Ip>
 _CCCL_CONCEPT contiguous_iterator = _CCCL_FRAGMENT(__contiguous_iterator_, _Ip);

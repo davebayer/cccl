@@ -62,11 +62,10 @@ concept __unqualified_begin =
   };
 #else // ^^^ _CCCL_HAS_CONCEPTS() ^^^ / vvv !_CCCL_HAS_CONCEPTS() vvv
 template <class _Tp>
-_CCCL_CONCEPT_FRAGMENT(
-  __member_begin_,
-  requires(_Tp&& __t)(requires(__can_borrow<_Tp>),
-                      requires(__workaround_52970<_Tp>),
-                      requires(input_or_output_iterator<decltype(_LIBCUDACXX_AUTO_CAST(__t.begin()))>)));
+_CCCL_CONCEPT_FRAGMENT(__member_begin_,
+                       requires(_Tp&& __t)(requires(__can_borrow<_Tp>),
+                                           requires(__workaround_52970<_Tp>),
+                                           _Satisfies(input_or_output_iterator) _LIBCUDACXX_AUTO_CAST(__t.begin())));
 
 template <class _Tp>
 _CCCL_CONCEPT __member_begin = _CCCL_FRAGMENT(__member_begin_, _Tp);
@@ -77,7 +76,7 @@ _CCCL_CONCEPT_FRAGMENT(
   requires(_Tp&& __t)(requires(!__member_begin<_Tp>),
                       requires(__can_borrow<_Tp>),
                       requires(__class_or_enum<remove_cvref_t<_Tp>>),
-                      requires(input_or_output_iterator<decltype(_LIBCUDACXX_AUTO_CAST(begin(__t)))>)));
+                      _Satisfies(input_or_output_iterator) _LIBCUDACXX_AUTO_CAST(begin(__t))));
 
 template <class _Tp>
 _CCCL_CONCEPT __unqualified_begin = _CCCL_FRAGMENT(__unqualified_begin_, _Tp);
