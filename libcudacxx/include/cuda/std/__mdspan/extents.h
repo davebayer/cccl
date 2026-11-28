@@ -28,8 +28,11 @@
 #  pragma system_header
 #endif // no system header
 
+#include <cuda/std/__concepts/arithmetic.h>
 #include <cuda/std/__concepts/concept_macros.h>
+#include <cuda/std/__cstddef/types.h>
 #include <cuda/std/__fwd/span.h>
+#include <cuda/std/__limits/numeric_limits.h>
 #include <cuda/std/__mdspan/concepts.h>
 #include <cuda/std/__memory/addressof.h>
 #include <cuda/std/__type_traits/fold.h>
@@ -38,15 +41,13 @@
 #include <cuda/std/__type_traits/is_integer.h>
 #include <cuda/std/__type_traits/is_nothrow_constructible.h>
 #include <cuda/std/__type_traits/is_same.h>
+#include <cuda/std/__type_traits/is_signed.h>
 #include <cuda/std/__type_traits/make_nbit_int.h>
 #include <cuda/std/__type_traits/make_unsigned.h>
 #include <cuda/std/__type_traits/num_bits.h>
 #include <cuda/std/__utility/cmp.h>
 #include <cuda/std/__utility/integer_sequence.h>
 #include <cuda/std/array>
-#include <cuda/std/concepts>
-#include <cuda/std/cstddef>
-#include <cuda/std/limits>
 #include <cuda/std/span>
 
 #include <cuda/std/__cccl/prologue.h>

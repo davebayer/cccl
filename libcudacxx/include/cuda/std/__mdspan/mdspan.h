@@ -29,6 +29,7 @@
 #endif // no system header
 
 #include <cuda/std/__concepts/concept_macros.h>
+#include <cuda/std/__cstddef/types.h>
 #include <cuda/std/__fwd/extents.h>
 #include <cuda/std/__fwd/mdspan.h>
 #include <cuda/std/__fwd/span.h>
@@ -38,6 +39,7 @@
 #include <cuda/std/__mdspan/extents.h>
 #include <cuda/std/__mdspan/layout_right.h> // IWYU pragma: keep
 #include <cuda/std/__type_traits/extent.h>
+#include <cuda/std/__type_traits/integral_constant_like.h>
 #include <cuda/std/__type_traits/is_abstract.h>
 #include <cuda/std/__type_traits/is_array.h>
 #include <cuda/std/__type_traits/is_constructible.h>
@@ -57,8 +59,6 @@
 #include <cuda/std/__utility/integer_sequence.h>
 #include <cuda/std/__utility/move.h>
 #include <cuda/std/array>
-#include <cuda/std/cstddef>
-#include <cuda/std/limits>
 #include <cuda/std/span>
 
 #include <cuda/std/__cccl/prologue.h>

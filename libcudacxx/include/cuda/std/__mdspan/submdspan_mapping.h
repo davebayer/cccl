@@ -32,6 +32,7 @@
 #include <cuda/std/__mdspan/submdspan_extents.h>
 #include <cuda/std/__mdspan/submdspan_helper.h>
 #include <cuda/std/__type_traits/integral_constant_like.h>
+#include <cuda/std/__type_traits/is_convertible.h>
 #include <cuda/std/__type_traits/make_unsigned.h>
 #include <cuda/std/__type_traits/remove_cv.h>
 #include <cuda/std/__type_traits/type_list.h>
